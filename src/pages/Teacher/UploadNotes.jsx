@@ -1,20 +1,18 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileUp, Upload, X } from 'lucide-react';
+import { FileUp, Upload } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
-import { useToast } from '../../hooks/useToast'; // Assuming you import this hook
 
-export const UploadNotes = ({ user }) => {
+export const UploadNotes = ({ user, addToast }) => {
   const { add } = useStore(KEYS.NOTES, []);
   const [isOpen, setIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     title: '', subject: '', class: '10-A', description: '', type: 'PDF'
   });
-  const { addToast } = useToast(); // Ensure this hook exists or pass prop
 
   const handleSubmit = () => {
     const newNote = {

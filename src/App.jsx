@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 
@@ -28,8 +28,11 @@ import { Profile } from './pages/Student/Profile';
 import { ManageAssignments } from './pages/Teacher/ManageAssignments';
 import { MarkAttendance } from './pages/Teacher/MarkAttendance';
 import { GradeSubmissions } from './pages/Teacher/GradeSubmissions';
+import { UploadNotes } from './pages/Teacher/UploadNotes';
 import { ManageUsers } from './pages/Admin/ManageUsers';
 import { Announcements } from './pages/Admin/Announcements';
+import { Analytics } from './pages/Admin/Analytics';
+import { TimetableManager } from './pages/Admin/TimetableManager';
 import { KEYS } from './data/schema';
 
 // Loading screen
@@ -52,6 +55,7 @@ const ProtectedRoute = ({ user, children, requiredRole }) => {
 };
 
 function App() {
+  const navigate = useNavigate();
   const { user, loading: authLoading, login, signup, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { toasts, addToast, removeToast } = useToast();
@@ -78,11 +82,11 @@ function App() {
           {/* Auth Routes */}
           <Route path="/login" element={
             user ? <Navigate to={`/${user.role}/dashboard`} replace /> :
-            <Login onLogin={login} onSwitch={() => {}} />
+            <Login onLogin={login} onSwitch={() => navigate('/signup')} />
           } />
           <Route path="/signup" element={
             user ? <Navigate to={`/${user.role}/dashboard`} replace /> :
-            <Signup onSignup={signup} onSwitch={() => {}} />
+            <Signup onSignup={signup} onSwitch={() => navigate('/login')} />
           } />
 
           {/* Student Routes */}
@@ -145,12 +149,7 @@ function App() {
           } />
           <Route path="/teacher/notes" element={
             <ProtectedRoute user={user} requiredRole="teacher">
-              <div className="space-y-6">
-                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Upload Notes</h1>
-                <Card className="text-center py-16">
-                  <p className="text-gray-500">Upload notes feature — coming soon! 📚</p>
-                </Card>
-              </div>
+              <UploadNotes user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 
@@ -168,6 +167,16 @@ function App() {
           <Route path="/admin/announcements" element={
             <ProtectedRoute user={user} requiredRole="admin">
               <Announcements user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/analytics" element={
+            <ProtectedRoute user={user} requiredRole="admin">
+              <Analytics />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/timetable" element={
+            <ProtectedRoute user={user} requiredRole="admin">
+              <TimetableManager />
             </ProtectedRoute>
           } />
 
