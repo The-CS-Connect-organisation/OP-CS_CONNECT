@@ -1,5 +1,9 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Area, AreaChart } from 'recharts';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, 
+  ResponsiveContainer, Legend, Area, AreaChart, Line, Cell, PieChart, Pie 
+} from 'recharts';
 
+// Chart 1: Marks Trend (Line/Area Chart)
 export const MarksChart = ({ data, title }) => {
   const chartData = data.map(d => ({
     exam: d.examName,
@@ -33,6 +37,7 @@ export const MarksChart = ({ data, title }) => {
   );
 };
 
+// Chart 2: Subject-wise Performance (Bar Chart) ← This one was broken!
 export const SubjectWiseChart = ({ data }) => {
   const chartData = data.reduce((acc, curr) => {
     const existing = acc.find(a => a.subject === curr.subject);

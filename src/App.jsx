@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 
@@ -11,7 +11,6 @@ import { useStore } from './hooks/useStore';
 // Components
 import { Layout } from './components/layout/Layout';
 import { Toast } from './components/ui/Toast';
-import { CardSkeleton } from './components/ui/Skeleton';
 
 // Pages
 import { Login } from './pages/Auth/Login';
@@ -47,7 +46,7 @@ const LoadingScreen = () => (
   </div>
 );
 
-// Protected Route
+// Protected Route component
 const ProtectedRoute = ({ user, children, requiredRole }) => {
   if (!user) return <Navigate to="/login" replace />;
   if (requiredRole && user.role !== requiredRole) return <Navigate to={`/${user.role}/dashboard`} replace />;
@@ -55,7 +54,7 @@ const ProtectedRoute = ({ user, children, requiredRole }) => {
 };
 
 function App() {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // ✅ Now works because Router is in main.jsx
   const { user, loading: authLoading, login, signup, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { toasts, addToast, removeToast } = useToast();
@@ -75,7 +74,7 @@ function App() {
   if (authLoading) return <LoadingScreen />;
 
   return (
-    <BrowserRouter>
+    <>  {/* ✅ No <BrowserRouter> here anymore - it's in main.jsx */}
       <Toast toasts={toasts} removeToast={removeToast} />
       <AnimatePresence mode="wait">
         <Routes>
@@ -188,7 +187,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AnimatePresence>
-    </BrowserRouter>
+    </>
   );
 }
 

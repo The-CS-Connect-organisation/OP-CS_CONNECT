@@ -11,19 +11,18 @@ export const Login = ({ onLogin, onSwitch }) => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    // Simulate network delay
-    await new Promise(r => setTimeout(r, 800));
-
-    const result = onLogin(email, password);
-    if (!result.success) {
-      setError(result.error);
-    }
-    setLoading(false);
-  };
+  e.preventDefault();  // ← This prevents page reload!
+  setError('');
+  setLoading(true);
+  
+  await new Promise(r => setTimeout(r, 800));
+  
+  const result = onLogin(email, password);
+  if (!result.success) {
+    setError(result.error);
+  }
+  setLoading(false);
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-950 dark:to-primary-950 p-4">

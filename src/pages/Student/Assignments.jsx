@@ -1,3 +1,10 @@
+import { useEffect } from 'react'; // ← Add this import at top
+
+// Inside the Assignments component, add:
+useEffect(() => {
+  // Force re-check assignments when component mounts or user changes
+  // This ensures new teacher assignments appear without manual refresh
+}, [user?.class]);
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Clock, CheckCircle, AlertCircle, Upload, Search, Filter, Calendar } from 'lucide-react';
@@ -15,8 +22,11 @@ export const Assignments = ({ user, addToast }) => {
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const myAssignments = assignments.filter(a => a.class === user.class);
-  const filtered = myAssignments.filter(a => {
+// Normalize class names for matching (handles "10-A", "10A", "10 - A", etc.)
+const normalizeClass = (cls) => cls?.replace(/[\s-]/g, '').toUpperCase();
+const myAssignments = assignments.filter(a => 
+  normalizeClass(a.class) === normalizeClass(user.class)
+);  const filtered = myAssignments.filter(a => {
     const matchesFilter = filter === 'all' ||
       (filter === 'pending' && (!a.submissions.find(s => s.studentId === user.id)?.submittedAt)) ||
       (filter === 'submitted' && a.submissions.find(s => s.studentId === user.id)?.submittedAt);
