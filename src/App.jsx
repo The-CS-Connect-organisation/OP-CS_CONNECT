@@ -1,1 +1,186 @@
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { AnimatePresence } from 'framer-motion';
 
+// Hooks
+import { useAuth } from './hooks/useAuth';
+import { useTheme } from './hooks/useTheme';
+import { useToast } from './hooks/useToast';
+import { useStore } from './hooks/useStore';
+
+// Components
+import { Layout } from './components/layout/Layout';
+import { Toast } from './components/ui/Toast';
+import { CardSkeleton } from './components/ui/Skeleton';
+
+// Pages
+import { Login } from './pages/Auth/Login';
+import { Signup } from './pages/Auth/Signup';
+import { StudentDashboard } from './pages/Dashboard/StudentDashboard';
+import { TeacherDashboard } from './pages/Dashboard/TeacherDashboard';
+import { AdminDashboard } from './pages/Dashboard/AdminDashboard';
+import { Timetable } from './pages/Student/Timetable';
+import { Assignments } from './pages/Student/Assignments';
+import { Attendance } from './pages/Student/Attendance';
+import { Grades } from './pages/Student/Grades';
+import { Notes } from './pages/Student/Notes';
+import { Profile } from './pages/Student/Profile';
+import { ManageAssignments } from './pages/Teacher/ManageAssignments';
+import { MarkAttendance } from './pages/Teacher/MarkAttendance';
+import { GradeSubmissions } from './pages/Teacher/GradeSubmissions';
+import { ManageUsers } from './pages/Admin/ManageUsers';
+import { Announcements } from './pages/Admin/Announcements';
+import { KEYS } from './data/schema';
+
+// Loading screen
+const LoadingScreen = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+    <div className="text-center">
+      <div className="w-16 h-16 gradient-bg rounded-2xl flex items-center justify-center text-white mx-auto mb-4 animate-pulse">
+        <span className="text-2xl font-bold">S</span>
+      </div>
+      <p className="text-gray-500 animate-pulse">Loading SchoolSync...</p>
+    </div>
+  </div>
+);
+
+// Protected Route
+const ProtectedRoute = ({ user, children, requiredRole }) => {
+  if (!user) return <Navigate to="/login" replace />;
+  if (requiredRole && user.role !== requiredRole) return <Navigate to={`/${user.role}/dashboard`} replace />;
+  return <Layout user={user}>{children}</Layout>;
+};
+
+function App() {
+  const { user, loading: authLoading, login, signup, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const { toasts, addToast, removeToast } = useToast();
+  const { data: notifications, update: updateNotification } = useStore(KEYS.NOTIFICATIONS, []);
+
+  const userNotifications = useMemo(() => {
+    if (!user) return [];
+    return notifications
+      .filter(n => n.userId === user.id)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [notifications, user]);
+
+  const markNotificationRead = (id) => {
+    updateNotification(id, { read: true });
+  };
+
+  if (authLoading) return <LoadingScreen />;
+
+  return (
+    <BrowserRouter>
+      <Toast toasts={toasts} removeToast={removeToast} />
+      <AnimatePresence mode="wait">
+        <Routes>
+          {/* Auth Routes */}
+          <Route path="/login" element={
+            user ? <Navigate to={`/${user.role}/dashboard`} replace /> :
+            <Login onLogin={login} onSwitch={() => {}} />
+          } />
+          <Route path="/signup" element={
+            user ? <Navigate to={`/${user.role}/dashboard`} replace /> :
+            <Signup onSignup={signup} onSwitch={() => {}} />
+          } />
+
+          {/* Student Routes */}
+          <Route path="/student/dashboard" element={
+            <ProtectedRoute user={user} requiredRole="student">
+              <StudentDashboard user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/timetable" element={
+            <ProtectedRoute user={user} requiredRole="student">
+              <Timetable user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/assignments" element={
+            <ProtectedRoute user={user} requiredRole="student">
+              <Assignments user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/attendance" element={
+            <ProtectedRoute user={user} requiredRole="student">
+              <Attendance user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/grades" element={
+            <ProtectedRoute user={user} requiredRole="student">
+              <Grades user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/notes" element={
+            <ProtectedRoute user={user} requiredRole="student">
+              <Notes user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/profile" element={
+            <ProtectedRoute user={user} requiredRole="student">
+              <Profile user={user} />
+            </ProtectedRoute>
+          } />
+
+          {/* Teacher Routes */}
+          <Route path="/teacher/dashboard" element={
+            <ProtectedRoute user={user} requiredRole="teacher">
+              <TeacherDashboard user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/assignments" element={
+            <ProtectedRoute user={user} requiredRole="teacher">
+              <ManageAssignments user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/attendance" element={
+            <ProtectedRoute user={user} requiredRole="teacher">
+              <MarkAttendance user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/grading" element={
+            <ProtectedRoute user={user} requiredRole="teacher">
+              <GradeSubmissions user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/notes" element={
+            <ProtectedRoute user={user} requiredRole="teacher">
+              <div className="space-y-6">
+                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Upload Notes</h1>
+                <Card className="text-center py-16">
+                  <p className="text-gray-500">Upload notes feature — coming soon! 📚</p>
+                </Card>
+              </div>
+            </ProtectedRoute>
+          } />
+
+          {/* Admin Routes */}
+          <Route path="/admin/dashboard" element={
+            <ProtectedRoute user={user} requiredRole="admin">
+              <AdminDashboard user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/users" element={
+            <ProtectedRoute user={user} requiredRole="admin">
+              <ManageUsers addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/announcements" element={
+            <ProtectedRoute user={user} requiredRole="admin">
+              <Announcements user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+
+          {/* Default Route */}
+          <Route path="/" element={
+            user ? <Navigate to={`/${user.role}/dashboard`} replace /> :
+            <Navigate to="/login" replace />
+          } />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </AnimatePresence>
+    </BrowserRouter>
+  );
+}
+
+export default App;
