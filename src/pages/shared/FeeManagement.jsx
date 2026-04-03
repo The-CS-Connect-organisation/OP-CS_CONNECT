@@ -19,6 +19,8 @@ export const FeeManagement = ({ user, addToast }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedFee, setSelectedFee] = useState(null);
   const [upiId, setUpiId] = useState('');
+  const [isPaying, setIsPaying] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [newFeeStudentId, setNewFeeStudentId] = useState('');
@@ -210,17 +212,30 @@ export const FeeManagement = ({ user, addToast }) => {
   // Student: Pay via UPI (simulated)
   const handlePay = () => {
     if (!selectedFee || !upiId) return;
-    
+    if (isPaying) return;
+
+    setIsPaying(true);
+    setPaymentSuccess(false);
+
     // Simulate payment delay
     setTimeout(() => {
       update(selectedFee.id, {
         status: 'paid',
         paidAt: new Date().toISOString().split('T')[0],
         transactionId: `UPI-${Date.now()}`,
-        paymentMethod: 'UPI'
+        paymentMethod: 'UPI',
       });
-      setShowPayModal(false);
-      setUpiId('');
+
+      setPaymentSuccess(true);
+      setIsPaying(false);
+
+      // Close modal after the success animation
+      setTimeout(() => {
+        setShowPayModal(false);
+        setUpiId('');
+        setPaymentSuccess(false);
+      }, 900);
+
       addToast('Payment successful via UPI! ✅ Receipt generated.', 'success');
     }, 1200);
   };
@@ -387,7 +402,7 @@ export const FeeManagement = ({ user, addToast }) => {
                 animate={{ opacity: 1, y: 0 }} 
                 transition={{ delay: idx * 0.03 }}
               >
-                <Card className="flex flex-col md:flex-row md:items-center gap-6 p-6">
+                <Card className="flex flex-col md:flex-row md:items-center gap-6 p-6 hover:shadow-xl transition-shadow">
                   {/* Left: Fee Info */}
                   <div className="flex-1">
                     <div className="flex items-center gap-3 flex-wrap">
@@ -485,36 +500,87 @@ export const FeeManagement = ({ user, addToast }) => {
       >
         {selectedFee && (
           <div className="space-y-6">
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl">
-              <p className="text-sm text-gray-500">Amount to Pay</p>
-              <p className="text-3xl font-bold">₹{selectedFee.amount.toLocaleString('en-IN')}</p>
-              <p className="text-xs text-gray-400 mt-1">{selectedFee.term} • {selectedFee.studentName}</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">UPI ID</label>
-              <input
-                type="text"
-                value={upiId}
-                onChange={(e) => setUpiId(e.target.value)}
-                placeholder="yourname@upi"
-                className="input-field"
-              />
-              <p className="text-xs text-gray-500 mt-2">Example: navaneeth@oksbi</p>
-            </div>
-            <div className="flex gap-3 pt-4">
-              <Button variant="secondary" className="flex-1" onClick={() => setShowPayModal(false)}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                className="flex-1"
-                onClick={handlePay}
-                disabled={!upiId}
-              >
-                Pay ₹{selectedFee.amount.toLocaleString('en-IN')}
-              </Button>
-            </div>
-            <p className="text-center text-xs text-gray-400">🔒 Secure UPI Payment Simulation</p>
+            {!paymentSuccess ? (
+              <>
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-xl border border-gray-200/60 dark:border-gray-700/60">
+                  <p className="text-sm text-gray-500">Amount to Pay</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-white">
+                    ₹{selectedFee.amount.toLocaleString('en-IN')}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-1">
+                    {selectedFee.term} • {selectedFee.studentName}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">UPI ID</label>
+                  <input
+                    type="text"
+                    value={upiId}
+                    onChange={(e) => setUpiId(e.target.value)}
+                    placeholder="yourname@upi"
+                    className="input-field"
+                    disabled={isPaying}
+                  />
+                  <p className="text-xs text-gray-500 mt-2">Example: navaneeth@oksbi</p>
+                </div>
+
+                <div className="flex gap-3 pt-4">
+                  <Button
+                    variant="secondary"
+                    className="flex-1"
+                    onClick={() => {
+                      if (!isPaying) setShowPayModal(false);
+                    }}
+                    disabled={isPaying}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    className="flex-1"
+                    onClick={handlePay}
+                    disabled={!upiId || isPaying}
+                  >
+                    {isPaying ? (
+                      <span className="inline-flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-white/80 animate-pulse" />
+                        Processing...
+                      </span>
+                    ) : (
+                      `Pay ₹${selectedFee.amount.toLocaleString('en-IN')}`
+                    )}
+                  </Button>
+                </div>
+
+                <p className="text-center text-xs text-gray-400">🔒 Secure UPI Payment Simulation</p>
+              </>
+            ) : (
+              <div className="flex flex-col items-center text-center gap-3 pt-2">
+                <motion.div
+                  initial={{ scale: 0.6, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                  className="w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 flex items-center justify-center"
+                >
+                  <motion.div
+                    initial={{ rotate: -10 }}
+                    animate={{ rotate: 0 }}
+                    transition={{ duration: 0.35 }}
+                    className="text-blue-600 dark:text-blue-300"
+                  >
+                    <CheckCircle size={44} className="text-blue-600 dark:text-blue-300" />
+                  </motion.div>
+                </motion.div>
+
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Payment Successful
+                </h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Your receipt has been generated.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </Modal>
