@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
+import { Award, ClipboardList } from 'lucide-react'; // Add these icons
 import {
   LayoutDashboard, Calendar, BookOpen, FileText, GraduationCap, BarChart3,
   Users, Bell, Settings, LogOut, Moon, Sun, BookMarked, ClipboardList,
@@ -20,6 +21,8 @@ const studentNav = [
 const teacherNav = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/teacher/dashboard' },
   { icon: FileText, label: 'Assignments', path: '/teacher/assignments' },
+  { icon: Award, label: 'Exams', path: '/teacher/exams' },        // ← NEW
+  { icon: ClipboardList, label: 'Enter Grades', path: '/teacher/grades' }, // ← NEW
   { icon: CheckSquare, label: 'Attendance', path: '/teacher/attendance' },
   { icon: FileUp, label: 'Upload Notes', path: '/teacher/notes' },
   { icon: GraduationCap, label: 'Grade Submissions', path: '/teacher/grading' },

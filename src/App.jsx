@@ -1,13 +1,15 @@
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
-// Data
-import { KEYS } from './data/schema';
+
 // Hooks
 import { useAuth } from './hooks/useAuth';
 import { useTheme } from './hooks/useTheme';
 import { useToast } from './hooks/useToast';
 import { useStore } from './hooks/useStore';
+
+// Data
+import { KEYS } from './data/schema'; // ⚠️ IMPORTANT: Added missing KEYS import
 
 // Components
 import { Layout } from './components/layout/Layout';
@@ -27,6 +29,7 @@ import { Attendance } from './pages/Student/Attendance';
 import { Grades } from './pages/Student/Grades';
 import { Notes } from './pages/Student/Notes';
 import { Profile } from './pages/Student/Profile';
+import { FeeManagement } from './pages/shared/FeeManagement';   // ✅ New Fee Page
 
 // Teacher Pages
 import { ManageAssignments } from './pages/Teacher/ManageAssignments';
@@ -39,9 +42,6 @@ import { ManageUsers } from './pages/Admin/ManageUsers';
 import { Announcements } from './pages/Admin/Announcements';
 import { Analytics } from './pages/Admin/Analytics';
 import { TimetableManager } from './pages/Admin/TimetableManager';
-
-// New Fee Page
-import { FeeManagement } from './pages/shared/FeeManagement';   // ← Added
 
 // Loading screen
 const LoadingScreen = () => (
@@ -78,8 +78,10 @@ function App() {
   const { user, loading: authLoading, login, signup, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { toasts, addToast, removeToast } = useToast();
+  
+  // Notifications
   const { data: notifications, update: updateNotification } = useStore(KEYS.NOTIFICATIONS, []);
-
+  
   const userNotifications = useMemo(() => {
     if (!user) return [];
     return notifications
@@ -147,15 +149,14 @@ function App() {
               <Notes user={user} />
             </ProtectedRoute>
           } />
-          <Route path="/student/profile" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
-              <Profile user={user} />
-            </ProtectedRoute>
-          } />
-          {/* New Fee Route */}
           <Route path="/student/fees" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <FeeManagement user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <Profile user={user} />
             </ProtectedRoute>
           } />
 
