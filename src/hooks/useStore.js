@@ -2,7 +2,19 @@ import { useState, useCallback, useEffect } from 'react';
 import { KEYS, getFromStorage, setToStorage } from '../data/schema';
 
 export const useStore = (key, defaultValue = []) => {
-  const [data, setData] = useState(() => getFromStorage(key, defaultValue));
+  const [data, setData] = useState(() => {
+    const stored = getFromStorage(key, defaultValue);
+    // If storage contains a different type than expected, fall back to defaultValue.
+    if (Array.isArray(defaultValue)) {
+      if (Array.isArray(stored)) return stored;
+      if (stored && typeof stored === 'object') return [stored];
+      return defaultValue;
+    }
+    if (defaultValue && typeof defaultValue === 'object') {
+      return stored && typeof stored === 'object' && !Array.isArray(stored) ? stored : defaultValue;
+    }
+    return stored ?? defaultValue;
+  });
 
   useEffect(() => {
     setToStorage(key, data);

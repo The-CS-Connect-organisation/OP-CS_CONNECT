@@ -304,7 +304,7 @@ export const Notes = ({ user, addToast }) => {
         onStartCall={({ otherUser: ou, preferVideo: pv }) => {
           setCallTeacher(ou);
           setCallPreferVideo(!!pv);
-          setCallInitiator(true);
+          setCallInitiator(user.role === 'teacher');
           setChatOpen(false);
           setCallOpen(true);
         }}

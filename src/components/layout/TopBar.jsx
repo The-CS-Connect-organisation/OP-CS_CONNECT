@@ -1,8 +1,10 @@
 import { motion } from 'framer-motion';
 import { Search, Bell, Menu, ChevronDown } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export const TopBar = ({ user, onToggleSidebar, notifications = [], onMarkRead }) => {
+  const navigate = useNavigate();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -125,10 +127,16 @@ export const TopBar = ({ user, onToggleSidebar, notifications = [], onMarkRead }
                   <p className="text-xs text-gray-500">{user?.email}</p>
                 </div>
                 <div className="p-2">
-                  <button className="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                  <button
+                    onClick={() => navigate(`/${user?.role}/profile`)}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
                     My Profile
                   </button>
-                  <button className="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                  <button
+                    onClick={() => navigate(`/${user?.role}/settings`)}
+                    className="w-full text-left px-3 py-2 text-sm text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  >
                     Settings
                   </button>
                 </div>

@@ -40,6 +40,7 @@ export const CallModal = ({
   const localStreamRef = useRef(null);
 
   const handledSignalIdsRef = useRef(new Set());
+  const offerMakerIdRef = useRef(null);
 
   const callRoomId = useMemo(() => {
     if (!currentUser || !otherUser) return '';
@@ -53,7 +54,7 @@ export const CallModal = ({
     return `${SIGNAL_KEY_PREFIX}${callRoomId}`;
   }, [callRoomId]);
 
-  const isInitiator = useMemo(() => {
+  const isInitiatorProp = useMemo(() => {
     if (typeof initiator === 'boolean') return initiator;
     // Teacher initiates by convention when not specified.
     return currentUser?.role === 'teacher';
@@ -65,6 +66,8 @@ export const CallModal = ({
     if (!currentUser || !otherUser || !signalKey) return;
 
     let cancelled = false;
+    handledSignalIdsRef.current.clear();
+    offerMakerIdRef.current = null;
 
     const bootstrap = async () => {
       try {
@@ -123,8 +126,20 @@ export const CallModal = ({
           setStatus(pc.connectionState);
         };
 
-        if (isInitiator) {
+        // Decide offer maker based on existing offer in storage.
+        const existingSignals = readSignals(signalKey);
+        const existingOffer = existingSignals
+          .slice()
+          .reverse()
+          .find(s => s.type === 'offer' && s.fromUserId);
+
+        if (existingOffer) {
+          // Another tab/user started an offer already; we should only answer.
+          offerMakerIdRef.current = existingOffer.fromUserId;
+          setStatus(existingOffer.fromUserId === currentUser.id ? 'listening' : 'waiting-offer');
+        } else if (isInitiatorProp) {
           setStatus('creating-offer');
+          offerMakerIdRef.current = currentUser.id;
           const offer = await pc.createOffer();
           await pc.setLocalDescription(offer);
           const offerMsg = {
@@ -137,6 +152,8 @@ export const CallModal = ({
           const prev = readSignals(signalKey);
           writeSignals(signalKey, [...prev, offerMsg]);
         } else {
+          // No offer exists, and we're not initiator: wait for offer.
+          offerMakerIdRef.current = null;
           setStatus('waiting-offer');
         }
 
@@ -181,7 +198,7 @@ export const CallModal = ({
           }
         }
 
-        if (sig.type === 'answer' && isInitiator === true) {
+        if (sig.type === 'answer' && offerMakerIdRef.current === currentUser.id) {
           try {
             const pc = pcRef.current;
             if (!pc) continue;
@@ -225,7 +242,7 @@ export const CallModal = ({
       setRemoteAvailable(false);
       setStatus('idle');
     };
-  }, [isOpen, signalKey, currentUser, otherUser, preferVideo, isInitiator]);
+  }, [isOpen, signalKey, currentUser, otherUser, preferVideo, isInitiatorProp]);
 
   const toggleMic = () => {
     const stream = localStreamRef.current;

@@ -29,6 +29,7 @@ const adminNav = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
   { icon: Users, label: 'Manage Users', path: '/admin/users' },
   { icon: CreditCard, label: 'Fees & Billing', path: '/admin/fees' },
+  { icon: Award, label: 'Exams', path: '/admin/exams' },
   { icon: Bell, label: 'Announcements', path: '/admin/announcements' },
   { icon: Calendar, label: 'Timetable', path: '/admin/timetable' },
   { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },

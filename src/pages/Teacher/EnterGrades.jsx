@@ -20,7 +20,15 @@ export const EnterGrades = ({ user, addToast }) => {
   const [search, setSearch] = useState('');
   const [showPreview, setShowPreview] = useState(false);
 
-  const myExams = useMemo(() => exams.filter(e => e.createdBy === user.id), [exams, user]);
+  const myExams = useMemo(() => {
+    // Exams are created by Admin, teachers grade based on their class + subjects.
+    const classMatches = (e) => e.class === user.class;
+    const subjectMatches = (e) => {
+      const teacherSubjects = user.subjects || [];
+      return teacherSubjects.length === 0 || teacherSubjects.includes(e.subject);
+    };
+    return exams.filter(e => classMatches(e) && subjectMatches(e));
+  }, [exams, user]);
   const students = useMemo(() => users.filter(u => u.role === 'student'), [users]);
 
   const filteredStudents = useMemo(() => {

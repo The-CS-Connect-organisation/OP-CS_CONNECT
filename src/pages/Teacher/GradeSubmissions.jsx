@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { GraduationCap, CheckCircle, FileText, Star } from 'lucide-react';
+import { GraduationCap, CheckCircle, FileText, Star, AlertCircle } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
@@ -14,8 +14,17 @@ export const GradeSubmissions = ({ user, addToast }) => {
   const [grade, setGrade] = useState('');
 
   const myAssignments = assignments.filter(a => a.teacherId === user.id);
+  // Assignments are submitted offline, so students don't upload files online.
+  // Teachers grade every non-graded student for each assignment.
   const pendingSubmissions = myAssignments.flatMap(a =>
-    a.submissions.filter(s => s.status === 'submitted').map(s => ({ ...s, assignmentTitle: a.title, assignmentId: a.id, totalMarks: a.totalMarks }))
+    a.submissions
+      .filter(s => (s.status || 'pending') !== 'graded')
+      .map(s => ({
+        ...s,
+        assignmentTitle: a.title,
+        assignmentId: a.id,
+        totalMarks: a.totalMarks,
+      }))
   );
 
   const handleGrade = () => {
@@ -58,8 +67,7 @@ export const GradeSubmissions = ({ user, addToast }) => {
                     <h4 className="text-sm font-medium text-gray-800 dark:text-white">{sub.studentName}</h4>
                     <p className="text-sm text-gray-500">{sub.assignmentTitle}</p>
                     <div className="flex items-center gap-3 mt-1">
-                      <span className="flex items-center gap-1 text-xs text-gray-400"><FileText size={12} /> {sub.file}</span>
-                      <span className="text-xs text-gray-400">Submitted: {sub.submittedAt}</span>
+                      <span className="flex items-center gap-1 text-xs text-gray-400"><FileText size={12} /> Not graded yet</span>
                     </div>
                   </div>
                   <Badge color="orange">Pending</Badge>
@@ -79,7 +87,10 @@ export const GradeSubmissions = ({ user, addToast }) => {
               <p className="text-sm text-gray-500">{selectedSubmission.assignmentTitle}</p>
             </div>
             <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50">
-              <p className="text-sm text-gray-600 dark:text-gray-300">File: {selectedSubmission.file}</p>
+              <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                <AlertCircle size={14} className="text-orange-500" />
+                <p>Offline submission. Grade now.</p>
+              </div>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marks (out of {selectedSubmission.totalMarks})</label>

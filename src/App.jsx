@@ -29,6 +29,9 @@ import { Attendance } from './pages/Student/Attendance';
 import { Grades } from './pages/Student/Grades';
 import { Notes } from './pages/Student/Notes';
 import { Profile } from './pages/Student/Profile';
+import { Profile as TeacherProfile } from './pages/Teacher/Profile';
+import { Profile as AdminProfile } from './pages/Admin/Profile';
+import { SettingsPanel } from './pages/shared/Settings';
 import { FeeManagement } from './pages/shared/FeeManagement'; // ✅ New
 
 // Teacher Pages
@@ -42,6 +45,7 @@ import { ManageUsers } from './pages/Admin/ManageUsers';
 import { Announcements } from './pages/Admin/Announcements';
 import { Analytics } from './pages/Admin/Analytics';
 import { TimetableManager } from './pages/Admin/TimetableManager';
+import { ManageExams } from './pages/Teacher/ManageExams';
 
 // Loading screen
 const LoadingScreen = () => (
@@ -158,6 +162,11 @@ function App() {
               <Profile user={user} />
             </ProtectedRoute>
           } />
+          <Route path="/student/settings" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <SettingsPanel user={user} />
+            </ProtectedRoute>
+          } />
 
           {/* Teacher Routes */}
           <Route path="/teacher/dashboard" element={
@@ -185,6 +194,16 @@ function App() {
               <UploadNotes user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
+          <Route path="/teacher/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <TeacherProfile user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/settings" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <SettingsPanel user={user} />
+            </ProtectedRoute>
+          } />
 
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={
@@ -210,6 +229,21 @@ function App() {
           <Route path="/admin/timetable" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <TimetableManager />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminProfile user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/settings" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <SettingsPanel user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/exams" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <ManageExams user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/admin/fees" element={
