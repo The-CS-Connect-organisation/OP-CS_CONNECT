@@ -47,10 +47,21 @@ const LoadingScreen = () => (
 );
 
 // Protected Route component
-const ProtectedRoute = ({ user, children, requiredRole }) => {
+const ProtectedRoute = ({ user, children, requiredRole, theme, toggleTheme, logout, notifications, onMarkRead }) => {
   if (!user) return <Navigate to="/login" replace />;
   if (requiredRole && user.role !== requiredRole) return <Navigate to={`/${user.role}/dashboard`} replace />;
-  return <Layout user={user}>{children}</Layout>;
+  return (
+    <Layout
+      user={user}
+      theme={theme}
+      toggleTheme={toggleTheme}
+      onLogout={logout}
+      notifications={notifications}
+      onMarkRead={onMarkRead}
+    >
+      {children}
+    </Layout>
+  );
 };
 
 function App() {
@@ -73,6 +84,14 @@ function App() {
 
   if (authLoading) return <LoadingScreen />;
 
+  const layoutProps = {
+    theme,
+    toggleTheme,
+    logout,
+    notifications: userNotifications,
+    onMarkRead: markNotificationRead,
+  };
+
   return (
     <>  {/* ✅ No <BrowserRouter> here anymore - it's in main.jsx */}
       <Toast toasts={toasts} removeToast={removeToast} />
@@ -90,91 +109,91 @@ function App() {
 
           {/* Student Routes */}
           <Route path="/student/dashboard" element={
-            <ProtectedRoute user={user} requiredRole="student">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <StudentDashboard user={user} />
             </ProtectedRoute>
           } />
           <Route path="/student/timetable" element={
-            <ProtectedRoute user={user} requiredRole="student">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <Timetable user={user} />
             </ProtectedRoute>
           } />
           <Route path="/student/assignments" element={
-            <ProtectedRoute user={user} requiredRole="student">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <Assignments user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/student/attendance" element={
-            <ProtectedRoute user={user} requiredRole="student">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <Attendance user={user} />
             </ProtectedRoute>
           } />
           <Route path="/student/grades" element={
-            <ProtectedRoute user={user} requiredRole="student">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <Grades user={user} />
             </ProtectedRoute>
           } />
           <Route path="/student/notes" element={
-            <ProtectedRoute user={user} requiredRole="student">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <Notes user={user} />
             </ProtectedRoute>
           } />
           <Route path="/student/profile" element={
-            <ProtectedRoute user={user} requiredRole="student">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <Profile user={user} />
             </ProtectedRoute>
           } />
 
           {/* Teacher Routes */}
           <Route path="/teacher/dashboard" element={
-            <ProtectedRoute user={user} requiredRole="teacher">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
               <TeacherDashboard user={user} />
             </ProtectedRoute>
           } />
           <Route path="/teacher/assignments" element={
-            <ProtectedRoute user={user} requiredRole="teacher">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
               <ManageAssignments user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/teacher/attendance" element={
-            <ProtectedRoute user={user} requiredRole="teacher">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
               <MarkAttendance user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/teacher/grading" element={
-            <ProtectedRoute user={user} requiredRole="teacher">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
               <GradeSubmissions user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/teacher/notes" element={
-            <ProtectedRoute user={user} requiredRole="teacher">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
               <UploadNotes user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 
           {/* Admin Routes */}
           <Route path="/admin/dashboard" element={
-            <ProtectedRoute user={user} requiredRole="admin">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <AdminDashboard user={user} />
             </ProtectedRoute>
           } />
           <Route path="/admin/users" element={
-            <ProtectedRoute user={user} requiredRole="admin">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <ManageUsers addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/admin/announcements" element={
-            <ProtectedRoute user={user} requiredRole="admin">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <Announcements user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/admin/analytics" element={
-            <ProtectedRoute user={user} requiredRole="admin">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <Analytics />
             </ProtectedRoute>
           } />
           <Route path="/admin/timetable" element={
-            <ProtectedRoute user={user} requiredRole="admin">
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <TimetableManager />
             </ProtectedRoute>
           } />

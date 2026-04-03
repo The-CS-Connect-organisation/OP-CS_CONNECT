@@ -22,7 +22,6 @@ const teacherNav = [
   { icon: CheckSquare, label: 'Attendance', path: '/teacher/attendance' },
   { icon: FileUp, label: 'Upload Notes', path: '/teacher/notes' },
   { icon: GraduationCap, label: 'Grade Submissions', path: '/teacher/grading' },
-  { icon: Users, label: 'Class Overview', path: '/teacher/class' },
 ];
 
 const adminNav = [
@@ -31,7 +30,6 @@ const adminNav = [
   { icon: Bell, label: 'Announcements', path: '/admin/announcements' },
   { icon: Calendar, label: 'Timetable', path: '/admin/timetable' },
   { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },
-  { icon: MessageSquare, label: 'Messages', path: '/admin/messages' },
 ];
 
 export const Sidebar = ({ role, isCollapsed, toggleCollapse, theme, toggleTheme, onLogout }) => {
