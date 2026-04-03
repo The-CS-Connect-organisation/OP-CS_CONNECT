@@ -8,13 +8,33 @@ import { Modal } from '../../components/ui/Modal';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
 
-export const ManageUsers = ({ addToast }) => {
-  const { data: users, add, update, remove, setData } = useStore(KEYS.USERS, []);
+export const ManageUsers = ({ user, addToast }) => {
+  const { data: users, add, update, remove } = useStore(KEYS.USERS, []);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
-  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'student', phone: '', department: '', class: '' });
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'student',
+    phone: '',
+    // Student fields
+    class: '',
+    rollNo: '',
+    parentName: '',
+    parentPhone: '',
+    // Teacher fields
+    department: '',
+    subjectsText: '',
+    // Admin fields
+    isActive: true,
+  });
+
+  const roleAvatar = (role) => (
+    role === 'student' ? '👦' : role === 'teacher' ? '👨‍🏫' : '👩‍💼'
+  );
 
   const filtered = users.filter(u => {
     const matchesRole = roleFilter === 'all' || u.role === roleFilter;
@@ -24,21 +44,92 @@ export const ManageUsers = ({ addToast }) => {
 
   const handleSubmit = () => {
     if (editing) {
-      update(editing.id, formData);
+      const { password, subjectsText, ...base } = formData;
+
+      const updates = {
+        ...base,
+        avatar: roleAvatar(formData.role),
+        // Preserve joined + password unless explicitly provided.
+      };
+
+      // Only set password when admin provides one.
+      if (password && password.trim()) updates.password = password.trim();
+      else delete updates.password;
+
+      if (formData.role === 'student') {
+        updates.department = undefined;
+        updates.subjects = undefined;
+      } else if (formData.role === 'teacher') {
+        updates.class = undefined;
+        updates.rollNo = undefined;
+        updates.parentName = undefined;
+        updates.parentPhone = undefined;
+        updates.subjects = subjectsText
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
+        delete updates.subjectsText;
+      } else {
+        // admin
+        updates.class = undefined;
+        updates.rollNo = undefined;
+        updates.parentName = undefined;
+        updates.parentPhone = undefined;
+        updates.subjects = undefined;
+        updates.department = undefined;
+      }
+
+      update(editing.id, updates);
       addToast('User updated successfully! ✏️', 'success');
     } else {
+      const passwordTrimmed = formData.password?.trim();
+      if (!passwordTrimmed) {
+        addToast('Password is required for new users.', 'error');
+        return;
+      }
+
+      const email = formData.email?.trim().toLowerCase();
+      if (users.some(u => u.email?.toLowerCase?.() === email)) {
+        addToast('Email is already registered.', 'error');
+        return;
+      }
+
       const newUser = {
         ...formData,
+        email,
+        password: passwordTrimmed,
         id: `${formData.role}-${Date.now()}`,
-        avatar: formData.role === 'student' ? '👦' : formData.role === 'teacher' ? '👨‍🏫' : '👩‍💼',
+        avatar: roleAvatar(formData.role),
         joined: new Date().toISOString().split('T')[0],
       };
+
+      if (formData.role === 'teacher') {
+        newUser.subjects = formData.subjectsText
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
+        delete newUser.subjectsText;
+      }
+
       add(newUser);
       addToast('User added successfully! 🎉', 'success');
     }
     setModalOpen(false);
     setEditing(null);
-    setFormData({ name: '', email: '', password: '', role: 'student', phone: '', department: '', class: '' });
+    setFormData({
+      name: '',
+      email: '',
+      password: '',
+      role: 'student',
+      phone: '',
+      class: '',
+      rollNo: '',
+      parentName: '',
+      parentPhone: '',
+      department: '',
+      subjectsText: '',
+      isActive: true,
+    });
   };
 
   const roleColors = { student: 'blue', teacher: 'purple', admin: 'orange' };
@@ -52,7 +143,28 @@ export const ManageUsers = ({ addToast }) => {
           </h1>
           <p className="text-gray-500 mt-1">{users.length} total users</p>
         </motion.div>
-        <Button variant="primary" icon={UserPlus} onClick={() => { setEditing(null); setFormData({ name: '', email: '', password: '', role: 'student', phone: '', department: '', class: '' }); setModalOpen(true); }}>
+        <Button
+          variant="primary"
+          icon={UserPlus}
+          onClick={() => {
+            setEditing(null);
+            setFormData({
+              name: '',
+              email: '',
+              password: '',
+              role: 'student',
+              phone: '',
+              class: '',
+              rollNo: '',
+              parentName: '',
+              parentPhone: '',
+              department: '',
+              subjectsText: '',
+              isActive: true,
+            });
+            setModalOpen(true);
+          }}
+        >
           Add User
         </Button>
       </div>
@@ -102,8 +214,58 @@ export const ManageUsers = ({ addToast }) => {
                     <td className="py-3 px-4 text-sm text-gray-500">{u.joined}</td>
                     <td className="py-3 px-4 text-right">
                       <div className="flex gap-2 justify-end">
-                        <Button variant="ghost" size="sm" icon={Edit} onClick={() => { setEditing(u); setFormData(u); setModalOpen(true); }} />
-                        <Button variant="ghost" size="sm" icon={Trash2} onClick={() => { remove(u.id); addToast('User removed', 'info'); }} className="text-red-500" />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={Edit}
+                          onClick={() => {
+                            setEditing(u);
+                            setFormData({
+                              name: u.name || '',
+                              email: u.email || '',
+                              password: '',
+                              role: u.role || 'student',
+                              phone: u.phone || '',
+                              class: u.class || '',
+                              rollNo: u.rollNo || '',
+                              parentName: u.parentName || '',
+                              parentPhone: u.parentPhone || '',
+                              department: u.department || '',
+                              subjectsText: (u.subjects || []).join(', '),
+                              isActive: u.isActive ?? true,
+                            });
+                            setModalOpen(true);
+                          }}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon={Trash2}
+                          className="text-red-500"
+                          onClick={() => {
+                            const adminUsers = users.filter(x => x.role === 'admin');
+                            const isDeletingSelf = user?.id && u.id === user.id;
+
+                            if (u.role === 'admin') {
+                              if (adminUsers.length <= 1) {
+                                addToast('You cannot delete the last admin account.', 'error');
+                                return;
+                              }
+                              if (isDeletingSelf) {
+                                addToast('Deactivate your account from the edit form instead of deleting it.', 'warning');
+                                return;
+                              }
+                            } else if (isDeletingSelf) {
+                              addToast('You cannot delete yourself.', 'warning');
+                              return;
+                            }
+
+                            if (window.confirm(`Delete user ${u.name}?`)) {
+                              remove(u.id);
+                              addToast('User removed.', 'info');
+                            }
+                          }}
+                        />
                       </div>
                     </td>
                   </motion.tr>
@@ -144,6 +306,83 @@ export const ManageUsers = ({ addToast }) => {
               <input value={formData.phone} onChange={e => setFormData(d => ({ ...d, phone: e.target.value }))} className="input-field" />
             </div>
           </div>
+
+          <div className="flex items-center gap-3">
+            <input
+              id="isActive"
+              type="checkbox"
+              checked={formData.isActive ?? true}
+              onChange={(e) => setFormData(d => ({ ...d, isActive: e.target.checked }))}
+              className="h-4 w-4"
+            />
+            <label htmlFor="isActive" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Active account
+            </label>
+          </div>
+
+          {formData.role === 'student' && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Class</label>
+                <input
+                  value={formData.class}
+                  onChange={e => setFormData(d => ({ ...d, class: e.target.value }))}
+                  className="input-field"
+                  placeholder="10-A"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Roll No</label>
+                <input
+                  value={formData.rollNo}
+                  onChange={e => setFormData(d => ({ ...d, rollNo: e.target.value }))}
+                  className="input-field"
+                  placeholder="10A-001"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parent Name</label>
+                <input
+                  value={formData.parentName}
+                  onChange={e => setFormData(d => ({ ...d, parentName: e.target.value }))}
+                  className="input-field"
+                  placeholder="Parent full name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Parent Phone</label>
+                <input
+                  value={formData.parentPhone}
+                  onChange={e => setFormData(d => ({ ...d, parentPhone: e.target.value }))}
+                  className="input-field"
+                  placeholder="+91 ..."
+                />
+              </div>
+            </div>
+          )}
+
+          {formData.role === 'teacher' && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Department</label>
+                <input
+                  value={formData.department}
+                  onChange={e => setFormData(d => ({ ...d, department: e.target.value }))}
+                  className="input-field"
+                  placeholder="Mathematics"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Subjects (comma separated)</label>
+                <input
+                  value={formData.subjectsText}
+                  onChange={e => setFormData(d => ({ ...d, subjectsText: e.target.value }))}
+                  className="input-field"
+                  placeholder="Mathematics, Physics"
+                />
+              </div>
+            </div>
+          )}
           <div className="flex gap-3 justify-end pt-4">
             <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancel</Button>
             <Button variant="primary" onClick={handleSubmit}>{editing ? 'Update' : 'Add'}</Button>

@@ -9,7 +9,7 @@ import { useToast } from './hooks/useToast';
 import { useStore } from './hooks/useStore';
 
 // Data
-import { KEYS } from './data/schema'; // ⚠️ IMPORTANT: Added missing KEYS import
+import { KEYS } from './data/schema'; // ⚠️ CRITICAL: Added missing KEYS import
 
 // Components
 import { Layout } from './components/layout/Layout';
@@ -29,7 +29,7 @@ import { Attendance } from './pages/Student/Attendance';
 import { Grades } from './pages/Student/Grades';
 import { Notes } from './pages/Student/Notes';
 import { Profile } from './pages/Student/Profile';
-import { FeeManagement } from './pages/shared/FeeManagement';   // ✅ New Fee Page
+import { FeeManagement } from './pages/shared/FeeManagement'; // ✅ New
 
 // Teacher Pages
 import { ManageAssignments } from './pages/Teacher/ManageAssignments';
@@ -79,7 +79,6 @@ function App() {
   const { theme, toggleTheme } = useTheme();
   const { toasts, addToast, removeToast } = useToast();
   
-  // Notifications
   const { data: notifications, update: updateNotification } = useStore(KEYS.NOTIFICATIONS, []);
   
   const userNotifications = useMemo(() => {
@@ -195,7 +194,7 @@ function App() {
           } />
           <Route path="/admin/users" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
-              <ManageUsers addToast={addToast} />
+              <ManageUsers user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/admin/announcements" element={

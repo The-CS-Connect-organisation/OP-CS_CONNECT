@@ -9,7 +9,15 @@ export const useAuth = () => {
   useEffect(() => {
     initializeApp();                    // ← This is fine
     const currentUser = getFromStorage(KEYS.CURRENT_USER);
-    if (currentUser) setUser(currentUser);
+    if (currentUser) {
+      const users = getFromStorage(KEYS.USERS, []);
+      const fresh = users.find(u => u.id === currentUser.id);
+      if (fresh?.isActive === false) {
+        setUser(null);
+      } else {
+        setUser(currentUser);
+      }
+    }
     setLoading(false);
   }, []);
 
@@ -17,6 +25,9 @@ export const useAuth = () => {
     const users = getFromStorage(KEYS.USERS, []);
     const found = users.find(u => u.email === email && u.password === password);
     if (found) {
+      if (found.isActive === false) {
+        return { success: false, error: 'Account is disabled. Please contact admin.' };
+      }
       const { password: _, ...userWithoutPassword } = found;
       setUser(userWithoutPassword);
       setToStorage(KEYS.CURRENT_USER, userWithoutPassword);
@@ -35,6 +46,7 @@ export const useAuth = () => {
       id: `${data.role}-${Date.now()}`,
       avatar: data.role === 'student' ? '👦' : data.role === 'teacher' ? '👨‍🏫' : '👩‍💼',
       joined: new Date().toISOString().split('T')[0],
+      isActive: true,
     };
     users.push(newUser);
     setToStorage(KEYS.USERS, users);

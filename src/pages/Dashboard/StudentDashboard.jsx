@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Clock, Award, TrendingUp, FileText, CheckCircle, AlertCircle } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
@@ -27,7 +27,7 @@ export const StudentDashboard = ({ user }) => {
   const { data: marks } = useStore(KEYS.MARKS, []);
   const { data: attendance } = useStore(KEYS.ATTENDANCE, []);
   const { data: timetable } = useStore(KEYS.TIMETABLE, {});
-  const { data: announcements } = useStore(KEYS.ANNOUNCEMENTS, []);
+  const { data: announcements, update: updateAnnouncement } = useStore(KEYS.ANNOUNCEMENTS, []);
 
   const myAssignments = assignments.filter(a => a.class === user.class);
   const pendingAssignments = myAssignments.filter(a => {
@@ -48,6 +48,16 @@ export const StudentDashboard = ({ user }) => {
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
   const todaySchedule = timetable[user.class]?.find(t => t.day === today)?.slots || [];
+
+  useEffect(() => {
+    if (!user || announcements.length === 0) return;
+    const toMark = announcements.filter(a => !(a.readBy || []).includes(user.id));
+    if (toMark.length === 0) return;
+
+    toMark.forEach(a => {
+      updateAnnouncement(a.id, { readBy: [...(a.readBy || []), user.id] });
+    });
+  }, [announcements, user, updateAnnouncement]);
 
   return (
     <div className="space-y-6">
@@ -147,6 +157,7 @@ export const StudentDashboard = ({ user }) => {
                   className="p-4 rounded-xl bg-gray-50 dark:bg-gray-700/50">
                   <div className="flex items-center gap-2 mb-2">
                     <Badge color={a.priority === 'high' ? 'red' : a.priority === 'medium' ? 'orange' : 'gray'}>{a.priority}</Badge>
+                    {(a.readBy || []).includes(user.id) && <Badge color="gray">Read</Badge>}
                     <span className="text-xs text-gray-400">{a.date}</span>
                   </div>
                   <p className="text-sm font-medium text-gray-800 dark:text-white">{a.title}</p>
