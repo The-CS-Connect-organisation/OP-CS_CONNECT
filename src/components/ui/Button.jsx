@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { playClickSound } from '../../utils/sound';
 
 export const Button = ({ children, variant = 'primary', size = 'md', className = '', onClick, disabled, icon: Icon, ...props }) => {
   const variants = {
@@ -16,7 +17,13 @@ export const Button = ({ children, variant = 'primary', size = 'md', className =
       whileTap={{ scale: disabled ? 1 : 0.98 }}
       disabled={disabled}
       className={`inline-flex items-center justify-center gap-2 font-medium rounded-xl transition-all duration-200 ${variants[variant]} ${sizes[size]} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${className}`}
-      onClick={onClick}
+      onClick={async (e) => {
+        if (!disabled) {
+          // Fire-and-forget: click sound should never block UI.
+          try { playClickSound(); } catch {}
+        }
+        onClick?.(e);
+      }}
       {...props}
     >
       {Icon && <Icon size={18} />}

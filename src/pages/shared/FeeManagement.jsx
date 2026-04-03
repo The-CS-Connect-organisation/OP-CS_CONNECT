@@ -10,6 +10,7 @@ import { KEYS } from '../../data/schema';
 import { hasPermission, PERMISSIONS } from '../../utils/permissions';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { playPaymentSuccessSound } from '../../utils/sound';
 
 export const FeeManagement = ({ user, addToast }) => {
   const { data: fees, add, update, remove } = useStore(KEYS.FEES, []);
@@ -228,13 +229,15 @@ export const FeeManagement = ({ user, addToast }) => {
 
       setPaymentSuccess(true);
       setIsPaying(false);
+      // Sound feedback for success.
+      try { playPaymentSuccessSound(); } catch {}
 
       // Close modal after the success animation
       setTimeout(() => {
         setShowPayModal(false);
         setUpiId('');
         setPaymentSuccess(false);
-      }, 900);
+      }, 1400);
 
       addToast('Payment successful via UPI! ✅ Receipt generated.', 'success');
     }, 1200);
@@ -558,15 +561,15 @@ export const FeeManagement = ({ user, addToast }) => {
             ) : (
               <div className="flex flex-col items-center text-center gap-3 pt-2">
                 <motion.div
-                  initial={{ scale: 0.6, opacity: 0 }}
+                  initial={{ scale: 0.55, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+                  transition={{ type: 'spring', stiffness: 240, damping: 16 }}
                   className="w-20 h-20 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 flex items-center justify-center"
                 >
                   <motion.div
-                    initial={{ rotate: -10 }}
+                    initial={{ rotate: -12 }}
                     animate={{ rotate: 0 }}
-                    transition={{ duration: 0.35 }}
+                    transition={{ duration: 0.55 }}
                     className="text-blue-600 dark:text-blue-300"
                   >
                     <CheckCircle size={44} className="text-blue-600 dark:text-blue-300" />
@@ -579,6 +582,15 @@ export const FeeManagement = ({ user, addToast }) => {
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   Your receipt has been generated.
                 </p>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.35 }}
+                  className="text-xs text-blue-700 dark:text-blue-300/90 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/40 rounded-xl px-3 py-2"
+                >
+                  Tip: Receipt is also available from the fee card.
+                </motion.div>
               </div>
             )}
           </div>
