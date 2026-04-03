@@ -82,24 +82,44 @@ export const FeeManagement = ({ user, addToast }) => {
 
   useEffect(() => {
     // Auto-pick a student when opening the add modal (for smoother UX).
-    if (showAddModal && !newFeeStudentId && studentOptions.length > 0) {
-      setNewFeeStudentId(studentOptions[0].id);
+    if (showAddModal && studentOptions.length > 0) {
+      const stillValid = studentOptions.some((s) => s.id === newFeeStudentId);
+      if (!newFeeStudentId || !stillValid) {
+        setNewFeeStudentId(studentOptions[0].id);
+      }
     }
   }, [showAddModal, newFeeStudentId, studentOptions]);
 
   // Admin: Add new fee
   const handleAddFee = () => {
     if (!canManageFees) return;
+    if (studentOptions.length === 0) {
+      addToast('Add at least one student in Manage Users before allocating fees.', 'error');
+      return;
+    }
     const student = users.find(u => u.id === newFeeStudentId && u.role === 'student');
-    if (!student) return;
+    if (!student) {
+      addToast('Select a student to allocate this fee.', 'error');
+      return;
+    }
+
+    const amountNum = Number(newFeeAmount);
+    if (!Number.isFinite(amountNum) || amountNum <= 0) {
+      addToast('Enter a valid fee amount greater than zero.', 'error');
+      return;
+    }
+    if (!newFeeDueDate) {
+      addToast('Choose a due date for this fee.', 'error');
+      return;
+    }
 
     const newFee = {
       id: `fee-${Date.now()}`,
       studentId: student.id,
       studentName: student.name,
       class: student.class,
-      term: newFeeTerm || 'Custom Fee',
-      amount: Number(newFeeAmount) || 0,
+      term: (newFeeTerm || 'Custom Fee').trim(),
+      amount: amountNum,
       dueDate: newFeeDueDate,
       status: 'pending',
       paidAt: null,
@@ -279,18 +299,29 @@ export const FeeManagement = ({ user, addToast }) => {
             <CreditCard className="text-primary-500" /> Fee Management
           </h1>
           <p className="text-gray-500 mt-1">
-            {user.role === 'admin' ? 'Manage all fee records' : `Total Due: ₹${totalDue.toLocaleString('en-IN')}`}
+            {user.role === 'admin'
+              ? 'Allocate fees, track collections, and reconcile student billing in one place.'
+              : `Total Due: ₹${totalDue.toLocaleString('en-IN')}`}
           </p>
         </motion.div>
         
         {user.role === 'admin' && (
           <div className="flex gap-3">
             <Button variant="primary" icon={Plus} onClick={() => setShowAddModal(true)}>
-              Add Fee Structure
+              Allocate fee
             </Button>
           </div>
         )}
       </div>
+
+      {user.role === 'admin' && (
+        <Card className="border border-primary-200/60 dark:border-primary-900/40 bg-gradient-to-r from-primary-50/80 to-purple-50/50 dark:from-primary-950/40 dark:to-purple-950/20">
+          <p className="text-sm text-gray-700 dark:text-gray-200">
+            <span className="font-semibold text-primary-600 dark:text-primary-400">Tip:</span>{' '}
+            Use <strong>Allocate fee</strong> to assign a charge to a student (term name, amount, due date). Students see pending items under their Fees page; you can mark paid or edit records anytime.
+          </p>
+        </Card>
+      )}
 
       {/* Admin Filters */}
       {user.role === 'admin' && (
@@ -508,11 +539,23 @@ export const FeeManagement = ({ user, addToast }) => {
                 className="input-field"
                 value={newFeeStudentId}
                 onChange={(e) => setNewFeeStudentId(e.target.value)}
+                disabled={studentOptions.length === 0}
               >
-                {users.filter(u => u.role === 'student').map(s => (
-                  <option key={s.id} value={s.id}>{s.name} ({s.class})</option>
-                ))}
+                {studentOptions.length === 0 ? (
+                  <option value="">No students — add users first</option>
+                ) : (
+                  studentOptions.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name} ({s.class || '—'})
+                    </option>
+                  ))
+                )}
               </select>
+              {studentOptions.length === 0 && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                  Go to <strong>Manage Users</strong> and create at least one student account, then return here.
+                </p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -548,7 +591,9 @@ export const FeeManagement = ({ user, addToast }) => {
             </div>
             <div className="flex gap-3 justify-end pt-4">
               <Button variant="secondary" onClick={() => setShowAddModal(false)}>Cancel</Button>
-              <Button variant="primary" onClick={handleAddFee}>Add Fee</Button>
+              <Button variant="primary" onClick={handleAddFee} disabled={studentOptions.length === 0}>
+                Allocate fee
+              </Button>
             </div>
           </div>
         </Modal>

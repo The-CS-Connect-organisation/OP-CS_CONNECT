@@ -212,6 +212,11 @@ function App() {
               <TimetableManager />
             </ProtectedRoute>
           } />
+          <Route path="/admin/fees" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <FeeManagement user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
 
           {/* Default Route */}
           <Route path="/" element={

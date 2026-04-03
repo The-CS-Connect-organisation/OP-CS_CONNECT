@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Users, UserCheck, FileText, TrendingUp, Award, Bell, Calendar, BarChart3 } from 'lucide-react';
+import { Users, UserCheck, FileText, TrendingUp, Bell, Calendar, BarChart3, CreditCard } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { useStore } from '../../hooks/useStore';
@@ -24,6 +25,7 @@ const StatCard = ({ icon: Icon, label, value, color, delay }) => (
 const COLORS = ['#0ea5e9', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b'];
 
 export const AdminDashboard = ({ user }) => {
+  const navigate = useNavigate();
   const { data: users } = useStore(KEYS.USERS, []);
   const { data: assignments } = useStore(KEYS.ASSIGNMENTS, []);
   const { data: attendance } = useStore(KEYS.ATTENDANCE, []);
@@ -56,6 +58,7 @@ export const AdminDashboard = ({ user }) => {
         <div className="relative z-10">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">Admin Dashboard 🏫</h1>
           <p className="text-white/80">School overview and management controls.</p>
+          <p className="text-sm text-white/60 mt-2">Signed in as {user?.name}</p>
         </div>
         <motion.div animate={{ rotate: 360 }} transition={{ duration: 30, repeat: Infinity }} className="absolute -right-10 -bottom-10 w-48 h-48 bg-white/10 rounded-full" />
       </motion.div>
@@ -121,13 +124,20 @@ export const AdminDashboard = ({ user }) => {
             <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Quick Actions</h3>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { icon: Users, label: 'Manage Users', color: 'from-blue-500 to-cyan-500' },
-                { icon: Bell, label: 'Announcements', color: 'from-purple-500 to-pink-500' },
-                { icon: Calendar, label: 'Timetable', color: 'from-emerald-500 to-teal-500' },
-                { icon: BarChart3, label: 'Analytics', color: 'from-orange-500 to-red-500' },
+                { icon: Users, label: 'Manage Users', color: 'from-blue-500 to-cyan-500', path: '/admin/users' },
+                { icon: CreditCard, label: 'Fees & Billing', color: 'from-sky-500 to-indigo-600', path: '/admin/fees' },
+                { icon: Bell, label: 'Announcements', color: 'from-purple-500 to-pink-500', path: '/admin/announcements' },
+                { icon: Calendar, label: 'Timetable', color: 'from-emerald-500 to-teal-500', path: '/admin/timetable' },
+                { icon: BarChart3, label: 'Analytics', color: 'from-orange-500 to-red-500', path: '/admin/analytics' },
               ].map((action, idx) => (
-                <motion.button key={idx} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
-                  className="p-4 rounded-xl bg-gradient-to-br text-white text-left">
+                <motion.button
+                  key={idx}
+                  type="button"
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => navigate(action.path)}
+                  className={`p-4 rounded-xl bg-gradient-to-br ${action.color} text-white text-left shadow-md hover:shadow-lg transition-shadow`}
+                >
                   <action.icon size={24} className="mb-2" />
                   <p className="text-sm font-medium">{action.label}</p>
                 </motion.button>

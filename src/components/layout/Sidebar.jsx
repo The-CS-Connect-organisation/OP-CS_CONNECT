@@ -1,29 +1,11 @@
 import { motion } from 'framer-motion';
 import { NavLink } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  Calendar,
-  BookOpen,
-  FileText,
-  GraduationCap,
-  BarChart3,
-  Users,
-  Bell,
-  Settings,
-  LogOut,
-  Moon,
-  Sun,
-  BookMarked,
-  ClipboardList,
-  Award,
-  UserCircle,
-  FileUp,
-  CheckSquare,
-  MessageSquare,
-  CreditCard,
+  LayoutDashboard, Calendar, BookOpen, FileText, GraduationCap, BarChart3,
+  Users, Bell, Settings, LogOut, Moon, Sun, BookMarked, ClipboardList,
+  Award, UserCircle, FileUp, CheckSquare, MessageSquare, CreditCard
 } from 'lucide-react';
 
-// Navigation items for each role
 const studentNav = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/student/dashboard' },
   { icon: Calendar, label: 'Timetable', path: '/student/timetable' },
@@ -46,6 +28,7 @@ const teacherNav = [
 const adminNav = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
   { icon: Users, label: 'Manage Users', path: '/admin/users' },
+  { icon: CreditCard, label: 'Fees & Billing', path: '/admin/fees' },
   { icon: Bell, label: 'Announcements', path: '/admin/announcements' },
   { icon: Calendar, label: 'Timetable', path: '/admin/timetable' },
   { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },
@@ -60,7 +43,7 @@ export const Sidebar = ({ role, isCollapsed, toggleCollapse, theme, toggleTheme,
       transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="fixed left-0 top-0 h-full glass border-r border-gray-200/50 dark:border-gray-700/50 z-40 flex flex-col"
     >
-      {/* Logo Section */}
+      {/* Logo */}
       <div className="p-6 flex items-center gap-3">
         <motion.div
           whileHover={{ rotate: 15, scale: 1.1 }}
@@ -76,7 +59,7 @@ export const Sidebar = ({ role, isCollapsed, toggleCollapse, theme, toggleTheme,
         )}
       </div>
 
-      {/* Navigation Links */}
+      {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item, idx) => (
           <motion.div
@@ -100,9 +83,8 @@ export const Sidebar = ({ role, isCollapsed, toggleCollapse, theme, toggleTheme,
         ))}
       </nav>
 
-      {/* Bottom Actions: Theme Toggle, Collapse, Logout */}
+      {/* Bottom Actions */}
       <div className="p-3 space-y-1 border-t border-gray-200/50 dark:border-gray-700/50">
-        {/* Theme Toggle */}
         <button
           onClick={toggleTheme}
           className={`nav-item w-full ${isCollapsed ? 'justify-center px-0' : ''}`}
@@ -111,8 +93,6 @@ export const Sidebar = ({ role, isCollapsed, toggleCollapse, theme, toggleTheme,
           {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           {!isCollapsed && <span className="text-sm">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
         </button>
-
-        {/* Collapse Toggle */}
         <button
           onClick={toggleCollapse}
           className={`nav-item w-full ${isCollapsed ? 'justify-center px-0' : ''}`}
@@ -120,8 +100,6 @@ export const Sidebar = ({ role, isCollapsed, toggleCollapse, theme, toggleTheme,
           <Settings size={20} className="flex-shrink-0" />
           {!isCollapsed && <span className="text-sm">{isCollapsed ? 'Expand' : 'Collapse'}</span>}
         </button>
-
-        {/* Logout Button */}
         <button
           onClick={onLogout}
           className="nav-item w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600"
