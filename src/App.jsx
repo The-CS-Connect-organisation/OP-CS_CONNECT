@@ -1,7 +1,8 @@
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
-
+// Data
+import { KEYS } from './data/schema';
 // Hooks
 import { useAuth } from './hooks/useAuth';
 import { useTheme } from './hooks/useTheme';
