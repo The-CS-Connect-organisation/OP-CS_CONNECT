@@ -9,6 +9,7 @@ export const KEYS = {
   NOTES: 'sms_notes',
   ANNOUNCEMENTS: 'sms_announcements',
   NOTIFICATIONS: 'sms_notifications',
+  FEES: 'sms_fees',           // ← Added for Fee Management
   THEME: 'sms_theme',
 };
 

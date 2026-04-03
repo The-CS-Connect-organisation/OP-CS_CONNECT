@@ -18,21 +18,29 @@ import { Signup } from './pages/Auth/Signup';
 import { StudentDashboard } from './pages/Dashboard/StudentDashboard';
 import { TeacherDashboard } from './pages/Dashboard/TeacherDashboard';
 import { AdminDashboard } from './pages/Dashboard/AdminDashboard';
+
+// Student Pages
 import { Timetable } from './pages/Student/Timetable';
 import { Assignments } from './pages/Student/Assignments';
 import { Attendance } from './pages/Student/Attendance';
 import { Grades } from './pages/Student/Grades';
 import { Notes } from './pages/Student/Notes';
 import { Profile } from './pages/Student/Profile';
+
+// Teacher Pages
 import { ManageAssignments } from './pages/Teacher/ManageAssignments';
 import { MarkAttendance } from './pages/Teacher/MarkAttendance';
 import { GradeSubmissions } from './pages/Teacher/GradeSubmissions';
 import { UploadNotes } from './pages/Teacher/UploadNotes';
+
+// Admin Pages
 import { ManageUsers } from './pages/Admin/ManageUsers';
 import { Announcements } from './pages/Admin/Announcements';
 import { Analytics } from './pages/Admin/Analytics';
 import { TimetableManager } from './pages/Admin/TimetableManager';
-import { KEYS } from './data/schema';
+
+// New Fee Page
+import { FeeManagement } from './pages/shared/FeeManagement';   // ← Added
 
 // Loading screen
 const LoadingScreen = () => (
@@ -46,7 +54,7 @@ const LoadingScreen = () => (
   </div>
 );
 
-// Protected Route component
+// Protected Route
 const ProtectedRoute = ({ user, children, requiredRole, theme, toggleTheme, logout, notifications, onMarkRead }) => {
   if (!user) return <Navigate to="/login" replace />;
   if (requiredRole && user.role !== requiredRole) return <Navigate to={`/${user.role}/dashboard`} replace />;
@@ -65,7 +73,7 @@ const ProtectedRoute = ({ user, children, requiredRole, theme, toggleTheme, logo
 };
 
 function App() {
-  const navigate = useNavigate(); // ✅ Now works because Router is in main.jsx
+  const navigate = useNavigate();
   const { user, loading: authLoading, login, signup, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { toasts, addToast, removeToast } = useToast();
@@ -93,7 +101,7 @@ function App() {
   };
 
   return (
-    <>  {/* ✅ No <BrowserRouter> here anymore - it's in main.jsx */}
+    <>
       <Toast toasts={toasts} removeToast={removeToast} />
       <AnimatePresence mode="wait">
         <Routes>
@@ -141,6 +149,12 @@ function App() {
           <Route path="/student/profile" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <Profile user={user} />
+            </ProtectedRoute>
+          } />
+          {/* New Fee Route */}
+          <Route path="/student/fees" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <FeeManagement user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 

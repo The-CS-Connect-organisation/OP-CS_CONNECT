@@ -3,7 +3,7 @@ import { NavLink } from 'react-router-dom';
 import {
   LayoutDashboard, Calendar, BookOpen, FileText, GraduationCap, BarChart3,
   Users, Bell, Settings, LogOut, Moon, Sun, BookMarked, ClipboardList,
-  Award, UserCircle, FileUp, CheckSquare, MessageSquare
+  Award, UserCircle, FileUp, CheckSquare, MessageSquare, CreditCard
 } from 'lucide-react';
 
 const studentNav = [
@@ -13,6 +13,7 @@ const studentNav = [
   { icon: CheckSquare, label: 'Attendance', path: '/student/attendance' },
   { icon: Award, label: 'Grades', path: '/student/grades' },
   { icon: BookMarked, label: 'Notes', path: '/student/notes' },
+  { icon: CreditCard, label: 'Fees', path: '/student/fees' },     // ← New
   { icon: UserCircle, label: 'Profile', path: '/student/profile' },
 ];
 
@@ -91,13 +92,15 @@ export const Sidebar = ({ role, isCollapsed, toggleCollapse, theme, toggleTheme,
           {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           {!isCollapsed && <span className="text-sm">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>}
         </button>
+
         <button
           onClick={toggleCollapse}
           className={`nav-item w-full ${isCollapsed ? 'justify-center px-0' : ''}`}
         >
-          <Settings size={20} className={`flex-shrink-0 transition-transform ${isCollapsed ? '' : ''}`} />
+          <Settings size={20} className="flex-shrink-0" />
           {!isCollapsed && <span className="text-sm">{isCollapsed ? 'Expand' : 'Collapse'}</span>}
         </button>
+
         <button
           onClick={onLogout}
           className="nav-item w-full text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600"
