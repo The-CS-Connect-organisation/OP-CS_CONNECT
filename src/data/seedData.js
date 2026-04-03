@@ -40,5 +40,3 @@ export const initializeApp = () => {
   setToStorage(KEYS.NOTIFICATIONS, notifications);
   setToStorage(KEYS.FEES, fees);
 };
-
-export { initializeApp };

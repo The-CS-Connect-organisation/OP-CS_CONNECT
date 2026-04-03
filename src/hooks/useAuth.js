@@ -7,7 +7,7 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    initializeApp();
+    initializeApp();                    // ← This is fine
     const currentUser = getFromStorage(KEYS.CURRENT_USER);
     if (currentUser) setUser(currentUser);
     setLoading(false);
