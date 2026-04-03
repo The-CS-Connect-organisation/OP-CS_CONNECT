@@ -1,7 +1,57 @@
 import { KEYS, getFromStorage, setToStorage } from './schema';
 
 export const initializeApp = () => {
-  if (getFromStorage(KEYS.USERS)) return; // Already seeded
+  const existingUsers = getFromStorage(KEYS.USERS, null);
+  const existingFees = getFromStorage(KEYS.FEES, null);
+
+  const seedFeesForUsers = (users) => {
+    const today = new Date();
+    const formatDate = (d) => d.toISOString().split('T')[0];
+    const daysAgo = (n) => {
+      const d = new Date(today);
+      d.setDate(d.getDate() - n);
+      return formatDate(d);
+    };
+
+    const fees = [];
+    const students = users.filter(u => u.role === 'student');
+    const totalFee = 150000;
+    const termAmount = totalFee / 3; // ₹50,000 per term
+    const terms = [
+      { name: 'Term 1 (Apr-Jul)', dueDate: '2026-04-15' },
+      { name: 'Term 2 (Aug-Nov)', dueDate: '2026-08-15' },
+      { name: 'Term 3 (Dec-Mar)', dueDate: '2026-12-15' },
+    ];
+
+    students.forEach(student => {
+      terms.forEach((term, idx) => {
+        fees.push({
+          id: `fee-${student.id}-${idx + 1}`,
+          studentId: student.id,
+          studentName: student.name,
+          class: student.class,
+          term: term.name,
+          amount: termAmount,
+          dueDate: term.dueDate,
+          status: 'pending',
+          paidAt: null,
+          transactionId: null,
+          paymentMethod: null,
+          createdAt: daysAgo(30 + idx * 30),
+        });
+      });
+    });
+
+    return fees;
+  };
+
+  // Users already exist: never overwrite fees if admin/student already allocated payments.
+  if (existingUsers && Array.isArray(existingUsers) && existingUsers.length > 0) {
+    if (existingFees && Array.isArray(existingFees) && existingFees.length > 0) return;
+    const fees = seedFeesForUsers(existingUsers);
+    setToStorage(KEYS.FEES, fees);
+    return;
+  }
 
   const today = new Date();
   const formatDate = (d) => d.toISOString().split('T')[0];
@@ -21,34 +71,7 @@ export const initializeApp = () => {
   ];
 
   // Seed Fees: ₹1,50,000 split into 3 terms for EACH student
-  const fees = [];
-  const students = users.filter(u => u.role === 'student');
-  const totalFee = 150000;
-  const termAmount = totalFee / 3; // ₹50,000 per term
-  const terms = [
-    { name: 'Term 1 (Apr-Jul)', dueDate: '2026-04-15' },
-    { name: 'Term 2 (Aug-Nov)', dueDate: '2026-08-15' },
-    { name: 'Term 3 (Dec-Mar)', dueDate: '2026-12-15' },
-  ];
-
-  students.forEach(student => {
-    terms.forEach((term, idx) => {
-      fees.push({
-        id: `fee-${student.id}-${idx + 1}`,
-        studentId: student.id,
-        studentName: student.name,
-        class: student.class,
-        term: term.name,
-        amount: termAmount,
-        dueDate: term.dueDate,
-        status: idx === 0 ? 'pending' : 'pending', // All start as pending
-        paidAt: null,
-        transactionId: null,
-        paymentMethod: null,
-        createdAt: daysAgo(30 + idx * 30),
-      });
-    });
-  });
+  const fees = seedFeesForUsers(users);
 
   // Other seed data (empty arrays for now)
   const assignments = [];

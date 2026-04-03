@@ -145,7 +145,7 @@ function App() {
           } />
           <Route path="/student/notes" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
-              <Notes user={user} />
+              <Notes user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/student/fees" element={

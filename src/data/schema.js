@@ -10,6 +10,9 @@ export const KEYS = {
   ANNOUNCEMENTS: 'sms_announcements',
   NOTIFICATIONS: 'sms_notifications',
   FEES: 'sms_fees',           // ← Added for Fee Management
+  NOTE_REQUESTS: 'sms_note_requests',
+  CHAT_MESSAGES: 'sms_chat_messages',
+  // Call signalling is stored under per-room localStorage keys for scalability.
   THEME: 'sms_theme',
 };
 // ... rest of the file stays the same
