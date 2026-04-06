@@ -1,14 +1,7 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, Shield, BookOpen, GraduationCap, Users, ArrowRight, Zap } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Zap } from 'lucide-react';
 import { useSound } from '../../hooks/useSound';
-
-const ROLES = [
-  { key: 'admin', label: 'Admin', icon: Shield, email: 'admin@schoolsync.edu', password: 'admin123', color: '#111111' },
-  { key: 'teacher', label: 'Teacher', icon: BookOpen, email: 'teacher1@schoolsync.edu', password: 'teacher123', color: '#a855f7' },
-  { key: 'student', label: 'Student', icon: GraduationCap, email: 'student1@schoolsync.edu', password: 'student123', color: '#ff6b9d' },
-  { key: 'parent', label: 'Parent', icon: Users, email: 'parent1@schoolsync.edu', password: 'parent123', color: '#6366f1' },
-];
 
 export const Login = ({ onLogin }) => {
   const { playClick, playBlip } = useSound();
@@ -17,7 +10,6 @@ export const Login = ({ onLogin }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [selectedRole, setSelectedRole] = useState(null);
   const [timeStr, setTimeStr] = useState('');
 
   useEffect(() => {
@@ -26,14 +18,6 @@ export const Login = ({ onLogin }) => {
     const id = setInterval(updateTime, 1000);
     return () => clearInterval(id);
   }, []);
-
-  const selectRole = useCallback((role) => {
-    playClick();
-    setSelectedRole(role.key);
-    setEmail(role.email);
-    setPassword(role.password);
-    setError('');
-  }, [playClick]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -148,13 +132,13 @@ export const Login = ({ onLogin }) => {
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
               Secure Access
             </span>
-            <h3 className="text-3xl font-bold tracking-tight mt-2" style={{ color: 'var(--text-primary)' }}>Sign in to your account</h3>
-            <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>Enter your credentials to continue</p>
+            <h3 className="text-3xl font-bold tracking-tight mt-2" style={{ color: 'var(--text-primary)' }}>Welcome back</h3>
+            <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>Enter your credentials to access your account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <label className="block text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Email</label>
+              <label className="block text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Email address</label>
               <div className="relative">
                 <input type="email" value={email} onChange={e => setEmail(e.target.value)}
                   className="input-field pl-11" placeholder="you@schoolsync.edu" required />
@@ -166,7 +150,7 @@ export const Login = ({ onLogin }) => {
               <label className="block text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Password</label>
               <div className="relative">
                 <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
-                  className="input-field pl-11 pr-11" placeholder="••••••••" required />
+                  className="input-field pl-11 pr-11" placeholder="Enter your password" required />
                 <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-dim)' }} />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer transition-colors"
@@ -205,42 +189,9 @@ export const Login = ({ onLogin }) => {
             </motion.button>
           </form>
 
-          {/* Demo accounts */}
-          <div className="mt-10">
-            <p className="text-xs font-medium mb-4" style={{ color: 'var(--text-dim)' }}>Quick access — Demo accounts</p>
-            <div className="grid grid-cols-2 gap-2.5">
-              {ROLES.map((role, i) => (
-                <motion.button
-                  key={role.key}
-                  type="button"
-                  onClick={() => selectRole(role)}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.5 + i * 0.08 }}
-                  whileHover={{ scale: 1.02, y: -2 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="p-3.5 rounded-xl flex flex-col gap-2 items-start transition-all cursor-pointer border relative overflow-hidden"
-                  style={{
-                    borderColor: selectedRole === role.key ? role.color + '30' : 'var(--border-default)',
-                    background: selectedRole === role.key ? role.color + '06' : '#ffffff',
-                    boxShadow: selectedRole === role.key ? 'var(--shadow-md)' : 'none',
-                  }}
-                >
-                  {selectedRole === role.key && (
-                    <motion.div
-                      layoutId="role-indicator"
-                      className="absolute top-0 left-0 right-0 h-[2px]"
-                      style={{ background: role.color }}
-                    />
-                  )}
-                  <role.icon size={18} style={{ color: selectedRole === role.key ? role.color : 'var(--text-dim)' }} />
-                  <span className="text-sm font-medium" style={{ color: selectedRole === role.key ? 'var(--text-primary)' : 'var(--text-muted)' }}>
-                    {role.label}
-                  </span>
-                </motion.button>
-              ))}
-            </div>
-          </div>
+          <p className="text-xs text-center mt-8" style={{ color: 'var(--text-dim)' }}>
+            Protected by enterprise-grade security
+          </p>
         </motion.div>
       </div>
     </div>
