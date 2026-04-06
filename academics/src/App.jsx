@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import { AnimatePresence } from 'framer-motion';
 
 // Hooks
 import { useAuth } from './hooks/useAuth';
@@ -125,8 +124,7 @@ function App() {
   return (
     <>
       <Toast toasts={toasts} removeToast={removeToast} />
-      <AnimatePresence mode="wait">
-        <Routes>
+      <Routes>
           {/* 🔐 Auth Gates */}
           <Route path="/login" element={
             user && ALLOWED_ROLES.includes(user.role) 
@@ -241,7 +239,6 @@ function App() {
           } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </AnimatePresence>
     </>
   );
 }

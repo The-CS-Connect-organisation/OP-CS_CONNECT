@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PhoneCall, MessagesSquare, Users, Search, MessageCircle } from 'lucide-react';
+import { PhoneCall, MessagesSquare, Users, Search, MessageCircle, Video, X } from 'lucide-react';
 import { ChatModal } from '../../../components/messaging/ChatModal';
 import { CallModal } from '../../../components/messaging/CallModal';
 import { useStore } from '../../../hooks/useStore';
@@ -20,6 +20,16 @@ const mapProfileToContact = (profile, role) => {
       : undefined;
   return { id, name, role, ...(classLabel ? { class: classLabel } : {}) };
 };
+
+// Subject color mapping for avatars
+const ROLE_COLORS = {
+  teacher: { bg: '#a855f7', light: 'rgba(168, 85, 247, 0.1)', border: 'rgba(168, 85, 247, 0.3)' },
+  student: { bg: '#3b82f6', light: 'rgba(59, 130, 246, 0.1)', border: 'rgba(59, 130, 246, 0.3)' },
+  parent: { bg: '#10b981', light: 'rgba(16, 185, 129, 0.1)', border: 'rgba(16, 185, 129, 0.3)' },
+  admin: { bg: '#f59e0b', light: 'rgba(245, 158, 11, 0.1)', border: 'rgba(245, 158, 11, 0.3)' },
+};
+
+const getRoleColor = (role) => ROLE_COLORS[role] || ROLE_COLORS.student;
 
 export const CommunicationHub = ({ user }) => {
   const { data: localUsers } = useStore(KEYS.USERS, []);
@@ -110,22 +120,27 @@ export const CommunicationHub = ({ user }) => {
 
   const recentContactIds = new Set(recentChats.map(r => r.id));
 
-  const roleColor = (role) => {
-    if (role === 'teacher') return '#a855f7';
-    if (role === 'student') return '#3b82f6';
-    return '#10b981';
-  };
-
   return (
-    <div className="space-y-5 max-w-[900px] mx-auto w-full pt-2 pb-12">
-      {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between">
+    <div className="space-y-6 max-w-[1000px] mx-auto w-full pt-2 pb-12">
+      {/* ── Header ── */}
+      <motion.div 
+        initial={{ opacity: 0, y: -12 }} 
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center justify-between"
+      >
         <div>
-          <h1 className="text-3xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold"
+              style={{ background: 'rgba(255, 107, 157, 0.08)', color: '#ff6b9d', border: '1px solid rgba(255, 107, 157, 0.20)' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              Live
+            </span>
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
+            <span className="w-1 h-10 rounded-full bg-black" />
             Messages
           </h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>
             {isConnected ? (
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
@@ -139,44 +154,74 @@ export const CommunicationHub = ({ user }) => {
             )}
           </p>
         </div>
+        
+        {/* Quick stats */}
+        <div className="flex gap-3">
+          <div className="nova-card p-3 min-w-[100px]">
+            <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Teachers</p>
+            <p className="text-xl font-bold mt-0.5" style={{ color: 'var(--text-primary)' }}>
+              {contacts.filter(c => c.role === 'teacher').length}
+            </p>
+          </div>
+          <div className="nova-card p-3 min-w-[100px]">
+            <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Students</p>
+            <p className="text-xl font-bold mt-0.5" style={{ color: 'var(--text-primary)' }}>
+              {contacts.filter(c => c.role === 'student').length}
+            </p>
+          </div>
+        </div>
       </motion.div>
 
-      {/* Search */}
+      {/* ── Search ── */}
       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: '#8e8e8e' }} />
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-dim)' }} />
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search contacts..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm border outline-none transition-colors focus:border-black/20"
-            style={{ background: '#fafafa', color: '#262626', borderColor: '#efefef' }}
+            className="w-full pl-10 pr-4 py-3 rounded-xl text-sm border outline-none transition-all duration-200 focus:border-black/20 focus:shadow-sm"
+            style={{ 
+              background: 'var(--bg-surface)', 
+              color: 'var(--text-primary)', 
+              borderColor: 'var(--border-default)',
+              boxShadow: 'var(--shadow-glow)'
+            }}
           />
         </div>
       </motion.div>
 
-      {/* Recent Chats Section */}
+      {/* ── Recent Chats Section ── */}
       {recentChats.length > 0 && !searchQuery && (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-          <p className="text-xs font-semibold uppercase tracking-wider mb-3 px-1" style={{ color: '#8e8e8e' }}>
-            Recent
+          <p className="text-xs font-semibold uppercase tracking-wider mb-3 px-1" style={{ color: 'var(--text-muted)' }}>
+            Recent Conversations
           </p>
-          <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
-            {recentChats.slice(0, 8).map((rc) => {
+          <div className="flex gap-4 overflow-x-auto pb-3 no-scrollbar">
+            {recentChats.slice(0, 8).map((rc, idx) => {
               const contact = contacts.find(c => c.id === rc.id) || rc;
+              const colors = getRoleColor(rc.role);
               return (
                 <motion.button
                   key={rc.id}
+                  initial={{ opacity: 0, y: 12, scale: 0.9 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  transition={{ delay: idx * 0.03 }}
+                  whileHover={{ scale: 1.05, y: -4 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => handleChatOpen(contact)}
-                  className="flex flex-col items-center gap-1.5 min-w-[60px] cursor-pointer"
+                  className="flex flex-col items-center gap-2 min-w-[70px] cursor-pointer group"
                 >
-                  <div className="w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg relative"
-                    style={{ background: roleColor(rc.role) }}>
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-lg relative transition-all duration-300 group-hover:shadow-lg"
+                    style={{ 
+                      background: colors.bg,
+                      boxShadow: `0 4px 15px ${colors.bg}40`
+                    }}
+                  >
                     {rc.name?.charAt(0)}
-                    <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-white" />
+                    <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-400 rounded-full border-2 border-white" />
                   </div>
-                  <span className="text-[11px] font-medium truncate w-16 text-center" style={{ color: '#262626' }}>
+                  <span className="text-[11px] font-medium truncate w-20 text-center" style={{ color: 'var(--text-secondary)' }}>
                     {rc.name?.split(' ')[0]}
                   </span>
                 </motion.button>
@@ -186,66 +231,97 @@ export const CommunicationHub = ({ user }) => {
         </motion.div>
       )}
 
-      {/* Contact List */}
-      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-        className="rounded-2xl overflow-hidden border" style={{ borderColor: '#efefef' }}>
-        <div className="px-4 py-3 flex items-center justify-between" style={{ background: '#fafafa', borderBottom: '1px solid #efefef' }}>
-          <span className="text-sm font-semibold" style={{ color: '#262626' }}>
+      {/* ── Contact List ── */}
+      <motion.div 
+        initial={{ opacity: 0, y: 12 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ delay: 0.15 }}
+        className="nova-card rounded-2xl overflow-hidden"
+      >
+        <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border-default)' }}>
+          <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
             All Contacts
           </span>
-          <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: '#efefef', color: '#8e8e8e' }}>
+          <span className="text-xs px-2.5 py-1 rounded-full font-medium" 
+            style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)' }}>
             {contacts.length}
           </span>
         </div>
 
         {contacts.length === 0 ? (
-          <div className="py-16 flex items-center justify-center" style={{ background: '#ffffff' }}>
-            <p className="text-sm" style={{ color: '#8e8e8e' }}>
+          <div className="py-20 flex flex-col items-center justify-center" style={{ background: 'var(--bg-surface)' }}>
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+              style={{ background: 'var(--bg-elevated)' }}>
+              <Users size={28} className="text-[var(--text-dim)]" />
+            </div>
+            <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
               {searchQuery ? 'No contacts found.' : 'No contacts available.'}
             </p>
           </div>
         ) : (
-          <div style={{ background: '#ffffff' }}>
+          <div style={{ background: 'var(--bg-surface)' }}>
             {contacts.map((contact, i) => {
               const isRecent = recentContactIds.has(contact.id);
+              const colors = getRoleColor(contact.role);
               return (
                 <motion.div
                   key={contact.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: Math.min(i * 0.02, 0.3) }}
-                  className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-black/[0.02] cursor-pointer group"
-                  style={{ borderBottom: '1px solid #fafafa' }}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: Math.min(i * 0.02, 0.2) }}
+                  whileHover={{ background: 'var(--bg-elevated)' }}
+                  className="flex items-center justify-between px-5 py-3.5 transition-all duration-200 cursor-pointer group border-b last:border-0"
+                  style={{ borderColor: 'var(--border-default)' }}
                   onClick={() => handleChatOpen(contact)}
                 >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-11 h-11 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 relative"
-                      style={{ background: roleColor(contact.role) }}>
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 relative transition-all duration-300 group-hover:shadow-md"
+                      style={{ 
+                        background: colors.bg,
+                        boxShadow: `0 2px 10px ${colors.bg}30`
+                      }}
+                    >
                       {contact.name.charAt(0)}
                       {isRecent && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white" />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-white" />
                       )}
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-semibold truncate" style={{ color: '#262626' }}>{contact.name}</p>
-                      <p className="text-[12px] capitalize" style={{ color: '#8e8e8e' }}>
-                        {contact.role}{contact.class ? ` · ${contact.class}` : ''}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{contact.name}</p>
+                      <p className="text-[11px] capitalize flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium"
+                          style={{ background: colors.light, color: colors.bg }}>
+                          {contact.role}
+                        </span>
+                        {contact.class && <span>· {contact.class}</span>}
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
                       onClick={(e) => { e.stopPropagation(); handleChatOpen(contact); }}
-                      className="p-2 rounded-full border transition-all hover:bg-black/[0.03] cursor-pointer"
-                      style={{ borderColor: '#efefef' }}>
-                      <MessageCircle size={16} style={{ color: '#3b82f6' }} />
-                    </button>
-                    <button
+                      className="p-2.5 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md"
+                      style={{ 
+                        borderColor: 'var(--border-default)',
+                        background: 'var(--bg-surface)',
+                        color: '#3b82f6'
+                      }}>
+                      <MessageCircle size={16} />
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
                       onClick={(e) => { e.stopPropagation(); setCallState({ isOpen: true, otherUser: contact, preferVideo: true }); }}
-                      className="p-2 rounded-full border transition-all hover:bg-black/[0.03] cursor-pointer"
-                      style={{ borderColor: '#efefef' }}>
-                      <PhoneCall size={16} style={{ color: '#262626' }} />
-                    </button>
+                      className="p-2.5 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md"
+                      style={{ 
+                        borderColor: 'var(--border-default)',
+                        background: 'var(--bg-surface)',
+                        color: '#10b981'
+                      }}>
+                      <Video size={16} />
+                    </motion.button>
                   </div>
                 </motion.div>
               );
@@ -255,7 +331,13 @@ export const CommunicationHub = ({ user }) => {
       </motion.div>
 
       {contactsError && (
-        <p className="text-xs text-red-500 text-center">{contactsError}</p>
+        <motion.div 
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="nova-card p-4 text-center border-red-200"
+        >
+          <p className="text-sm text-red-500">{contactsError}</p>
+        </motion.div>
       )}
 
       <ChatModal
