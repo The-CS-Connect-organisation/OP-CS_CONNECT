@@ -1,95 +1,54 @@
-# SchoolSync - AI First School Management
+# 🏢 SchoolSync - Management Portal
 
-Production-ready school management platform with role-based access, AI tutoring features, and real-time communication.
+This is the **Management Portal** for Cornerstone SchoolSync, specifically designed for **Administrators** and **Teachers**. It focuses on school operations, staff management, and academic administration.
 
-## Tech Stack
+## 🚀 Key Features
 
-- Frontend: React + Vite + Tailwind
-- Backend: Express + MongoDB + Mongoose
-- Auth: JWT + role middleware
-- AI: OpenRouter (`openai/gpt-4o` default, configurable per request)
-- Realtime: Socket.IO
-- Validation: Zod on request payloads
+- **Admin Dashboard**: High-level overview of school performance, analytics, and HR.
+- **Teacher Dashboard**: Centralized hub for managing classes, attendance, and student performance.
+- **User Management**: Comprehensive system for managing students, teachers, and staff profiles.
+- **Academic Administration**: Manage assignments, exams, and grade submissions.
+- **Timetable Management**: Intelligent timetable creator with conflict detection.
+- **AI Administration**: AI-powered tools for teachers (Assignment Feedback, Quiz Generator, Attendance Insights).
+- **Communication Center**: Institutional announcements and internal messaging.
+- **Payroll & HR**: Basic payroll management for staff.
 
-## Environment
+## 🛠️ Tech Stack
 
-Create `.env`:
+- **Frontend**: React 18, Vite, Tailwind CSS, Framer Motion
+- **Backend**: Node.js, Express (Portal-isolated)
+- **Database**: Supabase (PostgreSQL)
+- **Real-time**: Socket.io
+- **AI**: OpenRouter (GPT-4o / Claude / Gemini)
 
-```env
-OPENROUTER_API_KEY=...
-MONGODB_URI=...
-JWT_SECRET=...
-PORT=5000
-CORS_ORIGIN=http://localhost:5173
-VITE_API_BASE_URL=http://localhost:5000/api
-```
+## 📦 Getting Started
 
-## Run
+### Prerequisites
+- Node.js (v18+)
+- Supabase account and database initialized with `supabase_schema.sql`
 
-- `npm install`
-- `npm run dev` (frontend)
-- `npm run dev:api` (backend)
-- `npm run seed:api` (seed fake school data)
+### Installation
+1. `npm install`
+2. Create a `.env` file based on `.env.example`:
+   ```env
+   SUPABASE_URL=your_supabase_url
+   SUPABASE_SERVICE_KEY=your_service_key
+   OPENROUTER_API_KEY=your_api_key
+   PORT=5001
+   ```
 
-## API Overview
+### Running the App
+- **Frontend**: `npm run dev` (Runs on http://localhost:5174)
+- **Backend API**: `npm run dev:api` (Runs on http://localhost:5001)
+- **Seed Data**: `npm run seed:api` (Initialize sample data)
 
-Base URL: `/api`
+## 📁 Portal Structure
 
-### Auth
+- `/src/pages/ManagementPortal/Admin`: Admin-specific pages (Analytics, HR, Payroll).
+- `/src/pages/AcademicPortal/Teacher`: Teacher-specific pages (Grades, Attendance, Assignments).
+- `/src/pages/AcademicPortal/Dashboard`: Specialized teacher dashboard.
+- `/backend`: Isolated backend service for this portal.
+- `/schoolsync-...`: Mobile application (Expo) for the management experience.
 
-- `POST /auth/signup`
-- `POST /auth/login`
-- `GET /auth/me` (Bearer token)
-- `GET /auth/health`
-
-### AI Features (Bearer token required)
-
-- `POST /ai/doubt-solver` (supports `stream: true` SSE)
-- `POST /ai/study-planner`
-- `POST /ai/grade-predictor`
-- `POST /ai/assignment-feedback`
-- `POST /ai/summary-generator` (`multipart/form-data`, `pdf` file)
-- `POST /ai/quiz-generator`
-- `POST /ai/attendance-insights`
-
-All AI calls are logged to MongoDB (`AIInteraction`) with prompt, response, usage, model, and timestamp.
-
-### School Features (Bearer token + role checks)
-
-- Classes: `POST /school/classes`
-- Student profiles: `POST /school/students/profiles`, `GET /school/students`
-- Teacher profiles: `POST /school/teachers/profiles`
-- Assignments:
-  - `POST /school/assignments` (teacher/admin)
-  - `GET /school/assignments`
-  - `POST /school/assignments/:assignmentId/submissions` (student)
-  - `PATCH /school/submissions/:submissionId/grade` (teacher/admin)
-- Attendance:
-  - `POST /school/attendance`
-  - `GET /school/attendance/:studentId/report?month=4&year=2026&format=csv`
-- Announcements:
-  - `POST /school/announcements`
-  - `GET /school/announcements`
-- Messaging:
-  - `POST /school/messages`
-  - `PATCH /school/messages/:messageId/read`
-- Marks & report cards:
-  - `POST /school/marks`
-  - `GET /school/report-cards/:studentId`
-- Leaderboard: `GET /school/leaderboard/:classId`
-- Timetable: `PUT /school/timetables` (includes clash detection)
-
-## Security & Quality
-
-- Secrets from `.env`
-- Centralized error handler with Mongo error logging
-- Auth route rate limiting
-- Pagination on list endpoints
-- Input validation with Zod
-- Helmet, CORS, and request logging with Morgan
-
-## PWA
-
-- Manifest: `public/manifest.webmanifest`
-- Service worker: `public/sw.js`
-- Offline cache baseline for installability and timetable/notices viewing patterns
+---
+*Cornerstone SchoolSync - Streamlining school operations through intelligence.*
