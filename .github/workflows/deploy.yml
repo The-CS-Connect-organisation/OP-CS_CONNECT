@@ -1,0 +1,58 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Build academics
+      - name: Install academics deps
+        run: npm install
+        working-directory: academics
+
+      - name: Build academics
+        run: npm run build
+        working-directory: academics
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
+      # Build management
+      - name: Install management deps
+        run: npm install
+        working-directory: management
+
+      - name: Build management
+        run: npm run build
+        working-directory: management
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
+      # Combine both builds
+      - name: Prepare deploy folder
+        run: |
+          mkdir -p deploy/academics
+          mkdir -p deploy/management
+          cp -r academics/dist/* deploy/academics/
+          cp -r management/dist/* deploy/management/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./deploy
