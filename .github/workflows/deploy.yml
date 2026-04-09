@@ -50,6 +50,9 @@ jobs:
           mkdir -p deploy/management
           cp -r academics/dist/* deploy/academics/
           cp -r management/dist/* deploy/management/
+          # Fix client-side routing on GitHub Pages
+          cp deploy/academics/index.html deploy/academics/404.html
+          cp deploy/management/index.html deploy/management/404.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
