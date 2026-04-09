@@ -8,13 +8,13 @@ const AuroraBlob = ({ color, x, y, size, delay, duration }) => {
   return (
     <motion.div
       initial={{ scale: 0.8, opacity: 0.3 }}
-      animate={{ 
+      animate={{
         scale: [0.8, 1.2, 0.9, 1.1, 0.8],
         opacity: [0.3, 0.5, 0.4, 0.6, 0.3],
         x: [0, 30, -20, 40, 0],
         y: [0, -20, 30, -10, 0]
       }}
-      transition={{ 
+      transition={{
         duration: duration || 8,
         delay: delay || 0,
         repeat: Infinity,
@@ -38,22 +38,22 @@ const AuroraBlob = ({ color, x, y, size, delay, duration }) => {
 const Particle = ({ delay, duration, size, startX, startY, color }) => {
   const randomOffsetX = (Math.random() - 0.5) * 60;
   const randomOffsetY = -(60 + Math.random() * 80);
-  
+
   return (
     <motion.div
-      initial={{ 
-        left: startX, 
-        top: startY, 
-        opacity: 0, 
-        scale: 0 
+      initial={{
+        left: startX,
+        top: startY,
+        opacity: 0,
+        scale: 0
       }}
-      animate={{ 
+      animate={{
         y: [0, randomOffsetY, 0],
         x: [0, randomOffsetX, 0],
         opacity: [0, 0.6, 0],
         scale: [0, size, 0],
       }}
-      transition={{ 
+      transition={{
         duration: duration || 3,
         delay: delay || 0,
         repeat: Infinity,
@@ -76,12 +76,12 @@ const Sparkle = ({ delay, x, y, size }) => {
   return (
     <motion.div
       initial={{ scale: 0, opacity: 0, rotate: 0 }}
-      animate={{ 
+      animate={{
         scale: [0, 1.2, 0],
         opacity: [0, 1, 0],
         rotate: [0, 180]
       }}
-      transition={{ 
+      transition={{
         duration: 1.5,
         delay: delay,
         repeat: Infinity,
@@ -171,7 +171,7 @@ const SplashScreen = ({ onComplete }) => {
     const t1 = setTimeout(() => setPhase(1), 800);
     const t2 = setTimeout(() => setPhase(2), 2800);
     const t3 = setTimeout(() => onComplete(), 3400);
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); }
   }, [onComplete, logoControls]);
 
   return (
@@ -180,9 +180,9 @@ const SplashScreen = ({ onComplete }) => {
         <motion.div
           ref={containerRef}
           onMouseMove={handleMouseMove}
-          exit={{ 
-            opacity: 0, 
-            scale: 1.05, 
+          exit={{
+            opacity: 0,
+            scale: 1.05,
             filter: 'blur(20px)',
             transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] }
           }}
@@ -222,9 +222,9 @@ const SplashScreen = ({ onComplete }) => {
           </div>
 
           {/* Center content */}
-          <motion.div 
+          <motion.div
             className="relative flex flex-col items-center z-10 px-4"
-            style={{ 
+            style={{
               transform: `translate(${mousePos.x * 0.2}px, ${mousePos.y * 0.2}px)`,
             }}
           >
@@ -236,32 +236,14 @@ const SplashScreen = ({ onComplete }) => {
             >
               {/* Glow ring behind logo */}
               <motion.div
-                animate={{ 
+                animate={{
                   scale: [1, 1.15, 1],
                   opacity: [0.2, 0.4, 0.2],
-                }}
-                transition={{ 
-                  duration: 3, 
-                  repeat: Infinity, 
-                  ease: "easeInOut",
-                }}
-                className="absolute inset-[-30px] rounded-full"
-                style={{
-                  background: 'radial-gradient(circle, rgba(255,107,157,0.15), transparent 70%)',
-                  filter: 'blur(20px)',
-                }}
-              />
-
-              {/* Second glow ring - purple */}
-              <motion.div
-                animate={{ 
-                  scale: [1.1, 1, 1.1],
-                  opacity: [0.15, 0.3, 0.15],
                   rotate: [0, 180, 360]
                 }}
-                transition={{ 
-                  duration: 5, 
-                  repeat: Infinity, 
+                transition={{
+                  duration: 5,
+                  repeat: Infinity,
                   ease: "easeInOut",
                 }}
                 className="absolute inset-[-20px] rounded-full"
@@ -281,8 +263,8 @@ const SplashScreen = ({ onComplete }) => {
                     filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.15))',
                   }}
                 >
-                  <img 
-                    src="/logo.png" 
+                  <img
+                    src="/logo.png"
                     alt="SchoolSync Logo"
                     onLoad={() => setLogoLoaded(true)}
                     className="h-20 md:h-24 w-auto object-contain"
@@ -293,11 +275,11 @@ const SplashScreen = ({ onComplete }) => {
                 <motion.div
                   initial={{ x: '-150%' }}
                   animate={{ x: '150%' }}
-                  transition={{ 
-                    duration: 1.5, 
-                    repeat: Infinity, 
+                  transition={{
+                    duration: 1.5,
+                    repeat: Infinity,
                     repeatDelay: 2,
-                    ease: "easeInOut" 
+                    ease: "easeInOut"
                   }}
                   className="absolute inset-0 z-20"
                   style={{
@@ -411,7 +393,7 @@ const SplashScreen = ({ onComplete }) => {
                 <span className="text-[10px] font-medium tracking-wider uppercase" style={{ color: 'var(--text-dim)' }}>
                   Loading
                 </span>
-                <motion.span 
+                <motion.span
                   className="text-[10px] font-mono font-semibold"
                   style={{ color: 'var(--text-muted)' }}
                   animate={{ opacity: [0.6, 1, 0.6] }}
@@ -467,7 +449,7 @@ const SplashScreen = ({ onComplete }) => {
 // Loading counter component
 const LoadingCounter = ({ duration }) => {
   const [progress, setProgress] = useState(0);
-  
+
   useEffect(() => {
     const start = Date.now();
     const interval = setInterval(() => {

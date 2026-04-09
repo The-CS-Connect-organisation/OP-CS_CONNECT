@@ -38,6 +38,16 @@ import { AILab } from './pages/AcademicPortal/shared/AILab';
 import { CommunicationHub } from './pages/AcademicPortal/shared/CommunicationHub';
 import { ExamCenter } from './pages/AcademicPortal/shared/ExamCenter';
 
+// Teacher Portal Pages
+import { TeacherDashboard } from './pages/TeacherPortal/TeacherDashboard';
+import { ManageAssignments } from './pages/TeacherPortal/ManageAssignments';
+import { GradeSubmissions } from './pages/TeacherPortal/GradeSubmissions';
+import { MarkAttendance } from './pages/TeacherPortal/MarkAttendance';
+import { EnterGrades } from './pages/TeacherPortal/EnterGrades';
+import { UploadNotes } from './pages/TeacherPortal/UploadNotes';
+import { ManageExams } from './pages/TeacherPortal/ManageExams';
+import { Profile as TeacherProfile } from './pages/TeacherPortal/Profile';
+
 // Loading screen (shown during auth check)
 const LoadingScreen = () => (
   <div className="min-h-screen flex items-center justify-center font-nova" style={{ background: '#ffffff' }}>
@@ -55,7 +65,7 @@ const LoadingScreen = () => (
 );
 
 // Allowed roles for this portal
-const ALLOWED_ROLES = ['student', 'parent'];
+const ALLOWED_ROLES = ['student', 'parent', 'teacher'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
@@ -84,8 +94,15 @@ function App() {
   const { user, loading: authLoading, login, signup, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { toasts, addToast, removeToast } = useToast();
-  const [showSplash, setShowSplash] = useState(true);
-  const handleSplashComplete = useCallback(() => setShowSplash(false), []);
+  const [showSplash, setShowSplash] = useState(() => {
+    // Only show splash if not already seen in this session
+    return !sessionStorage.getItem('hasSeenSplash');
+  });
+  
+  const handleSplashComplete = useCallback(() => {
+    sessionStorage.setItem('hasSeenSplash', 'true');
+    setShowSplash(false);
+  }, []);
   
   const { data: notifications, update: updateNotification } = useStore(KEYS.NOTIFICATIONS, []);
   
@@ -228,6 +245,58 @@ function App() {
           <Route path="/parent/comms" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
               <CommunicationHub user={user} />
+            </ProtectedRoute>
+          } />
+
+          {/* 👨‍🏫 Teacher Portal */}
+          <Route path="/teacher/dashboard" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <TeacherDashboard user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/assignments" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <ManageAssignments user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/submissions" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <GradeSubmissions user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/attendance" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <MarkAttendance user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/grades" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <EnterGrades user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/notes" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <UploadNotes user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/exams" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <ManageExams user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <TeacherProfile user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/comms" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <CommunicationHub user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/settings" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <SettingsPanel user={user} />
             </ProtectedRoute>
           } />
 

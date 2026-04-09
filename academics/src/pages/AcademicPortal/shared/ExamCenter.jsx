@@ -50,20 +50,32 @@ export const ExamCenter = ({ user, addToast }) => {
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto w-full pt-2 pb-12">
       {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}
-        className="nova-card p-6 md:p-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-full pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at top right, rgba(245,158,11,0.05), transparent 60%)' }} />
+      <motion.div 
+        initial={{ opacity: 0, y: -12 }} 
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="glass-card p-6 md:p-8 backdrop-blur-xl relative overflow-hidden"
+      >
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-gradient-to-br from-amber-100 to-transparent blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-gradient-to-tr from-red-100 to-transparent blur-3xl" />
+        </div>
+
         <div className="relative z-10">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold mb-3"
-            style={{ background: 'rgba(245,158,11,0.08)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.20)' }}>
-            <Award size={10} /> Exam Center
-          </span>
-          <h1 className="text-4xl font-bold tracking-tight flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
-            <span className="w-1 h-10 rounded-full bg-black" />
+          <div className="flex items-center gap-2 mb-3">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-600 border border-amber-200">
+              <Award size={10} /> Exam Center
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold bg-green-50 text-green-600 border border-green-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+              {user?.role === 'admin' ? 'Admin Mode' : user?.role === 'teacher' ? 'Teacher Mode' : 'Student Mode'}
+            </span>
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight flex items-center gap-3 text-gray-900">
+            <span className="w-1 h-10 rounded-full bg-gradient-to-b from-amber-500 to-red-500" />
             Exams & Papers
           </h1>
-          <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-sm mt-2 text-gray-500">
             Admin creates exams, teachers upload papers and marks, students view everything.
           </p>
         </div>
@@ -72,9 +84,9 @@ export const ExamCenter = ({ user, addToast }) => {
       {/* Create Exam */}
       {(user.role === 'admin' || user.role === 'teacher') && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-          className="nova-card p-6 space-y-4">
-          <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
-            <div className="w-1.5 h-1.5 rounded-full bg-black" /> Create Exam
+          className="glass-card p-6 backdrop-blur-xl space-y-4">
+          <h2 className="text-sm font-semibold flex items-center gap-2 text-gray-600">
+            <div className="w-1.5 h-1.5 rounded-full bg-gray-800" /> Create Exam
           </h2>
           <div className="grid md:grid-cols-2 gap-3">
             <input className="input-field" placeholder="Exam name" value={form.name} onChange={(e) => setForm((d) => ({ ...d, name: e.target.value }))} />
@@ -100,9 +112,9 @@ export const ExamCenter = ({ user, addToast }) => {
       {/* Enter Marks */}
       {(user.role === 'teacher' || user.role === 'admin') && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-          className="nova-card p-6 space-y-4">
-          <h2 className="text-sm font-semibold flex items-center gap-2" style={{ color: 'var(--text-secondary)' }}>
-            <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--semantic-success)' }} /> Enter Marks
+          className="glass-card p-6 backdrop-blur-xl space-y-4">
+          <h2 className="text-sm font-semibold flex items-center gap-2 text-gray-600">
+            <div className="w-1.5 h-1.5 rounded-full bg-green-500" /> Enter Marks
           </h2>
           <div className="grid md:grid-cols-3 gap-3">
             <select className="input-field" value={selectedExamId} onChange={(e) => setSelectedExamId(e.target.value)}>
@@ -124,34 +136,31 @@ export const ExamCenter = ({ user, addToast }) => {
       {/* Exam list */}
       {visibleExams.length > 0 && (
         <div className="space-y-3">
-          <h3 className="text-sm font-semibold px-1" style={{ color: 'var(--text-muted)' }}>All Exams</h3>
+          <h3 className="text-sm font-semibold px-1 text-gray-500">All Exams</h3>
           {visibleExams.map((exam) => {
             const myMarks = marks.filter((m) => m.examId === exam.id && (user.role !== 'student' || m.studentId === user.id));
             return (
               <motion.div key={exam.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                className="nova-card p-5">
+                className="glass-card p-5 backdrop-blur-xl">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                   <div>
-                    <h3 className="text-base font-semibold" style={{ color: 'var(--text-primary)' }}>{exam.name}</h3>
-                    <p className="text-sm mt-0.5" style={{ color: 'var(--text-muted)' }}>{exam.subject} · Class {exam.class} · {exam.date}</p>
+                    <h3 className="text-base font-semibold text-gray-900">{exam.name}</h3>
+                    <p className="text-sm mt-0.5 text-gray-500">{exam.subject} · Class {exam.class} · {exam.date}</p>
                   </div>
                   {exam.paperUrl && (
                     <a href={exam.paperUrl} target="_blank" rel="noreferrer"
-                      className="inline-flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-lg border transition-colors hover:bg-black/04"
-                      style={{ color: 'var(--text-secondary)', borderColor: 'var(--border-default)' }}>
+                      className="inline-flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-lg border transition-colors hover:bg-gray-50 text-gray-600 border-gray-200">
                       <FileUp size={13} /> View Paper
                     </a>
                   )}
                 </div>
                 {myMarks.length > 0 && (
-                  <div className="mt-3 pt-3 border-t space-y-2" style={{ borderColor: 'var(--border-subtle)' }}>
+                  <div className="mt-3 pt-3 border-t space-y-2 border-gray-200">
                     {myMarks.map((mark) => (
-                      <div key={mark.id} className="flex items-center justify-between p-3 rounded-xl text-sm"
-                        style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>{mark.studentName || 'You'}</span>
-                        <span className="font-bold font-mono" style={{ color: 'var(--text-primary)' }}>
-                          {mark.score}/{mark.total} <span className="ml-1 px-1.5 py-0.5 rounded text-xs"
-                            style={{ background: 'rgba(0,0,0,0.06)' }}>({mark.grade})</span>
+                      <div key={mark.id} className="flex items-center justify-between p-3 rounded-xl text-sm bg-gray-50 border border-gray-200">
+                        <span className="text-gray-600">{mark.studentName || 'You'}</span>
+                        <span className="font-bold font-mono text-gray-900">
+                          {mark.score}/{mark.total} <span className="ml-1 px-1.5 py-0.5 rounded text-xs bg-gray-200 text-gray-700">({mark.grade})</span>
                         </span>
                       </div>
                     ))}

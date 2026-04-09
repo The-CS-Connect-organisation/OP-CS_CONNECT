@@ -67,11 +67,37 @@ const ROLE_NAV = {
       ]
     },
   ],
+  teacher: [
+    {
+      section: 'Overview',
+      items: [
+        { title: 'Dashboard', icon: LayoutDashboard, route: '/teacher/dashboard' },
+      ]
+    },
+    {
+      section: 'Academic',
+      items: [
+        { title: 'Manage Assignments', icon: FileText, route: '/teacher/assignments' },
+        { title: 'Grade Submissions', icon: CheckCircle, route: '/teacher/submissions' },
+        { title: 'Enter Grades', icon: PencilLine, route: '/teacher/grades' },
+        { title: 'Mark Attendance', icon: UserCheck, route: '/teacher/attendance' },
+        { title: 'Manage Exams', icon: ClipboardList, route: '/teacher/exams' },
+        { title: 'Resources', icon: BookOpen, route: '/teacher/notes' },
+      ]
+    },
+    {
+      section: 'Profile',
+      items: [
+        { title: 'My Profile', icon: Settings, route: '/teacher/profile' },
+      ]
+    }
+  ],
 };
 
 const ROLE_COLOR = {
   parent: { bg: '#6366f1', text: 'white', label: 'Parent' },
   student: { bg: '#ff6b9d', text: 'white', label: 'Student' },
+  teacher: { bg: '#a855f7', text: 'white', label: 'Teacher' },
 };
 
 export const AcademicSidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {

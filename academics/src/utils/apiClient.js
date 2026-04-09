@@ -17,7 +17,7 @@ export const setAuthToken = (token) => {
 
 export const request = async (path, options = {}) => {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 2000);
+  const timeoutId = setTimeout(() => controller.abort(), 60000);
   
   let response;
   try {

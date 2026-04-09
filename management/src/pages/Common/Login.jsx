@@ -1,30 +1,26 @@
-import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Zap } from 'lucide-react';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Building2 } from 'lucide-react';
+import { useStore } from '../../hooks/useStore';
 import { useSound } from '../../hooks/useSound';
 
-export const Login = ({ onLogin }) => {
-  const { playClick, playBlip } = useSound();
+export const Login = ({ onLogin, onSwitch }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [timeStr, setTimeStr] = useState('');
-
-  useEffect(() => {
-    const updateTime = () => setTimeStr(new Date().toLocaleTimeString('en-US', { hour12: false }));
-    updateTime();
-    const id = setInterval(updateTime, 1000);
-    return () => clearInterval(id);
-  }, []);
+  const { playClick, playBlip } = useSound();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    playBlip();
     setError('');
     setLoading(true);
-    await new Promise(r => setTimeout(r, 600));
+    playBlip();
+    
+    // Smooth delay for auth feel
+    await new Promise(r => setTimeout(r, 800));
+    
     const result = await Promise.resolve(onLogin(email.trim().toLowerCase(), password.trim()));
     if (!result.success) {
       setError(result.error);
@@ -33,128 +29,74 @@ export const Login = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen flex relative overflow-hidden" style={{ background: '#ffffff' }}>
-      {/* Animated background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 nova-dot-grid opacity-60" />
-        <motion.div
-          animate={{ scale: [1, 1.1, 1], opacity: [1, 0.8, 1] }}
-          transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
-          className="absolute top-[-10%] right-[-5%] w-[50vw] h-[50vh] rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(255, 107, 157, 0.07), transparent 60%)', filter: 'blur(80px)' }}
-        />
-        <motion.div
-          animate={{ scale: [1, 1.15, 1], opacity: [1, 0.7, 1] }}
-          transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-          className="absolute bottom-[-10%] left-[-5%] w-[40vw] h-[40vh] rounded-full"
-          style={{ background: 'radial-gradient(circle, rgba(168, 85, 247, 0.05), transparent 60%)', filter: 'blur(80px)' }}
-        />
+    <div className="min-h-screen w-full flex items-center justify-center bg-[#f1f5f9] overflow-hidden relative font-sans text-slate-900">
+      {/* 🌫️ Background Accents */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-15%] right-[-10%] w-[50%] h-[50%] bg-emerald-100 rounded-full blur-[120px] opacity-60" />
+        <div className="absolute bottom-[-15%] left-[-10%] w-[50%] h-[50%] bg-indigo-50 rounded-full blur-[120px] opacity-60" />
       </div>
 
-      {/* ── LEFT PANEL ── */}
-      <div className="hidden lg:flex flex-col justify-between p-12 relative z-10 w-[55%] border-r" style={{ borderColor: 'var(--border-default)' }}>
-        <div className="h-full flex flex-col justify-between max-w-xl">
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="flex items-center gap-3"
+      <motion.div 
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10 w-full max-w-[400px] p-6"
+      >
+        {/* Brand Section */}
+        <div className="text-center mb-8">
+          <motion.div 
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white shadow-sm border border-slate-200 mb-5"
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-              style={{ background: '#111111', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
-              <span className="text-white font-bold text-base">C</span>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Cornerstone</h1>
-              <p className="text-xs font-medium flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                SchoolSync Platform
-              </p>
-            </div>
+            <Building2 size={28} className="text-emerald-600" />
           </motion.div>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-            className="space-y-6"
-          >
-            <h2 className="text-5xl font-bold leading-[1.1] tracking-tight">
-              <span style={{ color: 'var(--text-primary)' }}>Learn.</span><br/>
-              <span style={{ color: '#ff6b9d' }}>Grow.</span><br/>
-              <span style={{ color: 'var(--text-primary)' }}>Succeed.</span>
-            </h2>
-            <p className="text-base max-w-md leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-              A unified platform for students, teachers, and administrators to manage education seamlessly.
-            </p>
-            
-            <div className="flex flex-wrap gap-2 pt-2">
-              {['AI-Powered', 'Real-time', 'Analytics', 'Secure'].map((f, i) => (
-                <motion.span
-                  key={f}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.6 + i * 0.1 }}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium"
-                  style={{ background: 'rgba(0,0,0,0.05)', color: 'var(--text-secondary)', border: '1px solid var(--border-default)' }}
-                >
-                  <Zap size={10} />
-                  {f}
-                </motion.span>
-              ))}
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="flex items-center justify-between border-t pt-6"
-            style={{ borderColor: 'var(--border-default)' }}
-          >
-            <p className="text-xs font-medium" style={{ color: 'var(--text-dim)' }}>v3.0.0 — SchoolSync</p>
-            <p className="text-base font-bold font-mono tabular-nums" style={{ color: 'var(--text-muted)' }}>[ {timeStr} ]</p>
-          </motion.div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 uppercase">Cornerstone</h1>
+          <p className="text-sm text-slate-500 mt-1 font-medium">Management Control Center</p>
         </div>
-      </div>
 
-      {/* ── RIGHT PANEL ── */}
-      <div className="flex-1 flex flex-col justify-center items-center relative z-10 p-6 lg:p-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="w-full max-w-md"
-        >
+        {/* Login Card */}
+        <div className="bg-white border border-slate-200 rounded-[24px] p-8 shadow-[0_10px_40px_rgb(0,0,0,0.06)]">
           <div className="mb-8">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold mb-4"
-              style={{ background: 'rgba(0,0,0,0.05)', color: 'var(--text-secondary)', border: '1px solid var(--border-default)' }}>
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              Secure Access
-            </span>
-            <h3 className="text-3xl font-bold tracking-tight mt-2" style={{ color: 'var(--text-primary)' }}>Welcome back</h3>
-            <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>Enter your credentials to access your account</p>
+            <h2 className="text-lg font-bold text-slate-900">Administrative Login</h2>
+            <p className="text-xs text-slate-500 font-medium mt-1">Authorized personnel only.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Email address</label>
-              <div className="relative">
-                <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                  className="input-field pl-11" placeholder="you@schoolsync.edu" required />
-                <Mail size={16} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-dim)' }} />
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-700 ml-1">Identity Token (Email)</label>
+              <div className="relative group">
+                <input 
+                  type="email" 
+                  value={email} 
+                  onChange={e => setEmail(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/5 transition-all" 
+                  placeholder="admin@schoolsync.edu" 
+                  required 
+                />
+                <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Password</label>
-              <div className="relative">
-                <input type={showPassword ? 'text' : 'password'} value={password} onChange={e => setPassword(e.target.value)}
-                  className="input-field pl-11 pr-11" placeholder="Enter your password" required />
-                <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-dim)' }} />
-                <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer transition-colors"
-                  style={{ color: 'var(--text-dim)' }}>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between ml-1">
+                <label className="text-xs font-semibold text-slate-700">Security Key (Password)</label>
+              </div>
+              <div className="relative group">
+                <input 
+                  type={showPassword ? 'text' : 'password'} 
+                  value={password} 
+                  onChange={e => setPassword(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3.5 pl-11 pr-11 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:bg-white focus:ring-4 focus:ring-emerald-500/5 transition-all font-mono tracking-widest" 
+                  placeholder="••••••••" 
+                  required 
+                />
+                <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-emerald-500 transition-colors" />
+                <button 
+                  type="button" 
+                  onClick={() => { playClick(); setShowPassword(!showPassword); }}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                >
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
@@ -162,38 +104,47 @@ export const Login = ({ onLogin }) => {
 
             <AnimatePresence>
               {error && (
-                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                  <div className="p-3 rounded-xl text-sm font-medium flex items-center gap-2"
-                    style={{ background: 'rgba(244, 63, 94, 0.08)', color: 'var(--semantic-error)', border: '1px solid rgba(244, 63, 94, 0.15)' }}>
-                    {error}
-                  </div>
+                <motion.div 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="p-3 rounded-xl bg-orange-50 border border-orange-100 text-xs font-medium text-orange-600 flex items-center gap-2"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-600 animate-pulse" />
+                  AUTH_ACCESS_DENIED: {error.toUpperCase()}
                 </motion.div>
               )}
             </AnimatePresence>
 
-            <motion.button
+            <button
               type="submit"
               disabled={loading}
-              whileHover={{ scale: 1.01 }}
-              whileTap={{ scale: 0.98 }}
-              className="btn-primary w-full flex items-center justify-center gap-2 text-base py-3.5 cursor-pointer"
+              onMouseEnter={playClick}
+              className={`w-full h-12 bg-slate-900 text-white rounded-xl flex items-center justify-center gap-2 font-semibold text-sm transition-all active:scale-[0.98] ${loading ? 'opacity-70 cursor-wait' : 'hover:bg-slate-800 shadow-lg shadow-slate-900/10'}`}
             >
               {loading ? (
-                <span className="animate-pulse">Signing in...</span>
+                <div className="flex items-center gap-1.5">
+                   <div className="w-1.5 h-1.5 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                   <div className="w-1.5 h-1.5 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                   <div className="w-1.5 h-1.5 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                </div>
               ) : (
                 <>
-                  <span>Sign in</span>
-                  <ArrowRight size={16} />
+                  <span>Sign In</span>
+                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
                 </>
               )}
-            </motion.button>
+            </button>
           </form>
+        </div>
 
-          <p className="text-xs text-center mt-8" style={{ color: 'var(--text-dim)' }}>
-            Protected by enterprise-grade security
+        {/* Footer */}
+        <div className="mt-10 text-center">
+          <p className="text-[10px] text-slate-400 font-medium uppercase tracking-[0.3em]">
+            Institutional Control Hub / v4.0.0
           </p>
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
     </div>
   );
 };

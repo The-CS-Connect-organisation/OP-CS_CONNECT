@@ -237,21 +237,20 @@
 
   /* ══ BUTTONS ══ */
   .btn-primary {
-    @apply px-6 py-3 font-semibold transition-all duration-200 relative overflow-hidden;
+    @apply px-6 py-3 font-semibold transition-all duration-200;
     background: #111111;
     color: white;
+    border: 1px solid rgba(0, 0, 0, 0.15);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-sm);
-    border: none;
   }
   .btn-primary:hover {
-    background: #222222;
-    box-shadow: var(--shadow-md);
+    background: #0a0a0a;
+    box-shadow: var(--shadow-lg);
     transform: translateY(-1px);
   }
   .btn-primary:active {
     transform: translateY(0) scale(0.98);
-    background: #000000;
   }
 
   .btn-secondary {
@@ -269,14 +268,28 @@
     transform: translateY(-1px);
   }
 
-  .btn-accent {
+  .btn-ghost {
+    @apply px-6 py-3 font-medium transition-all duration-200;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+  }
+  .btn-ghost:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--text-primary);
+    border-color: var(--border-default);
+  }
+
+  .btn-pink {
     @apply px-6 py-3 font-semibold transition-all duration-200;
     background: rgba(255, 107, 157, 0.08);
-    color: #ff6b9d;
-    border-radius: var(--radius-md);
+    color: var(--accent-pink);
     border: 1px solid rgba(255, 107, 157, 0.20);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-xs);
   }
-  .btn-accent:hover {
+  .btn-pink:hover {
     background: rgba(255, 107, 157, 0.15);
     border-color: rgba(255, 107, 157, 0.35);
     box-shadow: var(--shadow-pink);

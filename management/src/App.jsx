@@ -21,15 +21,7 @@ import { Login } from './pages/Common/Login';
 import { Signup } from './pages/Common/Signup';
 
 // Pages - Portals (Dashboards)
-import { TeacherDashboard } from './pages/AcademicPortal/Dashboard/TeacherDashboard';
 import { AdminDashboard } from './pages/ManagementPortal/Dashboard/AdminDashboard';
-
-// Academic Portal - Teacher Pages
-import { Profile as TeacherProfile } from './pages/AcademicPortal/Teacher/Profile';
-import { ManageAssignments } from './pages/AcademicPortal/Teacher/ManageAssignments';
-import { MarkAttendance } from './pages/AcademicPortal/Teacher/MarkAttendance';
-import { GradeSubmissions } from './pages/AcademicPortal/Teacher/GradeSubmissions';
-import { UploadNotes } from './pages/AcademicPortal/Teacher/UploadNotes';
 
 // Academic Portal - Shared Features
 import { SettingsPanel } from './pages/AcademicPortal/shared/Settings';
@@ -63,7 +55,7 @@ const LoadingScreen = () => (
 );
 
 // Allowed roles for this portal
-const ALLOWED_ROLES = ['admin', 'teacher'];
+const ALLOWED_ROLES = ['admin'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
@@ -205,58 +197,6 @@ function App() {
           <Route path="/admin/payroll-hr" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <PayrollHR addToast={addToast} />
-            </ProtectedRoute>
-          } />
-
-          {/* 🎓 Academic Portal - Teacher (Part of Management) */}
-          <Route path="/teacher/dashboard" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <TeacherDashboard user={user} />
-            </ProtectedRoute>
-          } />
-          <Route path="/teacher/assignments" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <ManageAssignments user={user} addToast={addToast} />
-            </ProtectedRoute>
-          } />
-          <Route path="/teacher/attendance" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <MarkAttendance user={user} addToast={addToast} />
-            </ProtectedRoute>
-          } />
-          <Route path="/teacher/grading" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <GradeSubmissions user={user} addToast={addToast} />
-            </ProtectedRoute>
-          } />
-          <Route path="/teacher/notes" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <UploadNotes user={user} addToast={addToast} />
-            </ProtectedRoute>
-          } />
-          <Route path="/teacher/profile" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <TeacherProfile user={user} />
-            </ProtectedRoute>
-          } />
-          <Route path="/teacher/settings" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <SettingsPanel user={user} />
-            </ProtectedRoute>
-          } />
-          <Route path="/teacher/ai-lab" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <AILab user={user} addToast={addToast} />
-            </ProtectedRoute>
-          } />
-          <Route path="/teacher/comms" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <CommunicationHub user={user} />
-            </ProtectedRoute>
-          } />
-          <Route path="/teacher/exams" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <ExamCenter user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 

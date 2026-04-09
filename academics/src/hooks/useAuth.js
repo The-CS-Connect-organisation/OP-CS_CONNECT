@@ -46,10 +46,15 @@ export const useAuth = () => {
         return { success: true, user: userFromApi };
       }
       return { success: false, error: 'Invalid server response' };
-    } catch {
-      // Fallback
+    } catch (err) {
+      // Only fall back to local storage if it's a network error (backend unreachable)
+      // If it's a 401/403, return the error directly — don't silently bypass auth
+      if (err?.status && err.status < 500) {
+        return { success: false, error: err.message || 'Invalid email or password' };
+      }
     }
 
+    // Backend unreachable — try local storage
     const users = getFromStorage(KEYS.USERS, []);
     const found = users.find(u => u.email === cleanEmail && u.password === cleanPassword);
     if (found) {
@@ -121,4 +126,4 @@ export const useAuth = () => {
   }, []);
 
   return { user, loading, login, signup, logout, isAuthenticated: !!user };
-};
+};
