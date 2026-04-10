@@ -4,24 +4,25 @@ import { FileText, CheckCircle, AlertCircle, Search, Calendar, Terminal, Activit
 import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
-import { useAssignments, useProfile } from '../../../hooks/useSchoolData';
+import { useAssignments } from '../../../hooks/useSchoolData';
 import { useSound } from '../../../hooks/useSound';
 
 export const Assignments = ({ user }) => {
-  const { profile } = useProfile(user);
-  const classId = profile?.classroom_id || profile?.class_id;
-  const { assignments } = useAssignments(classId);
-  const { playClick, playBlip } = useSound();
+  const classroomId = user?.classroomId;
+  const { assignments } = useAssignments(classroomId);
+  const { playClick } = useSound();
   
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
 
-  const myAssignments = assignments;
-
   const filtered = useMemo(() => {
-    return myAssignments.filter(a => {
-      const sub = a.submissions.find(s => s.studentId === user.id);
+    return assignments.filter(a => {
+      // submissions may not be embedded in API response — treat as pending
+      const submissions = a.submissions || [];
+      const sub = submissions.find(s => s.studentId === user.id || s.student_id === user.id);
       const status = sub?.status || 'pending';
+      const due = new Date(a.due_date || a.dueDate);
+      const isOverdue = due < new Date();
 
       const matchesFilter =
         filter === 'all' ||
@@ -29,12 +30,12 @@ export const Assignments = ({ user }) => {
         (filter === 'graded' && status === 'graded');
 
       const matchesSearch =
-        a.title.toLowerCase().includes(search.toLowerCase()) ||
-        a.subject.toLowerCase().includes(search.toLowerCase());
+        (a.title || '').toLowerCase().includes(search.toLowerCase()) ||
+        (a.subject || '').toLowerCase().includes(search.toLowerCase());
 
       return matchesFilter && matchesSearch;
     });
-  }, [myAssignments, filter, search, user.id]);
+  }, [assignments, filter, search, user.id]);
 
   return (
     <div className="space-y-8 max-w-[1400px] mx-auto w-full pt-4 pb-12">
@@ -51,7 +52,7 @@ export const Assignments = ({ user }) => {
              </span>
              <div className="h-[1px] w-8 bg-[var(--bg-floating)]" />
              <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-2">
-               <Activity size={10} className="animate-pulse" /> Total: {myAssignments.length}
+               <Activity size={10} className="animate-pulse" /> Total: {assignments.length}
              </span>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[var(--text-primary)] flex items-center gap-4">
@@ -103,9 +104,12 @@ export const Assignments = ({ user }) => {
             </motion.div>
           ) : (
             filtered.map((a, idx) => {
-              const sub = a.submissions.find(s => s.studentId === user.id);
-              const isLate = new Date(a.dueDate) < new Date() && sub?.status !== 'graded';
+              const submissions = a.submissions || [];
+              const sub = submissions.find(s => s.studentId === user.id || s.student_id === user.id);
+              const dueDate = a.due_date || a.dueDate;
+              const isLate = new Date(dueDate) < new Date() && sub?.status !== 'graded';
               const isGraded = sub?.status === 'graded';
+              const totalMarks = a.max_marks || a.totalMarks || 100;
               
               return (
                 <motion.div 
@@ -137,19 +141,19 @@ export const Assignments = ({ user }) => {
                     <div className="flex-1 min-w-0 relative z-10">
                       <div className="flex flex-wrap items-center gap-3 mb-2">
                         <h4 className="text-xl font-bold text-[var(--text-primary)] uppercase tracking-wide group-hover:text-[var(--text-muted)] transition-colors">{a.title}</h4>
-                        {isGraded && <Badge variant="emerald">Index: {sub.marks} / {a.totalMarks}</Badge>}
+                        {isGraded && <Badge variant="emerald">Score: {sub.marks} / {totalMarks}</Badge>}
                         {isLate && <Badge variant="rose">Overdue</Badge>}
-                        {(!sub || sub.status !== 'graded') && <Badge variant="default">Processing</Badge>}
+                        {!isGraded && !isLate && <Badge variant="default">Pending</Badge>}
                       </div>
-                      <p className="text-[var(--text-muted)] text-xs font-mono uppercase tracking-widest mb-4">Subject: {a.subject} • Teacher: {a.teacherName}</p>
+                      <p className="text-[var(--text-muted)] text-xs font-mono uppercase tracking-widest mb-4">Subject: {a.subject} • Teacher: {a.teacher_name || a.teacherName || '—'}</p>
                       
                       <div className="flex items-center gap-6 text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-wide">
                         <span className="flex items-center gap-1.5 text-[var(--text-muted)] font-bold">
-                          <Calendar size={12} className="text-[var(--text-muted)]" /> Deadline: {a.dueDate}
+                          <Calendar size={12} /> Deadline: {dueDate?.split('T')[0] || dueDate}
                         </span>
                         <span className="h-1 w-1 bg-[var(--bg-floating)] rounded-full" />
                         <span className="flex items-center gap-1.5 text-[var(--text-muted)]">
-                          <Hash size={12} className="text-[var(--text-muted)]" /> Max_Score: {a.totalMarks}
+                          <Hash size={12} /> Max: {totalMarks}
                         </span>
                       </div>
                     </div>
