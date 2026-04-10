@@ -50,9 +50,54 @@ jobs:
           mkdir -p deploy/management
           cp -r academics/dist/* deploy/academics/
           cp -r management/dist/* deploy/management/
-          # Fix client-side routing on GitHub Pages
-          cp deploy/academics/index.html deploy/academics/404.html
-          cp deploy/management/index.html deploy/management/404.html
+
+          # 404.html for academics — redirects back to index with path preserved
+          cat > deploy/academics/404.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8" />
+            <script>
+              // GitHub Pages SPA redirect trick
+              // Encode the path into the query string and redirect to index.html
+              var l = window.location;
+              l.replace(
+                l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+                l.pathname.split('/').slice(0, 2).join('/') +
+                '/?p=' + encodeURIComponent(l.pathname.slice(l.pathname.indexOf('/', 1)) + l.search) +
+                (l.hash || '')
+              );
+            </script>
+          </head>
+          <body></body>
+          </html>
+          EOF
+
+          # 404.html for management — same trick
+          cat > deploy/management/404.html << 'EOF'
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8" />
+            <script>
+              var l = window.location;
+              l.replace(
+                l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+                l.pathname.split('/').slice(0, 2).join('/') +
+                '/?p=' + encodeURIComponent(l.pathname.slice(l.pathname.indexOf('/', 1)) + l.search) +
+                (l.hash || '')
+              );
+            </script>
+          </head>
+          <body></body>
+          </html>
+          EOF
+
+          # Inject the redirect receiver into academics index.html
+          sed -i 's|<head>|<head><script>!function(){var e=window.location.search;if(e){var t=new URLSearchParams(e),p=t.get("p");if(p){window.history.replaceState(null,null,p);}}}();</script>|' deploy/academics/index.html
+
+          # Inject the redirect receiver into management index.html
+          sed -i 's|<head>|<head><script>!function(){var e=window.location.search;if(e){var t=new URLSearchParams(e),p=t.get("p");if(p){window.history.replaceState(null,null,p);}}}();</script>|' deploy/management/index.html
           # Root landing page
           cat > deploy/index.html << 'EOF'
           <!DOCTYPE html>
