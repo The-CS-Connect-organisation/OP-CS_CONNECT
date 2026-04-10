@@ -51,16 +51,18 @@ jobs:
           # SPA 404 for academics — encodes path and redirects to index
           cat > deploy/academics/404.html << 'ENDOFFILE'
 <!DOCTYPE html><html><head><meta charset="utf-8"/><script>
-var l=window.location,b=l.pathname.split('/').slice(0,3).join('/');
-l.replace(l.protocol+'//'+l.hostname+(l.port?':'+l.port:'')+b+'/?p='+encodeURIComponent(l.pathname.slice(b.length)+l.search)+(l.hash||''));
+var l=window.location;
+var full=l.pathname+l.search+(l.hash||'');
+l.replace(l.protocol+'//'+l.hostname+(l.port?':'+l.port:'')+'/OP-CS_CONNECT/academics/?p='+encodeURIComponent(full));
 </script></head><body></body></html>
 ENDOFFILE
 
           # SPA 404 for management
           cat > deploy/management/404.html << 'ENDOFFILE'
 <!DOCTYPE html><html><head><meta charset="utf-8"/><script>
-var l=window.location,b=l.pathname.split('/').slice(0,3).join('/');
-l.replace(l.protocol+'//'+l.hostname+(l.port?':'+l.port:'')+b+'/?p='+encodeURIComponent(l.pathname.slice(b.length)+l.search)+(l.hash||''));
+var l=window.location;
+var full=l.pathname+l.search+(l.hash||'');
+l.replace(l.protocol+'//'+l.hostname+(l.port?':'+l.port:'')+'/OP-CS_CONNECT/management/?p='+encodeURIComponent(full));
 </script></head><body></body></html>
 ENDOFFILE
 
@@ -73,9 +75,9 @@ ENDOFFILE
 
           # Inject path-restore script into academics index.html
           python3 -c "
-import re, sys
+import re
 with open('deploy/academics/index.html','r') as f: html=f.read()
-script='<script>!function(){var e=window.location.search;if(e){var t=new URLSearchParams(e),p=t.get(\"p\");if(p){window.history.replaceState(null,null,p);}}}();</script>'
+script='<script>!function(){var e=window.location.search;if(e){var t=new URLSearchParams(e),p=t.get(\"p\");if(p){var base=\"/OP-CS_CONNECT/academics\";var rel=p.startsWith(base)?p.slice(base.length):p;window.history.replaceState(null,null,rel||\"//\");}}}();</script>'
 html=re.sub(r'<head[^>]*>',lambda m:m.group(0)+script,html,count=1)
 with open('deploy/academics/index.html','w') as f: f.write(html)
 print('Injected into academics/index.html')
@@ -83,14 +85,13 @@ print('Injected into academics/index.html')
 
           # Inject path-restore script into management index.html
           python3 -c "
-import re, sys
+import re
 with open('deploy/management/index.html','r') as f: html=f.read()
-script='<script>!function(){var e=window.location.search;if(e){var t=new URLSearchParams(e),p=t.get(\"p\");if(p){window.history.replaceState(null,null,p);}}}();</script>'
+script='<script>!function(){var e=window.location.search;if(e){var t=new URLSearchParams(e),p=t.get(\"p\");if(p){var base=\"/OP-CS_CONNECT/management\";var rel=p.startsWith(base)?p.slice(base.length):p;window.history.replaceState(null,null,rel||\"//\");}}}();</script>'
 html=re.sub(r'<head[^>]*>',lambda m:m.group(0)+script,html,count=1)
 with open('deploy/management/index.html','w') as f: f.write(html)
 print('Injected into management/index.html')
 "
-
           # Root landing page — bright white UI
           cat > deploy/index.html << 'ENDOFFILE'
 <!DOCTYPE html>
