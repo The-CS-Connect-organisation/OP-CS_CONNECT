@@ -33,15 +33,19 @@ const StatCard = ({ icon: Icon, label, value, subtitle, delay, color = '#1f2937'
 
 export const StudentDashboard = ({ user }) => {
   const { profile } = useProfile(user);
-  const classId = profile?.classroom_id || profile?.class_id;
-  const { assignments } = useAssignments(classId);
+  const classroomId = user?.classroomId || profile?.classroomId;
+  const { assignments } = useAssignments(classroomId);
   const { records: attendanceRecords } = useAttendance(user?.id);
   const { report: marksReport } = useMarks(user?.id);
-  const { announcements } = useAnnouncements(classId);
+  const { announcements } = useAnnouncements(classroomId);
 
   const pendingAssignments = assignments.filter(a => !a.submissions?.some(s => s.student_id === user.id));
   const avgMarks = marksReport?.percentage ?? 0;
-  const attendanceRate = profile?.attendance_percent ?? 0;
+  // Use attendance_percent from user object (set at login) as primary, fallback to computed
+  const attendanceRate = user?.attendancePercent
+    ?? (attendanceRecords.length > 0
+      ? Math.round(attendanceRecords.filter(r => r.status === 'present').length / attendanceRecords.length * 100)
+      : 0);
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
   const todaySchedule = [];
 
@@ -75,7 +79,7 @@ export const StudentDashboard = ({ user }) => {
             Welcome back, {user.name.split(' ')[0]}
           </h1>
           <div className="flex flex-wrap gap-2 mt-4">
-            {[`Class: ${user.class}`, `ID: ${user.admissionNo || user.rollNo}`, today].map((tag, i) => (
+            {[`Class: ${user.class || user.grade && `${user.grade}-${user.section}` || 'N/A'}`, `ID: ${user.rollNo || user.admissionNo || 'N/A'}`, today].map((tag) => (
               <span 
                 key={tag}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200"

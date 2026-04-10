@@ -3,34 +3,19 @@ import { request } from '../utils/apiClient';
 
 /**
  * Fetches the current student/teacher profile from the backend.
- * Returns classId, grade, section, attendancePercent, xp, etc.
+ * Since login now enriches the user object with profile data,
+ * this hook just returns the user object itself as the profile.
  */
 export const useProfile = (user) => {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetch = useCallback(async () => {
-    if (!user?.id) return;
-    setLoading(true);
-    try {
-      if (user.role === 'student') {
-        const res = await request(`/school/students?limit=200`);
-        const found = (res?.items || []).find(s => s.user_id === user.id);
-        setProfile(found || null);
-      } else if (user.role === 'teacher') {
-        const res = await request(`/school/teachers?limit=200`);
-        const found = (res?.items || []).find(t => t.user_id === user.id);
-        setProfile(found || null);
-      }
-    } catch (e) {
-      console.error('Profile fetch failed', e);
-    } finally {
-      setLoading(false);
-    }
-  }, [user?.id, user?.role]);
-
-  useEffect(() => { fetch(); }, [fetch]);
-  return { profile, loading, refetch: fetch };
+  // Profile data is now embedded in the user object at login time.
+  // We return it directly — no extra API call needed.
+  const profile = user ? {
+    ...user,
+    classroom_id: user.classroomId,
+    class_id: user.classroomId,
+    attendance_percent: user.attendancePercent ?? 0,
+  } : null;
+  return { profile, loading: !user, refetch: () => {} };
 };
 
 /**
@@ -68,7 +53,12 @@ export const useAttendance = (studentId) => {
     if (!studentId) return;
     setLoading(true);
     try {
-      const res = await request(`/school/attendance/${studentId}/report`);
+      // Fetch last 3 months of records
+      const now = new Date();
+      const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
+      const month = threeMonthsAgo.getMonth() + 1;
+      const year = threeMonthsAgo.getFullYear();
+      const res = await request(`/school/attendance/${studentId}/report?month=${month}&year=${year}`);
       setRecords(res?.records || []);
     } catch (e) {
       console.error('Attendance fetch failed', e);
