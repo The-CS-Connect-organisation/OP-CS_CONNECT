@@ -1,42 +1,40 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PencilLine, Search, Save, Award, Users, BookOpen, AlertCircle, TrendingUp, User } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { useStore } from '../../hooks/useStore';
-import { KEYS } from '../../data/schema';
+import { useApi } from '../../hooks/useApi';
+import { request } from '../../utils/apiClient';
 import { useSound } from '../../hooks/useSound';
 
 export const EnterGrades = ({ user, addToast }) => {
-  const { data: exams } = useStore(KEYS.EXAMS, []);
-  const { data: users } = useStore(KEYS.USERS, []);
-  const { update: updateExam } = useStore(KEYS.EXAMS, []);
   const { playClick, playBlip, playSwitch } = useSound();
-
   const [selectedExamId, setSelectedExamId] = useState('');
   const [grades, setGrades] = useState({});
+  const [saving, setSaving] = useState(false);
 
-  const myExams = useMemo(() => {
-    return exams.filter(e => e.createdBy === user.id);
-  }, [exams, user.id]);
+  const { data: examsData, refetch: refetchExams } = useApi(
+    user?.id ? `/school/exams?teacherId=${user.id}` : null,
+    { defaultValue: [], skip: !user?.id }
+  );
+  const { data: studentsData } = useApi('/school/students?limit=200', { defaultValue: [] });
 
-  const selectedExam = useMemo(() => {
-    return exams.find(e => e.id === selectedExamId);
-  }, [exams, selectedExamId]);
+  const exams = Array.isArray(examsData) ? examsData : (examsData?.items || []);
+  const allStudents = Array.isArray(studentsData) ? studentsData : (studentsData?.items || []);
 
+  const myExams = useMemo(() => exams.filter(e => e.createdBy === user.id || !e.createdBy), [exams, user.id]);
+  const selectedExam = useMemo(() => exams.find(e => e.id === selectedExamId), [exams, selectedExamId]);
   const students = useMemo(() => {
     if (!selectedExam) return [];
-    return users.filter(u => u.role === 'student' && u.class === selectedExam.class);
-  }, [users, selectedExam]);
+    return allStudents.filter(u => u.role === 'student' && u.class === selectedExam.class);
+  }, [allStudents, selectedExam]);
 
-  // UseEffect-like sync when exam changes
-  useMemo(() => {
+  // Sync grades when exam selection changes
+  useEffect(() => {
     if (selectedExam) {
       const g = {};
-      selectedExam.results?.forEach(r => {
-        g[r.studentId] = r.marks;
-      });
+      selectedExam.results?.forEach(r => { g[r.studentId] = r.marks; });
       setGrades(g);
     } else {
       setGrades({});
@@ -48,23 +46,27 @@ export const EnterGrades = ({ user, addToast }) => {
     setGrades(prev => ({ ...prev, [studentId]: marks }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!selectedExam) return;
     playBlip();
-
-    const results = students.map(s => ({
-      studentId: s.id,
-      studentName: s.name,
-      marks: grades[s.id] || 0
-    }));
-
-    updateExam(selectedExam.id, { 
-      results,
-      status: 'evaluated',
-      evaluatedAt: new Date().toISOString().split('T')[0]
-    });
-    
-    addToast?.(`Grading finalized for ${selectedExam.name}`, 'success');
+    setSaving(true);
+    try {
+      const results = students.map(s => ({
+        studentId: s.id,
+        studentName: s.name,
+        marks: grades[s.id] || 0,
+      }));
+      await request(`/school/exams/${selectedExam.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ results, status: 'evaluated', evaluatedAt: new Date().toISOString().split('T')[0] }),
+      });
+      addToast?.(`Grading finalized for ${selectedExam.name}`, 'success');
+      refetchExams();
+    } catch {
+      addToast?.('Failed to save grades. Try again.', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -140,10 +142,11 @@ export const EnterGrades = ({ user, addToast }) => {
                </div>
                <Button 
                  onClick={handleSave}
+                 disabled={saving}
                  className="w-full mt-8 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl h-12 shadow-xl shadow-slate-900/10"
                  icon={Save}
                >
-                 Save Grades
+                 {saving ? 'Saving...' : 'Save Grades'}
                </Button>
             </Card>
           )}

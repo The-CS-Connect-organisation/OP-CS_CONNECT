@@ -1,8 +1,7 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Users, FileText, CheckCircle, Clock } from 'lucide-react';
-import { useStore } from '../../hooks/useStore';
-import { KEYS } from '../../data/schema';
+import { useApi } from '../../hooks/useApi';
 import { useSound } from '../../hooks/useSound';
 
 const StatCard = ({ icon: Icon, label, value, delay, color = '#111111' }) => {
@@ -28,13 +27,19 @@ const StatCard = ({ icon: Icon, label, value, delay, color = '#111111' }) => {
 
 export const TeacherDashboard = ({ user }) => {
   const { playClick } = useSound();
-  const { data: assignments } = useStore(KEYS.ASSIGNMENTS, []);
-  const { data: users } = useStore(KEYS.USERS, []);
-  
-  const myAssignments = assignments.filter(a => a.teacherId === user.id);
+
+  const { data: assignmentsData, loading: assignmentsLoading } = useApi(
+    user?.id ? `/school/assignments?teacherId=${user.id}&limit=50` : null,
+    { defaultValue: [], skip: !user?.id }
+  );
+  const { data: studentsData } = useApi('/school/students?limit=200', { defaultValue: [] });
+
+  const assignments = Array.isArray(assignmentsData) ? assignmentsData : (assignmentsData?.items || []);
+  const students = Array.isArray(studentsData) ? studentsData : (studentsData?.items || []);
+
+  const myAssignments = assignments.filter(a => a.teacherId === user.id || !a.teacherId);
   const totalSubmissions = myAssignments.reduce((acc, a) => acc + (a.submissions?.filter(s => s.submittedAt)?.length || 0), 0);
   const pendingGrading = myAssignments.reduce((acc, a) => acc + (a.submissions?.filter(s => s.status === 'submitted')?.length || 0), 0);
-  const students = users.filter(u => u.role === 'student');
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto w-full pt-2 pb-12 font-sans">
@@ -68,7 +73,7 @@ export const TeacherDashboard = ({ user }) => {
       </motion.div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard icon={FileText} label="Assignments" value={myAssignments.length} delay={0.1} />
+        <StatCard icon={FileText} label="Assignments" value={assignmentsLoading ? '...' : myAssignments.length} delay={0.1} />
         <StatCard icon={CheckCircle} label="Total Submissions" value={totalSubmissions} delay={0.15} />
         <StatCard icon={Clock} label="Pending Review" value={pendingGrading} delay={0.2} />
         <StatCard icon={Users} label="My Students" value={students.length} delay={0.25} />

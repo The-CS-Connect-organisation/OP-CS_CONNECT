@@ -1,8 +1,7 @@
 import { motion } from 'framer-motion';
 import { User, Mail, Phone, Calendar, MapPin, BookOpen, Award, TrendingUp, Activity, ShieldCheck, Zap, Hash, Terminal } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
+import { useAttendance, useMarks } from '../../../hooks/useSchoolData';
 import { useSound } from '../../../hooks/useSound';
 
 const Badge = ({ children, color = 'zinc', className = '' }) => (
@@ -12,16 +11,19 @@ const Badge = ({ children, color = 'zinc', className = '' }) => (
 );
 
 export const Profile = ({ user }) => {
-  const { data: marks } = useStore(KEYS.MARKS, []);
-  const { data: attendance } = useStore(KEYS.ATTENDANCE, []);
   const { playClick, playBlip } = useSound();
 
-  const myMarks = marks.filter(m => m.studentId === user.id);
-  const avgMarks = myMarks.length > 0 ? Math.round(myMarks.reduce((a, b) => a + b.marksObtained, 0) / myMarks.length) : 0;
+  const { report, loading: marksLoading } = useMarks(user?.id);
+  const { records: attendanceRecords, loading: attLoading } = useAttendance(user?.id);
 
-  const myAttendance = attendance.filter(a => a.status === 'present' && a.studentId === user.id);
-  const totalAttDays = attendance.filter(a => a.studentId === user.id).length;
-  const attendanceRate = totalAttDays > 0 ? Math.round((myAttendance.length / totalAttDays) * 100) : 0;
+  const myMarks = report?.subjects || report?.marks || [];
+  const avgMarks = myMarks.length > 0
+    ? Math.round(myMarks.reduce((a, b) => a + (b.marksObtained ?? b.marks ?? 0), 0) / myMarks.length)
+    : 0;
+
+  const totalAttDays = attendanceRecords.length;
+  const presentDays = attendanceRecords.filter(a => a.status === 'present').length;
+  const attendanceRate = totalAttDays > 0 ? Math.round((presentDays / totalAttDays) * 100) : 0;
 
   const infoFields = [
     { icon: Mail, label: 'EMAIL_ADDRESS', value: user.email },
@@ -98,8 +100,8 @@ export const Profile = ({ user }) => {
       {/* Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
         {[
-          { icon: Award, label: 'MEAN_EFFICIENCY', value: `${avgMarks}%`, color: 'rose' },
-          { icon: TrendingUp, label: 'QUORUM_UPTIME', value: `${attendanceRate}%`, color: 'zinc' },
+          { icon: Award, label: 'MEAN_EFFICIENCY', value: marksLoading ? '...' : `${avgMarks}%`, color: 'rose' },
+          { icon: TrendingUp, label: 'QUORUM_UPTIME', value: attLoading ? '...' : `${attendanceRate}%`, color: 'zinc' },
           { icon: Calendar, label: 'BUFFER_DURATION', value: `${Math.floor((Date.now() - new Date(user.joined).getTime()) / (1000 * 60 * 60 * 24))}d`, color: 'rose' },
         ].map((s, idx) => (
           <motion.div key={idx} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 + (idx * 0.1) }}>

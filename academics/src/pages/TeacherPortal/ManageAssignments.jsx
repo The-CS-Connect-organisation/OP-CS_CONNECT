@@ -5,45 +5,52 @@ import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
-import { useStore } from '../../hooks/useStore';
-import { KEYS } from '../../data/schema';
+import { useApi } from '../../hooks/useApi';
+import { request } from '../../utils/apiClient';
 import { useSound } from '../../hooks/useSound';
 
 export const ManageAssignments = ({ user, addToast }) => {
-  const { data: assignments, add, update, remove } = useStore(KEYS.ASSIGNMENTS, []);
-  const { data: users } = useStore(KEYS.USERS, []);
   const { playClick, playBlip } = useSound();
-  
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [formData, setFormData] = useState({ title: '', subject: '', class: '10-A', description: '', dueDate: '', totalMarks: 20 });
+  const [saving, setSaving] = useState(false);
 
-  const myAssignments = assignments.filter(a => a.teacherId === user.id);
+  const { data: assignmentsData, refetch: refetchAssignments } = useApi(
+    user?.id ? `/school/assignments?teacherId=${user.id}&limit=50` : null,
+    { defaultValue: [], skip: !user?.id }
+  );
+
+  const assignments = Array.isArray(assignmentsData) ? assignmentsData : (assignmentsData?.items || []);
+  const myAssignments = assignments.filter(a => a.teacherId === user.id || !a.teacherId);
   const classes = ['10-A', '10-B', '11-A', '11-B', '12-A'];
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     playBlip();
     if (!formData.title || !formData.subject) {
       addToast('Please fill in required fields', 'error');
       return;
     }
-    
-    if (editing) {
-      update(editing.id, formData);
-      addToast('Assignment updated successfully', 'success');
-    } else {
-      const newAssignment = {
-        id: `asgn-${Date.now()}`,
-        ...formData,
-        teacherId: user.id,
-        teacherName: user.name,
-        createdAt: new Date().toISOString().split('T')[0],
-        submissions: users.filter(u => u.role === 'student' && u.class === formData.class).map(s => ({
-          studentId: s.id, studentName: s.name, submittedAt: null, marks: null, status: 'pending', file: null
-        }))
-      };
-      add(newAssignment);
-      addToast('New assignment published', 'success');
+    setSaving(true);
+    try {
+      if (editing) {
+        await request(`/school/assignments/${editing.id}`, {
+          method: 'PUT',
+          body: JSON.stringify(formData),
+        });
+        addToast('Assignment updated successfully', 'success');
+      } else {
+        await request('/school/assignments', {
+          method: 'POST',
+          body: JSON.stringify({ ...formData, teacherId: user.id, teacherName: user.name }),
+        });
+        addToast('New assignment published', 'success');
+      }
+      refetchAssignments();
+    } catch {
+      addToast('Failed to save assignment. Try again.', 'error');
+    } finally {
+      setSaving(false);
     }
     setModalOpen(false);
     setEditing(null);
@@ -55,6 +62,17 @@ export const ManageAssignments = ({ user, addToast }) => {
     setEditing(a);
     setFormData({ title: a.title, subject: a.subject, class: a.class, description: a.description, dueDate: a.dueDate, totalMarks: a.totalMarks });
     setModalOpen(true);
+  };
+
+  const handleDelete = async (a) => {
+    playBlip();
+    try {
+      await request(`/school/assignments/${a.id}`, { method: 'DELETE' });
+      addToast('Assignment deleted', 'info');
+      refetchAssignments();
+    } catch {
+      addToast('Failed to delete assignment.', 'error');
+    }
   };
 
   return (
@@ -133,7 +151,7 @@ export const ManageAssignments = ({ user, addToast }) => {
                       <Edit size={16} />
                     </button>
                     <button 
-                      onClick={() => { playBlip(); remove(a.id); addToast('Assignment deleted', 'info'); }}
+                      onClick={() => { playBlip(); handleDelete(a); }}
                       className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
                     >
                       <Trash2 size={16} />
@@ -198,7 +216,7 @@ export const ManageAssignments = ({ user, addToast }) => {
 
           <div className="flex gap-4 justify-end pt-6 border-t border-slate-100">
             <Button variant="secondary" onClick={() => { playBlip(); setModalOpen(false); }} className="px-6 py-2.5">Cancel</Button>
-            <Button variant="primary" onClick={handleSubmit} className="px-6 py-2.5 bg-slate-900 text-white shadow-xl shadow-slate-900/10">{editing ? 'Update Task' : 'Publish Task'}</Button>
+            <Button variant="primary" onClick={handleSubmit} disabled={saving} className="px-6 py-2.5 bg-slate-900 text-white shadow-xl shadow-slate-900/10">{editing ? 'Update Task' : 'Publish Task'}</Button>
           </div>
         </div>
       </Modal>

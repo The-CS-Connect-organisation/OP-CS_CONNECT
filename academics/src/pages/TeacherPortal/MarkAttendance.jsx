@@ -4,24 +4,32 @@ import { Check, X, ChevronLeft, ChevronRight, Activity, Calendar, Users, Zap, Cl
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { useStore } from '../../hooks/useStore';
-import { KEYS } from '../../data/schema';
+import { useApi } from '../../hooks/useApi';
+import { request } from '../../utils/apiClient';
 import { useSound } from '../../hooks/useSound';
 
 export const MarkAttendance = ({ user, addToast }) => {
-  const { data: users } = useStore(KEYS.USERS, []);
-  const { data: attendance, add, update } = useStore(KEYS.ATTENDANCE, []);
   const { playClick, playBlip, playSwitch } = useSound();
-
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedClass, setSelectedClass] = useState('10-A');
   const [visibleMonth, setVisibleMonth] = useState(() => new Date());
   const [marks, setMarks] = useState({});
+  const [saving, setSaving] = useState(false);
+
+  const { data: studentsData } = useApi(
+    `/school/students?class=${encodeURIComponent(selectedClass)}&limit=200`,
+    { defaultValue: [], deps: [selectedClass] }
+  );
+  const { data: attendanceData, refetch: refetchAttendance } = useApi(
+    `/school/attendance?date=${selectedDate}&class=${encodeURIComponent(selectedClass)}`,
+    { defaultValue: [], deps: [selectedDate, selectedClass] }
+  );
 
   const students = useMemo(
-    () => users.filter(u => u.role === 'student' && u.class === selectedClass),
-    [users, selectedClass]
+    () => Array.isArray(studentsData) ? studentsData : (studentsData?.items || []),
+    [studentsData]
   );
+  const existingAttendance = Array.isArray(attendanceData) ? attendanceData : (attendanceData?.records || attendanceData?.items || []);
 
   const subjects = user.subjects || ['General'];
 
@@ -32,7 +40,7 @@ export const MarkAttendance = ({ user, addToast }) => {
   };
 
   const getAggregatedStatusForStudent = (studentId, date) => {
-    const recs = attendance.filter(a => a.studentId === studentId && a.date === date);
+    const recs = existingAttendance.filter(a => a.studentId === studentId && a.date === date);
     if (recs.length === 0) return 'none';
     const statuses = recs.map(r => r.status);
     if (statuses.includes('absent')) return 'absent';
@@ -48,7 +56,7 @@ export const MarkAttendance = ({ user, addToast }) => {
       map[status]?.push(s);
     }
     return map;
-  }, [students, attendance, selectedDate]);
+  }, [students, existingAttendance, selectedDate]);
 
   useEffect(() => {
     const next = {};
@@ -64,25 +72,27 @@ export const MarkAttendance = ({ user, addToast }) => {
     setMarks(prev => ({ ...prev, [studentId]: status }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     playBlip();
-    let changedCount = 0;
-    for (const subject of subjects) {
-      for (const student of students) {
-        const status = marks[student.id] || 'present';
-        const existing = attendance.find(
-          a => a.studentId === student.id && a.date === selectedDate && a.subject === subject
-        );
-        const payload = { studentId: student.id, date: selectedDate, subject, status };
-        if (existing) {
-          update(existing.id, payload);
-        } else {
-          add({ id: `att-${student.id}-${selectedDate}-${subject}-${Date.now()}`, ...payload });
-        }
-        changedCount++;
-      }
+    setSaving(true);
+    try {
+      const records = students.map(s => ({
+        studentId: s.id,
+        date: selectedDate,
+        status: marks[s.id] || 'present',
+        class: selectedClass,
+      }));
+      await request('/school/attendance/bulk', {
+        method: 'POST',
+        body: JSON.stringify({ records, teacherId: user.id }),
+      });
+      addToast?.(`Attendance saved for ${selectedClass} - ${selectedDate}`, 'success');
+      refetchAttendance();
+    } catch {
+      addToast?.('Failed to save attendance. Try again.', 'error');
+    } finally {
+      setSaving(false);
     }
-    addToast?.(`Attendance saved for ${selectedClass} - ${selectedDate}`, 'success');
   };
 
   const monthDays = useMemo(() => {
@@ -103,7 +113,7 @@ export const MarkAttendance = ({ user, addToast }) => {
   const getDayIndicator = (dateObj) => {
     const dateStr = dateObj.toISOString().split('T')[0];
     const studentsIds = new Set(students.map(s => s.id));
-    const recs = attendance.filter(a => a.date === dateStr && studentsIds.has(a.studentId));
+    const recs = existingAttendance.filter(a => a.date === dateStr && studentsIds.has(a.studentId));
     if (recs.length === 0) return null;
     return true;
   };
@@ -141,11 +151,12 @@ export const MarkAttendance = ({ user, addToast }) => {
         <div className="flex-1" />
         <Button 
           variant="primary" 
-          onClick={handleSubmit} 
+          onClick={handleSubmit}
+          disabled={saving}
           className="bg-slate-900 hover:bg-slate-800 text-white min-w-[200px] rounded-2xl h-12 shadow-xl shadow-slate-900/10 self-center" 
           icon={Zap}
         >
-          Publish Records
+          {saving ? 'Saving...' : 'Publish Records'}
         </Button>
       </Card>
 

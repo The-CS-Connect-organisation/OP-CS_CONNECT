@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, MapPin, User, Hash, Terminal, Activity, Zap, Layers, ChevronRight, BookOpen, GraduationCap } from 'lucide-react';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
+import { useApi } from '../../../hooks/useApi';
 import { useSound } from '../../../hooks/useSound';
 
 // Subject color mapping
@@ -35,11 +34,22 @@ const DAY_ICONS = {
 };
 
 export const Timetable = ({ user }) => {
-  const { data: timetable } = useStore(KEYS.TIMETABLE, {});
   const { playClick, playBlip } = useSound();
   const [selectedDay, setSelectedDay] = useState(new Date().toLocaleDateString('en-US', { weekday: 'long' }));
-  
-  const classTimetable = timetable[user.class] || [];
+
+  const { data: timetableData, loading } = useApi(
+    user?.class ? `/school/timetables?classId=${encodeURIComponent(user.class)}` : null,
+    { defaultValue: null, skip: !user?.class }
+  );
+
+  const classTimetable = (() => {
+    if (!timetableData) return [];
+    if (Array.isArray(timetableData)) return timetableData;
+    if (Array.isArray(timetableData.items)) return timetableData.items;
+    if (timetableData[user.class]) return timetableData[user.class];
+    return [];
+  })();
+
   const todaySchedule = classTimetable.find(t => t.day === selectedDay)?.slots || [];
 
   const getTimePeriod = (time) => {
@@ -89,186 +99,154 @@ export const Timetable = ({ user }) => {
         </div>
       </motion.div>
 
-      {/* ── Day Selector Tabs ── */}
-      <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-        {classTimetable.map((day, idx) => {
-          const isActive = selectedDay === day.day;
-          const icon = DAY_ICONS[day.day] || '📅';
-          return (
-            <motion.button
-              key={day.day}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-              whileHover={{ scale: 1.02, y: -1 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => { playClick(); setSelectedDay(day.day); }}
-              className={`px-5 py-3 rounded-xl text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
-                isActive
-                  ? 'bg-black text-white shadow-lg'
-                  : 'bg-white text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-surface)]'
-              }`}
-            >
-              <span className="text-lg">{icon}</span>
-              <span>{day.day}</span>
-              {isActive && (
-                <motion.div
-                  layoutId="dayIndicator"
-                  className="absolute inset-0 rounded-xl"
-                  style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}
-                />
-              )}
-            </motion.button>
-          );
-        })}
-      </div>
-
-      {/* ── Schedule Grid ── */}
-      <div className="relative">
-        <AnimatePresence mode="wait">
-          <motion.div 
-            key={selectedDay}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.3 }}
-            className="grid gap-4"
-          >
-            {todaySchedule.length === 0 ? (
-              <motion.div 
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="nova-card border-dashed border-[var(--border-default)] py-24 text-center"
+      {/* ── Day Selector Tabs + Schedule ── */}
+      {loading ? (
+        <div className="py-16 text-center nova-card">
+          <p className="text-sm animate-pulse" style={{ color: 'var(--text-muted)' }}>Loading timetable...</p>
+        </div>
+      ) : (
+        <>
+        <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+          {classTimetable.map((day, idx) => {
+            const isActive = selectedDay === day.day;
+            const icon = DAY_ICONS[day.day] || '📅';
+            return (
+              <motion.button
+                key={day.day}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                whileHover={{ scale: 1.02, y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => { playClick(); setSelectedDay(day.day); }}
+                className={`px-5 py-3 rounded-xl text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
+                  isActive
+                    ? 'bg-black text-white shadow-lg'
+                    : 'bg-white text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-surface)]'
+                }`}
               >
-                <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
-                  style={{ background: 'var(--bg-elevated)' }}>
-                  <Terminal size={32} className="text-[var(--text-muted)]" />
-                </div>
-                <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>No Classes Scheduled</h3>
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Enjoy your free time! 🎉</p>
-              </motion.div>
-            ) : (
-              todaySchedule.map((slot, idx) => {
-                const colors = getSubjectColor(slot.subject);
-                const isNow = slot.time.includes('Now') || false;
-                
-                return (
+                <span className="text-lg">{icon}</span>
+                <span>{day.day}</span>
+                {isActive && (
                   <motion.div
-                    key={`${selectedDay}-${idx}`}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.06 }}
-                  >
-                    <div 
-                      className={`nova-card p-5 cursor-pointer group relative overflow-hidden ${isNow ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}
-                      style={{
-                        background: colors.bg,
-                        border: `1px solid ${colors.border}`,
-                      }}
-                      onMouseEnter={playClick}
+                    layoutId="dayIndicator"
+                    className="absolute inset-0 rounded-xl"
+                    style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+
+        {/* ── Schedule Grid ── */}
+        <div className="relative">
+          <AnimatePresence mode="wait">
+            <motion.div 
+              key={selectedDay}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.3 }}
+              className="grid gap-4"
+            >
+              {todaySchedule.length === 0 ? (
+                <motion.div 
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="nova-card border-dashed border-[var(--border-default)] py-24 text-center"
+                >
+                  <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
+                    style={{ background: 'var(--bg-elevated)' }}>
+                    <Terminal size={32} className="text-[var(--text-muted)]" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>No Classes Scheduled</h3>
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Enjoy your free time! 🎉</p>
+                </motion.div>
+              ) : (
+                todaySchedule.map((slot, idx) => {
+                  const colors = getSubjectColor(slot.subject);
+                  const isNow = slot.time.includes('Now') || false;
+                  
+                  return (
+                    <motion.div
+                      key={`${selectedDay}-${idx}`}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.06 }}
                     >
-                      {/* Glow effect on hover */}
                       <div 
-                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                        style={{ background: `radial-gradient(ellipse at left, ${colors.glow}, transparent 60%)` }}
-                      />
-
-                      <div className="flex items-center gap-5 relative z-10">
-                        {/* Time Block */}
-                        <div className="flex-shrink-0">
-                          <div 
-                            className="w-20 h-20 rounded-xl flex flex-col items-center justify-center"
-                            style={{ 
-                              background: 'white',
-                              border: `1px solid ${colors.border}`,
-                              boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-                            }}
-                          >
-                            <Clock size={16} className="mb-1" style={{ color: colors.text }} />
-                            <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
-                              {slot.time.split(' - ')[0] || slot.time.split(' ')[0]}
-                            </span>
-                            {slot.time.includes('-') && (
-                              <span className="text-[10px] text-[var(--text-muted)]">
-                                {slot.time.split(' - ')[1]}
+                        className={`nova-card p-5 cursor-pointer group relative overflow-hidden ${isNow ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}
+                        style={{ background: colors.bg, border: `1px solid ${colors.border}` }}
+                        onMouseEnter={playClick}
+                      >
+                        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                          style={{ background: `radial-gradient(ellipse at left, ${colors.glow}, transparent 60%)` }} />
+                        <div className="flex items-center gap-5 relative z-10">
+                          <div className="flex-shrink-0">
+                            <div className="w-20 h-20 rounded-xl flex flex-col items-center justify-center"
+                              style={{ background: 'white', border: `1px solid ${colors.border}`, boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}>
+                              <Clock size={16} className="mb-1" style={{ color: colors.text }} />
+                              <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                                {slot.time.split(' - ')[0] || slot.time.split(' ')[0]}
                               </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Connector Line */}
-                        <div className="flex-shrink-0 hidden md:block">
-                          <div className="w-8 h-[2px]" style={{ background: colors.border }} />
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span 
-                                  className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider"
-                                  style={{ background: colors.bg, color: colors.text, border: `1px solid ${colors.border}` }}
-                                >
-                                  {getTimePeriod(slot.time)}
-                                </span>
-                                {isNow && (
-                                  <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                    Live Now
-                                  </span>
-                                )}
-                              </div>
-                              <h3 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-                                {slot.subject}
-                              </h3>
+                              {slot.time.includes('-') && (
+                                <span className="text-[10px] text-[var(--text-muted)]">{slot.time.split(' - ')[1]}</span>
+                              )}
                             </div>
-
-                            <ChevronRight 
-                              size={24} 
-                              className="flex-shrink-0 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] group-hover:translate-x-1 transition-all" 
-                            />
                           </div>
-
-                          {/* Details */}
-                          <div className="flex flex-wrap gap-4 mt-4">
-                            <span className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                              <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-elevated)' }}>
-                                <User size={14} />
-                              </div>
-                              <span className="font-medium">{slot.teacher}</span>
-                            </span>
-                            <span className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                              <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-elevated)' }}>
-                                <MapPin size={14} />
-                              </div>
-                              <span className="font-medium">Room {slot.room}</span>
-                            </span>
-                            {slot.duration && (
-                              <span className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                                <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-elevated)' }}>
-                                  <Clock size={14} />
+                          <div className="flex-shrink-0 hidden md:block">
+                            <div className="w-8 h-[2px]" style={{ background: colors.border }} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider"
+                                    style={{ background: colors.bg, color: colors.text, border: `1px solid ${colors.border}` }}>
+                                    {getTimePeriod(slot.time)}
+                                  </span>
+                                  {isNow && (
+                                    <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center gap-1">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                      Live Now
+                                    </span>
+                                  )}
                                 </div>
-                                <span className="font-medium">{slot.duration}</span>
+                                <h3 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>{slot.subject}</h3>
+                              </div>
+                              <ChevronRight size={24} className="flex-shrink-0 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] group-hover:translate-x-1 transition-all" />
+                            </div>
+                            <div className="flex flex-wrap gap-4 mt-4">
+                              <span className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-elevated)' }}><User size={14} /></div>
+                                <span className="font-medium">{slot.teacher}</span>
                               </span>
-                            )}
+                              <span className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-elevated)' }}><MapPin size={14} /></div>
+                                <span className="font-medium">Room {slot.room}</span>
+                              </span>
+                              {slot.duration && (
+                                <span className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                  <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-elevated)' }}><Clock size={14} /></div>
+                                  <span className="font-medium">{slot.duration}</span>
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
+                        <div className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl" style={{ background: colors.text }} />
                       </div>
+                    </motion.div>
+                  );
+                })
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        </>
+      )}
 
-                      {/* Subject indicator bar */}
-                      <div 
-                        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
-                        style={{ background: colors.text }}
-                      />
-                    </div>
-                  </motion.div>
-                );
-              })
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </div>
     </div>
   );
 };

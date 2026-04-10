@@ -5,21 +5,25 @@ import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
-import { useStore } from '../../hooks/useStore';
-import { KEYS } from '../../data/schema';
+import { useApi } from '../../hooks/useApi';
+import { request } from '../../utils/apiClient';
 import { useSound } from '../../hooks/useSound';
 
 export const GradeSubmissions = ({ user, addToast }) => {
-  const { data: assignments, update } = useStore(KEYS.ASSIGNMENTS, []);
   const { playClick, playBlip } = useSound();
-
-  const [selectedAsgn, setSelectedAsgn] = useState(null);
   const [filter, setFilter] = useState('submitted');
   const [gradingModal, setGradingModal] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [gradeData, setGradeData] = useState({ marks: '', feedback: '' });
+  const [saving, setSaving] = useState(false);
 
-  const myAssignments = assignments.filter(a => a.teacherId === user.id);
+  const { data: assignmentsData, refetch: refetchAssignments } = useApi(
+    user?.id ? `/school/assignments?teacherId=${user.id}&limit=50` : null,
+    { defaultValue: [], skip: !user?.id }
+  );
+
+  const assignments = Array.isArray(assignmentsData) ? assignmentsData : (assignmentsData?.items || []);
+  const myAssignments = assignments.filter(a => a.teacherId === user.id || !a.teacherId);
 
   const flatSubmissions = useMemo(() => {
     const list = [];
@@ -43,26 +47,33 @@ export const GradeSubmissions = ({ user, addToast }) => {
     setGradingModal(true);
   };
 
-  const handleSaveGrade = () => {
+  const handleSaveGrade = async () => {
     playBlip();
     if (gradeData.marks === '') {
       addToast('Please enter a grade score', 'error');
       return;
     }
-
-    const assignment = assignments.find(a => a.id === selectedSubmission.assignmentId);
-    if (!assignment) return;
-
-    const newSubmissions = assignment.submissions.map(s => {
-      if (s.studentId === selectedSubmission.studentId) {
-        return { ...s, marks: parseFloat(gradeData.marks), feedback: gradeData.feedback, status: 'graded', gradedAt: new Date().toISOString().split('T')[0] };
-      }
-      return s;
-    });
-
-    update(assignment.id, { submissions: newSubmissions });
-    setGradingModal(false);
-    addToast(`Grade published for ${selectedSubmission.studentName}`, 'success');
+    setSaving(true);
+    try {
+      await request(`/school/submissions/${selectedSubmission.submissionId || selectedSubmission.studentId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          marks: parseFloat(gradeData.marks),
+          feedback: gradeData.feedback,
+          status: 'graded',
+          gradedAt: new Date().toISOString().split('T')[0],
+          assignmentId: selectedSubmission.assignmentId,
+          studentId: selectedSubmission.studentId,
+        }),
+      });
+      setGradingModal(false);
+      addToast(`Grade published for ${selectedSubmission.studentName}`, 'success');
+      refetchAssignments();
+    } catch {
+      addToast('Failed to save grade. Try again.', 'error');
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -237,10 +248,11 @@ export const GradeSubmissions = ({ user, addToast }) => {
                <Button variant="secondary" onClick={() => setGradingModal(false)} className="px-6 py-2.5">Cancel</Button>
                <Button 
                  variant="primary" 
-                 onClick={handleSaveGrade} 
+                 onClick={handleSaveGrade}
+                 disabled={saving}
                  className="px-6 py-2.5 bg-slate-900 text-white shadow-xl shadow-slate-900/10"
                >
-                 Review & Publish
+                 {saving ? 'Saving...' : 'Review & Publish'}
                </Button>
             </div>
           </div>

@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Users, UserCheck, Award, Bell, TrendingUp, Calendar, ArrowRight } from 'lucide-react';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
+import { useApi } from '../../../hooks/useApi';
+import { useAnnouncements, useMarks, useAttendance } from '../../../hooks/useSchoolData';
 import { useSound } from '../../../hooks/useSound';
 
 const StatCard = ({ icon: Icon, label, value, subtitle, delay, color = '#111111' }) => {
@@ -35,39 +35,31 @@ const StatCard = ({ icon: Icon, label, value, subtitle, delay, color = '#111111'
 
 export const ParentDashboard = ({ user }) => {
   const { playClick } = useSound();
-  const { data: students } = useStore(KEYS.STUDENTS, []);
-  const { data: marks } = useStore(KEYS.MARKS, []);
-  const { data: attendance } = useStore(KEYS.ATTENDANCE, []);
-  const { data: announcements } = useStore(KEYS.ANNOUNCEMENTS, []);
 
-  // In a real app, we'd filter by user.childrenIds
-  // For seeding demo, we'll pick the first child linked to this parent or just the first student
-  const myChildren = useMemo(() => {
-    return students.filter(s => s.parentId === user.id || s.id === user.childId);
-  }, [students, user]);
+  const { data: studentsData } = useApi(
+    user?.id ? `/school/students?parentId=${user.id}&limit=50` : null,
+    { defaultValue: [], skip: !user?.id }
+  );
+  const { announcements } = useAnnouncements();
 
+  const students = Array.isArray(studentsData) ? studentsData : (studentsData?.items || []);
+  const myChildren = useMemo(() => students.filter(s => s.parentId === user.id || s.id === user.childId), [students, user]);
   const activeChild = myChildren[0] || students[0];
 
-  const childMarks = useMemo(() => {
-    if (!activeChild) return [];
-    return marks.filter(m => m.studentId === activeChild.id);
-  }, [marks, activeChild]);
+  const { report } = useMarks(activeChild?.id);
+  const { records: attendanceRecords } = useAttendance(activeChild?.id);
 
+  const childMarks = report?.subjects || report?.marks || [];
   const avgMarks = useMemo(() => {
     if (childMarks.length === 0) return 0;
-    return Math.round(childMarks.reduce((a, b) => a + b.marksObtained, 0) / childMarks.length);
+    return Math.round(childMarks.reduce((a, b) => a + (b.marksObtained ?? b.marks ?? 0), 0) / childMarks.length);
   }, [childMarks]);
 
-  const childAttendance = useMemo(() => {
-    if (!activeChild) return [];
-    return attendance.filter(a => a.studentId === activeChild.id);
-  }, [attendance, activeChild]);
-
   const attendanceRate = useMemo(() => {
-    if (childAttendance.length === 0) return 0;
-    const present = childAttendance.filter(a => a.status === 'present').length;
-    return Math.round((present / childAttendance.length) * 100);
-  }, [childAttendance]);
+    if (attendanceRecords.length === 0) return 0;
+    const present = attendanceRecords.filter(a => a.status === 'present').length;
+    return Math.round((present / attendanceRecords.length) * 100);
+  }, [attendanceRecords]);
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto w-full relative pt-2 pb-12">
@@ -133,10 +125,10 @@ export const ParentDashboard = ({ user }) => {
                   >
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{mark.subject}</p>
-                      <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{mark.marksObtained}/{mark.totalMarks}</p>
+                      <p className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>{mark.marksObtained ?? mark.marks}/{mark.totalMarks}</p>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className="text-sm font-mono font-bold" style={{ color: mark.marksObtained > 75 ? '#10b981' : '#f59e0b' }}>
+                      <span className="text-sm font-mono font-bold" style={{ color: (mark.marksObtained ?? mark.marks) > 75 ? '#10b981' : '#f59e0b' }}>
                         {mark.grade || 'A'}
                       </span>
                       <span className="text-[10px]" style={{ color: 'var(--text-dim)' }}>{mark.examType}</span>

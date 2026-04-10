@@ -5,15 +5,24 @@ import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Modal } from '../../../components/ui/Modal';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
+import { useApi } from '../../../hooks/useApi';
+import { request } from '../../../utils/apiClient';
 import { ChatModal } from '../../../components/messaging/ChatModal';
 import { CallModal } from '../../../components/messaging/CallModal';
 import { useSound } from '../../../hooks/useSound';
 
 export const Notes = ({ user, addToast }) => {
-  const { data: notes, update: updateNote } = useStore(KEYS.NOTES, []);
-  const { data: noteRequests, add: addNoteRequest } = useStore(KEYS.NOTE_REQUESTS, []);
+  const { data: notesRaw, loading: notesLoading } = useApi(
+    user?.class ? `/school/notes?classId=${encodeURIComponent(user.class)}` : null,
+    { defaultValue: [], skip: !user?.class }
+  );
+  const { data: requestsRaw, refetch: refetchRequests } = useApi(
+    user?.id ? `/school/note-requests?studentId=${user.id}` : null,
+    { defaultValue: [], skip: !user?.id }
+  );
+
+  const notes = Array.isArray(notesRaw) ? notesRaw : (notesRaw?.items || []);
+  const noteRequests = Array.isArray(requestsRaw) ? requestsRaw : (requestsRaw?.items || []);
   const { playClick, playBlip, playSwitch } = useSound();
 
   const [search, setSearch] = useState('');
@@ -71,39 +80,43 @@ export const Notes = ({ user, addToast }) => {
     setRequestModalOpen(true);
   };
 
-  const handleSubmitRequest = () => {
+  const handleSubmitRequest = async () => {
     if (!requestNote) return;
     playBlip();
-    addNoteRequest({
-      id: `req-${Date.now()}`,
-      noteId: requestNote.id,
-      noteTitle: requestNote.title,
-      teacherId: requestNote.teacherId,
-      teacherName: requestNote.teacherName,
-      studentId: user.id,
-      studentName: user.name,
-      class: requestNote.class,
-      subject: requestNote.subject,
-      message: requestMessage.trim(),
-      status: 'pending',
-      createdAt: new Date().toISOString().split('T')[0],
-      fulfilledAt: null,
-      fulfilledBy: null,
-    });
-
-    addToast?.('Request Transmitted to Auth_Socket.', 'success');
+    try {
+      await request('/school/note-requests', {
+        method: 'POST',
+        body: JSON.stringify({
+          noteId: requestNote.id,
+          noteTitle: requestNote.title,
+          teacherId: requestNote.teacherId,
+          teacherName: requestNote.teacherName,
+          studentId: user.id,
+          studentName: user.name,
+          class: requestNote.class,
+          subject: requestNote.subject,
+          message: requestMessage.trim(),
+        }),
+      });
+      addToast?.('Request Transmitted to Auth_Socket.', 'success');
+      refetchRequests();
+    } catch {
+      addToast?.('Failed to send request. Try again.', 'error');
+    }
     setRequestModalOpen(false);
     setRequestNote(null);
     setRequestMessage('');
   };
 
-  const handleDownload = (note) => {
+  const handleDownload = async (note) => {
     if (!canDownloadNote(note)) {
       addToast?.('Auth_Failure: Component Locked.', 'warning');
       return;
     }
     playSwitch();
-    updateNote(note.id, { downloads: (note.downloads || 0) + 1 });
+    try {
+      await request(`/school/notes/${note.id}/download`, { method: 'POST' });
+    } catch { /* non-critical */ }
     addToast?.('ByteStream_Initialized (Simulated).', 'success');
   };
 
