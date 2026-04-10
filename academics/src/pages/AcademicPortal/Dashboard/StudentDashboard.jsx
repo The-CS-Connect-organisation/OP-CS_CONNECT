@@ -1,8 +1,7 @@
 import { useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Clock, Award, FileText, UserCheck, TrendingUp, AlertCircle, ChevronRight, Wrench, Users, MessageCircle } from 'lucide-react';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
+import { useProfile, useAssignments, useAttendance, useMarks, useAnnouncements } from '../../../hooks/useSchoolData';
 
 const StatCard = ({ icon: Icon, label, value, subtitle, delay, color = '#1f2937' }) => {
   return (
@@ -33,36 +32,18 @@ const StatCard = ({ icon: Icon, label, value, subtitle, delay, color = '#1f2937'
 };
 
 export const StudentDashboard = ({ user }) => {
-  const { data: assignments } = useStore(KEYS.ASSIGNMENTS, []);
-  const { data: marks } = useStore(KEYS.MARKS, []);
-  const { data: attendance } = useStore(KEYS.ATTENDANCE, []);
-  const { data: timetable } = useStore(KEYS.TIMETABLE, {});
-  const { data: announcements, update: updateAnnouncement } = useStore(KEYS.ANNOUNCEMENTS, []);
+  const { profile } = useProfile(user);
+  const classId = profile?.classroom_id || profile?.class_id;
+  const { assignments } = useAssignments(classId);
+  const { records: attendanceRecords } = useAttendance(user?.id);
+  const { report: marksReport } = useMarks(user?.id);
+  const { announcements } = useAnnouncements(classId);
 
-  const myAssignments = assignments.filter(a => a.class === user.class);
-  const pendingAssignments = myAssignments.filter(a => {
-    const sub = a.submissions?.find(s => s.studentId === user.id);
-    return !sub || sub.status === 'pending';
-  });
-
-  const myMarks = marks.filter(m => m.studentId === user.id);
-  const avgMarks = myMarks.length > 0 ? Math.round(myMarks.reduce((a, b) => a + b.marksObtained, 0) / myMarks.length) : 0;
-
-  const myAttendance = attendance.filter(a => a.studentId === user.id);
-  const presentCount = myAttendance.filter(a => a.status === 'present').length;
-  const attendanceRate = myAttendance.length > 0 ? Math.round((presentCount / myAttendance.length) * 100) : 0;
-
+  const pendingAssignments = assignments.filter(a => !a.submissions?.some(s => s.student_id === user.id));
+  const avgMarks = marksReport?.percentage ?? 0;
+  const attendanceRate = profile?.attendance_percent ?? 0;
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-  const todaySchedule = timetable[user.class]?.find(t => t.day === today)?.slots || [];
-
-  useEffect(() => {
-    if (!user || announcements.length === 0) return;
-    const toMark = announcements.filter(a => !(a.readBy || []).includes(user.id));
-    if (toMark.length === 0) return;
-    toMark.forEach(a => {
-      updateAnnouncement(a.id, { readBy: [...(a.readBy || []), user.id] });
-    });
-  }, [announcements, user, updateAnnouncement]);
+  const todaySchedule = [];
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto w-full relative pt-2 pb-12">
