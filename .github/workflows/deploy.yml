@@ -58,13 +58,11 @@ jobs:
           <head>
             <meta charset="utf-8" />
             <script>
-              // GitHub Pages SPA redirect trick
-              // Encode the path into the query string and redirect to index.html
               var l = window.location;
+              var base = l.pathname.split('/').slice(0, 3).join('/');
               l.replace(
                 l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-                l.pathname.split('/').slice(0, 2).join('/') +
-                '/?p=' + encodeURIComponent(l.pathname.slice(l.pathname.indexOf('/', 1)) + l.search) +
+                base + '/?p=' + encodeURIComponent(l.pathname.slice(base.length) + l.search) +
                 (l.hash || '')
               );
             </script>
@@ -81,10 +79,10 @@ jobs:
             <meta charset="utf-8" />
             <script>
               var l = window.location;
+              var base = l.pathname.split('/').slice(0, 3).join('/');
               l.replace(
                 l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
-                l.pathname.split('/').slice(0, 2).join('/') +
-                '/?p=' + encodeURIComponent(l.pathname.slice(l.pathname.indexOf('/', 1)) + l.search) +
+                base + '/?p=' + encodeURIComponent(l.pathname.slice(base.length) + l.search) +
                 (l.hash || '')
               );
             </script>
