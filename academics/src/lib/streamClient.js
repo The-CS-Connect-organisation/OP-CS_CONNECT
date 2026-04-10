@@ -18,7 +18,13 @@ const base64url = (input) => {
   return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 };
 
+const sanitizeId = (id) =>
+  String(id || 'anon')
+    .replace(/[^a-zA-Z0-9_-]/g, '_')
+    .substring(0, 64);
+
 export const createUserToken = async (userId) => {
+  // userId passed here must already be sanitized
   const header = { alg: 'HS256', typ: 'JWT' };
   const payload = { user_id: userId };
 
@@ -30,22 +36,11 @@ export const createUserToken = async (userId) => {
   const keyData = encoder.encode(API_SECRET);
 
   const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    keyData,
-    { name: 'HMAC', hash: 'SHA-256' },
-    false,
-    ['sign']
+    'raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
   );
 
-  const signatureBuffer = await crypto.subtle.sign(
-    'HMAC',
-    cryptoKey,
-    encoder.encode(signingInput)
-  );
-
-  const signature = base64url(
-    String.fromCharCode(...new Uint8Array(signatureBuffer))
-  );
+  const signatureBuffer = await crypto.subtle.sign('HMAC', cryptoKey, encoder.encode(signingInput));
+  const signature = base64url(String.fromCharCode(...new Uint8Array(signatureBuffer)));
 
   return `${signingInput}.${signature}`;
 };

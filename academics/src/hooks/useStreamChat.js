@@ -26,25 +26,20 @@ export const useStreamChat = (user) => {
     if (connectedRef.current || connectingRef.current) return;
 
     connectingRef.current = true;
+    // Sanitize ONCE — use the same value for both the token and connectUser
     const userId = sanitizeId(user.id);
 
     try {
-      // Generate JWT signed with the app secret (browser Web Crypto)
       const token = await createUserToken(userId);
 
       await client.connectUser(
-        {
-          id: userId,
-          name: user.name,
-          role: user.role || 'user',
-        },
+        { id: userId, name: user.name, role: user.role || 'user' },
         token
       );
 
       connectedRef.current = true;
       setIsConnected(true);
       setError(null);
-      console.log('[GetStream] Connected as', userId);
     } catch (err) {
       console.error('[GetStream] Connect failed:', err);
       setError(err?.message || 'Failed to connect to chat');

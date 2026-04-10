@@ -10,14 +10,13 @@ import { isMongoId } from '../../../utils/socketClient';
 import { useStreamChat, sanitizeId } from '../../../hooks/useStreamChat';
 
 const mapProfileToContact = (profile, role) => {
-  const u = profile.userId;
-  const id = u?._id != null ? String(u._id) : profile.userId != null ? String(profile.userId) : null;
+  // API returns { user_id, grade, section, userId: { name, email } }
+  const name = profile.userId?.name || profile.name || (role === 'student' ? 'Student' : 'Teacher');
+  const id = profile.user_id || profile.id;
   if (!id) return null;
-  const name = u?.name || (role === 'student' ? 'Student' : 'Teacher');
-  const classLabel =
-    role === 'student' && profile.grade != null
-      ? `${profile.grade}-${profile.section || ''}`.replace(/-$/, '')
-      : undefined;
+  const classLabel = role === 'student' && profile.grade
+    ? `${profile.grade}-${profile.section || ''}`.replace(/-$/, '')
+    : undefined;
   return { id, name, role, ...(classLabel ? { class: classLabel } : {}) };
 };
 
@@ -46,7 +45,7 @@ export const CommunicationHub = ({ user }) => {
   const { client, isConnected } = useStreamChat(user);
 
   const token = typeof window !== 'undefined' ? getFromStorage(KEYS.AUTH_TOKEN) : null;
-  const useApi = !!token && isMongoId(user?.id);
+  const useApi = !!token; // always use API when logged in — UUIDs are valid
 
   useEffect(() => {
     if (!useApi) { setApiContacts(null); return; }
