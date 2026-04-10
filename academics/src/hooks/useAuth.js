@@ -14,6 +14,21 @@ export const useAuth = () => {
     const token = getFromStorage(KEYS.AUTH_TOKEN);
     if (token) setAuthToken(token);
     if (currentUser) {
+      // If the stored user is missing profile data (old cache), clear it and force re-login
+      if (!currentUser.classroomId && !currentUser.class && currentUser.role === 'student') {
+        removeFromStorage(KEYS.CURRENT_USER);
+        removeFromStorage(KEYS.AUTH_TOKEN);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+      if (!currentUser.classroomIds && currentUser.role === 'teacher') {
+        removeFromStorage(KEYS.CURRENT_USER);
+        removeFromStorage(KEYS.AUTH_TOKEN);
+        setUser(null);
+        setLoading(false);
+        return;
+      }
       const users = getFromStorage(KEYS.USERS, []);
       const fresh = users.find(u => u.id === currentUser.id);
       if (fresh?.isActive === false) {
