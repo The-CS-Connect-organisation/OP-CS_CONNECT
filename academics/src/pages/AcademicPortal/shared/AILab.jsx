@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
   Send, Loader2, History, Trash2, Info, MessageSquare,
   Zap, Brain, AlertTriangle, X, ChevronDown, RotateCcw, Paperclip, FileText, ImageIcon
@@ -11,7 +13,7 @@ const DISCLAIMER = "CSAI can make mistakes. Verify important information.";
 const MODEL_CONFIG = {
   balanced: {
     id: 'balanced',
-    name: 'CS v2',
+    name: 'Llama 3.1',
     subtitle: 'Fast & Efficient',
     provider: 'Cerebras',
     icon: Zap,
@@ -35,43 +37,26 @@ const MODEL_CONFIG = {
   },
 };
 
-/* ── Markdown-lite renderer ── */
-const MsgContent = ({ text }) => {
-  const blocks = text.split(/(```[\s\S]*?```)/g);
-  return (
-    <div className="space-y-2">
-      {blocks.map((block, bi) => {
-        if (block.startsWith('```')) {
-          const code = block.replace(/^```[^\n]*\n?/, '').replace(/```$/, '');
-          return (
-            <pre key={bi} className="bg-gray-100 border border-gray-200 rounded-xl p-3 text-xs font-mono overflow-x-auto text-gray-800 leading-relaxed">
-              {code}
-            </pre>
-          );
-        }
-        return (
-          <p key={bi} className="leading-relaxed">
-            {block.split('\n').map((line, li) => {
-              const parts = line.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
-              return (
-                <span key={li}>
-                  {parts.map((p, pi) => {
-                    if (p.startsWith('`') && p.endsWith('`'))
-                      return <code key={pi} className="bg-gray-100 text-violet-600 px-1.5 py-0.5 rounded text-xs font-mono border border-gray-200">{p.slice(1, -1)}</code>;
-                    if (p.startsWith('**') && p.endsWith('**'))
-                      return <strong key={pi} className="font-semibold text-gray-900">{p.slice(2, -2)}</strong>;
-                    return p;
-                  })}
-                  {li < block.split('\n').length - 1 && <br />}
-                </span>
-              );
-            })}
-          </p>
-        );
-      })}
-    </div>
-  );
-};
+/* ── Markdown renderer using react-markdown ── */
+const MsgContent = ({ text }) => (
+  <ReactMarkdown
+    remarkPlugins={[remarkGfm]}
+    components={{
+      code({ inline, children }) {
+        return inline
+          ? <code className="bg-gray-100 text-violet-600 px-1.5 py-0.5 rounded text-xs font-mono border border-gray-200">{children}</code>
+          : <pre className="bg-gray-100 border border-gray-200 rounded-xl p-3 text-xs font-mono overflow-x-auto text-gray-800 leading-relaxed my-2"><code>{children}</code></pre>;
+      },
+      p({ children }) { return <p className="leading-relaxed mb-1 last:mb-0">{children}</p>; },
+      strong({ children }) { return <strong className="font-semibold text-gray-900">{children}</strong>; },
+      ul({ children }) { return <ul className="list-disc list-inside space-y-1 my-1">{children}</ul>; },
+      ol({ children }) { return <ol className="list-decimal list-inside space-y-1 my-1">{children}</ol>; },
+      li({ children }) { return <li className="text-gray-700">{children}</li>; },
+    }}
+  >
+    {text}
+  </ReactMarkdown>
+);
 
 /* ── Particle ── */
 const Particle = ({ x, y, size, color, delay }) => (
@@ -137,86 +122,108 @@ const AdvancedWarningModal = ({ onConfirm, onCancel }) => (
 const SplashScreen = ({ onEnter }) => (
   <motion.div
     className="fixed inset-0 z-[100] flex items-center justify-center"
-    style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #ffffff 50%, #f5f0ff 100%)' }}
-    exit={{ opacity: 0, scale: 1.03 }}
-    transition={{ duration: 0.5 }}
+    style={{ background: 'linear-gradient(160deg, #eef2ff 0%, #fafafa 45%, #f5f0ff 100%)' }}
+    exit={{ opacity: 0 }}
+    transition={{ duration: 0.4 }}
   >
+    {/* Background blobs */}
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {PARTICLES.map((p, i) => <Particle key={i} {...p} />)}
-      <motion.div className="absolute w-[600px] h-[600px] rounded-full bg-blue-100 blur-[120px] opacity-50"
-        animate={{ scale: [1, 1.12, 1], x: [0, 30, 0] }}
-        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ top: '-10%', left: '-10%' }}
+      <motion.div className="absolute w-[700px] h-[700px] rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)', top: '-20%', left: '-15%' }}
+        animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut' }}
       />
-      <motion.div className="absolute w-[500px] h-[500px] rounded-full bg-violet-100 blur-[120px] opacity-40"
-        animate={{ scale: [1, 1.15, 1], x: [0, -25, 0] }}
-        transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-        style={{ bottom: '-10%', right: '-10%' }}
+      <motion.div className="absolute w-[600px] h-[600px] rounded-full"
+        style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.07) 0%, transparent 70%)', bottom: '-15%', right: '-10%' }}
+        animate={{ scale: [1, 1.12, 1] }} transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+      />
+      {/* Subtle grid */}
+      <div className="absolute inset-0 opacity-[0.025]"
+        style={{ backgroundImage: 'linear-gradient(#6366f1 1px, transparent 1px), linear-gradient(90deg, #6366f1 1px, transparent 1px)', backgroundSize: '48px 48px' }}
       />
     </div>
 
-    <div className="relative flex flex-col items-center text-center px-6 w-full max-w-md">
-      {/* Logo — no box, just floating */}
+    <div className="relative flex flex-col items-center text-center px-6 w-full max-w-lg">
+      {/* Logo */}
       <motion.div
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        className="mb-6 relative flex items-center justify-center"
+        initial={{ scale: 0.6, opacity: 0, y: 20 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        className="mb-8 relative"
       >
         <motion.div
-          className="absolute w-40 h-40 rounded-full bg-blue-200 blur-3xl opacity-40"
-          animate={{ scale: [1, 1.4, 1] }}
-          transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+          className="absolute inset-0 rounded-full blur-3xl"
+          style={{ background: 'radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 70%)', width: '160px', height: '160px', left: '50%', top: '50%', transform: 'translate(-50%,-50%)' }}
+          animate={{ scale: [1, 1.3, 1] }}
+          transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.img
           src="/logo.png"
           alt="Cornerstone School"
-          className="relative w-32 h-32 object-contain drop-shadow-2xl"
-          animate={{ y: [0, -6, 0] }}
+          className="relative w-28 h-28 object-contain drop-shadow-2xl"
+          animate={{ y: [0, -5, 0] }}
           transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
         />
       </motion.div>
 
-      {/* Wordmark */}
+      {/* CSAI */}
       <motion.div
-        initial={{ y: 28, opacity: 0 }}
+        initial={{ y: 30, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.45, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ delay: 0.3, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        className="mb-2"
       >
-        <h1 className="text-7xl font-black tracking-tighter text-gray-900 leading-none select-none">
-          CS<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-violet-600">AI</span>
+        <h1 className="text-8xl font-black tracking-tighter leading-none select-none"
+          style={{ background: 'linear-gradient(135deg, #1e1b4b 0%, #4f46e5 50%, #7c3aed 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+          CSAI
         </h1>
-        <p className="text-[11px] text-gray-400 tracking-[0.28em] uppercase font-semibold mt-3">
-          Cornerstone School · AI Studio
-        </p>
       </motion.div>
 
-      {/* Model pills */}
+      <motion.p
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.55, duration: 0.6 }}
+        className="text-[11px] text-gray-400 tracking-[0.35em] uppercase font-semibold mb-8"
+      >
+        Cornerstone School · AI Studio
+      </motion.p>
+
+      {/* Model cards */}
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.85, duration: 0.6 }}
-        className="flex gap-3 mt-8"
+        transition={{ delay: 0.75, duration: 0.6 }}
+        className="flex gap-3 mb-10"
       >
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-200 shadow-sm">
-          <Zap size={12} className="text-blue-500" />
-          <span className="text-xs text-blue-600 font-bold">CS v2</span>
+        <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white border border-blue-100 shadow-sm shadow-blue-100/50">
+          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-sky-400 flex items-center justify-center">
+            <Zap size={12} className="text-white" />
+          </div>
+          <div className="text-left">
+            <p className="text-xs font-bold text-gray-800">Llama 3.1</p>
+            <p className="text-[9px] text-gray-400">Balanced</p>
+          </div>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-violet-50 border border-violet-200 shadow-sm">
-          <Brain size={12} className="text-violet-500" />
-          <span className="text-xs text-violet-600 font-bold">Qwen-3 235B</span>
+        <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-white border border-violet-100 shadow-sm shadow-violet-100/50">
+          <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-violet-600 to-purple-500 flex items-center justify-center">
+            <Brain size={12} className="text-white" />
+          </div>
+          <div className="text-left">
+            <p className="text-xs font-bold text-gray-800">Qwen-3 235B</p>
+            <p className="text-[9px] text-gray-400">Advanced</p>
+          </div>
         </div>
       </motion.div>
 
       {/* CTA */}
       <motion.button
         onClick={onEnter}
-        initial={{ opacity: 0, y: 14 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.3, duration: 0.5 }}
-        whileHover={{ scale: 1.04, boxShadow: '0 24px 48px rgba(99,102,241,0.28)' }}
+        transition={{ delay: 1.0, duration: 0.5 }}
+        whileHover={{ scale: 1.03, boxShadow: '0 20px 40px rgba(99,102,241,0.3)' }}
         whileTap={{ scale: 0.97 }}
-        className="mt-10 px-14 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-violet-600 text-white text-sm font-bold tracking-wide shadow-xl shadow-blue-200/60 transition-all"
+        className="px-14 py-4 rounded-2xl text-white text-sm font-bold tracking-wide transition-all"
+        style={{ background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)', boxShadow: '0 8px 32px rgba(99,102,241,0.25)' }}
       >
         Enter Lab
       </motion.button>
@@ -224,7 +231,7 @@ const SplashScreen = ({ onEnter }) => (
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 1.9 }}
+        transition={{ delay: 1.4 }}
         className="text-[10px] text-gray-300 mt-5 tracking-widest uppercase"
       >
         Designed &amp; run by CSTians
@@ -289,7 +296,7 @@ export const AILab = ({ user, addToast }) => {
   };
 
   const handleSend = async () => {
-    if (!input.trim() && attachments.length === 0 || loading) return;
+    if ((!input.trim() && attachments.length === 0) || loading) return;
     let content = input.trim();
     if (attachments.length > 0) {
       const fileNames = attachments.map(f => f.name).join(', ');
@@ -335,7 +342,7 @@ export const AILab = ({ user, addToast }) => {
   }
 
   return (
-    <div className="flex bg-gray-50" style={{ height: 'calc(100vh - 64px)', overflow: 'hidden', maxWidth: '100vw', position: 'relative' }}>
+    <div className="flex bg-gray-50" style={{ height: '100%', overflow: 'hidden', width: '100%' }}>
       <AnimatePresence>
         {showAdvancedWarning && (
           <AdvancedWarningModal
@@ -609,7 +616,7 @@ export const AILab = ({ user, addToast }) => {
                 ref={fileInputRef}
                 type="file"
                 multiple
-                accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xlsx"
+                accept=".pdf,.doc,.docx,.txt,.csv,.xlsx"
                 className="hidden"
                 onChange={e => {
                   const files = Array.from(e.target.files || []);

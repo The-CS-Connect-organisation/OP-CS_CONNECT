@@ -8,6 +8,7 @@ export const Layout = ({ children, user, logout, notifications = [], onMarkRead,
   const [isCollapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const location = useLocation();
+  const isAILab = location.pathname.includes('/ai-lab');
 
   useEffect(() => {
     const handleResize = () => {
@@ -50,7 +51,7 @@ export const Layout = ({ children, user, logout, notifications = [], onMarkRead,
 
         {/* Scrollable Content */}
         <main 
-          className="flex-1 overflow-y-auto p-4 md:p-6 relative"
+          className={`flex-1 relative ${isAILab ? 'overflow-hidden p-0' : 'overflow-y-auto p-4 md:p-6'}`}
           style={{ scrollBehavior: 'smooth' }}
         >
           <AnimatePresence mode="wait">
@@ -60,7 +61,7 @@ export const Layout = ({ children, user, logout, notifications = [], onMarkRead,
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -16 }}
               transition={{ duration: 0.3 }}
-              className="max-w-[1600px] mx-auto w-full"
+              className={isAILab ? 'h-full w-full' : 'max-w-[1600px] mx-auto w-full'}
             >
               {children}
             </motion.div>
