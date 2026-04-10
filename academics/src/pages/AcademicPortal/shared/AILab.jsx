@@ -157,7 +157,7 @@ const SplashScreen = ({ onEnter }) => (
           transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.img
-          src="/logo.png"
+          src={`${import.meta.env.BASE_URL}logo.png`}
           alt="Cornerstone School"
           className="relative w-28 h-28 object-contain drop-shadow-2xl"
           animate={{ y: [0, -5, 0] }}
@@ -430,7 +430,7 @@ export const AILab = ({ user, addToast }) => {
               <History size={17} />
             </button>
             <div className="flex items-center gap-2.5">
-              <img src="/logo.png" alt="CS" className="w-7 h-7 object-contain" />
+              <img src={`${import.meta.env.BASE_URL}logo.png`} alt="CS" className="w-7 h-7 object-contain" />
               <span className="font-black text-gray-900 tracking-tight text-lg leading-none">
                 CS<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-violet-600">AI</span>
               </span>
@@ -512,7 +512,7 @@ export const AILab = ({ user, addToast }) => {
                     animate={{ scale: [1, 1.3, 1] }}
                     transition={{ duration: 3, repeat: Infinity }}
                   />
-                  <img src="/logo.png" alt="CSAI" className="relative w-28 h-28 object-contain drop-shadow-xl" />
+                  <img src={`${import.meta.env.BASE_URL}logo.png`} alt="CSAI" className="relative w-28 h-28 object-contain drop-shadow-xl" />
                 </motion.div>
                 <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">What can I help with?</h2>
                 <p className="text-sm text-gray-400 max-w-xs leading-relaxed">
@@ -661,3 +661,5 @@ export const AILab = ({ user, addToast }) => {
     </div>
   );
 };
+
+
