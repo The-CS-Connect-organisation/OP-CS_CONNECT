@@ -5,28 +5,24 @@ import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { MarksChart, SubjectWiseChart } from '../../../components/charts/MarksChart';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
+import { useMarks } from '../../../hooks/useSchoolData';
 import { useSound } from '../../../hooks/useSound';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 export const Grades = ({ user }) => {
-  const { data: marks } = useStore(KEYS.MARKS, []);
-  const { data: exams } = useStore(KEYS.EXAMS, []);
+  const { report } = useMarks(user?.id);
+  const myMarks = report?.marks || [];
   const { playClick, playBlip } = useSound();
-  const myMarks = marks.filter(m => m.studentId === user.id);
-  
   const [selectedBoard, setSelectedBoard] = useState('CBSE');
 
-  const overallAvg = useMemo(() => {
-    if (myMarks.length === 0) return 0;
-    return Math.round(myMarks.reduce((a, b) => a + b.marksObtained, 0) / myMarks.length);
-  }, [myMarks]);
-
+  const overallAvg = report?.percentage ?? 0;
   const gradeDistribution = useMemo(() => {
     const dist = {};
-    myMarks.forEach(m => { dist[m.grade] = (dist[m.grade] || 0) + 1; });
+    myMarks.forEach(m => {
+      const g = m.score >= 90 ? 'A' : m.score >= 75 ? 'B' : m.score >= 60 ? 'C' : m.score >= 45 ? 'D' : 'F';
+      dist[g] = (dist[g] || 0) + 1;
+    });
     return dist;
   }, [myMarks]);
 

@@ -4,22 +4,19 @@ import { FileText, CheckCircle, AlertCircle, Search, Calendar, Terminal, Activit
 import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
+import { useAssignments, useProfile } from '../../../hooks/useSchoolData';
 import { useSound } from '../../../hooks/useSound';
 
 export const Assignments = ({ user }) => {
-  const { data: assignments } = useStore(KEYS.ASSIGNMENTS, []);
+  const { profile } = useProfile(user);
+  const classId = profile?.classroom_id || profile?.class_id;
+  const { assignments } = useAssignments(classId);
   const { playClick, playBlip } = useSound();
   
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
 
-  // Normalize class names for matching
-  const normalizeClass = (cls) => cls?.replace(/[\s-]/g, '').toUpperCase();
-  const myAssignments = assignments.filter(a =>
-    normalizeClass(a.class) === normalizeClass(user.class)
-  );
+  const myAssignments = assignments;
 
   const filtered = useMemo(() => {
     return myAssignments.filter(a => {

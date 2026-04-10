@@ -4,14 +4,13 @@ import { CheckSquare, TrendingUp, Calendar, Activity, Terminal, Hash, Layers, Za
 import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { AttendanceChart } from '../../../components/charts/AttendanceChart';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
+import { useAttendance, useProfile } from '../../../hooks/useSchoolData';
 import { useSound } from '../../../hooks/useSound';
 
 export const Attendance = ({ user }) => {
-  const { data: attendance } = useStore(KEYS.ATTENDANCE, []);
+  const { records: myAttendance } = useAttendance(user?.id);
+  const { profile } = useProfile(user);
   const { playClick } = useSound();
-  const myAttendance = attendance.filter(a => a.studentId === user.id);
 
   const stats = useMemo(() => {
     const total = myAttendance.length;
