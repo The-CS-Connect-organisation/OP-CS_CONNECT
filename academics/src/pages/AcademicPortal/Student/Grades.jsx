@@ -12,7 +12,16 @@ import autoTable from 'jspdf-autotable';
 
 export const Grades = ({ user }) => {
   const { report } = useMarks(user?.id);
-  const myMarks = report?.marks || [];
+  // API returns { marks: [{ id, student_id, subject, exam_type, score, term }] }
+  const rawMarks = report?.marks || [];
+  // Normalise to what the UI expects
+  const myMarks = rawMarks.map(m => ({
+    ...m,
+    examName: m.term || m.exam_type || 'Exam',
+    marksObtained: m.score ?? m.marksObtained ?? 0,
+    totalMarks: 100,
+    grade: m.score >= 90 ? 'A1' : m.score >= 80 ? 'A2' : m.score >= 70 ? 'B1' : m.score >= 60 ? 'B2' : m.score >= 50 ? 'C1' : m.score >= 40 ? 'C2' : m.score >= 33 ? 'D' : 'E',
+  }));
   const { playClick, playBlip } = useSound();
   const [selectedBoard, setSelectedBoard] = useState('CBSE');
 

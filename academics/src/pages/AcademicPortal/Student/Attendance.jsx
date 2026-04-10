@@ -17,8 +17,12 @@ export const Attendance = ({ user }) => {
     const present = myAttendance.filter(a => a.status === 'present').length;
     const late = myAttendance.filter(a => a.status === 'late').length;
     const absent = total - present - late;
-    return { total, present, late, absent, rate: total > 0 ? Math.round((present / total) * 100) : 0 };
-  }, [myAttendance]);
+    // Use attendancePercent from user object (same source as dashboard) if available
+    const rate = user?.attendancePercent != null && user.attendancePercent > 0
+      ? user.attendancePercent
+      : total > 0 ? Math.round((present / total) * 100) : 0;
+    return { total, present, late, absent, rate };
+  }, [myAttendance, user?.attendancePercent]);
 
   const subjectStats = useMemo(() => {
     const map = {};

@@ -129,8 +129,8 @@ export const initializeApp = () => {
     return attendance;
   };
 
-  // Force re-seed when seed data structure changes (e.g., email fixes).
-  const SEED_VERSION = 3; // Bump this to force re-seed (Added Attendance)
+  // Force re-seed when seed data structure changes
+  const SEED_VERSION = 4; // Bumped: fees now use API user IDs from localStorage current user
   const storedVersion = getFromStorage('sms_seed_version', 0);
   if (storedVersion < SEED_VERSION) {
     // Clear stale user data
@@ -152,8 +152,25 @@ export const initializeApp = () => {
   // Ensure `fees` exists for current users.
   const existingFees = getFromStorage(KEYS.FEES, null);
   if (!Array.isArray(existingFees) || existingFees.length === 0) {
-    const fees = seedFeesForUsers(users);
+    // Seed fees for localStorage users AND for the currently logged-in API user
+    const currentUser = getFromStorage(KEYS.CURRENT_USER);
+    const feeStudents = [...users.filter(u => u.role === 'student')];
+    // If logged-in user is a student with a UUID (from Supabase), add them too
+    if (currentUser?.role === 'student' && !feeStudents.find(s => s.id === currentUser.id)) {
+      feeStudents.push(currentUser);
+    }
+    const fees = seedFeesForUsers(feeStudents);
     setToStorage(KEYS.FEES, fees);
+  } else {
+    // Check if current logged-in student has fees; if not, add them
+    const currentUser = getFromStorage(KEYS.CURRENT_USER);
+    if (currentUser?.role === 'student') {
+      const hasFees = existingFees.some(f => f.studentId === currentUser.id);
+      if (!hasFees) {
+        const newFees = seedFeesForUsers([currentUser]);
+        setToStorage(KEYS.FEES, [...existingFees, ...newFees]);
+      }
+    }
   }
 
   const attendance = getFromStorage(KEYS.ATTENDANCE, null);
@@ -203,10 +220,91 @@ export const initializeApp = () => {
   if (!isObject(timetable)) setToStorage(KEYS.TIMETABLE, {});
 
   const notes = getFromStorage(KEYS.NOTES, null);
-  if (!Array.isArray(notes)) setToStorage(KEYS.NOTES, []);
+  if (!Array.isArray(notes) || notes.length === 0) {
+    const teachers = users.filter(u => u.role === 'teacher');
+    const seededNotes = [
+      { id: 'note-1', title: 'Quadratic Equations — Complete Notes', subject: 'Mathematics', class: '10-A', description: 'Comprehensive notes covering all methods to solve quadratic equations including factoring, completing the square, and the quadratic formula.', teacherId: teachers[0]?.id || 'teacher-1', teacherName: teachers[0]?.name || 'James Anderson', createdAt: daysAgo(10), fileSize: '2.4 MB', downloads: 12 },
+      { id: 'note-2', title: 'Newton\'s Laws of Motion', subject: 'Physics', class: '10-A', description: 'Detailed explanation of all three laws with real-world examples, diagrams, and practice problems.', teacherId: teachers[2]?.id || 'teacher-3', teacherName: teachers[2]?.name || 'Arjun Mehta', createdAt: daysAgo(8), fileSize: '3.1 MB', downloads: 8 },
+      { id: 'note-3', title: 'Essay Writing Techniques', subject: 'English', class: '10-A', description: 'Step-by-step guide to writing argumentative and descriptive essays with sample essays and marking rubric.', teacherId: teachers[3]?.id || 'teacher-4', teacherName: teachers[3]?.name || 'Sara Iqbal', createdAt: daysAgo(5), fileSize: '1.8 MB', downloads: 15 },
+      { id: 'note-4', title: 'Organic Chemistry Basics', subject: 'Chemistry', class: '10-A', description: 'Introduction to organic compounds, functional groups, and basic reaction mechanisms.', teacherId: teachers[7]?.id || 'teacher-8', teacherName: teachers[7]?.name || 'Maya Thomas', createdAt: daysAgo(3), fileSize: '4.2 MB', downloads: 6 },
+      { id: 'note-5', title: 'Data Structures in Python', subject: 'Computer Science', class: '10-B', description: 'Lists, tuples, dictionaries, and sets explained with code examples and exercises.', teacherId: teachers[4]?.id || 'teacher-5', teacherName: teachers[4]?.name || 'David Roy', createdAt: daysAgo(7), fileSize: '2.9 MB', downloads: 20 },
+      { id: 'note-6', title: 'Cell Biology — Detailed Notes', subject: 'Biology', class: '10-B', description: 'Complete notes on cell structure, organelles, cell division, and cellular processes.', teacherId: teachers[5]?.id || 'teacher-6', teacherName: teachers[5]?.name || 'Priyanka Menon', createdAt: daysAgo(12), fileSize: '5.1 MB', downloads: 9 },
+    ];
+    setToStorage(KEYS.NOTES, seededNotes);
+  }
+
+  // Seed note requests — auto-approve all notes for all students
+  const noteRequests = getFromStorage(KEYS.NOTE_REQUESTS, null);
+  if (!Array.isArray(noteRequests) || noteRequests.length === 0) {
+    const currentNotes = getFromStorage(KEYS.NOTES, []);
+    const currentUser = getFromStorage(KEYS.CURRENT_USER);
+    const studentUsers = users.filter(u => u.role === 'student');
+    if (currentUser?.role === 'student') studentUsers.push(currentUser);
+    const requests = [];
+    currentNotes.forEach(note => {
+      studentUsers.forEach(student => {
+        if (!requests.find(r => r.noteId === note.id && r.studentId === student.id)) {
+          requests.push({
+            id: `req-${note.id}-${student.id}`,
+            noteId: note.id,
+            noteTitle: note.title,
+            teacherId: note.teacherId,
+            teacherName: note.teacherName,
+            studentId: student.id,
+            studentName: student.name,
+            class: note.class,
+            subject: note.subject,
+            message: 'Auto-approved',
+            status: 'fulfilled',
+            createdAt: daysAgo(5),
+            fulfilledAt: daysAgo(4),
+            fulfilledBy: note.teacherName,
+          });
+        }
+      });
+    });
+    setToStorage(KEYS.NOTE_REQUESTS, requests);
+  } else {
+    // Auto-approve for current logged-in student if not already
+    const currentUser = getFromStorage(KEYS.CURRENT_USER);
+    if (currentUser?.role === 'student') {
+      const currentNotes = getFromStorage(KEYS.NOTES, []);
+      const existing = noteRequests;
+      let changed = false;
+      currentNotes.forEach(note => {
+        if (!existing.find(r => r.noteId === note.id && r.studentId === currentUser.id)) {
+          existing.push({ id: `req-${note.id}-${currentUser.id}`, noteId: note.id, noteTitle: note.title, teacherId: note.teacherId, teacherName: note.teacherName, studentId: currentUser.id, studentName: currentUser.name, class: note.class, subject: note.subject, message: 'Auto-approved', status: 'fulfilled', createdAt: daysAgo(5), fulfilledAt: daysAgo(4), fulfilledBy: note.teacherName });
+          changed = true;
+        }
+      });
+      if (changed) setToStorage(KEYS.NOTE_REQUESTS, existing);
+    }
+  }
 
   const announcements = getFromStorage(KEYS.ANNOUNCEMENTS, null);
-  if (!Array.isArray(announcements)) setToStorage(KEYS.ANNOUNCEMENTS, []);
+  if (!Array.isArray(announcements) || announcements.length === 0) {
+    setToStorage(KEYS.ANNOUNCEMENTS, [
+      { id: 'ann-1', title: 'New Academic Year Orientation', content: 'Orientation for the new academic year starts Monday at 9 AM in the main auditorium.', date: daysAgo(2), priority: 'high', category: 'event' },
+      { id: 'ann-2', title: 'Mid Term Exam Schedule Released', content: 'Mid-term exams begin April 21. Hall tickets available in the student portal.', date: daysAgo(5), priority: 'high', category: 'exam' },
+      { id: 'ann-3', title: 'Science Fair 2026 — Registrations Open', content: 'Annual Science Fair registrations are now open. Last date: April 30.', date: daysAgo(7), priority: 'normal', category: 'event' },
+      { id: 'ann-4', title: 'Holiday: Republic Day', content: 'School will remain closed on January 26 for Republic Day.', date: daysAgo(10), priority: 'normal', category: 'holiday' },
+      { id: 'ann-5', title: 'Parent-Teacher Meeting — April 20', content: 'PTM is scheduled for April 20 from 10 AM to 1 PM.', date: daysAgo(1), priority: 'high', category: 'event' },
+    ]);
+  }
+
+  const exams = getFromStorage(KEYS.EXAMS, null);
+  if (!Array.isArray(exams) || exams.length === 0) {
+    const teachers = users.filter(u => u.role === 'teacher');
+    const students = users.filter(u => u.role === 'student');
+    const currentUser = getFromStorage(KEYS.CURRENT_USER);
+    const allStudents = currentUser?.role === 'student' ? [...students, currentUser] : students;
+    setToStorage(KEYS.EXAMS, [
+      { id: 'exam-1', name: 'Cycle Test 1 — Mathematics', subject: 'Mathematics', class: '10-A', date: daysAgo(30), maxMarks: 100, createdBy: teachers[0]?.id || 'teacher-1', status: 'evaluated', results: allStudents.filter(s => s.class === '10-A' || s.role === 'student').map((s, i) => ({ studentId: s.id, studentName: s.name, marks: 65 + (i * 7) % 30 })) },
+      { id: 'exam-2', name: 'Mid Term — Physics', subject: 'Physics', class: '10-A', date: daysAgo(15), maxMarks: 100, createdBy: teachers[2]?.id || 'teacher-3', status: 'evaluated', results: allStudents.filter(s => s.class === '10-A' || s.role === 'student').map((s, i) => ({ studentId: s.id, studentName: s.name, marks: 60 + (i * 9) % 35 })) },
+      { id: 'exam-3', name: 'Cycle Test 2 — English', subject: 'English', class: '10-B', date: daysAgo(20), maxMarks: 50, createdBy: teachers[3]?.id || 'teacher-4', status: 'evaluated', results: allStudents.filter(s => s.class === '10-B').map((s, i) => ({ studentId: s.id, studentName: s.name, marks: 35 + (i * 5) % 15 })) },
+      { id: 'exam-4', name: 'Pre-Board — Chemistry', subject: 'Chemistry', class: '10-A', date: daysAgo(5), maxMarks: 100, createdBy: teachers[7]?.id || 'teacher-8', status: 'pending', results: [] },
+    ]);
+  }
 
   const notifications = getFromStorage(KEYS.NOTIFICATIONS, null);
   if (!Array.isArray(notifications)) setToStorage(KEYS.NOTIFICATIONS, []);

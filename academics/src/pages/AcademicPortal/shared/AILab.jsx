@@ -47,11 +47,24 @@ const MsgContent = ({ text }) => (
           ? <code className="bg-gray-100 text-violet-600 px-1.5 py-0.5 rounded text-xs font-mono border border-gray-200">{children}</code>
           : <pre className="bg-gray-100 border border-gray-200 rounded-xl p-3 text-xs font-mono overflow-x-auto text-gray-800 leading-relaxed my-2"><code>{children}</code></pre>;
       },
-      p({ children }) { return <p className="leading-relaxed mb-1 last:mb-0">{children}</p>; },
+      p({ children }) { return <p className="leading-relaxed mb-2 last:mb-0">{children}</p>; },
       strong({ children }) { return <strong className="font-semibold text-gray-900">{children}</strong>; },
-      ul({ children }) { return <ul className="list-disc list-inside space-y-1 my-1">{children}</ul>; },
-      ol({ children }) { return <ol className="list-decimal list-inside space-y-1 my-1">{children}</ol>; },
-      li({ children }) { return <li className="text-gray-700">{children}</li>; },
+      em({ children }) { return <em className="italic text-gray-700">{children}</em>; },
+      ul({ children }) { return <ul className="list-disc list-inside space-y-1 my-2 pl-2">{children}</ul>; },
+      ol({ children }) { return <ol className="list-decimal list-inside space-y-1 my-2 pl-2">{children}</ol>; },
+      li({ children }) { return <li className="text-gray-700 leading-relaxed">{children}</li>; },
+      h1({ children }) { return <h1 className="text-lg font-bold text-gray-900 mt-3 mb-1">{children}</h1>; },
+      h2({ children }) { return <h2 className="text-base font-bold text-gray-900 mt-3 mb-1">{children}</h2>; },
+      h3({ children }) { return <h3 className="text-sm font-bold text-gray-900 mt-2 mb-1">{children}</h3>; },
+      blockquote({ children }) { return <blockquote className="border-l-4 border-gray-200 pl-3 my-2 text-gray-600 italic">{children}</blockquote>; },
+      hr() { return <hr className="my-3 border-gray-200" />; },
+      table({ children }) { return <div className="overflow-x-auto my-3"><table className="w-full text-xs border-collapse border border-gray-200 rounded-lg overflow-hidden">{children}</table></div>; },
+      thead({ children }) { return <thead className="bg-gray-100">{children}</thead>; },
+      tbody({ children }) { return <tbody className="divide-y divide-gray-200">{children}</tbody>; },
+      tr({ children }) { return <tr className="hover:bg-gray-50">{children}</tr>; },
+      th({ children }) { return <th className="px-3 py-2 text-left font-semibold text-gray-700 border border-gray-200">{children}</th>; },
+      td({ children }) { return <td className="px-3 py-2 text-gray-600 border border-gray-200">{children}</td>; },
+      a({ href, children }) { return <a href={href} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800">{children}</a>; },
     }}
   >
     {text}
