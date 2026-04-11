@@ -137,9 +137,9 @@ export const ManageAssignments = ({ user, addToast }) => {
                     </div>
                     <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">{a.subject} • ID: {a.id.split('-')[1]}</p>
                     <div className="flex flex-wrap items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                      <span className="flex items-center gap-1.5"><Clock size={12} /> Due: {a.dueDate}</span>
-                      <span className="flex items-center gap-1.5"><Users size={12} /> Submissions: {a.submissions.filter(s => s.submittedAt).length} / {a.submissions.length}</span>
-                      <span className="flex items-center gap-1.5"><Hash size={12} /> Total Marks: {a.totalMarks}</span>
+                      <span className="flex items-center gap-1.5"><Clock size={12} /> Due: {(a.due_date || a.dueDate)?.split('T')[0]}</span>
+                      <span className="flex items-center gap-1.5"><Users size={12} /> Submissions: {(a.submissions || []).filter(s => s.submittedAt).length} / {(a.submissions || []).length}</span>
+                      <span className="flex items-center gap-1.5"><Hash size={12} /> Total Marks: {a.max_marks || a.totalMarks}</span>
                     </div>
                   </div>
 

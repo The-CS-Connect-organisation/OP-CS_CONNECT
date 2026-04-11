@@ -1,5 +1,22 @@
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect, Component } from 'react';
+
+// Simple error boundary for pages that might crash
+class PageErrorBoundary extends Component {
+  state = { hasError: false };
+  static getDerivedStateFromError() { return { hasError: true }; }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full py-32 gap-4">
+          <p className="text-lg font-semibold text-gray-700">Something went wrong loading this page.</p>
+          <button onClick={() => this.setState({ hasError: false })} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium">Try again</button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // Hooks
 import { useAuth } from './hooks/useAuth';
@@ -202,7 +219,7 @@ function App() {
           } />
           <Route path="/student/comms" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
-              <CommunicationHub user={user} />
+              <PageErrorBoundary><CommunicationHub user={user} /></PageErrorBoundary>
             </ProtectedRoute>
           } />
           <Route path="/student/exams" element={
@@ -244,7 +261,7 @@ function App() {
           } />
           <Route path="/parent/comms" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
-              <CommunicationHub user={user} />
+              <PageErrorBoundary><CommunicationHub user={user} /></PageErrorBoundary>
             </ProtectedRoute>
           } />
 
@@ -291,7 +308,12 @@ function App() {
           } />
           <Route path="/teacher/comms" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <CommunicationHub user={user} />
+              <PageErrorBoundary><CommunicationHub user={user} /></PageErrorBoundary>
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/ai-lab" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <AILab user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/teacher/settings" element={

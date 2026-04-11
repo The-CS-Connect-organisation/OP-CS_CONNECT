@@ -26,7 +26,15 @@ export const MarkAttendance = ({ user, addToast }) => {
   );
 
   const students = useMemo(
-    () => Array.isArray(studentsData) ? studentsData : (studentsData?.items || []),
+    () => {
+      const raw = Array.isArray(studentsData) ? studentsData : (studentsData?.items || []);
+      // API returns student_profiles: { user_id, roll_number, grade, section, userId: { name } }
+      return raw.map(s => ({
+        id: s.user_id || s.id,
+        name: s.userId?.name || s.name || 'Student',
+        rollNo: s.roll_number || s.rollNo || s.roll_number || '—',
+      }));
+    },
     [studentsData]
   );
   const existingAttendance = Array.isArray(attendanceData) ? attendanceData : (attendanceData?.records || attendanceData?.items || []);

@@ -86,6 +86,13 @@ const ROLE_NAV = {
       ]
     },
     {
+      section: 'Tools',
+      items: [
+        { title: 'AI Assistant', icon: Sparkles, route: '/teacher/ai-lab' },
+        { title: 'Messages', icon: MessageCircle, route: '/teacher/comms' },
+      ]
+    },
+    {
       section: 'Profile',
       items: [
         { title: 'My Profile', icon: Settings, route: '/teacher/profile' },
