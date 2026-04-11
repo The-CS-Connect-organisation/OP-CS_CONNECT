@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cornerstone SchoolSync</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%}
+    body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#0f172a;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem}
+    body::before{content:'';position:fixed;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#6366f1,#8b5cf6,#3b82f6)}
+    .wrap{width:100%;max-width:820px;display:flex;flex-direction:column;align-items:center;gap:2.5rem}
+    .top{display:flex;flex-direction:column;align-items:center;gap:1.25rem;text-align:center}
+    .logo-box{width:80px;height:80px;border-radius:20px;overflow:hidden;box-shadow:0 8px 24px rgba(99,102,241,0.2);background:#fff;display:flex;align-items:center;justify-content:center;font-size:2rem}
+    .logo-box img{width:100%;height:100%;object-fit:contain}
+    h1{font-size:clamp(1.75rem,4vw,2.5rem);font-weight:800;letter-spacing:-0.03em;color:#0f172a;line-height:1.1}
+    h1 span{color:#6366f1}
+    .sub{font-size:0.8125rem;color:#94a3b8;font-weight:500;letter-spacing:0.06em;text-transform:uppercase}
+    hr{width:100%;border:none;border-top:1px solid #e2e8f0}
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;width:100%}
+    .card{display:flex;flex-direction:column;gap:1.25rem;padding:1.75rem;background:#fff;border:1.5px solid #e2e8f0;border-radius:20px;text-decoration:none;color:inherit;transition:all 0.2s ease}
+    .card:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,0.08)}
+    .card-a:hover{border-color:#bfdbfe}
+    .card-m:hover{border-color:#ddd6fe}
+    .row{display:flex;align-items:flex-start;justify-content:space-between}
+    .icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.375rem}
+    .card-a .icon{background:#eff6ff}
+    .card-m .icon{background:#f5f3ff}
+    .arrow{width:32px;height:32px;border-radius:50%;background:#f8fafc;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+    .card:hover .arrow{background:#6366f1;border-color:#6366f1}
+    .card:hover .arrow svg{stroke:#fff}
+    .arrow svg{width:14px;height:14px;stroke:#94a3b8;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;transition:stroke 0.2s}
+    .ctitle{font-size:1.125rem;font-weight:700;letter-spacing:-0.02em;color:#0f172a;margin-bottom:0.375rem}
+    .cdesc{font-size:0.8125rem;color:#64748b;line-height:1.65}
+    .pills{display:flex;flex-wrap:wrap;gap:0.375rem}
+    .pill{font-size:0.6875rem;font-weight:600;padding:0.25rem 0.625rem;border-radius:999px}
+    .card-a .pill{background:#eff6ff;color:#3b82f6}
+    .card-a .pill.g{background:#f0fdf4;color:#16a34a}
+    .card-m .pill{background:#f5f3ff;color:#7c3aed}
+    .card-m .pill.g{background:#fff7ed;color:#ea580c}
+    footer{font-size:0.75rem;color:#cbd5e1;text-align:center}
+    @media(max-width:600px){.cards{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <div class="logo-box">
+        <img src="./academics/logo.png" alt="Cornerstone" onerror="this.outerHTML='&#127983;'"/>
+      </div>
+      <div>
+        <h1>Cornerstone <span>SchoolSync</span></h1>
+        <div class="sub" style="margin-top:0.5rem">Next-Gen School Management System</div>
+      </div>
+    </div>
+    <hr/>
+    <div class="cards">
+      <a href="./academics/" class="card card-a">
+        <div class="row">
+          <div class="icon">&#127891;</div>
+          <div class="arrow"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        </div>
+        <div>
+          <div class="ctitle">Academics Portal</div>
+          <div class="cdesc">Assignments, grades, attendance, timetables, AI assistant, and more.</div>
+        </div>
+        <div class="pills">
+          <span class="pill">Students</span>
+          <span class="pill">Teachers</span>
+          <span class="pill g">Parents</span>
+        </div>
+      </a>
+      <a href="./management/" class="card card-m">
+        <div class="row">
+          <div class="icon">&#127970;</div>
+          <div class="arrow"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        </div>
+        <div>
+          <div class="ctitle">Management Portal</div>
+          <div class="cdesc">Administration, HR, payroll, fee management, and institutional oversight.</div>
+        </div>
+        <div class="pills">
+          <span class="pill">Admins</span>
+          <span class="pill">HODs</span>
+          <span class="pill g">Staff</span>
+        </div>
+      </a>
+    </div>
+    <footer>Cornerstone International School &nbsp;&middot;&nbsp; Powered by SchoolSync</footer>
+  </div>
+</body>
+</html>
