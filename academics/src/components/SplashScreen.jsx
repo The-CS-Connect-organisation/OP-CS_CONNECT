@@ -4,24 +4,57 @@ export default function SplashScreen({ onComplete }) {
   const timerRef = useRef(null);
 
   useEffect(() => {
-    // Play a soft intro whoosh when splash starts
+    // Play a loud startup whoosh when splash starts
     try {
       const ac = new (window.AudioContext || window.webkitAudioContext)();
       const t = ac.currentTime;
-      // Low rumble that rises — like a startup sound
-      const osc = ac.createOscillator();
-      const gain = ac.createGain();
-      const filter = ac.createBiquadFilter();
-      filter.type = 'lowpass';
-      filter.frequency.value = 800;
-      osc.connect(filter); filter.connect(gain); gain.connect(ac.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(80, t);
-      osc.frequency.exponentialRampToValueAtTime(320, t + 1.2);
-      gain.gain.setValueAtTime(0.0001, t);
-      gain.gain.linearRampToValueAtTime(0.15, t + 0.3);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 1.4);
-      osc.start(t); osc.stop(t + 1.5);
+
+      // Deep bass rumble rising — like a machine powering on
+      const osc1 = ac.createOscillator();
+      const gain1 = ac.createGain();
+      const filter1 = ac.createBiquadFilter();
+      filter1.type = 'lowpass'; filter1.frequency.value = 600;
+      osc1.connect(filter1); filter1.connect(gain1); gain1.connect(ac.destination);
+      osc1.type = 'sawtooth';
+      osc1.frequency.setValueAtTime(40, t);
+      osc1.frequency.exponentialRampToValueAtTime(180, t + 1.5);
+      gain1.gain.setValueAtTime(0.0001, t);
+      gain1.gain.linearRampToValueAtTime(0.8, t + 0.4);
+      gain1.gain.exponentialRampToValueAtTime(0.0001, t + 1.8);
+      osc1.start(t); osc1.stop(t + 2.0);
+
+      // High whoosh layer
+      const osc2 = ac.createOscillator();
+      const gain2 = ac.createGain();
+      const filter2 = ac.createBiquadFilter();
+      filter2.type = 'bandpass'; filter2.frequency.value = 1200; filter2.Q.value = 0.5;
+      osc2.connect(filter2); filter2.connect(gain2); gain2.connect(ac.destination);
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(200, t + 0.2);
+      osc2.frequency.exponentialRampToValueAtTime(1200, t + 1.4);
+      gain2.gain.setValueAtTime(0.0001, t + 0.2);
+      gain2.gain.linearRampToValueAtTime(0.5, t + 0.7);
+      gain2.gain.exponentialRampToValueAtTime(0.0001, t + 1.6);
+      osc2.start(t + 0.2); osc2.stop(t + 1.8);
+
+      // Logo reveal chime at ~5s
+      setTimeout(() => {
+        try {
+          const ac2 = new (window.AudioContext || window.webkitAudioContext)();
+          const now = ac2.currentTime;
+          [0, 0.12, 0.24].forEach((delay, i) => {
+            const freqs = [523, 659, 784];
+            const osc = ac2.createOscillator();
+            const g = ac2.createGain();
+            osc.connect(g); g.connect(ac2.destination);
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(freqs[i], now + delay);
+            g.gain.setValueAtTime(0.7, now + delay);
+            g.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.5);
+            osc.start(now + delay); osc.stop(now + delay + 0.55);
+          });
+        } catch {}
+      }, 5000);
     } catch {}
 
     timerRef.current = setTimeout(() => onComplete?.(), 7500);

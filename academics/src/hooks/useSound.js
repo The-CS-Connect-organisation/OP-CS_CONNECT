@@ -8,7 +8,6 @@ const ctx = () => {
   return audioCtx;
 };
 
-// Soft low-pass filter helper
 const lp = (ac, freq) => {
   const f = ac.createBiquadFilter();
   f.type = 'lowpass';
@@ -18,134 +17,96 @@ const lp = (ac, freq) => {
 
 export const useSound = () => {
 
-  // Soft subtle tick — for hover/mouse-enter (barely audible, satisfying)
+  // Soft tick for hover
   const playClick = useCallback(() => {
     try {
       const ac = ctx();
       const t = ac.currentTime;
       const osc = ac.createOscillator();
       const gain = ac.createGain();
-      const filter = lp(ac, 1200);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(ac.destination);
-
+      const filter = lp(ac, 1800);
+      osc.connect(filter); filter.connect(gain); gain.connect(ac.destination);
       osc.type = 'sine';
-      osc.frequency.setValueAtTime(420, t);
-      osc.frequency.exponentialRampToValueAtTime(280, t + 0.04);
-
-      gain.gain.setValueAtTime(0.06, t);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
-
-      osc.start(t);
-      osc.stop(t + 0.05);
+      osc.frequency.setValueAtTime(480, t);
+      osc.frequency.exponentialRampToValueAtTime(300, t + 0.05);
+      gain.gain.setValueAtTime(0.35, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.06);
+      osc.start(t); osc.stop(t + 0.07);
     } catch {}
   }, []);
 
-  // Satisfying "pop" — for button clicks, confirms
+  // Pop chord for button clicks
   const playBlip = useCallback(() => {
     try {
       const ac = ctx();
       const t = ac.currentTime;
-
-      // Two-tone chord for richness
       [[520, 660], [780, 980]].forEach(([f1, f2], i) => {
         const osc = ac.createOscillator();
         const gain = ac.createGain();
-        const filter = lp(ac, 2400);
-
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(ac.destination);
-
+        const filter = lp(ac, 3000);
+        osc.connect(filter); filter.connect(gain); gain.connect(ac.destination);
         osc.type = 'sine';
         osc.frequency.setValueAtTime(f1, t);
         osc.frequency.exponentialRampToValueAtTime(f2, t + 0.12);
-
-        gain.gain.setValueAtTime(i === 0 ? 0.12 : 0.06, t);
-        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
-
-        osc.start(t + i * 0.02);
-        osc.stop(t + 0.22);
+        gain.gain.setValueAtTime(i === 0 ? 0.5 : 0.3, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+        osc.start(t + i * 0.02); osc.stop(t + 0.25);
       });
     } catch {}
   }, []);
 
-  // Smooth toggle switch sound
+  // Toggle switch
   const playSwitch = useCallback(() => {
     try {
       const ac = ctx();
       const t = ac.currentTime;
       const osc = ac.createOscillator();
       const gain = ac.createGain();
-      const filter = lp(ac, 1800);
-
-      osc.connect(filter);
-      filter.connect(gain);
-      gain.connect(ac.destination);
-
+      const filter = lp(ac, 2000);
+      osc.connect(filter); filter.connect(gain); gain.connect(ac.destination);
       osc.type = 'sine';
       osc.frequency.setValueAtTime(340, t);
-      osc.frequency.linearRampToValueAtTime(560, t + 0.06);
-      osc.frequency.exponentialRampToValueAtTime(320, t + 0.12);
-
-      gain.gain.setValueAtTime(0.09, t);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
-
-      osc.start(t);
-      osc.stop(t + 0.15);
+      osc.frequency.linearRampToValueAtTime(600, t + 0.06);
+      osc.frequency.exponentialRampToValueAtTime(320, t + 0.13);
+      gain.gain.setValueAtTime(0.4, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+      osc.start(t); osc.stop(t + 0.16);
     } catch {}
   }, []);
 
-  // Success chime — 3-note ascending (payment success, save, etc.)
+  // Success chime C-E-G
   const playSuccess = useCallback(() => {
     try {
       const ac = ctx();
       const t = ac.currentTime;
       [0, 0.1, 0.2].forEach((delay, i) => {
-        const freqs = [523, 659, 784]; // C5 E5 G5
+        const freqs = [523, 659, 784];
         const osc = ac.createOscillator();
         const gain = ac.createGain();
-        const filter = lp(ac, 3000);
-
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(ac.destination);
-
+        osc.connect(gain); gain.connect(ac.destination);
         osc.type = 'sine';
         osc.frequency.setValueAtTime(freqs[i], t + delay);
-
-        gain.gain.setValueAtTime(0.13, t + delay);
-        gain.gain.exponentialRampToValueAtTime(0.0001, t + delay + 0.35);
-
-        osc.start(t + delay);
-        osc.stop(t + delay + 0.4);
+        gain.gain.setValueAtTime(0.5, t + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.4);
+        osc.start(t + delay); osc.stop(t + delay + 0.45);
       });
     } catch {}
   }, []);
 
-  // Error / warning — descending minor
+  // Error descending
   const playError = useCallback(() => {
     try {
       const ac = ctx();
       const t = ac.currentTime;
-      [0, 0.12].forEach((delay, i) => {
-        const freqs = [440, 330];
+      [0, 0.13].forEach((delay, i) => {
         const osc = ac.createOscillator();
         const gain = ac.createGain();
-
-        osc.connect(gain);
-        gain.connect(ac.destination);
-
+        osc.connect(gain); gain.connect(ac.destination);
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freqs[i], t + delay);
-
-        gain.gain.setValueAtTime(0.1, t + delay);
-        gain.gain.exponentialRampToValueAtTime(0.0001, t + delay + 0.2);
-
-        osc.start(t + delay);
-        osc.stop(t + delay + 0.25);
+        osc.frequency.setValueAtTime([440, 330][i], t + delay);
+        gain.gain.setValueAtTime(0.45, t + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + delay + 0.25);
+        osc.start(t + delay); osc.stop(t + delay + 0.3);
       });
     } catch {}
   }, []);
