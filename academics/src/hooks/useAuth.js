@@ -139,6 +139,8 @@ export const useAuth = () => {
     disconnectSocket();
     removeFromStorage(KEYS.CURRENT_USER);
     removeFromStorage(KEYS.AUTH_TOKEN);
+    // Force navigation to login — works with both BrowserRouter and HashRouter
+    window.location.hash = '/login';
   }, []);
 
   return { user, loading, login, signup, logout, isAuthenticated: !!user };
