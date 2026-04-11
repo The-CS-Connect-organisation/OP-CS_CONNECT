@@ -48,53 +48,16 @@ jobs:
           cp -r academics/dist/* deploy/academics/
           cp -r management/dist/* deploy/management/
 
-          # SPA 404 for academics — encodes path and redirects to index
-          cat > deploy/academics/404.html << 'ENDOFFILE'
-<!DOCTYPE html><html><head><meta charset="utf-8"/><script>
-var l=window.location;
-var full=l.pathname+l.search+(l.hash||'');
-l.replace(l.protocol+'//'+l.hostname+(l.port?':'+l.port:'')+'/OP-CS_CONNECT/academics/?p='+encodeURIComponent(full));
-</script></head><body></body></html>
-ENDOFFILE
+          # HashRouter means no path-based 404s needed — just copy index as 404
+          cp deploy/academics/index.html deploy/academics/404.html
+          cp deploy/management/index.html deploy/management/404.html
 
-          # SPA 404 for management
-          cat > deploy/management/404.html << 'ENDOFFILE'
-<!DOCTYPE html><html><head><meta charset="utf-8"/><script>
-var l=window.location;
-var full=l.pathname+l.search+(l.hash||'');
-l.replace(l.protocol+'//'+l.hostname+(l.port?':'+l.port:'')+'/OP-CS_CONNECT/management/?p='+encodeURIComponent(full));
-</script></head><body></body></html>
-ENDOFFILE
+          # Root 404 redirects to landing page
+          echo '<!DOCTYPE html><html><head><meta charset="utf-8"/><script>window.location.replace("/OP-CS_CONNECT/");</script></head><body></body></html>' > deploy/404.html
 
-          # Root 404 — redirect to landing
-          cat > deploy/404.html << 'ENDOFFILE'
-<!DOCTYPE html><html><head><meta charset="utf-8"/>
-<script>window.location.replace('/OP-CS_CONNECT/');</script>
-</head><body></body></html>
-ENDOFFILE
-
-          # Inject path-restore script into academics index.html
-          python3 -c "
-import re
-with open('deploy/academics/index.html','r') as f: html=f.read()
-script='<script>!function(){var e=window.location.search;if(e){var t=new URLSearchParams(e),p=t.get(\"p\");if(p){var base=\"/OP-CS_CONNECT/academics\";var rel=p.startsWith(base)?p.slice(base.length):p;window.history.replaceState(null,null,rel||\"//\");}}}();</script>'
-html=re.sub(r'<head[^>]*>',lambda m:m.group(0)+script,html,count=1)
-with open('deploy/academics/index.html','w') as f: f.write(html)
-print('Injected into academics/index.html')
-"
-
-          # Inject path-restore script into management index.html
-          python3 -c "
-import re
-with open('deploy/management/index.html','r') as f: html=f.read()
-script='<script>!function(){var e=window.location.search;if(e){var t=new URLSearchParams(e),p=t.get(\"p\");if(p){var base=\"/OP-CS_CONNECT/management\";var rel=p.startsWith(base)?p.slice(base.length):p;window.history.replaceState(null,null,rel||\"//\");}}}();</script>'
-html=re.sub(r'<head[^>]*>',lambda m:m.group(0)+script,html,count=1)
-with open('deploy/management/index.html','w') as f: f.write(html)
-print('Injected into management/index.html')
-"
-          # Root landing page — bright white UI
-          cat > deploy/index.html << 'ENDOFFILE'
-<!DOCTYPE html>
+          # Root landing page
+          python3 - << 'PYEOF'
+html = """<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -105,36 +68,18 @@ print('Injected into management/index.html')
   <style>
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
     html,body{height:100%}
-    body{
-      font-family:'Inter',sans-serif;
-      background:#f1f5f9;
-      color:#0f172a;
-      min-height:100vh;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      padding:2rem 1rem;
-    }
-    body::before{
-      content:'';position:fixed;top:0;left:0;right:0;height:4px;
-      background:linear-gradient(90deg,#6366f1,#8b5cf6,#3b82f6);
-    }
+    body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#0f172a;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem}
+    body::before{content:'';position:fixed;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#6366f1,#8b5cf6,#3b82f6)}
     .wrap{width:100%;max-width:820px;display:flex;flex-direction:column;align-items:center;gap:2.5rem}
     .top{display:flex;flex-direction:column;align-items:center;gap:1.25rem;text-align:center}
-    .logo-box{
-      width:80px;height:80px;border-radius:20px;overflow:hidden;
-      box-shadow:0 8px 24px rgba(99,102,241,0.2);
-      background:#fff;display:flex;align-items:center;justify-content:center;font-size:2rem;
-    }
+    .logo-box{width:80px;height:80px;border-radius:20px;overflow:hidden;box-shadow:0 8px 24px rgba(99,102,241,0.2);background:#fff;display:flex;align-items:center;justify-content:center;font-size:2rem}
     .logo-box img{width:100%;height:100%;object-fit:contain}
     h1{font-size:clamp(1.75rem,4vw,2.5rem);font-weight:800;letter-spacing:-0.03em;color:#0f172a;line-height:1.1}
     h1 span{color:#6366f1}
     .sub{font-size:0.8125rem;color:#94a3b8;font-weight:500;letter-spacing:0.06em;text-transform:uppercase}
     hr{width:100%;border:none;border-top:1px solid #e2e8f0}
     .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;width:100%}
-    .card{
-      display:flex;flex-direction:column;gap:1.25rem;padding:1.75rem;
-      background:#fff;border:1.5px solid #e2e8f0;border-radius:20px;
-      text-decoration:none;color:inherit;transition:all 0.2s ease;
-    }
+    .card{display:flex;flex-direction:column;gap:1.25rem;padding:1.75rem;background:#fff;border:1.5px solid #e2e8f0;border-radius:20px;text-decoration:none;color:inherit;transition:all 0.2s ease}
     .card:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(0,0,0,0.08)}
     .card-a:hover{border-color:#bfdbfe}
     .card-m:hover{border-color:#ddd6fe}
@@ -142,10 +87,7 @@ print('Injected into management/index.html')
     .icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.375rem}
     .card-a .icon{background:#eff6ff}
     .card-m .icon{background:#f5f3ff}
-    .arrow{
-      width:32px;height:32px;border-radius:50%;background:#f8fafc;border:1px solid #e2e8f0;
-      display:flex;align-items:center;justify-content:center;transition:all 0.2s;
-    }
+    .arrow{width:32px;height:32px;border-radius:50%;background:#f8fafc;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
     .card:hover .arrow{background:#6366f1;border-color:#6366f1}
     .card:hover .arrow svg{stroke:#fff}
     .arrow svg{width:14px;height:14px;stroke:#94a3b8;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;transition:stroke 0.2s}
@@ -165,7 +107,7 @@ print('Injected into management/index.html')
   <div class="wrap">
     <div class="top">
       <div class="logo-box">
-        <img src="./academics/logo.png" alt="Cornerstone" onerror="this.outerHTML='🏫'"/>
+        <img src="./academics/logo.png" alt="Cornerstone" onerror="this.outerHTML='&#127983;'"/>
       </div>
       <div>
         <h1>Cornerstone <span>SchoolSync</span></h1>
@@ -176,7 +118,7 @@ print('Injected into management/index.html')
     <div class="cards">
       <a href="./academics/" class="card card-a">
         <div class="row">
-          <div class="icon">🎓</div>
+          <div class="icon">&#127891;</div>
           <div class="arrow"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
         <div>
@@ -191,7 +133,7 @@ print('Injected into management/index.html')
       </a>
       <a href="./management/" class="card card-m">
         <div class="row">
-          <div class="icon">🏢</div>
+          <div class="icon">&#127970;</div>
           <div class="arrow"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
         <div>
@@ -205,11 +147,14 @@ print('Injected into management/index.html')
         </div>
       </a>
     </div>
-    <footer>Cornerstone International School &nbsp;·&nbsp; Powered by SchoolSync</footer>
+    <footer>Cornerstone International School &nbsp;&middot;&nbsp; Powered by SchoolSync</footer>
   </div>
 </body>
-</html>
-ENDOFFILE
+</html>"""
+with open("deploy/index.html", "w") as f:
+    f.write(html)
+print("Landing page written")
+PYEOF
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
