@@ -1,66 +1,154 @@
 import { useCallback } from 'react';
 
-// Singleton audio context to avoid reinitialization overhead
 let audioCtx = null;
 
-const getAudioContext = () => {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
-  if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
+const ctx = () => {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 };
 
+// Soft low-pass filter helper
+const lp = (ac, freq) => {
+  const f = ac.createBiquadFilter();
+  f.type = 'lowpass';
+  f.frequency.value = freq;
+  return f;
+};
+
 export const useSound = () => {
+
+  // Soft subtle tick — for hover/mouse-enter (barely audible, satisfying)
   const playClick = useCallback(() => {
     try {
-      const ctx = getAudioContext();
-      const osc = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-      
-      osc.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      
-      // Make a thick mechanical 'thock' / 'click'
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(200, ctx.currentTime); 
-      osc.frequency.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
-      
-      gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-      
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.05);
-    } catch (e) {
-      // Ignore errors if context fails or is blocked
-    }
+      const ac = ctx();
+      const t = ac.currentTime;
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      const filter = lp(ac, 1200);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ac.destination);
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(420, t);
+      osc.frequency.exponentialRampToValueAtTime(280, t + 0.04);
+
+      gain.gain.setValueAtTime(0.06, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.04);
+
+      osc.start(t);
+      osc.stop(t + 0.05);
+    } catch {}
   }, []);
 
+  // Satisfying "pop" — for button clicks, confirms
   const playBlip = useCallback(() => {
     try {
-      const ctx = getAudioContext();
-      const osc = ctx.createOscillator();
-      const gainNode = ctx.createGain();
-      
-      osc.connect(gainNode);
-      gainNode.connect(ctx.destination);
-      
-      // Higher pitch blip for success/login
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(800, ctx.currentTime); 
-      osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.1);
-      
-      gainNode.gain.setValueAtTime(0.1, ctx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-      
-      osc.start(ctx.currentTime);
-      osc.stop(ctx.currentTime + 0.1);
-    } catch (e) {
-      // Ignore
-    }
+      const ac = ctx();
+      const t = ac.currentTime;
+
+      // Two-tone chord for richness
+      [[520, 660], [780, 980]].forEach(([f1, f2], i) => {
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        const filter = lp(ac, 2400);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ac.destination);
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(f1, t);
+        osc.frequency.exponentialRampToValueAtTime(f2, t + 0.12);
+
+        gain.gain.setValueAtTime(i === 0 ? 0.12 : 0.06, t);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+
+        osc.start(t + i * 0.02);
+        osc.stop(t + 0.22);
+      });
+    } catch {}
   }, []);
 
-  return { playClick, playBlip };
+  // Smooth toggle switch sound
+  const playSwitch = useCallback(() => {
+    try {
+      const ac = ctx();
+      const t = ac.currentTime;
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      const filter = lp(ac, 1800);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(ac.destination);
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(340, t);
+      osc.frequency.linearRampToValueAtTime(560, t + 0.06);
+      osc.frequency.exponentialRampToValueAtTime(320, t + 0.12);
+
+      gain.gain.setValueAtTime(0.09, t);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.14);
+
+      osc.start(t);
+      osc.stop(t + 0.15);
+    } catch {}
+  }, []);
+
+  // Success chime — 3-note ascending (payment success, save, etc.)
+  const playSuccess = useCallback(() => {
+    try {
+      const ac = ctx();
+      const t = ac.currentTime;
+      [0, 0.1, 0.2].forEach((delay, i) => {
+        const freqs = [523, 659, 784]; // C5 E5 G5
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+        const filter = lp(ac, 3000);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ac.destination);
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freqs[i], t + delay);
+
+        gain.gain.setValueAtTime(0.13, t + delay);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + delay + 0.35);
+
+        osc.start(t + delay);
+        osc.stop(t + delay + 0.4);
+      });
+    } catch {}
+  }, []);
+
+  // Error / warning — descending minor
+  const playError = useCallback(() => {
+    try {
+      const ac = ctx();
+      const t = ac.currentTime;
+      [0, 0.12].forEach((delay, i) => {
+        const freqs = [440, 330];
+        const osc = ac.createOscillator();
+        const gain = ac.createGain();
+
+        osc.connect(gain);
+        gain.connect(ac.destination);
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freqs[i], t + delay);
+
+        gain.gain.setValueAtTime(0.1, t + delay);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + delay + 0.2);
+
+        osc.start(t + delay);
+        osc.stop(t + delay + 0.25);
+      });
+    } catch {}
+  }, []);
+
+  return { playClick, playBlip, playSwitch, playSuccess, playError };
 };

@@ -4,6 +4,26 @@ export default function SplashScreen({ onComplete }) {
   const timerRef = useRef(null);
 
   useEffect(() => {
+    // Play a soft intro whoosh when splash starts
+    try {
+      const ac = new (window.AudioContext || window.webkitAudioContext)();
+      const t = ac.currentTime;
+      // Low rumble that rises — like a startup sound
+      const osc = ac.createOscillator();
+      const gain = ac.createGain();
+      const filter = ac.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 800;
+      osc.connect(filter); filter.connect(gain); gain.connect(ac.destination);
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(80, t);
+      osc.frequency.exponentialRampToValueAtTime(320, t + 1.2);
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.linearRampToValueAtTime(0.15, t + 0.3);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 1.4);
+      osc.start(t); osc.stop(t + 1.5);
+    } catch {}
+
     timerRef.current = setTimeout(() => onComplete?.(), 7500);
     return () => clearTimeout(timerRef.current);
   }, [onComplete]);
