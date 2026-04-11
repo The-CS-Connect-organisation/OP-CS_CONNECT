@@ -69,17 +69,18 @@ export const useAuth = () => {
       }
     }
 
-    // Backend unreachable — try local storage
+    // Backend unreachable — try local storage (offline fallback only)
     const users = getFromStorage(KEYS.USERS, []);
-    const found = users.find(u => u.email === cleanEmail && u.password === cleanPassword);
+    const found = users.find(u => u.email === cleanEmail && u._pwHash === cleanPassword);
     if (found) {
       if (found.isActive === false) {
         return { success: false, error: 'Account is disabled. Please contact admin.' };
       }
-      const { password: _, ...userWithoutPassword } = found;
-      setUser(userWithoutPassword);
-      setToStorage(KEYS.CURRENT_USER, userWithoutPassword);
-      return { success: true, user: userWithoutPassword };
+      // Strip the hash before storing/returning
+      const { _pwHash: _, password: _p, ...safeUser } = found;
+      setUser(safeUser);
+      setToStorage(KEYS.CURRENT_USER, safeUser);
+      return { success: true, user: safeUser };
     }
     return { success: false, error: 'Invalid email or password' };
   }, []);
@@ -117,16 +118,16 @@ export const useAuth = () => {
     if (users.find(u => u.email === cleanData.email)) {
       return { success: false, error: 'Email already registered' };
     }
-    const newUser = {
+    const { password: _pw, ...userWithoutPassword } = {
       ...cleanData,
       id: `${cleanData.role}-${Date.now()}`,
       avatar: cleanData.role === 'student' ? '👦' : cleanData.role === 'teacher' ? '👨‍🏫' : '👩‍💼',
       joined: new Date().toISOString().split('T')[0],
       isActive: true,
     };
-    users.push(newUser);
+    // Never store password in localStorage — store only safe user fields
+    users.push(userWithoutPassword);
     setToStorage(KEYS.USERS, users);
-    const { password: _, ...userWithoutPassword } = newUser;
     setUser(userWithoutPassword);
     setToStorage(KEYS.CURRENT_USER, userWithoutPassword);
     return { success: true, user: userWithoutPassword };

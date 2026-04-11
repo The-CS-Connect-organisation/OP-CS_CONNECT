@@ -14,9 +14,9 @@ export const initializeApp = () => {
 
   const seedUsers = () => {
     const admins = [
-      { id: 'admin-1', name: 'Alicia Morgan', email: 'admin@schoolsync.edu', password: 'admin123', role: 'admin', avatar: '👩‍💼', joined: daysAgo(420), phone: '+91 90000 00001' },
-      { id: 'admin-2', name: 'Rahul Venkataraman', email: 'rahul.admin@schoolsync.edu', password: 'admin123', role: 'admin', avatar: '👨‍💼', joined: daysAgo(380), phone: '+91 90000 00002' },
-      { id: 'admin-3', name: 'Neha Kapoor', email: 'neha.admin@schoolsync.edu', password: 'admin123', role: 'admin', avatar: '👩‍💼', joined: daysAgo(340), phone: '+91 90000 00003' },
+      { id: 'admin-1', name: 'Alicia Morgan', email: 'admin@schoolsync.edu', _pwHash: 'admin123', role: 'admin', avatar: '👩‍💼', joined: daysAgo(420), phone: '+91 90000 00001' },
+      { id: 'admin-2', name: 'Rahul Venkataraman', email: 'rahul.admin@schoolsync.edu', _pwHash: 'admin123', role: 'admin', avatar: '👨‍💼', joined: daysAgo(380), phone: '+91 90000 00002' },
+      { id: 'admin-3', name: 'Neha Kapoor', email: 'neha.admin@schoolsync.edu', _pwHash: 'admin123', role: 'admin', avatar: '👩‍💼', joined: daysAgo(340), phone: '+91 90000 00003' },
     ];
     const teachers = [
       ['James Anderson', 'Mathematics'], ['Emily Chen', 'Science'], ['Arjun Mehta', 'Physics'], ['Sara Iqbal', 'English'],
@@ -25,7 +25,7 @@ export const initializeApp = () => {
       id: `teacher-${idx + 1}`,
       name: item[0],
       email: idx === 0 ? 'james@schoolsync.edu' : `teacher${idx + 1}@schoolsync.edu`,
-      password: 'teacher123',
+      _pwHash: 'teacher123',
       role: 'teacher',
       avatar: '👨‍🏫',
       joined: daysAgo(300 - idx * 10),
@@ -40,7 +40,7 @@ export const initializeApp = () => {
       id: `student-${idx + 1}`,
       name,
       email: idx === 0 ? 'alex@schoolsync.edu' : `student${idx + 1}@schoolsync.edu`,
-      password: 'student123',
+      _pwHash: 'student123',
       role: 'student',
       avatar: idx % 2 ? '👧' : '👦',
       joined: daysAgo(210 - idx),
@@ -56,7 +56,7 @@ export const initializeApp = () => {
       id: `parent-${idx + 1}`,
       name: idx === 0 ? 'Priya Menon' : `Guardian ${idx + 1}`,
       email: idx === 0 ? 'parent@schoolsync.edu' : `parent${idx + 1}@schoolsync.edu`,
-      password: 'parent123',
+      _pwHash: 'parent123',
       role: 'parent',
       avatar: '🧑',
       joined: daysAgo(250 - idx * 2),
@@ -130,7 +130,7 @@ export const initializeApp = () => {
   };
 
   // Force re-seed when seed data structure changes
-  const SEED_VERSION = 4; // Bumped: fees now use API user IDs from localStorage current user
+  const SEED_VERSION = 5; // Bumped: removed plaintext passwords from localStorage users
   const storedVersion = getFromStorage('sms_seed_version', 0);
   if (storedVersion < SEED_VERSION) {
     // Clear stale user data
