@@ -345,3 +345,29 @@ CREATE POLICY "service_full_access" ON error_logs FOR ALL USING (true) WITH CHEC
 pls note this is for internal reference only it has aldready been updated to supabase via the sql editor
 supabase scheme has been completely written by Navaneeth Nalabothu AI has not been used
 -- =========================================
+
+-- =========================================
+-- 19. FEES
+-- =========================================
+CREATE TABLE fees (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  term text NOT NULL,
+  amount numeric(10,2) NOT NULL CHECK (amount > 0),
+  due_date date NOT NULL,
+  description text,
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'overdue', 'waived')),
+  payment_method text,
+  transaction_id text,
+  paid_at timestamptz,
+  created_by uuid REFERENCES users(id) ON DELETE SET NULL,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+CREATE INDEX idx_fees_student ON fees (student_id, status, due_date);
+CREATE INDEX idx_fees_status ON fees (status, due_date);
+
+ALTER TABLE fees ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "service_full_access" ON fees FOR ALL USING (true) WITH CHECK (true);
+
+CREATE TRIGGER trg_fees_updated BEFORE UPDATE ON fees FOR EACH ROW EXECUTE FUNCTION update_updated_at();
