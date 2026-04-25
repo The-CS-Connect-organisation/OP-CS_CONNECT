@@ -1,8 +1,13 @@
-import { useMemo, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { BookOpen, Clock, Award, FileText, UserCheck, TrendingUp, AlertCircle, ChevronRight, Wrench, Users, MessageCircle } from 'lucide-react';
+import { useMemo, useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  BookOpen, Clock, Award, FileText, UserCheck, TrendingUp, AlertCircle, ChevronRight, Wrench, Users, MessageCircle,
+  Trophy, Star, Target, Zap, Brain, Calendar, BarChart3, PieChart, Bell, Flame, Crown, Medal,
+  TrendingDown, Activity, MessageSquare, Share2, Focus, Moon, Sun, GripVertical, CheckCircle2, XCircle, Timer
+} from 'lucide-react';
 import { useStore } from '../../../hooks/useStore';
 import { KEYS } from '../../../data/schema';
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
 
 const StatCard = ({ icon: Icon, label, value, subtitle, delay, color = '#1f2937' }) => {
   return (
@@ -32,12 +37,223 @@ const StatCard = ({ icon: Icon, label, value, subtitle, delay, color = '#1f2937'
   );
 };
 
+const XPBar = ({ xp, level, nextLevelXP }) => {
+  const progress = ((xp % nextLevelXP) / nextLevelXP) * 100;
+  const levelTitles = ['Beginner', 'Scholar', 'Expert', 'Master', 'Legend'];
+  const currentTitle = levelTitles[Math.min(Math.floor(level / 5), levelTitles.length - 1)];
+  
+  return (
+    <div className="nova-card p-6">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white font-bold text-lg">
+              {level}
+            </div>
+            <div className="absolute -bottom-1 -right-1 bg-yellow-500 rounded-full p-1">
+              <Trophy size={12} className="text-white" />
+            </div>
+          </div>
+          <div>
+            <p className="font-bold text-gray-900">Level {level}</p>
+            <p className="text-xs text-gray-500">{currentTitle} Rank</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="font-bold text-lg text-gray-900">{xp.toLocaleString()} XP</p>
+          <p className="text-xs text-gray-500">{nextLevelXP - (xp % nextLevelXP)} XP to next level</p>
+        </div>
+      </div>
+      <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+        <motion.div 
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 1, delay: 0.5 }}
+          className="h-full bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 rounded-full"
+        />
+      </div>
+    </div>
+  );
+};
+
+const BadgeCard = ({ badge }) => (
+  <motion.div 
+    whileHover={{ scale: 1.05, y: -4 }}
+    className="flex flex-col items-center p-3 rounded-xl bg-gray-50 border border-gray-100"
+  >
+    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${badge.color}`}>
+      <badge.icon size={18} className="text-white" />
+    </div>
+    <p className="text-xs font-semibold mt-2 text-gray-700">{badge.name}</p>
+  </motion.div>
+);
+
+const StudyHeatmap = () => {
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const weeks = Array.from({ length: 5 }, (_, i) => i);
+  const intensity = () => Math.random();
+  
+  return (
+    <div className="nova-card p-6">
+      <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-gray-600">
+        <Activity size={14} /> Study Activity
+      </h3>
+      <div className="flex flex-col gap-1">
+        {weeks.map((week) => (
+          <div key={week} className="flex gap-1">
+            {days.map((day, i) => {
+              const val = intensity();
+              const bg = val > 0.7 ? 'bg-green-500' : val > 0.4 ? 'bg-green-300' : val > 0.1 ? 'bg-green-100' : 'bg-gray-100';
+              return <div key={`${week}-${i}`} className={`w-4 h-4 rounded-sm ${bg}`} />;
+            })}
+          </div>
+        ))}
+      </div>
+      <p className="text-xs text-gray-400 mt-3">Last 5 weeks activity</p>
+    </div>
+  );
+};
+
+const WeeklyChallenge = ({ challenge }) => (
+  <div className="nova-card p-6 bg-gradient-to-br from-indigo-500 to-purple-600 text-white">
+    <div className="flex items-center gap-2 mb-3">
+      <Flame size={18} className="text-yellow-300" />
+      <span className="text-xs font-bold uppercase tracking-wider">Weekly Challenge</span>
+    </div>
+    <h4 className="font-bold text-lg mb-2">{challenge.title}</h4>
+    <p className="text-sm opacity-80 mb-4">{challenge.description}</p>
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        <Star size={14} className="text-yellow-300" />
+        <span className="font-bold">+{challenge.reward} XP</span>
+      </div>
+      <span className="text-sm bg-white/20 px-3 py-1 rounded-full">{challenge.progress}/{challenge.target}</span>
+    </div>
+    <div className="h-2 bg-white/20 rounded-full mt-3 overflow-hidden">
+      <div 
+        className="h-full bg-yellow-300 rounded-full" 
+        style={{ width: `${(challenge.progress / challenge.target) * 100}%` }}
+      />
+    </div>
+  </div>
+);
+
+const AICoachTip = ({ tip }) => (
+  <div className="nova-card p-6 bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100">
+    <div className="flex items-start gap-3">
+      <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
+        <Brain size={18} className="text-white" />
+      </div>
+      <div>
+        <p className="font-semibold text-gray-900 mb-1">AI Study Coach</p>
+        <p className="text-sm text-gray-600">{tip}</p>
+      </div>
+    </div>
+  </div>
+);
+
+const SubjectHealthRadar = ({ data }) => (
+  <div className="nova-card p-6">
+    <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-gray-600">
+      <PieChart size={14} /> Subject Health Score
+    </h3>
+    <div className="h-48">
+      <ResponsiveContainer width="100%" height="100%">
+        <RadarChart data={data}>
+          <PolarGrid stroke="#e5e7eb" />
+          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#6b7280' }} />
+          <Radar name="Score" dataKey="score" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.4} strokeWidth={2} />
+        </RadarChart>
+      </ResponsiveContainer>
+    </div>
+  </div>
+);
+
+const LiveActivityTicker = ({ activities }) => (
+  <div className="nova-card p-4 bg-gray-900 text-white overflow-hidden">
+    <div className="flex items-center gap-3 mb-2">
+      <Bell size={14} className="animate-pulse" />
+      <span className="text-xs font-semibold uppercase tracking-wider">Live Activity Feed</span>
+    </div>
+    <div className="space-y-2 overflow-hidden">
+      <AnimatePresence>
+        {activities.slice(0, 3).map((activity, i) => (
+          <motion.div
+            key={activity.id}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: i * 0.2 }}
+            className="text-xs text-gray-300 flex items-center gap-2"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+            {activity.message}
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+  </div>
+);
+
+const CountdownTimer = ({ label, timeLeft }) => (
+  <div className="flex flex-col items-center">
+    <span className="text-xs text-gray-500 mb-1">{label}</span>
+    <span className="font-mono font-bold text-lg text-gray-900">{timeLeft}</span>
+  </div>
+);
+
+const GoalProgress = ({ goal }) => (
+  <div className="p-4 rounded-xl bg-gray-50 mb-3">
+    <div className="flex justify-between items-center mb-2">
+      <span className="font-medium text-sm text-gray-900">{goal.subject}</span>
+      <span className="text-xs font-bold" style={{ color: goal.progress >= 90 ? '#10b981' : goal.progress >= 70 ? '#f59e0b' : '#ef4444' }}>
+        {goal.progress}%
+      </span>
+    </div>
+    <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+      <motion.div 
+        initial={{ width: 0 }}
+        animate={{ width: `${goal.progress}%` }}
+        className="h-full rounded-full"
+        style={{ 
+          background: goal.progress >= 90 ? 'linear-gradient(90deg, #10b981, #059669)' : 
+                     goal.progress >= 70 ? 'linear-gradient(90deg, #f59e0b, #d97706)' : 
+                     'linear-gradient(90deg, #ef4444, #dc2626)' 
+        }}
+      />
+    </div>
+    <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+      <span>Current: {goal.current}</span>
+      <span>Target: {goal.target}%</span>
+    </div>
+  </div>
+);
+
+const CalendarDay = ({ day, events }) => {
+  const hasAssignment = events.some(e => e.type === 'assignment');
+  const hasExam = events.some(e => e.type === 'exam');
+  const hasEvent = events.some(e => e.type === 'event');
+  
+  return (
+    <div className="aspect-square rounded-lg flex flex-col items-center justify-center text-sm hover:bg-gray-50 cursor-pointer">
+      <span>{day}</span>
+      <div className="flex gap-1 mt-1">
+        {hasAssignment && <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />}
+        {hasExam && <div className="w-1.5 h-1.5 rounded-full bg-red-500" />}
+        {hasEvent && <div className="w-1.5 h-1.5 rounded-full bg-green-500" />}
+      </div>
+    </div>
+  );
+};
+
 export const StudentDashboard = ({ user }) => {
   const { data: assignments } = useStore(KEYS.ASSIGNMENTS, []);
   const { data: marks } = useStore(KEYS.MARKS, []);
   const { data: attendance } = useStore(KEYS.ATTENDANCE, []);
   const { data: timetable } = useStore(KEYS.TIMETABLE, {});
   const { data: announcements, update: updateAnnouncement } = useStore(KEYS.ANNOUNCEMENTS, []);
+  
+  const [focusMode, setFocusMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
   const myAssignments = assignments.filter(a => a.class === user.class);
   const pendingAssignments = myAssignments.filter(a => {
@@ -55,6 +271,54 @@ export const StudentDashboard = ({ user }) => {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
   const todaySchedule = timetable[user.class]?.find(t => t.day === today)?.slots || [];
 
+  // Demo data for new features
+  const xp = 7420;
+  const level = 12;
+  const nextLevelXP = 1000;
+  
+  const badges = [
+    { name: '7 Day Streak', icon: Flame, color: 'bg-orange-500' },
+    { name: 'Perfect Attendance', icon: CheckCircle2, color: 'bg-green-500' },
+    { name: 'Top 10%', icon: Crown, color: 'bg-yellow-500' },
+    { name: 'Math Master', icon: Medal, color: 'bg-blue-500' },
+  ];
+
+  const weeklyChallenge = {
+    title: 'Submit 3 assignments this week',
+    description: 'Complete all pending tasks before Friday',
+    reward: 50,
+    progress: 2,
+    target: 3
+  };
+
+  const aiTip = "Your performance in Physics is improving! Focus on practicing numerical problems today - this is where you need most practice based on your recent quizzes.";
+
+  const subjectHealthData = [
+    { subject: 'Math', score: 85 },
+    { subject: 'Physics', score: 72 },
+    { subject: 'Chemistry', score: 91 },
+    { subject: 'English', score: 78 },
+    { subject: 'Biology', score: 65 },
+  ];
+
+  const liveActivities = [
+    { id: 1, message: 'Math teacher posted new assignment' },
+    { id: 2, message: 'Chemistry exam results released' },
+    { id: 3, message: 'Physics class starting in 12 minutes' },
+  ];
+
+  const goals = [
+    { subject: 'Mathematics', current: 82, target: 90, progress: 82 },
+    { subject: 'Physics', current: 71, target: 85, progress: 71 },
+    { subject: 'Chemistry', current: 91, target: 95, progress: 91 },
+  ];
+
+  const countdowns = [
+    { label: 'Next Exam', timeLeft: '02:47:12' },
+    { label: 'Assignment Due', timeLeft: '05:13:44' },
+    { label: 'Class Starts', timeLeft: '00:11:56' },
+  ];
+
   useEffect(() => {
     if (!user || announcements.length === 0) return;
     const toMark = announcements.filter(a => !(a.readBy || []).includes(user.id));
@@ -63,6 +327,30 @@ export const StudentDashboard = ({ user }) => {
       updateAnnouncement(a.id, { readBy: [...(a.readBy || []), user.id] });
     });
   }, [announcements, user, updateAnnouncement]);
+
+  if (focusMode) {
+    return (
+      <div className="space-y-6 max-w-[800px] mx-auto w-full pt-2 pb-12">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold">Focus Mode</h2>
+          <button onClick={() => setFocusMode(false)} className="text-sm text-gray-500">Exit Focus Mode</button>
+        </div>
+        
+        <div className="nova-card p-6">
+          <h3 className="font-bold mb-4">Today's Tasks</h3>
+          {pendingAssignments.map(a => (
+            <div key={a.id} className="p-4 border border-gray-200 rounded-xl mb-3 flex items-center gap-3">
+              <div className="w-5 h-5 rounded-full border-2 border-gray-300" />
+              <div>
+                <p className="font-medium">{a.title}</p>
+                <p className="text-xs text-gray-500">{a.subject} • Due: {a.dueDate}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto w-full relative pt-2 pb-12">
@@ -88,6 +376,12 @@ export const StudentDashboard = ({ user }) => {
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
               {user.class}
             </span>
+            <button 
+              onClick={() => setFocusMode(!focusMode)}
+              className="ml-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold bg-purple-50 text-purple-600 border border-purple-200"
+            >
+              <Focus size={12} /> Focus Mode
+            </button>
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight flex items-center gap-3 mb-3 text-gray-900">
             <span className="w-1 h-10 rounded-full bg-gradient-to-b from-blue-500 to-purple-500" />
@@ -106,6 +400,9 @@ export const StudentDashboard = ({ user }) => {
         </div>
       </motion.div>
 
+      {/* XP & Gamification Bar */}
+      <XPBar xp={xp} level={level} nextLevelXP={nextLevelXP} />
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon={UserCheck} label="Attendance" value={`${attendanceRate}%`} subtitle="Monthly average" delay={0.1} color="#10b981" />
@@ -114,93 +411,145 @@ export const StudentDashboard = ({ user }) => {
         <StatCard icon={Clock} label="Classes Today" value={todaySchedule.length} subtitle="Scheduled" delay={0.25} color="#3b82f6" />
       </div>
 
+      {/* Live Activity Ticker */}
+      <LiveActivityTicker activities={liveActivities} />
+
+      {/* Countdown Timers */}
+      <div className="nova-card p-6">
+        <h3 className="text-sm font-semibold mb-4 text-gray-600">Upcoming Deadlines</h3>
+        <div className="grid grid-cols-3 gap-4">
+          {countdowns.map((cd, i) => <CountdownTimer key={i} {...cd} />)}
+        </div>
+      </div>
+
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
-        {/* Today's Schedule */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="nova-card p-6">
-          <h3 className="text-sm font-semibold mb-5 flex items-center gap-2 text-gray-600">
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            Today's Schedule
-          </h3>
-          {todaySchedule.length === 0 ? (
-            <div className="py-12 border border-dashed rounded-xl flex items-center justify-center border-gray-200">
-              <p className="text-xs text-gray-500">No classes scheduled</p>
-            </div>
-          ) : (
-            <div className="space-y-2.5">
-              {todaySchedule.map((slot, idx) => (
-                <div key={idx} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
-                  <div className="px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold bg-gray-200 text-gray-700 flex-shrink-0">
-                    {slot.time.split(' ')[0]}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900">{slot.subject}</p>
-                    <p className="text-xs mt-0.5 text-gray-500">{slot.teacher} • Room {slot.room}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </motion.div>
+        {/* AI Coach + Weekly Challenge */}
+        <div className="space-y-6">
+          <AICoachTip tip={aiTip} />
+          <WeeklyChallenge challenge={weeklyChallenge} />
+          <StudyHeatmap />
+        </div>
 
-        {/* Pending Assignments */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="nova-card p-6">
-          <h3 className="text-sm font-semibold mb-5 flex items-center gap-2 text-gray-600">
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-            Pending Assignments
-          </h3>
-          {pendingAssignments.length === 0 ? (
-            <div className="py-12 border border-dashed rounded-xl flex items-center justify-center border-gray-200">
-              <p className="text-xs text-gray-500">All caught up!</p>
+        {/* Subject Health + Goals */}
+        <div className="space-y-6">
+          <SubjectHealthRadar data={subjectHealthData} />
+          
+          <div className="nova-card p-6">
+            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-gray-600">
+              <Target size={14} /> Semester Goals
+            </h3>
+            {goals.map((goal, i) => <GoalProgress key={i} goal={goal} />)}
+          </div>
+
+          <div className="nova-card p-6">
+            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-gray-600">
+              <Award size={14} /> Earned Badges
+            </h3>
+            <div className="grid grid-cols-4 gap-2">
+              {badges.map((badge, i) => <BadgeCard key={i} badge={badge} />)}
             </div>
-          ) : (
-            <div className="space-y-2.5">
-              {pendingAssignments.map(a => {
-                const isLate = new Date(a.dueDate) < new Date();
-                return (
-                  <div key={a.id}
-                    className="p-3.5 rounded-xl bg-gray-50 border border-gray-200"
-                  >
-                    <div className="flex justify-between items-start gap-3">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-gray-900">{a.title}</p>
-                        <p className="text-xs mt-1 text-gray-500">{a.subject} • Due: {a.dueDate}</p>
-                      </div>
-                      {isLate && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-600 shrink-0">Overdue</span>
-                      )}
+          </div>
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-6">
+          {/* Today's Schedule */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="nova-card p-6">
+            <h3 className="text-sm font-semibold mb-5 flex items-center gap-2 text-gray-600">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+              Today's Schedule
+            </h3>
+            {todaySchedule.length === 0 ? (
+              <div className="py-12 border border-dashed rounded-xl flex items-center justify-center border-gray-200">
+                <p className="text-xs text-gray-500">No classes scheduled</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {todaySchedule.map((slot, idx) => (
+                  <div key={idx} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                    <div className="px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold bg-gray-200 text-gray-700 flex-shrink-0">
+                      {slot.time.split(' ')[0]}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-900">{slot.subject}</p>
+                      <p className="text-xs mt-0.5 text-gray-500">{slot.teacher} • Room {slot.room}</p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </motion.div>
-
-        {/* Announcements */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="nova-card p-6">
-          <h3 className="text-sm font-semibold mb-5 flex items-center gap-2 text-gray-600">
-            <div className="w-1.5 h-1.5 rounded-full bg-pink-400" />
-            Announcements
-          </h3>
-          <div className="space-y-3">
-            {announcements.slice(0, 4).map(a => (
-              <div key={a.id} className="border-l-2 pl-3 py-1.5 border-gray-200">
-                <div className="flex justify-between items-center mb-0.5">
-                  <span className={`text-[10px] font-semibold rounded-full px-2 py-0.5 ${a.priority === 'high' ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-500'}`}>
-                    {a.priority} priority
-                  </span>
-                  <span className="text-[10px] font-mono text-gray-400">{a.date}</span>
-                </div>
-                <p className="text-sm leading-relaxed mt-1 text-gray-600">{a.title}</p>
+                ))}
               </div>
-            ))}
-            {announcements.length === 0 && (
-              <p className="text-xs text-gray-500">No announcements</p>
             )}
-          </div>
-        </motion.div>
+          </motion.div>
+
+          {/* Pending Assignments */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="nova-card p-6">
+            <h3 className="text-sm font-semibold mb-5 flex items-center gap-2 text-gray-600">
+              <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+              Pending Assignments
+            </h3>
+            {pendingAssignments.length === 0 ? (
+              <div className="py-12 border border-dashed rounded-xl flex items-center justify-center border-gray-200">
+                <p className="text-xs text-gray-500">All caught up!</p>
+              </div>
+            ) : (
+              <div className="space-y-2.5">
+                {pendingAssignments.map(a => {
+                  const isLate = new Date(a.dueDate) < new Date();
+                  return (
+                    <div key={a.id}
+                      className="p-3.5 rounded-xl bg-gray-50 border border-gray-200"
+                    >
+                      <div className="flex justify-between items-start gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-gray-900">{a.title}</p>
+                          <p className="text-xs mt-1 text-gray-500">{a.subject} • Due: {a.dueDate}</p>
+                        </div>
+                        {isLate && (
+                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-600 shrink-0">Overdue</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+
+          {/* Announcements */}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="nova-card p-6">
+            <h3 className="text-sm font-semibold mb-5 flex items-center gap-2 text-gray-600">
+              <div className="w-1.5 h-1.5 rounded-full bg-pink-400" />
+              Announcements
+            </h3>
+            <div className="space-y-3">
+              {announcements.slice(0, 4).map(a => (
+                <div key={a.id} className="border-l-2 pl-3 py-1.5 border-gray-200">
+                  <div className="flex justify-between items-center mb-0.5">
+                    <span className={`text-[10px] font-semibold rounded-full px-2 py-0.5 ${a.priority === 'high' ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-500'}`}>
+                      {a.priority} priority
+                    </span>
+                    <span className="text-[10px] font-mono text-gray-400">{a.date}</span>
+                  </div>
+                  <p className="text-sm leading-relaxed mt-1 text-gray-600">{a.title}</p>
+                </div>
+              ))}
+              {announcements.length === 0 && (
+                <p className="text-xs text-gray-500">No announcements</p>
+              )}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Calendar Section */}
+      <div className="nova-card p-6">
+        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-gray-600">
+          <Calendar size={14} /> This Month
+        </h3>
+        <div className="grid grid-cols-7 gap-1">
+          {Array.from({ length: 31 }, (_, i) => <CalendarDay key={i} day={i+1} events={[]} />)}
+        </div>
       </div>
     </div>
   );
