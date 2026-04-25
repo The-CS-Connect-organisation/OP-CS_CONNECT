@@ -271,46 +271,78 @@ export const StudentDashboard = ({ user }) => {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
   const todaySchedule = timetable[user.class]?.find(t => t.day === today)?.slots || [];
 
-  // Demo data for new features
-  const xp = 7420;
-  const level = 12;
-  const nextLevelXP = 1000;
-  
-  const badges = [
-    { name: '7 Day Streak', icon: Flame, color: 'bg-orange-500' },
-    { name: 'Perfect Attendance', icon: CheckCircle2, color: 'bg-green-500' },
-    { name: 'Top 10%', icon: Crown, color: 'bg-yellow-500' },
-    { name: 'Math Master', icon: Medal, color: 'bg-blue-500' },
-  ];
+  // Dynamic Data Calculations
+  const { data: xpData } = useStore(KEYS.STUDENT_XP, { xp: 0, level: 1 });
+  const { data: badgesData } = useStore(KEYS.BADGES, []);
+  const { data: goalsData } = useStore(KEYS.GOALS, []);
+  const { data: studyActivity } = useStore(KEYS.STUDY_ACTIVITY, {});
+  const { data: notifications } = useStore(KEYS.NOTIFICATIONS, []);
 
+  // Calculate real XP and level
+  const baseXP = myMarks.reduce((sum, m) => sum + (m.marksObtained * 2), 0) + 
+                 myAttendance.filter(a => a.status === 'present').length * 5;
+  const xp = xpData.xp + baseXP;
+  const level = Math.floor(xp / 1000) + 1;
+  const nextLevelXP = 1000;
+
+  // Calculate subject health scores dynamically
+  const subjectMarks = {};
+  myMarks.forEach(m => {
+    if (!subjectMarks[m.subject]) subjectMarks[m.subject] = [];
+    subjectMarks[m.subject].push(m.marksObtained);
+  });
+
+  const subjectAttendance = {};
+  myAttendance.forEach(a => {
+    if (!subjectAttendance[a.subject]) subjectAttendance[a.subject] = { present: 0, total: 0 };
+    subjectAttendance[a.subject].total++;
+    if (a.status === 'present') subjectAttendance[a.subject].present++;
+  });
+
+  const subjectHealthData = Object.entries(subjectMarks).map(([subject, marks]) => {
+    const avgMark = marks.reduce((a,b) => a+b, 0) / marks.length;
+    const attRate = subjectAttendance[subject] ? (subjectAttendance[subject].present / subjectAttendance[subject].total) * 100 : 80;
+    return {
+      subject,
+      score: Math.round((avgMark * 0.7) + (attRate * 0.3))
+    };
+  });
+
+  // Dynamic badges earned from actual achievements
+  const earnedBadges = [];
+  if (attendanceRate >= 95) earnedBadges.push({ name: 'Perfect Attendance', icon: CheckCircle2, color: 'bg-green-500' });
+  if (avgMarks >= 80) earnedBadges.push({ name: 'Honor Roll', icon: Crown, color: 'bg-yellow-500' });
+  if (pendingAssignments.length === 0) earnedBadges.push({ name: 'All Caught Up', icon: CheckCircle2, color: 'bg-blue-500' });
+  if (myMarks.some(m => m.marksObtained >= 95)) earnedBadges.push({ name: 'Top Scorer', icon: Medal, color: 'bg-purple-500' });
+
+  // AI Coach generates real tip based on weakest subject
+  const weakestSubject = subjectHealthData.sort((a,b) => a.score - b.score)[0];
+  const aiTip = weakestSubject 
+    ? `Focus on ${weakestSubject.subject} today! Your score is ${weakestSubject.score}% - spending 30 extra minutes here will yield the best improvement.`
+    : "Great work! All subjects are performing well.";
+
+  // Real weekly challenge progress
+  const completedAssignments = myAssignments.length - pendingAssignments.length;
   const weeklyChallenge = {
     title: 'Submit 3 assignments this week',
     description: 'Complete all pending tasks before Friday',
     reward: 50,
-    progress: 2,
+    progress: Math.min(completedAssignments, 3),
     target: 3
   };
 
-  const aiTip = "Your performance in Physics is improving! Focus on practicing numerical problems today - this is where you need most practice based on your recent quizzes.";
+  // Live activities from actual notifications
+  const liveActivities = notifications.slice(0, 3).map(n => ({
+    id: n.id,
+    message: n.message
+  })).concat([
+    { id: 'live1', message: `${todaySchedule[0]?.subject || 'Next'} class starting soon` }
+  ]);
 
-  const subjectHealthData = [
-    { subject: 'Math', score: 85 },
-    { subject: 'Physics', score: 72 },
-    { subject: 'Chemistry', score: 91 },
-    { subject: 'English', score: 78 },
-    { subject: 'Biology', score: 65 },
-  ];
-
-  const liveActivities = [
-    { id: 1, message: 'Math teacher posted new assignment' },
-    { id: 2, message: 'Chemistry exam results released' },
-    { id: 3, message: 'Physics class starting in 12 minutes' },
-  ];
-
-  const goals = [
-    { subject: 'Mathematics', current: 82, target: 90, progress: 82 },
-    { subject: 'Physics', current: 71, target: 85, progress: 71 },
-    { subject: 'Chemistry', current: 91, target: 95, progress: 91 },
+  // Goals from stored user targets
+  const goals = goalsData.length > 0 ? goalsData : [
+    { subject: 'Mathematics', current: avgMarks, target: 90, progress: avgMarks },
+    { subject: 'Physics', current: 75, target: 85, progress: 75 },
   ];
 
   const countdowns = [

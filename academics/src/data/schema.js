@@ -18,6 +18,12 @@ export const KEYS = {
   HR_RECORDS: 'sms_hr_records',
   // Call signalling is stored under per-room localStorage keys for scalability.
   THEME: 'sms_theme',
+  // New Dashboard Features
+  STUDENT_XP: 'sms_student_xp',
+  BADGES: 'sms_badges',
+  STUDY_ACTIVITY: 'sms_study_activity',
+  GOALS: 'sms_goals',
+  WEEKLY_CHALLENGE: 'sms_weekly_challenge',
 };
 export const STORAGE_EVENT = 'sms_storage_changed';
 
