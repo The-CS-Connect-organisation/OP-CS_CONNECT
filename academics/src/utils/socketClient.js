@@ -2,11 +2,11 @@ import { io } from 'socket.io-client';
 import { getFromStorage } from '../data/schema';
 import { KEYS } from '../data/schema';
 const getSocketOrigin = () => {
-  const base = import.meta.env.VITE_API_BASE_URL || 'https://op-cs-connect-backend-1.onrender.com/api';
+  const base = import.meta.env.VITE_API_BASE_URL || 'https://op-cs-connect-backend-vym7.onrender.com/api';
   try {
     return new URL(base).origin;
   } catch {
-    return 'https://op-cs-connect-backend-1.onrender.com';
+    return 'https://op-cs-connect-backend-vym7.onrender.com';
   }
 };
 
