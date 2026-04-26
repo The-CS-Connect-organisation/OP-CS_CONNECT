@@ -110,7 +110,7 @@ export const Attendance = ({ user }) => {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 + (idx * 0.1) }}
                   className="space-y-3"
-                  onMouseEnter={playClick}
+                  onMouseEnter={() => playClick?.()}
                 >
                   <div className="flex justify-between items-end">
                     <span className="text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-widest truncate max-w-[150px]">{s.subject}</span>
