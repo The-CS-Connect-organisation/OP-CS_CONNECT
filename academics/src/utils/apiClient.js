@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://op-cs-connect-backend-vym7.onrender.com/api';
+// Hardcoded for GitHub Pages deployment - .env files don't work on static hosting
+const API_BASE_URL = 'https://op-cs-connect-backend-vym7.onrender.com/api';
 // Force rebuild - updated backend URL
 let authToken = null;
 
