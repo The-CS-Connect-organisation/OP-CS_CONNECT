@@ -11,8 +11,14 @@ export const getDataMode = () => {
   const fromStorage = getFromStorage(STORAGE_KEY, null);
   if (fromStorage === DATA_MODES.LOCAL_DEMO || fromStorage === DATA_MODES.REMOTE_API) return fromStorage;
 
-  // Always use REMOTE_API to read from Firebase
-  return DATA_MODES.REMOTE_API;
+  // Sensible default:
+  // - DEV: LOCAL_DEMO (works out of the box)
+  // - PROD: REMOTE_API (real backend)
+  try {
+    return import.meta?.env?.DEV ? DATA_MODES.LOCAL_DEMO : DATA_MODES.REMOTE_API;
+  } catch {
+    return DATA_MODES.LOCAL_DEMO;
+  }
 };
 
 export const setDataMode = (mode) => {

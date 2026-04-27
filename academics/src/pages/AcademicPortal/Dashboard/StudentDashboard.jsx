@@ -330,19 +330,6 @@ export const StudentDashboard = ({ user }) => {
   if (pendingAssignments.length === 0) earnedBadges.push({ name: 'All Caught Up', icon: CheckCircle2, color: 'bg-blue-500' });
   if (myMarks.some(m => m.marksObtained >= 95)) earnedBadges.push({ name: 'Top Scorer', icon: Medal, color: 'bg-purple-500' });
 
-  // AI Coach generates real tip based on weakest subject
-  const coach = useMemo(() => {
-    return aiCoachService.buildCoach({
-      user,
-      subjectHealthData,
-      pendingAssignments,
-      upcomingEvents: upcoming,
-      attendanceRate,
-      attempts: (Array.isArray(attempts) ? attempts : []).filter((a) => a.studentId === user.id),
-    });
-  }, [user, subjectHealthData, pendingAssignments, upcoming, attendanceRate, attempts]);
-  const aiTip = coach.tip;
-
   // Real weekly challenge progress
   const completedAssignments = myAssignments.length - pendingAssignments.length;
   const weeklyChallenge = {
@@ -370,6 +357,19 @@ export const StudentDashboard = ({ user }) => {
   }, [safeAssignments, safeExams, safeTimetable, safeAnnouncements, user]);
 
   const upcoming = useMemo(() => calendarService.nextUpcoming({ events: calendarEvents, limit: 3 }), [calendarEvents]);
+
+  // AI Coach generates real tip based on weakest subject
+  const coach = useMemo(() => {
+    return aiCoachService.buildCoach({
+      user,
+      subjectHealthData,
+      pendingAssignments,
+      upcomingEvents: upcoming,
+      attendanceRate,
+      attempts: safeAttempts.filter((a) => a.studentId === user.id),
+    });
+  }, [user, subjectHealthData, pendingAssignments, upcoming, attendanceRate, safeAttempts]);
+  const aiTip = coach.tip;
 
   const countdownItems = useMemo(() => {
     const now = new Date();
