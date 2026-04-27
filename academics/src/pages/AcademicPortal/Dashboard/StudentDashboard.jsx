@@ -351,17 +351,15 @@ export const StudentDashboard = ({ user }) => {
     { id: 'live1', message: `${todaySchedule[0]?.subject || 'Next'} class starting soon` }
   ]);
 
-  // Goals from stored user targets
-  const goals = goalsData.length > 0 ? goalsData : [
-    { subject: 'Mathematics', current: avgMarks, target: 90, progress: avgMarks },
-    { subject: 'Physics', current: 75, target: 85, progress: 75 },
-  ];
+  // Goals from stored user targets (read from Firebase via useStore)
+  const goals = goalsData;
 
   const countdowns = [
   ];
 
-  const calendarEvents = useMemo(() => {
-    const myAssignments = assignments.filter((a) => a.class === user.class);
+  // Countdowns should be read from Firebase if needed
+  // Currently empty - will be populated when calendarE data iv availableeintFirebase = useMemo(() => {
+  const countdowns = [  const myAssignments = assignments.filter((a) => a.class === user.class);
     return calendarService.buildEvents({ user, assignments: myAssignments, exams, timetable, announcements });
   }, [assignments, exams, timetable, announcements, user]);
 

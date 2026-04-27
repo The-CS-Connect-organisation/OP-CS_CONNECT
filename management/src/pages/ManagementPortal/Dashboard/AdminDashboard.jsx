@@ -160,10 +160,11 @@ export const AdminDashboard = ({ user }) => {
     .slice(0, 4);
 
   const pendingFees = fees.filter(f => f.status === 'pending');
+  // Activity feed derived from actual Firebase data (assignments, fees, announcements)
   const activityFeed = [
-    ...assignments.slice(-4).map(a => ({ text: `Assignment: ${a.title || 'Untitled'}`, time: 'Just now' })),
-    ...fees.slice(-3).map(f => ({ text: `Fee ${f.status}: ${f.studentName}`, time: '2m ago' })),
-    ...announcements.slice(-2).map(n => ({ text: `Announcement: ${n.title}`, time: '5m ago' })),
+    ...assignments.slice(-4).map(a => ({ text: `Assignment: ${a.title || 'Untitled'}`, time: 'Recently' })),
+    ...fees.slice(-3).map(f => ({ text: `Fee ${f.status}: ${f.studentName || 'Student'}`, time: 'Recently' })),
+    ...announcements.slice(-2).map(n => ({ text: `Announcement: ${n.title}`, time: 'Recently' })),
   ].slice(0, 8);
 
   return (

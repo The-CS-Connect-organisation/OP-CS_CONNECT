@@ -77,12 +77,16 @@ export const Analytics = () => {
     return { students: students.length, teachers: teachers.length, classData, attRate };
   }, [users, attendance]);
 
-  const tierData = [
-    { name: 'A Grade', value: 35 },
-    { name: 'B Grade', value: 40 },
-    { name: 'C Grade', value: 20 },
-    { name: 'D Grade', value: 5 },
-  ];
+  // Calculate tier data from actual marks in Firebase
+  const tierData = useMemo(() => {
+    const gradeCounts = marks.reduce((acc, m) => {
+      const grade = (m.grade || 'N/A').toUpperCase();
+      acc[grade] = (acc[grade] || 0) + 1;
+      return acc;
+    }, {});
+    
+    return Object.entries(gradeCounts).map(([name, value]) => ({ name, value }));
+  }, [marks]);
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto w-full relative pt-2 pb-12">

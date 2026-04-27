@@ -19,7 +19,8 @@ export const ManageAssignments = ({ user, addToast }) => {
   const [formData, setFormData] = useState({ title: '', subject: '', class: '10-A', description: '', dueDate: '', totalMarks: 20 });
 
   const myAssignments = assignments.filter(a => a.teacherId === user.id);
-  const classes = ['10-A', '10-B', '11-A', '11-B', '12-A'];
+  // Get unique classes from Firebase users data
+  const classes = Array.from(new Set(users.filter(u => u.role === 'student').map(s => s.class).filter(Boolean))).sort();
 
   const handleSubmit = () => {
     playBlip();

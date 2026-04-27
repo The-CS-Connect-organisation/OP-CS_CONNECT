@@ -11,6 +11,7 @@ import { useSound } from '../../../hooks/useSound';
 
 export const ManageExams = ({ user, addToast }) => {
   const { data: exams, add, update, remove } = useStore(KEYS.EXAMS, []);
+  const { data: users } = useStore(KEYS.USERS, []);
   const { playClick, playBlip } = useSound();
   
   const [modalOpen, setModalOpen] = useState(false);
@@ -50,7 +51,8 @@ export const ManageExams = ({ user, addToast }) => {
   };
 
   const examTypes = ['Unit Test', 'Mid Term', 'Final Exam', 'Practical', 'Oral'];
-  const classes = ['10-A', '10-B', '11-A', '11-B', '12-A', '12-B'];
+  // Get unique classes from Firebase users data
+  const classes = Array.from(new Set(users.filter(u => u.role === 'student').map(s => s.class).filter(Boolean))).sort();
 
   return (
     <div className="space-y-8 max-w-[1400px] mx-auto w-full pt-4 pb-12">
