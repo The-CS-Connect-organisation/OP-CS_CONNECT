@@ -78,6 +78,25 @@ export const NexusHub = ({ user, addToast }) => {
   const [callType, setCallType] = useState('voice'); 
   const [clubs, setClubs] = useState(INITIAL_CLUBS);
   const [message, setMessage] = useState('');
+  const [leaderboardData, setLeaderboardData] = useState([]);
+  const [researchPapers, setResearchPapers] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Fetch Leaderboard on tab switch
+  useEffect(() => {
+    if (activeSubTab === 'leaderboard' || activeTab === 'browse') {
+      // In a real app: const res = await api.get('/clubs/leaderboard');
+      // Simulated for now with the logic we added to the backend
+      const fetchLeaderboard = () => {
+        const sorted = [...clubs].map(c => ({
+          ...c,
+          points: c.members * 15 + Math.floor(Math.random() * 200)
+        })).sort((a,b) => b.points - a.points);
+        setLeaderboardData(sorted);
+      };
+      fetchLeaderboard();
+    }
+  }, [activeSubTab, activeTab, clubs]);
 
   // Handle Club Creation
   const handleCreateClub = (e) => {
@@ -105,6 +124,25 @@ export const NexusHub = ({ user, addToast }) => {
   const handleJoinClub = (clubId) => {
     setClubs(clubs.map(c => c.id === clubId ? { ...c, isMember: true, members: c.members + 1 } : c));
     addToast?.('Joined community!', 'success');
+  };
+
+  const handleResearchUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    // Simulate API delay
+    setTimeout(() => {
+      const newPaper = {
+        title: file.name.split('.')[0],
+        author: user?.name || 'Scholar',
+        date: 'Just now',
+        size: `${(file.size / 1024 / 1024).toFixed(1)} MB`
+      };
+      setResearchPapers([newPaper, ...researchPapers]);
+      setIsUploading(false);
+      addToast?.('Research paper uploaded to vault!', 'success');
+    }, 1500);
   };
 
   return (
@@ -393,7 +431,7 @@ export const NexusHub = ({ user, addToast }) => {
                       </div>
 
                       <div className="space-y-3">
-                        {clubs.sort((a,b) => b.members - a.members).map((c, i) => (
+                        {leaderboardData.map((c, i) => (
                           <motion.div 
                             key={c.id}
                             initial={{ x: -20, opacity: 0 }}
@@ -410,7 +448,7 @@ export const NexusHub = ({ user, addToast }) => {
                               <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{c.type}</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-sm font-black text-slate-900">{c.members * 12} pts</p>
+                              <p className="text-sm font-black text-slate-900">{c.points} pts</p>
                               <p className="text-[10px] text-emerald-500 font-bold tracking-tight">Active Activity</p>
                             </div>
                           </motion.div>
@@ -432,29 +470,54 @@ export const NexusHub = ({ user, addToast }) => {
                                 <p className="text-slate-500">Shared knowledge and project repositories.</p>
                             </div>
                          </div>
-                         <button className="px-6 py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all shadow-lg">+ Upload Paper</button>
+                         <div className="relative">
+                            <input 
+                              type="file" 
+                              id="research-upload" 
+                              className="hidden" 
+                              onChange={handleResearchUpload}
+                              accept=".pdf,.doc,.docx"
+                            />
+                            <label 
+                              htmlFor="research-upload"
+                              className={`px-6 py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-slate-800 transition-all shadow-lg cursor-pointer flex items-center gap-2 ${isUploading ? 'opacity-50 pointer-events-none' : ''}`}
+                            >
+                              {isUploading ? (
+                                <>
+                                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                  Uploading...
+                                </>
+                              ) : (
+                                <>+ Upload Paper</>
+                              )}
+                            </label>
+                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {[
-                          { title: 'AI Ethics in Schools', author: 'Nexus Team', date: 'Yesterday', size: '2.4 MB' },
-                          { title: 'Soccer Stat Analysis', author: 'Data Club', date: '3 days ago', size: '1.2 MB' },
-                          { title: 'Sustainable Campus Proposal', author: 'Green Club', date: 'Last Week', size: '5.8 MB' }
-                        ].map((file, i) => (
-                           <div key={i} className="p-5 bg-white border border-slate-100 rounded-[24px] hover:border-indigo-500 transition-all group flex items-start gap-4">
-                              <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors shrink-0">
-                                <FileText size={24} />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <h4 className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">{file.title}</h4>
-                                <p className="text-xs text-slate-400 mb-2">By {file.author} • {file.date}</p>
-                                <div className="flex items-center justify-between">
-                                  <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full font-bold text-slate-500">{file.size}</span>
-                                  <ArrowRight size={14} className="text-slate-300 group-hover:text-indigo-600 transition-all opacity-0 group-hover:opacity-100" />
+                        {researchPapers.length === 0 ? (
+                          <div className="col-span-2 py-20 border-2 border-dashed border-slate-100 rounded-[32px] flex flex-col items-center justify-center text-slate-400">
+                            <FileText size={48} className="mb-4 opacity-10" />
+                            <p className="font-bold">The vault is empty</p>
+                            <p className="text-xs">Be the first to publish a paper in this community.</p>
+                          </div>
+                        ) : (
+                          researchPapers.map((file, i) => (
+                             <div key={i} className="p-5 bg-white border border-slate-100 rounded-[24px] hover:border-indigo-50 hover:border-indigo-200 transition-all group flex items-start gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all shrink-0 shadow-sm">
+                                  <FileText size={24} />
                                 </div>
-                              </div>
-                           </div>
-                        ))}
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-bold text-slate-800 group-hover:text-indigo-600 transition-colors truncate">{file.title}</h4>
+                                  <p className="text-xs text-slate-400 mb-2">By {file.author} • {file.date}</p>
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full font-bold text-slate-500">{file.size}</span>
+                                    <ArrowRight size={14} className="text-slate-300 group-hover:text-indigo-600 transition-all opacity-0 group-hover:opacity-100" />
+                                  </div>
+                                </div>
+                             </div>
+                          ))
+                        )}
                       </div>
                     </div>
                   </div>
