@@ -22,9 +22,7 @@ export const useAuth = () => {
             if (res?.success) {
               setUser(res.user);
               // Navigate to dashboard after successful autofill login
-              window.location.replace(
-                `/OP-CS_CONNECT/academics/#/${res.user.role}/dashboard`
-              );
+              window.location.href = `/OP-CS_CONNECT/academics/#/${res.user.role}/dashboard`;
             } else {
               console.error('Autofill login failed:', res?.error);
               setLoading(false);
