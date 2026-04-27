@@ -257,24 +257,34 @@ export const StudentDashboard = ({ user }) => {
   const { data: exams } = useStore(KEYS.EXAMS, []);
   const { data: attempts } = useStore('sms_exam_attempts', []);
   
+  // Ensure data is arrays to prevent crashes
+  const safeAssignments = Array.isArray(assignments) ? assignments : [];
+  const safeSubmissions = Array.isArray(submissions) ? submissions : [];
+  const safeMarks = Array.isArray(marks) ? marks : [];
+  const safeAttendance = Array.isArray(attendance) ? attendance : [];
+  const safeTimetable = timetable && typeof timetable === 'object' ? timetable : {};
+  const safeAnnouncements = Array.isArray(announcements) ? announcements : [];
+  const safeExams = Array.isArray(exams) ? exams : [];
+  const safeAttempts = Array.isArray(attempts) ? attempts : [];
+  
   const [focusMode, setFocusMode] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
-  const myAssignments = assignments.filter(a => a.class === user.class);
+  const myAssignments = safeAssignments.filter(a => a.class === user.class);
   const pendingAssignments = myAssignments.filter(a => {
-    const sub = submissions.find((s) => s.assignmentId === a.id && s.studentId === user.id);
+    const sub = safeSubmissions.find((s) => s.assignmentId === a.id && s.studentId === user.id);
     return !sub || (sub.status !== 'submitted' && sub.status !== 'graded');
   });
 
-  const myMarks = marks.filter(m => m.studentId === user.id);
+  const myMarks = safeMarks.filter(m => m.studentId === user.id);
   const avgMarks = myMarks.length > 0 ? Math.round(myMarks.reduce((a, b) => a + b.marksObtained, 0) / myMarks.length) : 0;
 
-  const myAttendance = attendance.filter(a => a.studentId === user.id);
+  const myAttendance = safeAttendance.filter(a => a.studentId === user.id);
   const presentCount = myAttendance.filter(a => a.status === 'present').length;
   const attendanceRate = myAttendance.length > 0 ? Math.round((presentCount / myAttendance.length) * 100) : 0;
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-  const todaySchedule = timetable[user.class]?.find(t => t.day === today)?.slots || [];
+  const todaySchedule = safeTimetable[user.class]?.find(t => t.day === today)?.slots || [];
 
   // Dynamic Data Calculations
   const { data: xpData } = useStore(KEYS.STUDENT_XP, { xp: 0, level: 1 });
@@ -344,7 +354,7 @@ export const StudentDashboard = ({ user }) => {
   };
 
   // Live activities from actual notifications
-  const liveActivities = notifications.slice(0, 3).map(n => ({
+  const liveActivities = (Array.isArray(notifications) ? notifications : []).slice(0, 3).map(n => ({
     id: n.id,
     message: n.message
   })).concat([
@@ -355,9 +365,9 @@ export const StudentDashboard = ({ user }) => {
   const goals = goalsData || [];
 
   const calendarEvents = useMemo(() => {
-    const myAssignments = assignments.filter((a) => a.class === user.class);
-    return calendarService.buildEvents({ user, assignments: myAssignments, exams, timetable, announcements });
-  }, [assignments, exams, timetable, announcements, user]);
+    const myAssignments = safeAssignments.filter((a) => a.class === user.class);
+    return calendarService.buildEvents({ user, assignments: myAssignments, exams: safeExams, timetable: safeTimetable, announcements: safeAnnouncements });
+  }, [safeAssignments, safeExams, safeTimetable, safeAnnouncements, user]);
 
   const upcoming = useMemo(() => calendarService.nextUpcoming({ events: calendarEvents, limit: 3 }), [calendarEvents]);
 
@@ -384,13 +394,13 @@ export const StudentDashboard = ({ user }) => {
   }, [upcoming]);
 
   useEffect(() => {
-    if (!user || announcements.length === 0) return;
-    const toMark = announcements.filter(a => !(a.readBy || []).includes(user.id));
+    if (!user || safeAnnouncements.length === 0) return;
+    const toMark = safeAnnouncements.filter(a => !(a.readBy || []).includes(user.id));
     if (toMark.length === 0) return;
     toMark.forEach(a => {
       updateAnnouncement(a.id, { readBy: [...(a.readBy || []), user.id] });
     });
-  }, [announcements, user, updateAnnouncement]);
+  }, [safeAnnouncements, user, updateAnnouncement]);
 
   if (focusMode) {
     return (
