@@ -50,9 +50,8 @@ export default function LoginSection({ sectionRef }) {
         })
       );
     } catch {
-      // sessionStorage unavailable (private browsing) — fall back to query params
-      const params = new URLSearchParams({ email: email.trim().toLowerCase(), password: password.trim() });
-      window.location.href = `/OP-CS_CONNECT/${portal}/login?${params.toString()}`;
+      // sessionStorage unavailable — just go to portal root
+      window.location.href = `/OP-CS_CONNECT/${portal}/login`;
       return;
     }
 
