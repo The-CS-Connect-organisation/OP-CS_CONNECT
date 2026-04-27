@@ -58,13 +58,15 @@ jobs:
         run: |
           mkdir -p deploy/academics
           mkdir -p deploy/management
-          cp -r landing/dist/* deploy/
+          # Copy each portal to its subdirectory first
           cp -r academics/dist/* deploy/academics/
           cp -r management/dist/* deploy/management/
-          # Fix client-side routing — copy index.html as 404.html at every level
-          cp deploy/academics/index.html deploy/academics/404.html
-          cp deploy/management/index.html deploy/management/404.html
-          cp deploy/index.html deploy/404.html
+          # Fix client-side routing — each portal handles its own 404
+          cp academics/dist/index.html deploy/academics/404.html
+          cp management/dist/index.html deploy/management/404.html
+          # Landing goes to root LAST so it doesn't overwrite portal 404s
+          cp -r landing/dist/* deploy/
+          cp landing/dist/index.html deploy/404.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
