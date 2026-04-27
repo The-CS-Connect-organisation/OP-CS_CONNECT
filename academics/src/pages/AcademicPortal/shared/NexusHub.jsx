@@ -159,34 +159,37 @@ export const NexusHub = ({ user, addToast }) => {
     const type = e.target.clubType.value;
 
     try {
-      // In a real app: await api.post('/school/clubs', { name, type });
+      const res = await request('/school/clubs', {
+        method: 'POST',
+        body: JSON.stringify({ name, type })
+      });
+      
+      const savedClub = res.club || res;
+      
       const newClub = {
-        id: `club-${Date.now()}`,
-        name,
-        type,
-        icon: type === 'STEM' ? Cpu : (type === 'Sports' ? Trophy : Users),
-        color: type === 'STEM' ? '#6366f1' : '#f43f5e',
-        members: 1,
-        isMember: true,
-        channels: ['general', 'announcements'],
-        extensions: []
+        ...savedClub,
+        icon: savedClub.type === 'STEM' ? Cpu : (savedClub.type === 'Sports' ? Trophy : Users),
+        members: Array.isArray(savedClub.members) ? savedClub.members.length : (savedClub.members || 1),
+        isMember: true
       };
 
       setClubs([newClub, ...clubs]);
       setShowCreateModal(false);
       addToast?.(`Club "${name}" created successfully!`, 'success');
     } catch (err) {
-      addToast?.('Failed to create club', 'error');
+      console.error(err);
+      addToast?.('Failed to create community', 'error');
     }
   };
 
   const handleJoinClub = async (clubId) => {
     try {
-      // In a real app: await api.post(`/school/clubs/${clubId}/join`);
-      setClubs(clubs.map(c => c.id === clubId ? { ...c, isMember: true, members: c.members + 1 } : c));
+      await request(`/school/clubs/${clubId}/join`, { method: 'POST' });
+      setClubs(clubs.map(c => c.id === clubId ? { ...c, isMember: true, members: typeof c.members === 'number' ? c.members + 1 : c.members } : c));
       addToast?.('Joined community!', 'success');
     } catch (err) {
-      addToast?.('Failed to join', 'error');
+      console.error(err);
+      addToast?.('Failed to join community', 'error');
     }
   };
 
