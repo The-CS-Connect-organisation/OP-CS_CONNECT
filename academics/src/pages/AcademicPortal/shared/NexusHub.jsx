@@ -1,17 +1,17 @@
 import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Users, 
-  MessageSquare, 
-  Phone, 
-  Video, 
-  Plus, 
-  Search, 
-  Hash, 
-  ShieldCheck, 
-  Trophy, 
-  Zap, 
-  Cpu, 
+import {
+  Users,
+  MessageSquare,
+  Phone,
+  Video,
+  Plus,
+  Search,
+  Hash,
+  ShieldCheck,
+  Trophy,
+  Zap,
+  Cpu,
   Microscope,
   MoreVertical,
   X,
@@ -20,38 +20,39 @@ import {
   Settings,
   Globe,
   Lock,
-  ArrowRight
+  ArrowRight,
+  PhoneCall
 } from 'lucide-react';
 
 // Mock Data for the Nexus
 const INITIAL_CLUBS = [
-  { 
-    id: 'club-1', 
-    name: 'STEM Innovation Lab', 
-    type: 'STEM', 
-    icon: Microscope, 
+  {
+    id: 'club-1',
+    name: 'STEM Innovation Lab',
+    type: 'STEM',
+    icon: Microscope,
     color: '#6366f1',
     members: 142,
     isMember: true,
     channels: ['general', 'robotics-ai', 'biotech-projects', 'research-papers'],
     extensions: ['github-sync', 'research-notion']
   },
-  { 
-    id: 'club-2', 
-    name: 'Varsity Soccer', 
-    type: 'Sports', 
-    icon: Trophy, 
+  {
+    id: 'club-2',
+    name: 'Varsity Soccer',
+    type: 'Sports',
+    icon: Trophy,
     color: '#f59e0b',
     members: 45,
     isMember: true,
     channels: ['strategy', 'training-times', 'match-highlights'],
     extensions: ['score-tracker']
   },
-  { 
-    id: 'club-3', 
-    name: 'Cornerstone Coders', 
-    type: 'STEM', 
-    icon: Cpu, 
+  {
+    id: 'club-3',
+    name: 'Cornerstone Coders',
+    type: 'STEM',
+    icon: Cpu,
     color: '#10b981',
     members: 89,
     isMember: false,
@@ -81,7 +82,7 @@ export const NexusHub = ({ user, addToast }) => {
     e.preventDefault();
     const name = e.target.clubName.value;
     const type = e.target.clubType.value;
-    
+
     const newClub = {
       id: `club-${Date.now()}`,
       name,
@@ -93,7 +94,7 @@ export const NexusHub = ({ user, addToast }) => {
       channels: ['general', 'announcements'],
       extensions: []
     };
-    
+
     setClubs([newClub, ...clubs]);
     setShowCreateModal(false);
     addToast?.(`Club "${name}" created successfully!`, 'success');
@@ -106,10 +107,10 @@ export const NexusHub = ({ user, addToast }) => {
 
   return (
     <div className="flex h-[calc(100vh-100px)] overflow-hidden rounded-3xl border border-[var(--border-default)] shadow-2xl bg-slate-50">
-      
+
       {/* ── Discord-like Sidebar ── */}
       <div className="w-20 bg-slate-900 flex flex-col items-center py-5 gap-4 shrink-0">
-        <motion.button 
+        <motion.button
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => { setActiveTab('browse'); setSelectedClub(null); }}
@@ -117,9 +118,9 @@ export const NexusHub = ({ user, addToast }) => {
         >
           <Globe size={24} />
         </motion.button>
-        
+
         <div className="w-8 h-[2px] bg-slate-800 rounded-full" />
-        
+
         {clubs.filter(c => c.isMember).map(club => (
           <motion.button
             key={club.id}
@@ -133,7 +134,7 @@ export const NexusHub = ({ user, addToast }) => {
           </motion.button>
         ))}
 
-        <motion.button 
+        <motion.button
           whileHover={{ scale: 1.1, rotate: 90 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => setShowCreateModal(true)}
@@ -174,7 +175,7 @@ export const NexusHub = ({ user, addToast }) => {
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 mb-2">Text Channels</p>
                 <nav className="space-y-1">
                   {selectedClub?.channels.map(ch => (
-                    <button 
+                    <button
                       key={ch}
                       onClick={() => setSelectedChannel(ch)}
                       className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl transition-all ${selectedChannel === ch ? 'bg-white text-indigo-600 shadow-sm font-bold' : 'text-slate-500 hover:bg-white/50'}`}
@@ -191,7 +192,7 @@ export const NexusHub = ({ user, addToast }) => {
                   <Plus size={12} className="text-slate-400 cursor-pointer" />
                 </div>
                 <nav className="space-y-1">
-                  <button 
+                  <button
                     onClick={() => { setIsCalling(true); setCallType('voice'); }}
                     className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-slate-500 hover:bg-white/50 transition-all font-medium"
                   >
@@ -201,7 +202,7 @@ export const NexusHub = ({ user, addToast }) => {
                       <div className="w-4 h-4 rounded-full bg-emerald-400 border border-white" />
                     </div>
                   </button>
-                  <button 
+                  <button
                     onClick={() => { setIsCalling(true); setCallType('video'); }}
                     className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-slate-500 hover:bg-white/50 transition-all font-medium"
                   >
@@ -216,7 +217,7 @@ export const NexusHub = ({ user, addToast }) => {
                   <nav className="space-y-1">
                     {selectedClub.extensions.map(ext => (
                       <button key={ext} className="w-full flex items-center gap-2 px-3 py-2 rounded-xl border border-indigo-100 bg-indigo-50/50 text-indigo-600 text-xs font-semibold capitalize">
-                         <Zap size={14} /> {ext.replace('-', ' ')}
+                        <Zap size={14} /> {ext.replace('-', ' ')}
                       </button>
                     ))}
                   </nav>
@@ -225,7 +226,7 @@ export const NexusHub = ({ user, addToast }) => {
             </>
           )}
         </div>
-        
+
         {/* User Stats at bottom of sidebar */}
         <div className="p-3 bg-white border-t border-[var(--border-default)]">
           <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-50">
@@ -246,7 +247,7 @@ export const NexusHub = ({ user, addToast }) => {
 
       {/* ── Main content Area ── */}
       <div className="flex-1 bg-white flex flex-col relative">
-        
+
         {activeTab === 'browse' ? (
           /* EXPLORE PAGE */
           <div className="flex-1 overflow-y-auto p-10 bg-slate-50/50">
@@ -257,7 +258,7 @@ export const NexusHub = ({ user, addToast }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
               {clubs.map(club => (
-                <motion.div 
+                <motion.div
                   key={club.id}
                   whileHover={{ y: -8, shadow: '0 20px 40px rgba(0,0,0,0.05)' }}
                   className="bg-white border border-slate-100 rounded-[32px] p-8 shadow-sm group relative overflow-hidden"
@@ -265,7 +266,7 @@ export const NexusHub = ({ user, addToast }) => {
                   <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform">
                     <club.icon size={128} />
                   </div>
-                  
+
                   <div className="flex items-start justify-between mb-6">
                     <div className="p-4 rounded-2xl text-white shadow-lg" style={{ backgroundColor: club.color }}>
                       <club.icon size={24} />
@@ -275,16 +276,16 @@ export const NexusHub = ({ user, addToast }) => {
                         <ShieldCheck size={12} /> Member
                       </span>
                     ) : (
-                      <button 
+                      <button
                         onClick={() => handleJoinClub(club.id)}
                         className="px-5 py-2 bg-slate-900 text-white rounded-full text-xs font-bold hover:bg-slate-800 transition-colors"
                       > Join Community </button>
                     )}
                   </div>
-                  
+
                   <h3 className="text-xl font-bold text-slate-800 mb-1">{club.name}</h3>
                   <p className="text-sm text-slate-400 mb-6">{club.members} active students</p>
-                  
+
                   <div className="flex flex-wrap gap-2">
                     {club.channels.slice(0, 3).map(ch => (
                       <span key={ch} className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg">#{ch}</span>
@@ -298,17 +299,17 @@ export const NexusHub = ({ user, addToast }) => {
           /* CHAT AREA */
           <>
             <div className="h-16 px-6 border-b border-slate-100 flex items-center justify-between bg-white/80 backdrop-blur-md z-10 sticky top-0">
-               <div className="flex items-center gap-3">
-                 <div className="text-indigo-500"><Hash size={20} className="font-bold" /></div>
-                 <h1 className="font-bold text-slate-800">{selectedChannel}</h1>
-               </div>
-               <div className="flex items-center gap-4 text-slate-400">
-                 <PhoneCall size={20} className="hover:text-indigo-500 cursor-pointer" onClick={() => { setIsCalling(true); setCallType('voice'); }} />
-                 <Video size={21} className="hover:text-indigo-500 cursor-pointer" onClick={() => { setIsCalling(true); setCallType('video'); }} />
-                 <div className="w-[1px] h-6 bg-slate-200" />
-                 <Users size={20} className="hover:text-slate-600 cursor-pointer" />
-                 <MoreVertical size={20} className="hover:text-slate-600 cursor-pointer" />
-               </div>
+              <div className="flex items-center gap-3">
+                <div className="text-indigo-500"><Hash size={20} className="font-bold" /></div>
+                <h1 className="font-bold text-slate-800">{selectedChannel}</h1>
+              </div>
+              <div className="flex items-center gap-4 text-slate-400">
+                <PhoneCall size={20} className="hover:text-indigo-500 cursor-pointer" onClick={() => { setIsCalling(true); setCallType('voice'); }} />
+                <Video size={21} className="hover:text-indigo-500 cursor-pointer" onClick={() => { setIsCalling(true); setCallType('video'); }} />
+                <div className="w-[1px] h-6 bg-slate-200" />
+                <Users size={20} className="hover:text-slate-600 cursor-pointer" />
+                <MoreVertical size={20} className="hover:text-slate-600 cursor-pointer" />
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-6 space-y-6 flex flex-col-reverse">
@@ -336,17 +337,17 @@ export const NexusHub = ({ user, addToast }) => {
             {/* MESSAGE INPUT */}
             <div className="p-6 bg-slate-50 mt-auto border-t border-slate-100">
               <div className="flex items-center gap-3 bg-white border-2 border-slate-200 p-2 rounded-2xl focus-within:border-indigo-400 transition-all shadow-sm">
-                 <button className="p-2 text-slate-400 hover:text-indigo-500"><Plus size={20} /></button>
-                 <input 
-                   type="text" 
-                   value={message}
-                   onChange={(e) => setMessage(e.target.value)}
-                   placeholder={`Message #${selectedChannel}...`} 
-                   className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700" 
-                 />
-                 <button className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-xs flex items-center gap-2 hover:bg-indigo-700 transition-colors">
-                    Send <Zap size={14} />
-                 </button>
+                <button className="p-2 text-slate-400 hover:text-indigo-500"><Plus size={20} /></button>
+                <input
+                  type="text"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder={`Message #${selectedChannel}...`}
+                  className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700"
+                />
+                <button className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold text-xs flex items-center gap-2 hover:bg-indigo-700 transition-colors">
+                  Send <Zap size={14} />
+                </button>
               </div>
             </div>
           </>
@@ -355,7 +356,7 @@ export const NexusHub = ({ user, addToast }) => {
         {/* ── Discord-like Active Call Overlay ── */}
         <AnimatePresence>
           {isCalling && (
-            <motion.div 
+            <motion.div
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: '100%', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -374,22 +375,22 @@ export const NexusHub = ({ user, addToast }) => {
 
               <div className="flex-1 flex flex-wrap items-center justify-center gap-8 p-10">
                 {[1, 2, 3].map(i => (
-                  <motion.div 
-                    key={i} 
-                    initial={{ scale: 0 }} 
-                    animate={{ scale: 1 }} 
+                  <motion.div
+                    key={i}
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
                     className="relative group cursor-pointer"
                   >
                     <div className="w-32 h-32 rounded-3xl bg-slate-800 border-2 border-indigo-500/30 flex items-center justify-center transition-all group-hover:border-indigo-500 relative overflow-hidden">
-                       <span className="text-5xl font-black text-indigo-500/20">{i === 1 ? 'Y' : 'U'}</span>
-                       {callType === 'video' && i === 1 && (
-                         <div className="absolute inset-0 bg-slate-700 flex items-center justify-center">
-                            <span className="text-xs text-white/50 font-bold">Camera Off</span>
-                         </div>
-                       )}
+                      <span className="text-5xl font-black text-indigo-500/20">{i === 1 ? 'Y' : 'U'}</span>
+                      {callType === 'video' && i === 1 && (
+                        <div className="absolute inset-0 bg-slate-700 flex items-center justify-center">
+                          <span className="text-xs text-white/50 font-bold">Camera Off</span>
+                        </div>
+                      )}
                     </div>
                     <div className="absolute -bottom-2 inset-x-0 mx-auto w-fit px-3 py-1 bg-slate-900 border border-slate-800 rounded-full text-[10px] text-white font-bold">
-                       {i === 1 ? 'You' : `Scholar #${i}`}
+                      {i === 1 ? 'You' : `Scholar #${i}`}
                     </div>
                     {i === 1 && <div className="absolute top-2 right-2 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900 animate-pulse" />}
                   </motion.div>
@@ -398,7 +399,7 @@ export const NexusHub = ({ user, addToast }) => {
 
               <div className="p-8 pb-12 flex justify-center items-center gap-6">
                 <button className="w-14 h-14 rounded-full bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700"><Mic size={24} /></button>
-                <button 
+                <button
                   onClick={() => setIsCalling(false)}
                   className="w-16 h-16 rounded-full bg-rose-500 text-white flex items-center justify-center shadow-lg shadow-rose-500/20 hover:bg-rose-600 transition-all active:scale-95"
                 >
@@ -418,12 +419,12 @@ export const NexusHub = ({ user, addToast }) => {
       <AnimatePresence>
         {showCreateModal && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setShowCreateModal(false)}
               className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
             />
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -431,13 +432,13 @@ export const NexusHub = ({ user, addToast }) => {
             >
               <h2 className="text-3xl font-black text-slate-900 mb-2">Build a Community</h2>
               <p className="text-slate-500 mb-8 text-sm">Start a new club for your peers at Cornerstone.</p>
-              
+
               <form onSubmit={handleCreateClub} className="space-y-6">
                 <div>
                   <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Community Name</label>
                   <input required name="clubName" type="text" className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-slate-800 font-bold focus:border-indigo-400 outline-none transition-all" placeholder="e.g. Art & Motion" />
                 </div>
-                
+
                 <div>
                   <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Primary Category</label>
                   <select name="clubType" className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-slate-800 font-bold focus:border-indigo-400 outline-none transition-all">
@@ -449,7 +450,7 @@ export const NexusHub = ({ user, addToast }) => {
                 </div>
 
                 <div className="flex items-center gap-3 bg-indigo-50 p-4 rounded-2xl border border-indigo-100 text-indigo-700 text-xs font-semibold">
-                   <Lock size={16} /> Restricted to verified Cornerstone students.
+                  <Lock size={16} /> Restricted to verified Cornerstone students.
                 </div>
 
                 <div className="pt-4 flex gap-3">
