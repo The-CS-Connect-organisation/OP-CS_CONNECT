@@ -264,7 +264,7 @@ const SplashScreen = ({ onComplete }) => {
                   }}
                 >
                   <img
-                    src="/logo.png"
+                    src="logo.png"
                     alt="SchoolSync Logo"
                     onLoad={() => setLogoLoaded(true)}
                     className="h-20 md:h-24 w-auto object-contain"

@@ -169,7 +169,7 @@ const SplashScreen = ({ onEnter }) => (
           transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
         />
         <motion.img
-          src="/logo.png"
+          src="logo.png"
           alt="Cornerstone School"
           className="relative w-32 h-32 object-contain drop-shadow-2xl"
           animate={{ y: [0, -6, 0] }}
@@ -505,7 +505,7 @@ export const AILab = ({ user, addToast }) => {
                     animate={{ scale: [1, 1.3, 1] }}
                     transition={{ duration: 3, repeat: Infinity }}
                   />
-                  <img src="/logo.png" alt="CSAI" className="relative w-28 h-28 object-contain drop-shadow-xl" />
+                  <img src="logo.png" alt="CSAI" className="relative w-28 h-28 object-contain drop-shadow-xl" />
                 </motion.div>
                 <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">What can I help with?</h2>
                 <p className="text-sm text-gray-400 max-w-xs leading-relaxed">
