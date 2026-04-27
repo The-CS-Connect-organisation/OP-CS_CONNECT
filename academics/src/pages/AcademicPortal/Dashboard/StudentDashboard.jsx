@@ -248,14 +248,18 @@ const CalendarDay = ({ day, events }) => {
 };
 
 export const StudentDashboard = ({ user }) => {
+  if (!user) {
+    return <div className="p-8">Loading user data...</div>;
+  }
+
   const { data: assignments } = useStore(KEYS.ASSIGNMENTS, []);
-  const { data: submissions } = useStore('sms_submissions', []);
-  const { data: marks } = useStore(KEYS.MARKS, []);
-  const { data: attendance } = useStore(KEYS.ATTENDANCE, []);
-  const { data: timetable } = useStore(KEYS.TIMETABLE, {});
-  const { data: announcements, update: updateAnnouncement } = useStore(KEYS.ANNOUNCEMENTS, []);
-  const { data: exams } = useStore(KEYS.EXAMS, []);
-  const { data: attempts } = useStore('sms_exam_attempts', []);
+    const { data: submissions } = useStore('sms_submissions', []);
+    const { data: marks } = useStore(KEYS.MARKS, []);
+    const { data: attendance } = useStore(KEYS.ATTENDANCE, []);
+    const { data: timetable } = useStore(KEYS.TIMETABLE, {});
+    const { data: announcements, update: updateAnnouncement } = useStore(KEYS.ANNOUNCEMENTS, []);
+    const { data: exams } = useStore(KEYS.EXAMS, []);
+    const { data: attempts } = useStore('sms_exam_attempts', []);
   
   // Ensure data is arrays to prevent crashes
   const safeAssignments = Array.isArray(assignments) ? assignments : [];
@@ -427,229 +431,10 @@ export const StudentDashboard = ({ user }) => {
   }
 
   return (
-    <div className="space-y-6 max-w-[1400px] mx-auto w-full relative pt-2 pb-12">
-      {/* Welcome Banner */}
-      <motion.div
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="nova-card p-6 md:p-8 relative overflow-hidden"
-      >
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-gradient-to-br from-blue-100 to-transparent blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-gradient-to-tr from-purple-100 to-transparent blur-3xl" />
-        </div>
-        
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold bg-green-50 text-green-600 border border-green-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              Student Portal
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-600 border border-blue-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-              {user.class}
-            </span>
-            <button 
-              onClick={() => setFocusMode(!focusMode)}
-              className="ml-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold bg-purple-50 text-purple-600 border border-purple-200"
-            >
-              <Focus size={12} /> Focus Mode
-            </button>
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight flex items-center gap-3 mb-3 text-gray-900">
-            <span className="w-1 h-10 rounded-full bg-gradient-to-b from-blue-500 to-purple-500" />
-            Welcome back, {user.name.split(' ')[0]}
-          </h1>
-          <div className="flex flex-wrap gap-2 mt-4">
-            {[`Class: ${user.class}`, `ID: ${user.admissionNo || user.rollNo}`, today].map((tag, i) => (
-              <span 
-                key={tag}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      </motion.div>
-
-      {/* XP & Gamification Bar */}
-      <XPBar xp={xp} level={level} nextLevelXP={nextLevelXP} />
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={UserCheck} label="Attendance" value={`${attendanceRate}%`} subtitle="Monthly average" delay={0.1} color="#10b981" />
-        <StatCard icon={FileText} label="Pending Tasks" value={pendingAssignments.length} subtitle="Needs attention" delay={0.15} color="#f59e0b" />
-        <StatCard icon={Award} label="Average Score" value={`${avgMarks}%`} subtitle="Performance" delay={0.2} color="#a855f7" />
-        <StatCard icon={Clock} label="Classes Today" value={todaySchedule.length} subtitle="Scheduled" delay={0.25} color="#3b82f6" />
-      </div>
-
-      {/* Live Activity Ticker */}
-      <LiveActivityTicker activities={liveActivities} />
-
-      {/* Countdown Timers */}
-      <div className="nova-card p-6">
-        <h3 className="text-sm font-semibold mb-4 text-gray-600">Upcoming Deadlines</h3>
-        <div className="grid grid-cols-3 gap-4">
-          {(countdownItems.length > 0 ? countdownItems : [
-            { label: 'Next Exam', timeLeft: '--:--:--' },
-            { label: 'Assignment Due', timeLeft: '--:--:--' },
-            { label: 'Class Starts', timeLeft: '--:--:--' },
-          ]).map((cd, i) => <CountdownTimer key={i} label={cd.label} timeLeft={cd.timeLeft} />)}
-        </div>
-      </div>
-
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* AI Coach + Weekly Challenge */}
-        <div className="space-y-6">
-          <AICoachTip tip={aiTip} />
-          {coach.plan?.length > 0 && (
-            <div className="nova-card p-6">
-              <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-gray-600">
-                <Brain size={14} /> Coach Plan (Next Steps)
-              </h3>
-              <div className="space-y-3">
-                {coach.plan.map((item, i) => (
-                  <div key={i} className="p-4 rounded-xl bg-gray-50 border border-gray-200">
-                    <p className="font-semibold text-gray-900 text-sm">{item.title}</p>
-                    <p className="text-xs text-gray-500 mt-1">{item.reason}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          <WeeklyChallenge challenge={weeklyChallenge} />
-          <StudyHeatmap />
-        </div>
-
-        {/* Subject Health + Goals */}
-        <div className="space-y-6">
-          <SubjectHealthRadar data={subjectHealthData} />
-          
-          <div className="nova-card p-6">
-            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-gray-600">
-              <Target size={14} /> Semester Goals
-            </h3>
-            {goals.map((goal, i) => <GoalProgress key={i} goal={goal} />)}
-          </div>
-
-          <div className="nova-card p-6">
-            <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-gray-600">
-              <Award size={14} /> Earned Badges
-            </h3>
-            <div className="grid grid-cols-4 gap-2">
-              {earnedBadges.map((badge, i) => <BadgeCard key={i} badge={badge} />)}
-            </div>
-          </div>
-        </div>
-
-        {/* Right Column */}
-        <div className="space-y-6">
-          {/* Today's Schedule */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="nova-card p-6">
-            <h3 className="text-sm font-semibold mb-5 flex items-center gap-2 text-gray-600">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-              Today's Schedule
-            </h3>
-            {todaySchedule.length === 0 ? (
-              <div className="py-12 border border-dashed rounded-xl flex items-center justify-center border-gray-200">
-                <p className="text-xs text-gray-500">No classes scheduled</p>
-              </div>
-            ) : (
-              <div className="space-y-2.5">
-                {todaySchedule.map((slot, idx) => (
-                  <div key={idx} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
-                    <div className="px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold bg-gray-200 text-gray-700 flex-shrink-0">
-                      {slot.time.split(' ')[0]}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900">{slot.subject}</p>
-                      <p className="text-xs mt-0.5 text-gray-500">{slot.teacher} • Room {slot.room}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </motion.div>
-
-          {/* Pending Assignments */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="nova-card p-6">
-            <h3 className="text-sm font-semibold mb-5 flex items-center gap-2 text-gray-600">
-              <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-              Pending Assignments
-            </h3>
-            {pendingAssignments.length === 0 ? (
-              <div className="py-12 border border-dashed rounded-xl flex items-center justify-center border-gray-200">
-                <p className="text-xs text-gray-500">All caught up!</p>
-              </div>
-            ) : (
-              <div className="space-y-2.5">
-                {pendingAssignments.map(a => {
-                  const isLate = new Date(a.dueDate) < new Date();
-                  return (
-                    <div key={a.id}
-                      className="p-3.5 rounded-xl bg-gray-50 border border-gray-200"
-                    >
-                      <div className="flex justify-between items-start gap-3">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-gray-900">{a.title}</p>
-                          <p className="text-xs mt-1 text-gray-500">{a.subject} • Due: {a.dueDate}</p>
-                        </div>
-                        {isLate && (
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-600 shrink-0">Overdue</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </motion.div>
-
-          {/* Announcements */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }} className="nova-card p-6">
-            <h3 className="text-sm font-semibold mb-5 flex items-center gap-2 text-gray-600">
-              <div className="w-1.5 h-1.5 rounded-full bg-pink-400" />
-              Announcements
-            </h3>
-            <div className="space-y-3">
-              {announcements.slice(0, 4).map(a => (
-                <div key={a.id} className="border-l-2 pl-3 py-1.5 border-gray-200">
-                  <div className="flex justify-between items-center mb-0.5">
-                    <span className={`text-[10px] font-semibold rounded-full px-2 py-0.5 ${a.priority === 'high' ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-500'}`}>
-                      {a.priority} priority
-                    </span>
-                    <span className="text-[10px] font-mono text-gray-400">{a.date}</span>
-                  </div>
-                  <p className="text-sm leading-relaxed mt-1 text-gray-600">{a.title}</p>
-                </div>
-              ))}
-              {announcements.length === 0 && (
-                <p className="text-xs text-gray-500">No announcements</p>
-              )}
-            </div>
-          </motion.div>
-        </div>
-      </div>
-
-      {/* Calendar Section */}
-      <div className="nova-card p-6">
-        <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-gray-600">
-          <Calendar size={14} /> This Month
-        </h3>
-        <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: 31 }, (_, i) => {
-            const d = new Date();
-            d.setDate(1 + i);
-            const dateKey = d.toISOString().split('T')[0];
-            const dayEvents = calendarEvents.filter((e) => e.date === dateKey);
-            return <CalendarDay key={i} day={i + 1} events={dayEvents} />;
-          })}
-        </div>
-      </div>
+    <div className="p-8">
+      <h1>Student Dashboard Test</h1>
+      <p>User: {user?.name}</p>
+      <p>Class: {user?.class}</p>
     </div>
   );
 };
