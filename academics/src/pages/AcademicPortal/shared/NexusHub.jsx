@@ -22,7 +22,8 @@ import {
   Globe,
   Lock,
   ArrowRight,
-  PhoneCall
+  PhoneCall,
+  FileText
 } from 'lucide-react';
 import { request } from '../../../utils/apiClient';
 
@@ -114,6 +115,30 @@ export const NexusHub = ({ user, addToast }) => {
       return () => channel.off('message.new', handleNewMessage);
     }
   }, [client, selectedClub]);
+
+  // Fetch Leaderboard on tab switch
+  useEffect(() => {
+    if (activeSubTab === 'leaderboard' || activeBrowseTab === 'global') {
+      const fetchLeaderboard = async () => {
+        try {
+          // Temporarily mock it based on active clubs if API is missing
+          // If the backend /clubs/leaderboard exists, use it:
+          // const res = await request('/school/clubs/leaderboard');
+          
+          // Safe fallback simulation from active clubs
+          const sorted = [...clubs].map(c => ({
+            ...c,
+            points: (c.members || 1) * 15 + Math.floor(Math.random() * 200)
+          })).sort((a,b) => b.points - a.points);
+          
+          setLeaderboardData(sorted);
+        } catch (err) {
+          console.error('Leaderboard Fetch Error:', err);
+        }
+      };
+      if (clubs.length > 0) fetchLeaderboard();
+    }
+  }, [activeSubTab, activeBrowseTab, clubs]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
