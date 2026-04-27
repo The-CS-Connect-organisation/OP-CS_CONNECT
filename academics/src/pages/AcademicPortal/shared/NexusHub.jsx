@@ -24,49 +24,9 @@ import {
   ArrowRight,
   PhoneCall
 } from 'lucide-react';
+import { request } from '../../../utils/apiClient';
 
-// Mock Data for the Nexus
-const INITIAL_CLUBS = [
-  {
-    id: 'club-1',
-    name: 'STEM Innovation Lab',
-    type: 'STEM',
-    icon: Microscope,
-    color: '#6366f1',
-    members: 142,
-    isMember: true,
-    channels: ['general', 'robotics-ai', 'biotech-projects', 'research-papers'],
-    extensions: ['github-sync', 'research-notion']
-  },
-  {
-    id: 'club-2',
-    name: 'Varsity Soccer',
-    type: 'Sports',
-    icon: Trophy,
-    color: '#f59e0b',
-    members: 45,
-    isMember: true,
-    channels: ['strategy', 'training-times', 'match-highlights'],
-    extensions: ['score-tracker']
-  },
-  {
-    id: 'club-3',
-    name: 'Cornerstone Coders',
-    type: 'STEM',
-    icon: Cpu,
-    color: '#10b981',
-    members: 89,
-    isMember: false,
-    channels: ['web-dev', 'python-scripts', 'help-center'],
-    extensions: ['code-playground']
-  }
-];
-
-const MOCK_MESSAGES = [
-  { id: 1, sender: 'Alex Chen', text: 'Has anyone finished the Robotics assignment?', time: '10:42 AM', isMe: false },
-  { id: 2, sender: 'You', text: 'Almost done with the motor calibrations.', time: '10:45 AM', isMe: true },
-  { id: 3, sender: 'Sarah Blake', text: 'I can help with the code if needed!', time: '10:46 AM', isMe: false },
-];
+// No mock data since we use API
 
 export const NexusHub = ({ user, addToast }) => {
   const [activeTab, setActiveTab] = useState('browse'); // 'browse' | 'club-view'
@@ -94,21 +54,22 @@ export const NexusHub = ({ user, addToast }) => {
     const fetchClubs = async () => {
       try {
         setIsLoading(true);
-        // In a real app: const res = await api.get('/school/clubs');
-        // Simulated fetch for now, but linked to the state
-        const fetchRemoteClubs = async () => {
-          // Placeholder for the actual fetch call once user adds keys
-          setClubs(INITIAL_CLUBS); 
-          setIsLoading(false);
-        };
-        fetchRemoteClubs();
+        const res = await request('/school/clubs');
+        const mappedClubs = (res.clubs || []).map(c => ({
+          ...c,
+          icon: c.type === 'STEM' ? Cpu : (c.type === 'Sports' ? Trophy : Users),
+          members: Array.isArray(c.members) ? c.members.length : c.members,
+          isMember: Array.isArray(c.members) ? c.members.includes(user?.id) : true
+        }));
+        setClubs(mappedClubs);
       } catch (err) {
         console.error('Fetch Clubs Error:', err);
+      } finally {
         setIsLoading(false);
       }
     };
     fetchClubs();
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     const initChat = async () => {
