@@ -342,8 +342,7 @@ CREATE POLICY "service_full_access" ON ai_interactions FOR ALL USING (true) WITH
 CREATE POLICY "service_full_access" ON error_logs FOR ALL USING (true) WITH CHECK (true);
 
 -- =========================================
-pls note this is for internal reference only it has aldready been updated to supabase via the sql editor
-supabase scheme has been completely written by Navaneeth Nalabothu AI has not been used
+-- Schema written by Navaneeth Nalabothu
 -- =========================================
 
 -- =========================================
