@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { StreamChat } from 'stream-chat';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
@@ -81,22 +82,66 @@ export const NexusHub = ({ user, addToast }) => {
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [researchPapers, setResearchPapers] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  
+  // ── Stream Chat Integration ──
+  const [client, setClient] = useState(null);
+  const [chatChannel, setChatChannel] = useState(null);
+  const [messages, setMessages] = useState([]);
 
-  // Fetch Leaderboard on tab switch
   useEffect(() => {
-    if (activeSubTab === 'leaderboard' || activeTab === 'browse') {
-      // In a real app: const res = await api.get('/clubs/leaderboard');
-      // Simulated for now with the logic we added to the backend
-      const fetchLeaderboard = () => {
-        const sorted = [...clubs].map(c => ({
-          ...c,
-          points: c.members * 15 + Math.floor(Math.random() * 200)
-        })).sort((a,b) => b.points - a.points);
-        setLeaderboardData(sorted);
+    const initChat = async () => {
+      try {
+        // In a real flow: const { token, apiKey } = await api.get('/stream-token');
+        const chatClient = StreamChat.getInstance('n9v8bfwy45pn'); // Using your key
+        
+        // Connect user (Simulated token and user for now)
+        await chatClient.connectUser(
+          { id: user?.id || 'guest', name: user?.name || 'Guest' },
+          chatClient.devToken(user?.id || 'guest') // Dev token for testing
+        );
+
+        setClient(chatClient);
+      } catch (err) {
+        console.error('Stream Init Error:', err);
+      }
+    };
+
+    initChat();
+    return () => client?.disconnectUser();
+  }, [user]);
+
+  // Handle Channel Switching
+  useEffect(() => {
+    if (client && selectedClub) {
+      const channel = client.channel('messaging', selectedClub.id, {
+        name: selectedClub.name,
+      });
+
+      channel.watch().then((state) => {
+        setMessages(state.messages);
+        setChatChannel(channel);
+      });
+
+      const handleNewMessage = (event) => {
+        setMessages((prev) => [...prev, event.message]);
       };
-      fetchLeaderboard();
+
+      channel.on('message.new', handleNewMessage);
+      return () => channel.off('message.new', handleNewMessage);
     }
-  }, [activeSubTab, activeTab, clubs]);
+  }, [client, selectedClub]);
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!message.trim() || !chatChannel) return;
+
+    try {
+      await chatChannel.sendMessage({ text: message });
+      setMessage('');
+    } catch (err) {
+      addToast?.('Message failed to send', 'error');
+    }
+  };
 
   // Handle Club Creation
   const handleCreateClub = (e) => {
@@ -373,36 +418,38 @@ export const NexusHub = ({ user, addToast }) => {
                   /* CHAT VIEW */
                   <div className="flex flex-col h-full">
                     <div className="flex-1 p-6 space-y-6">
-                      <div className="py-10 text-center border-b border-slate-50 mb-6">
-                        <div className="w-16 h-16 rounded-3xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-                          <Hash size={32} className="text-slate-300" />
-                        </div>
-                        <h2 className="text-2xl font-black text-slate-800">Welcome to #{selectedChannel}</h2>
-                        <p className="text-slate-400 text-sm">This is the start of the community conversation.</p>
-                      </div>
-
-                      {MOCK_MESSAGES.map(msg => (
-                        <div key={msg.id} className={`flex gap-4 group ${msg.isMe ? 'flex-row-reverse' : ''}`}>
-                          <div className="w-10 h-10 rounded-2xl bg-indigo-100 flex items-center justify-center shrink-0 shadow-sm border border-white">
-                            <span className="text-indigo-600 font-bold text-xs">{msg.sender[0]}</span>
+                      {messages.length === 0 ? (
+                        <div className="py-10 text-center border-b border-slate-50 mb-6">
+                          <div className="w-16 h-16 rounded-3xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                            <Hash size={32} className="text-slate-300" />
                           </div>
-                          <div className={`space-y-1 max-w-[70%] ${msg.isMe ? 'text-right' : ''}`}>
-                            <div className={`flex items-center gap-2 mb-1 ${msg.isMe ? 'flex-row-reverse' : ''}`}>
-                              <span className="text-[11px] font-black text-slate-800 uppercase tracking-tighter">{msg.sender}</span>
-                              <span className="text-[9px] text-slate-400">{msg.time}</span>
+                          <h2 className="text-2xl font-black text-slate-800">Welcome to #{selectedChannel}</h2>
+                          <p className="text-slate-400 text-sm">This is the start of the community conversation.</p>
+                        </div>
+                      ) : (
+                        messages.map((msg, i) => (
+                          <div key={msg.id || i} className={`flex gap-4 group ${msg.user.id === user?.id ? 'flex-row-reverse' : ''}`}>
+                            <div className="w-10 h-10 rounded-2xl bg-indigo-100 flex items-center justify-center shrink-0 shadow-sm border border-white overflow-hidden">
+                              {msg.user.image ? <img src={msg.user.image} alt="" /> : <span className="text-indigo-600 font-bold text-xs">{msg.user.name?.[0]}</span>}
                             </div>
-                            <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.isMe ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
-                              {msg.text}
+                            <div className={`space-y-1 max-w-[70%] ${msg.user.id === user?.id ? 'text-right' : ''}`}>
+                              <div className={`flex items-center gap-2 mb-1 ${msg.user.id === user?.id ? 'flex-row-reverse' : ''}`}>
+                                <span className="text-[11px] font-black text-slate-800 uppercase tracking-tighter">{msg.user.name}</span>
+                                <span className="text-[9px] text-slate-400">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                              </div>
+                              <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.user.id === user?.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
+                                {msg.text}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        ))
+                      )}
                     </div>
 
                     {/* INPUT AREA */}
-                    <div className="p-6 bg-slate-50 border-t border-slate-100 sticky bottom-0">
+                    <form onSubmit={handleSendMessage} className="p-6 bg-slate-50 border-t border-slate-100 sticky bottom-0">
                       <div className="flex items-center gap-3 bg-white border-2 border-slate-200 p-2 rounded-2xl focus-within:border-indigo-400 transition-all shadow-sm">
-                        <button className="p-2 text-slate-400 hover:text-indigo-500"><Plus size={20} /></button>
+                        <button type="button" className="p-2 text-slate-400 hover:text-indigo-500"><Plus size={20} /></button>
                         <input
                           type="text"
                           value={message}
@@ -410,11 +457,15 @@ export const NexusHub = ({ user, addToast }) => {
                           placeholder={`Message #${selectedChannel}...`}
                           className="flex-1 bg-transparent border-none outline-none text-sm text-slate-700 font-medium"
                         />
-                        <button className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-black text-xs flex items-center gap-2 hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-100">
+                        <button 
+                          type="submit"
+                          disabled={!message.trim()}
+                          className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-black text-xs flex items-center gap-2 hover:bg-indigo-700 transition-all active:scale-95 shadow-lg shadow-indigo-100 disabled:opacity-50"
+                        >
                           Send <Zap size={14} />
                         </button>
                       </div>
-                    </div>
+                    </form>
                   </div>
                 ) : activeSubTab === 'leaderboard' ? (
                   /* LEADERBOARD VIEW */

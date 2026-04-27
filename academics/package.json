@@ -26,7 +26,7 @@
     "recharts": "^2.10.0",
     "remark-gfm": "^4.0.1",
     "socket.io-client": "^4.7.2",
-    "stream-chat": "^9.40.0",
+    "stream-chat": "^9.42.1",
     "stream-chat-react": "^13.14.3",
     "tailwind-merge": "^2.0.0",
     "zod": "^4.3.6"
