@@ -27,6 +27,7 @@ const ROLE_NAV = {
         { title: 'Timetable', icon: Clock, route: '/student/timetable' },
         { title: 'Attendance', icon: UserCheck, route: '/student/attendance' },
         { title: 'Notes', icon: BookOpen, route: '/student/notes' },
+        { title: 'Study Planner', icon: Sparkles, route: '/student/planner' },
       ]
     },
     {
@@ -37,10 +38,16 @@ const ROLE_NAV = {
       ]
     },
     {
+      section: 'Community',
+      items: [
+        { title: 'Nexus Hub', icon: Globe, route: '/student/nexus' },
+        { title: 'Messages', icon: MessageCircle, route: '/student/comms' },
+      ]
+    },
+    {
       section: 'Tools',
       items: [
         { title: 'AI Assistant', icon: Sparkles, route: '/student/ai-lab' },
-        { title: 'Messages', icon: MessageCircle, route: '/student/comms' },
       ]
     },
   ],

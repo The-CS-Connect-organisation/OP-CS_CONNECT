@@ -30,6 +30,8 @@ import { Attendance } from './pages/AcademicPortal/Student/Attendance';
 import { Grades } from './pages/AcademicPortal/Student/Grades';
 import { Notes } from './pages/AcademicPortal/Student/Notes';
 import { Profile } from './pages/AcademicPortal/Student/Profile';
+import { StudyPlanner } from './pages/AcademicPortal/Student/StudyPlanner';
+
 
 // Academic Portal - Shared Features
 import { SettingsPanel } from './pages/AcademicPortal/shared/Settings';
@@ -37,6 +39,8 @@ import { FeeManagement } from './pages/AcademicPortal/shared/FeeManagement';
 import { AILab } from './pages/AcademicPortal/shared/AILab';
 import { CommunicationHub } from './pages/AcademicPortal/shared/CommunicationHub';
 import { ExamCenter } from './pages/AcademicPortal/shared/ExamCenter';
+import { NexusHub } from './pages/AcademicPortal/shared/NexusHub';
+
 
 // Teacher Portal Pages
 import { TeacherDashboard } from './pages/TeacherPortal/TeacherDashboard';
@@ -195,9 +199,19 @@ function App() {
               <Profile user={user} />
             </ProtectedRoute>
           } />
+          <Route path="/student/planner" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <StudyPlanner user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
           <Route path="/student/ai-lab" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <AILab user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/nexus" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <NexusHub user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/student/comms" element={
