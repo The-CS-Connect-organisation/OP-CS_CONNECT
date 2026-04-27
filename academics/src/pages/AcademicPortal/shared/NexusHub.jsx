@@ -31,6 +31,7 @@ import { request } from '../../../utils/apiClient';
 export const NexusHub = ({ user, addToast }) => {
   const [activeTab, setActiveTab] = useState('browse'); // 'browse' | 'club-view'
   const [activeSubTab, setActiveSubTab] = useState('chat'); // 'chat' | 'leaderboard' | 'research'
+  const [activeBrowseTab, setActiveBrowseTab] = useState('global'); // 'global' | 'explore' | 'trending'
   const [selectedClub, setSelectedClub] = useState(null);
   const [selectedChannel, setSelectedChannel] = useState('general');
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -234,13 +235,13 @@ export const NexusHub = ({ user, addToast }) => {
             <div>
               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 mb-2">Social Nexus</p>
               <nav className="space-y-1">
-                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-xl bg-slate-200 text-slate-900 font-medium">
+                <button onClick={() => setActiveBrowseTab('global')} className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${activeBrowseTab === 'global' ? 'bg-slate-200 text-slate-900 font-medium' : 'hover:bg-slate-200 text-slate-600'}`}>
                   <Globe size={18} /> Global Hub
                 </button>
-                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-200 text-slate-600 transition-colors">
+                <button onClick={() => setActiveBrowseTab('explore')} className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${activeBrowseTab === 'explore' ? 'bg-slate-200 text-slate-900 font-medium' : 'hover:bg-slate-200 text-slate-600'}`}>
                   <Search size={18} /> Explore Clubs
                 </button>
-                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-200 text-slate-600 transition-colors">
+                <button onClick={() => setActiveBrowseTab('trending')} className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${activeBrowseTab === 'trending' ? 'bg-slate-200 text-slate-900 font-medium' : 'hover:bg-slate-200 text-slate-600'}`}>
                   <Zap size={18} /> Trending Events
                 </button>
               </nav>
@@ -322,61 +323,79 @@ export const NexusHub = ({ user, addToast }) => {
           /* EXPLORE PAGE */
           <div className="flex-1 overflow-y-auto p-10 bg-slate-50/50">
             <header className="mb-12">
-              <h2 className="text-4xl font-black text-slate-900 mb-2">Campus Village</h2>
-              <p className="text-slate-500 text-lg">Your central hub for community, competition, and research.</p>
+              <h2 className="text-4xl font-black text-slate-900 mb-2">
+                {activeBrowseTab === 'global' ? 'Campus Village' : activeBrowseTab === 'explore' ? 'Explore Clubs' : 'Trending Events'}
+              </h2>
+              <p className="text-slate-500 text-lg">
+                {activeBrowseTab === 'global' ? 'Your central hub for community, competition, and research.' : activeBrowseTab === 'explore' ? 'Discover and join new communities tailored to your interests.' : 'See what is hot and happening across the campus.'}
+              </p>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
-              {isLoading ? (
-                <div className="col-span-2 py-20 flex flex-col items-center justify-center text-slate-400">
-                  <div className="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-4" />
-                  <p className="font-bold">Syncing with Campus Database...</p>
-                </div>
-              ) : clubs.length === 0 ? (
-                <div className="col-span-2 py-20 border-2 border-dashed border-slate-100 rounded-[32px] flex flex-col items-center justify-center text-slate-400">
-                  <Users size={48} className="mb-4 opacity-10" />
-                  <p className="font-bold">No communities found</p>
-                  <p className="text-xs">Be the pioneer and build the first community in your village.</p>
-                </div>
-              ) : (
-                clubs.map(club => (
-                  <motion.div
-                    key={club.id}
-                    whileHover={{ y: -8, shadow: '0 20px 40px rgba(0,0,0,0.05)' }}
-                    className="bg-white border border-slate-100 rounded-[32px] p-8 shadow-sm group relative overflow-hidden"
-                  >
-                    <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform">
-                      <club.icon size={128} />
-                    </div>
-
-                    <div className="flex items-start justify-between mb-6">
-                      <div className="p-4 rounded-2xl text-white shadow-lg" style={{ backgroundColor: club.color }}>
-                        <club.icon size={24} />
+            {activeBrowseTab === 'global' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
+                {isLoading ? (
+                  <div className="col-span-2 py-20 flex flex-col items-center justify-center text-slate-400">
+                    <div className="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-4" />
+                    <p className="font-bold">Syncing with Campus Database...</p>
+                  </div>
+                ) : clubs.length === 0 ? (
+                  <div className="col-span-2 py-20 border-2 border-dashed border-slate-100 rounded-[32px] flex flex-col items-center justify-center text-slate-400">
+                    <Users size={48} className="mb-4 opacity-10" />
+                    <p className="font-bold">No communities found</p>
+                    <p className="text-xs">Be the pioneer and build the first community in your village.</p>
+                  </div>
+                ) : (
+                  clubs.map(club => (
+                    <motion.div
+                      key={club.id}
+                      whileHover={{ y: -8, shadow: '0 20px 40px rgba(0,0,0,0.05)' }}
+                      className="bg-white border border-slate-100 rounded-[32px] p-8 shadow-sm group relative overflow-hidden"
+                    >
+                      <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform">
+                        <club.icon size={128} />
                       </div>
-                      {club.isMember ? (
-                        <span className="flex items-center gap-1 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold uppercase tracking-wider border border-indigo-100">
-                          <ShieldCheck size={12} /> Active
-                        </span>
-                      ) : (
-                        <button
-                          onClick={() => handleJoinClub(club.id)}
-                          className="px-5 py-2 bg-slate-900 text-white rounded-full text-xs font-bold hover:bg-slate-800 transition-colors"
-                        > Join Community </button>
-                      )}
-                    </div>
 
-                    <h3 className="text-xl font-bold text-slate-800 mb-1">{club.name}</h3>
-                    <p className="text-sm text-slate-400 mb-6">{club.members} active students</p>
+                      <div className="flex items-start justify-between mb-6">
+                        <div className="p-4 rounded-2xl text-white shadow-lg" style={{ backgroundColor: club.color }}>
+                          <club.icon size={24} />
+                        </div>
+                        {club.isMember ? (
+                          <span className="flex items-center gap-1 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold uppercase tracking-wider border border-indigo-100">
+                            <ShieldCheck size={12} /> Active
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => handleJoinClub(club.id)}
+                            className="px-5 py-2 bg-slate-900 text-white rounded-full text-xs font-bold hover:bg-slate-800 transition-colors"
+                          > Join Community </button>
+                        )}
+                      </div>
 
-                    <div className="flex flex-wrap gap-2">
-                      {club.channels.slice(0, 3).map(ch => (
-                        <span key={ch} className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg">#{ch}</span>
-                      ))}
-                    </div>
-                  </motion.div>
-                ))
-              )}
-            </div>
+                      <h3 className="text-xl font-bold text-slate-800 mb-1">{club.name}</h3>
+                      <p className="text-sm text-slate-400 mb-6">{club.members} active students</p>
+
+                      <div className="flex flex-wrap gap-2">
+                        {club.channels.slice(0, 3).map(ch => (
+                          <span key={ch} className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg">#{ch}</span>
+                        ))}
+                      </div>
+                    </motion.div>
+                  ))
+                )}
+              </div>
+            ) : activeBrowseTab === 'explore' ? (
+              <div className="border-2 border-dashed border-slate-200 rounded-[32px] py-32 flex flex-col items-center justify-center text-slate-400 bg-white">
+                <Search size={64} className="mb-4 opacity-20 text-indigo-500" />
+                <p className="font-black text-xl text-slate-600 mb-2">Explore Directory Module</p>
+                <p className="text-sm max-w-sm text-center">In upcoming updates, this module will let you filter the campus groups by interest tags, sizes, and open projects.</p>
+              </div>
+            ) : (
+              <div className="border-2 border-dashed border-slate-200 rounded-[32px] py-32 flex flex-col items-center justify-center text-slate-400 bg-white">
+                <Zap size={64} className="mb-4 opacity-20 text-amber-500" />
+                <p className="font-black text-xl text-slate-600 mb-2">Trending Events Feed</p>
+                <p className="text-sm max-w-sm text-center">Stay tuned! Soon you'll be able to view live broadcasts, guest speakers, and upcoming club tournaments here.</p>
+              </div>
+            )}
           </div>
         ) : (
           /* CLUB PAGE */
