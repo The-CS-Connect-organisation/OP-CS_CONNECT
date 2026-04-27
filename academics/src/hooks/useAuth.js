@@ -26,9 +26,13 @@ export const useAuth = () => {
                 `/OP-CS_CONNECT/academics/#/${res.user.role}/dashboard`
               );
             } else {
+              console.error('Autofill login failed:', res?.error);
               setLoading(false);
             }
-          }).catch(() => setLoading(false));
+          }).catch((err) => {
+            console.error('Autofill login error:', err);
+            setLoading(false);
+          });
           return;
         }
       } catch {
