@@ -67,123 +67,132 @@ export const StudyPlanner = ({ user, addToast }) => {
     
     // Simulate complex calculation
     setTimeout(() => {
-      const doc = new jsPDF();
-      const pageWidth = doc.internal.pageSize.width;
-      const pageHeight = doc.internal.pageSize.height;
-      
-      // BACKGROUND DECORATION
-      doc.setFillColor(252, 252, 255);
-      doc.rect(0, 0, pageWidth, pageHeight, 'F');
-      
-      // SIDE ACCENT LINE
-      doc.setFillColor(255, 107, 157);
-      doc.rect(0, 0, 5, pageHeight, 'F');
-      
-      // HEADER BOX
-      doc.setFillColor(30, 41, 59); // Slate 800
-      doc.rect(5, 0, pageWidth, 45, 'F');
-      
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(28);
-      doc.text('ACADEMIC BLUEPRINT', 25, 28);
-      
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(10);
-      doc.setTextColor(200, 200, 200);
-      doc.text(`PREPARED FOR: ${user?.name || 'CORNERSTONE STUDENT'} \u2022 SUBJECT: ${formData.subject.toUpperCase()}`, 25, 36);
-      
-      // METRICS ROW
-      let y = 60;
-      doc.setTextColor(30, 41, 59);
-      doc.setFontSize(14);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Performance Targets', 25, y);
-      
-      doc.autoTable({
-        startY: y + 5,
-        margin: { left: 25 },
-        head: [['Metric', 'Value', 'Status']],
-        body: [
-          ['Target Score', `${formData.targetScore}%`, 'OPTIMISTIC'],
-          ['Subject Area', formData.subject, 'CORE'],
-          ['Difficulty Level', formData.currentLevel.toUpperCase(), 'ADAPTIVE'],
-          ['Goal Date', formData.testDate, 'UPCOMING']
-        ],
-        theme: 'grid',
-        headStyles: { fillColor: [255, 107, 157], textColor: 255 },
-        styles: { fontSize: 10, cellPadding: 4 }
-      });
+      try {
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.width;
+        const pageHeight = doc.internal.pageSize.height;
+        
+        // BACKGROUND DECORATION
+        doc.setFillColor(252, 252, 255);
+        doc.rect(0, 0, pageWidth, pageHeight, 'F');
+        
+        // SIDE ACCENT LINE
+        doc.setFillColor(255, 107, 157);
+        doc.rect(0, 0, 5, pageHeight, 'F');
+        
+        // HEADER BOX
+        doc.setFillColor(30, 41, 59); // Slate 800
+        doc.rect(5, 0, pageWidth, 45, 'F');
+        
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(28);
+        doc.text('ACADEMIC BLUEPRINT', 25, 28);
+        
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(200, 200, 200);
+        doc.text(`PREPARED FOR: ${user?.name || 'CORNERSTONE STUDENT'} \u2022 SUBJECT: ${formData.subject.toUpperCase()}`, 25, 36);
+        
+        // METRICS ROW
+        let y = 60;
+        doc.setTextColor(30, 41, 59);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Performance Targets', 25, y);
+        
+        doc.autoTable({
+          startY: y + 5,
+          margin: { left: 25 },
+          head: [['Metric', 'Value', 'Status']],
+          body: [
+            ['Target Score', `${formData.targetScore}%`, 'OPTIMISTIC'],
+            ['Subject Area', formData.subject, 'CORE'],
+            ['Difficulty Level', (formData.currentLevel || 'Adaptive').toUpperCase(), 'ADAPTIVE'],
+            ['Goal Date', formData.testDate || 'Not Set', 'UPCOMING']
+          ],
+          theme: 'grid',
+          headStyles: { fillColor: [255, 107, 157], textColor: 255 },
+          styles: { fontSize: 10, cellPadding: 4 }
+        });
 
-      // CHAPTER FOCUS AREA
-      y = doc.lastAutoTable.finalY + 15;
-      doc.setFontSize(14);
-      doc.text('Key Focus Chapters', 25, y);
-      
-      const chapters = formData.weakChapters.split(',').map(c => c.trim()).filter(c => c !== '');
-      doc.autoTable({
-        startY: y + 5,
-        margin: { left: 25 },
-        body: chapters.map(ch => [ch, 'High Priority', 'Requires Review']),
-        head: [['Chapter Name', 'Urgency', 'Action Taken']],
-        theme: 'striped',
-        headStyles: { fillColor: [79, 70, 229] },
-        styles: { fontSize: 9 }
-      });
+        // CHAPTER FOCUS AREA
+        y = (doc.lastAutoTable?.finalY || 100) + 15;
+        doc.setFontSize(14);
+        doc.text('Key Focus Chapters', 25, y);
+        
+        const chapters = formData.weakChapters ? formData.weakChapters.split(',').map(c => c.trim()).filter(c => c !== '') : ['General Review'];
+        doc.autoTable({
+          startY: y + 5,
+          margin: { left: 25 },
+          body: chapters.map(ch => [ch, 'High Priority', 'Requires Review']),
+          head: [['Chapter Name', 'Urgency', 'Action Taken']],
+          theme: 'striped',
+          headStyles: { fillColor: [79, 70, 229] },
+          styles: { fontSize: 9 }
+        });
 
-      // DAILY ROADMAP
-      y = doc.lastAutoTable.finalY + 15;
-      doc.setFontSize(14);
-      doc.text('Stratified Study Schedule', 25, y);
-      
-      const today = new Date();
-      const examDate = new Date(formData.testDate);
-      const daysLeft = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
-      
-      const schedule = [];
-      if (daysLeft > 0) {
-        for (let i = 1; i <= Math.min(daysLeft, 14); i++) {
+        // DAILY ROADMAP
+        y = (doc.lastAutoTable?.finalY || 150) + 15;
+        doc.setFontSize(14);
+        doc.text('Stratified Study Schedule', 25, y);
+        
+        const today = new Date();
+        const examDate = formData.testDate ? new Date(formData.testDate) : new Date();
+        if (isNaN(examDate.getTime())) examDate.setDate(today.getDate() + 7);
+        
+        const daysLeft = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
+        
+        const schedule = [];
+        const iterations = daysLeft > 0 ? Math.min(daysLeft, 14) : 7;
+        
+        for (let i = 1; i <= iterations; i++) {
           const date = new Date();
           date.setDate(today.getDate() + i);
-          let phase = i <= Math.ceil(daysLeft * 0.4) ? 'Foundation' : (i <= Math.ceil(daysLeft * 0.8) ? 'Mastery' : 'Refinement');
-          let task = i === 1 ? 'Diagnostic Test' : (i === daysLeft ? 'Final Mock' : `Chapter Mastery: ${chapters[(i % chapters.length)] || 'Concept Review'}`);
+          let phase = i <= Math.ceil(iterations * 0.4) ? 'Foundation' : (i <= Math.ceil(iterations * 0.8) ? 'Mastery' : 'Refinement');
+          let task = i === 1 ? 'Diagnostic Test' : (i === iterations ? 'Final Mock' : `Chapter Mastery: ${chapters[(i % chapters.length)] || 'Concept Review'}`);
           schedule.push([`Day ${i}`, date.toLocaleDateString(), phase, task]);
         }
+
+        doc.autoTable({
+          startY: y + 5,
+          margin: { left: 25 },
+          head: [['Day', 'Date', 'Phase', 'Action Plan']],
+          body: schedule,
+          theme: 'grid',
+          headStyles: { fillColor: [30, 41, 59] },
+          styles: { fontSize: 8 }
+        });
+
+        // FOOTER TIPS
+        const currentY = doc.lastAutoTable?.finalY || 200;
+        if (currentY > 230) doc.addPage();
+        
+        const footerY = doc.internal.pageSize.height - 40;
+        doc.setFontSize(12);
+        doc.setTextColor(30, 41, 59);
+        doc.text('Advanced Cognitive Tips', 25, footerY - 5);
+        
+        let tipX = 25;
+        STUDY_TIPS.forEach((tip, idx) => {
+          doc.setFontSize(8);
+          doc.setFont('helvetica', 'bold');
+          doc.text(tip.title, tipX, footerY + 5);
+          doc.setFont('helvetica', 'normal');
+          doc.setTextColor(100, 100, 100);
+          doc.text(tip.description, tipX, footerY + 9, { maxWidth: 40 });
+          tipX += 45;
+        });
+
+        doc.save(`Cornerstone_Blueprint_${formData.subject || 'Study'}.pdf`);
+        setIsGenerating(false);
+        addToast?.('Success! Your enhanced study plan is ready.', 'success');
+        setStep(4);
+      } catch (error) {
+        console.error('PDF Generation Error:', error);
+        setIsGenerating(false);
+        addToast?.('Failed to generate plan. Please try again.', 'error');
       }
-
-      doc.autoTable({
-        startY: y + 5,
-        margin: { left: 25 },
-        head: [['Day', 'Date', 'Phase', 'Action Plan']],
-        body: schedule,
-        theme: 'grid',
-        headStyles: { fillColor: [30, 41, 59] },
-        styles: { fontSize: 8 }
-      });
-
-      // FOOTER TIPS
-      if (doc.lastAutoTable.finalY > 230) doc.addPage();
-      
-      const footerY = doc.internal.pageSize.height - 40;
-      doc.setFontSize(12);
-      doc.setTextColor(30, 41, 59);
-      doc.text('Advanced Cognitive Tips', 25, footerY - 5);
-      
-      let tipX = 25;
-      STUDY_TIPS.forEach((tip, idx) => {
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'bold');
-        doc.text(tip.title, tipX, footerY + 5);
-        doc.setFont('helvetica', 'normal');
-        doc.setTextColor(100, 100, 100);
-        doc.text(tip.description, tipX, footerY + 9, { maxWidth: 40 });
-        tipX += 45;
-      });
-
-      doc.save(`Cornerstone_Blueprint_${formData.subject}.pdf`);
-      setIsGenerating(false);
-      addToast?.('Success! Your enhanced study plan is ready.', 'success');
-      setStep(4);
     }, 2000);
   };
 
