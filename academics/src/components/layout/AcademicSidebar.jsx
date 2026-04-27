@@ -5,7 +5,7 @@ import {
   LayoutDashboard, BookOpen, Clock, CheckCircle, Banknote, 
   ChevronLeft, ChevronRight, X, Sparkles, Bot,
   LogOut, Settings, MessageCircle, FileText, ChevronDown,
-  ClipboardList, UserCheck, PencilLine
+  ClipboardList, UserCheck, PencilLine, Globe
 } from 'lucide-react';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
