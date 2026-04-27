@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useSound } from '../../hooks/useSound';
@@ -10,6 +10,28 @@ export const Login = ({ onLogin, onSwitch }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { playClick, playBlip } = useSound();
+
+  // Auto-fill from landing page sessionStorage credential pass
+  useEffect(() => {
+    const raw = sessionStorage.getItem('schoolsync_autofill');
+    if (!raw) return;
+    try {
+      const { email: e, password: p, portal } = JSON.parse(raw);
+      if (portal !== 'academics') return;
+      sessionStorage.removeItem('schoolsync_autofill');
+      setEmail(e);
+      setPassword(p);
+      // Trigger submit after state settles
+      setTimeout(() => {
+        onLogin(e, p).then((result) => {
+          if (!result.success) setError(result.error);
+        });
+      }, 0);
+    } catch {
+      sessionStorage.removeItem('schoolsync_autofill');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
