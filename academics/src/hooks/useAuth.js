@@ -19,9 +19,16 @@ export const useAuth = () => {
         if (portal === 'academics') {
           sessionStorage.removeItem('schoolsync_autofill');
           authService.login(email, password).then((res) => {
-            if (res?.success) setUser(res.user);
-            setLoading(false);
-          });
+            if (res?.success) {
+              setUser(res.user);
+              // Navigate to dashboard after successful autofill login
+              window.location.replace(
+                `/OP-CS_CONNECT/academics/${res.user.role}/dashboard`
+              );
+            } else {
+              setLoading(false);
+            }
+          }).catch(() => setLoading(false));
           return;
         }
       } catch {

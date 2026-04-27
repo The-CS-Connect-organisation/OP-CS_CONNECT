@@ -1,6 +1,5 @@
 // Hardcoded for GitHub Pages deployment - .env files don't work on static hosting
-const API_BASE_URL = 'https://op-csconnect-backend-production.up.railway.app/api';
-// Force rebuild - updated backend URL
+const API_BASE_URL = 'https://op-cs-connect-backend-vym7.onrender.com/api';
 
 // Initialize authToken from localStorage if available
 let authToken = null;

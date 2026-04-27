@@ -2,7 +2,7 @@ import { io } from 'socket.io-client';
 import { getFromStorage } from '../data/schema';
 import { KEYS } from '../data/schema';
 const getSocketOrigin = () => {
-  const base = 'https://op-csconnect-backend-production.up.railway.app/api';
+  const base = 'https://op-cs-connect-backend-vym7.onrender.com/api';
   try {
     return new URL(base).origin;
   } catch {
