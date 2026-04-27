@@ -5,14 +5,13 @@ on:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
 
     steps:
       - name: Checkout
@@ -22,15 +21,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-
-      # Build landing (unified entry point)
-      - name: Install landing deps
-        run: npm install
-        working-directory: landing
-
-      - name: Build landing
-        run: npm run build
-        working-directory: landing
 
       # Build academics
       - name: Install academics deps
@@ -54,21 +44,70 @@ jobs:
         env:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
-      # Combine all three builds
+      # Combine both builds
       - name: Prepare deploy folder
         run: |
           mkdir -p deploy/academics
           mkdir -p deploy/management
-          # Landing app goes to root (replaces static index.html)
-          cp -r landing/dist/* deploy/
           cp -r academics/dist/* deploy/academics/
           cp -r management/dist/* deploy/management/
           # Fix client-side routing on GitHub Pages
           cp deploy/academics/index.html deploy/academics/404.html
           cp deploy/management/index.html deploy/management/404.html
+          # Root landing page
+          cat > deploy/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+            <title>Cornerstone SchoolSync</title>
+            <style>
+              * { margin: 0; padding: 0; box-sizing: border-box; }
+              body { font-family: sans-serif; background: #0f172a; color: #f1f5f9; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 2rem; }
+              h1 { font-size: 2rem; font-weight: 700; }
+              p { color: #94a3b8; }
+              .cards { display: flex; gap: 1.5rem; flex-wrap: wrap; justify-content: center; }
+              a { display: flex; flex-direction: column; gap: 0.5rem; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 2rem 3rem; text-decoration: none; color: inherit; transition: border-color 0.2s; }
+              a:hover { border-color: #6366f1; }
+              a h2 { font-size: 1.25rem; }
+              a p { font-size: 0.875rem; }
+            </style>
+          </head>
+          <body>
+            <h1>Cornerstone SchoolSync</h1>
+            <p>Select a portal to continue</p>
+            <div class="cards">
+              <a href="./academics/">
+                <h2>🎓 Academics Portal</h2>
+                <p>For Students &amp; Teachers</p>
+              </a>
+              <a href="./management/">
+                <h2>🏢 Management Portal</h2>
+                <p>For Admins &amp; Parents</p>
+              </a>
+            </div>
+          </body>
+          </html>
+          EOF
 
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./deploy
+          path: ./deploy
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
