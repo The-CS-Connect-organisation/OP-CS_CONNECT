@@ -77,11 +77,12 @@ export const NexusHub = ({ user, addToast }) => {
   useEffect(() => {
     const initChat = async () => {
       try {
-        const chatClient = StreamChat.getInstance('n9v8bfwy45pn'); 
+        const tokenRes = await request('/school/stream-token');
+        const chatClient = StreamChat.getInstance(tokenRes.apiKey); 
         
         await chatClient.connectUser(
           { id: user?.id || 'guest', name: user?.name || 'Guest' },
-          chatClient.devToken(user?.id || 'guest')
+          tokenRes.token
         );
 
         setClient(chatClient);
@@ -90,8 +91,12 @@ export const NexusHub = ({ user, addToast }) => {
       }
     };
 
-    initChat();
-    return () => client?.disconnectUser();
+    if (user?.id) {
+      initChat();
+    }
+    return () => {
+      if (client) client.disconnectUser();
+    };
   }, [user]);
 
   // Handle Channel Switching

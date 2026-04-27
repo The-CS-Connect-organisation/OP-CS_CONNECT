@@ -8,6 +8,8 @@ import {
 import { useStore } from '../../../hooks/useStore';
 import { KEYS } from '../../../data/schema';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
+import { calendarService } from '../../../services/calendarService';
+import { aiCoachService } from '../../../services/aiCoachService';
 
 const StatCard = ({ icon: Icon, label, value, subtitle, delay, color = '#1f2937' }) => {
   return (
@@ -247,18 +249,21 @@ const CalendarDay = ({ day, events }) => {
 
 export const StudentDashboard = ({ user }) => {
   const { data: assignments } = useStore(KEYS.ASSIGNMENTS, []);
+  const { data: submissions } = useStore('sms_submissions', []);
   const { data: marks } = useStore(KEYS.MARKS, []);
   const { data: attendance } = useStore(KEYS.ATTENDANCE, []);
   const { data: timetable } = useStore(KEYS.TIMETABLE, {});
   const { data: announcements, update: updateAnnouncement } = useStore(KEYS.ANNOUNCEMENTS, []);
+  const { data: exams } = useStore(KEYS.EXAMS, []);
+  const { data: attempts } = useStore('sms_exam_attempts', []);
   
   const [focusMode, setFocusMode] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
   const myAssignments = assignments.filter(a => a.class === user.class);
   const pendingAssignments = myAssignments.filter(a => {
-    const sub = a.submissions?.find(s => s.studentId === user.id);
-    return !sub || sub.status === 'pending';
+    const sub = submissions.find((s) => s.assignmentId === a.id && s.studentId === user.id);
+    return !sub || (sub.status !== 'submitted' && sub.status !== 'graded');
   });
 
   const myMarks = marks.filter(m => m.studentId === user.id);
@@ -316,10 +321,17 @@ export const StudentDashboard = ({ user }) => {
   if (myMarks.some(m => m.marksObtained >= 95)) earnedBadges.push({ name: 'Top Scorer', icon: Medal, color: 'bg-purple-500' });
 
   // AI Coach generates real tip based on weakest subject
-  const weakestSubject = subjectHealthData.sort((a,b) => a.score - b.score)[0];
-  const aiTip = weakestSubject 
-    ? `Focus on ${weakestSubject.subject} today! Your score is ${weakestSubject.score}% - spending 30 extra minutes here will yield the best improvement.`
-    : "Great work! All subjects are performing well.";
+  const coach = useMemo(() => {
+    return aiCoachService.buildCoach({
+      user,
+      subjectHealthData,
+      pendingAssignments,
+      upcomingEvents: upcoming,
+      attendanceRate,
+      attempts: (Array.isArray(attempts) ? attempts : []).filter((a) => a.studentId === user.id),
+    });
+  }, [user, subjectHealthData, pendingAssignments, upcoming, attendanceRate, attempts]);
+  const aiTip = coach.tip;
 
   // Real weekly challenge progress
   const completedAssignments = myAssignments.length - pendingAssignments.length;
@@ -346,10 +358,36 @@ export const StudentDashboard = ({ user }) => {
   ];
 
   const countdowns = [
-    { label: 'Next Exam', timeLeft: '02:47:12' },
-    { label: 'Assignment Due', timeLeft: '05:13:44' },
-    { label: 'Class Starts', timeLeft: '00:11:56' },
   ];
+
+  const calendarEvents = useMemo(() => {
+    const myAssignments = assignments.filter((a) => a.class === user.class);
+    return calendarService.buildEvents({ user, assignments: myAssignments, exams, timetable, announcements });
+  }, [assignments, exams, timetable, announcements, user]);
+
+  const upcoming = useMemo(() => calendarService.nextUpcoming({ events: calendarEvents, limit: 3 }), [calendarEvents]);
+
+  const countdownItems = useMemo(() => {
+    const now = new Date();
+    const fmt = (ms) => {
+      const total = Math.max(0, Math.floor(ms / 1000));
+      const h = String(Math.floor(total / 3600)).padStart(2, '0');
+      const m = String(Math.floor((total % 3600) / 60)).padStart(2, '0');
+      const s = String(total % 60).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    };
+    return upcoming.map((e) => {
+      const when = new Date(e.date);
+      // if we only have date (no time), treat it as end of that day
+      when.setHours(23, 59, 59, 999);
+      const label =
+        e.type === 'exam' ? 'Next Exam' :
+        e.type === 'assignment' ? 'Assignment Due' :
+        e.type === 'class' ? 'Classes' :
+        'Upcoming';
+      return { label, timeLeft: fmt(when.getTime() - now.getTime()), event: e };
+    });
+  }, [upcoming]);
 
   useEffect(() => {
     if (!user || announcements.length === 0) return;
@@ -450,7 +488,11 @@ export const StudentDashboard = ({ user }) => {
       <div className="nova-card p-6">
         <h3 className="text-sm font-semibold mb-4 text-gray-600">Upcoming Deadlines</h3>
         <div className="grid grid-cols-3 gap-4">
-          {countdowns.map((cd, i) => <CountdownTimer key={i} {...cd} />)}
+          {(countdownItems.length > 0 ? countdownItems : [
+            { label: 'Next Exam', timeLeft: '--:--:--' },
+            { label: 'Assignment Due', timeLeft: '--:--:--' },
+            { label: 'Class Starts', timeLeft: '--:--:--' },
+          ]).map((cd, i) => <CountdownTimer key={i} label={cd.label} timeLeft={cd.timeLeft} />)}
         </div>
       </div>
 
@@ -460,6 +502,21 @@ export const StudentDashboard = ({ user }) => {
         {/* AI Coach + Weekly Challenge */}
         <div className="space-y-6">
           <AICoachTip tip={aiTip} />
+          {coach.plan?.length > 0 && (
+            <div className="nova-card p-6">
+              <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-gray-600">
+                <Brain size={14} /> Coach Plan (Next Steps)
+              </h3>
+              <div className="space-y-3">
+                {coach.plan.map((item, i) => (
+                  <div key={i} className="p-4 rounded-xl bg-gray-50 border border-gray-200">
+                    <p className="font-semibold text-gray-900 text-sm">{item.title}</p>
+                    <p className="text-xs text-gray-500 mt-1">{item.reason}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <WeeklyChallenge challenge={weeklyChallenge} />
           <StudyHeatmap />
         </div>
@@ -580,7 +637,13 @@ export const StudentDashboard = ({ user }) => {
           <Calendar size={14} /> This Month
         </h3>
         <div className="grid grid-cols-7 gap-1">
-          {Array.from({ length: 31 }, (_, i) => <CalendarDay key={i} day={i+1} events={[]} />)}
+          {Array.from({ length: 31 }, (_, i) => {
+            const d = new Date();
+            d.setDate(1 + i);
+            const dateKey = d.toISOString().split('T')[0];
+            const dayEvents = calendarEvents.filter((e) => e.date === dateKey);
+            return <CalendarDay key={i} day={i + 1} events={dayEvents} />;
+          })}
         </div>
       </div>
     </div>

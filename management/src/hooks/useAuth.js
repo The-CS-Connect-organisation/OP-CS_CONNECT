@@ -8,6 +8,14 @@ export const useAuth = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const shouldAllowLocalFallback = () => {
+    try {
+      return import.meta?.env?.DEV === true;
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
     initializeApp();
     const currentUser = getFromStorage(KEYS.CURRENT_USER);
@@ -46,8 +54,10 @@ export const useAuth = () => {
         return { success: true, user: userFromApi };
       }
       return { success: false, error: 'Invalid server response' };
-    } catch {
-      // Fallback
+    } catch (err) {
+      if (!shouldAllowLocalFallback() && err?.status && err.status < 500) {
+        return { success: false, error: err.message || 'Invalid email or password' };
+      }
     }
 
     const users = getFromStorage(KEYS.USERS, []);
@@ -121,4 +131,4 @@ export const useAuth = () => {
   }, []);
 
   return { user, loading, login, signup, logout, isAuthenticated: !!user };
-};
+};

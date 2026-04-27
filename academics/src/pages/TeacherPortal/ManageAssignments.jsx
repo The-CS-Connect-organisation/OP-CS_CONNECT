@@ -8,10 +8,13 @@ import { Modal } from '../../components/ui/Modal';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
 import { useSound } from '../../hooks/useSound';
+import { notificationsService } from '../../services/notificationsService';
+import { localAuditRepo } from '../../services/localRepo';
 
 export const ManageAssignments = ({ user, addToast }) => {
   const { data: assignments, add, update, remove } = useStore(KEYS.ASSIGNMENTS, []);
   const { data: users } = useStore(KEYS.USERS, []);
+  const { data: submissions } = useStore('sms_submissions', []);
   const { playClick, playBlip } = useSound();
   
   const [modalOpen, setModalOpen] = useState(false);
@@ -38,12 +41,23 @@ export const ManageAssignments = ({ user, addToast }) => {
         teacherId: user.id,
         teacherName: user.name,
         createdAt: new Date().toISOString().split('T')[0],
-        submissions: users.filter(u => u.role === 'student' && u.class === formData.class).map(s => ({
-          studentId: s.id, studentName: s.name, submittedAt: null, marks: null, status: 'pending', file: null
-        }))
       };
       add(newAssignment);
       addToast('New assignment published', 'success');
+
+      // Notify students (local/in-app)
+      users
+        .filter((u) => u.role === 'student' && u.class === formData.class)
+        .forEach((stu) => {
+          notificationsService.emit({
+            userId: stu.id,
+            message: `New assignment posted: ${newAssignment.title} (${newAssignment.subject})`,
+            type: 'assignment',
+            meta: { assignmentId: newAssignment.id, class: newAssignment.class, subject: newAssignment.subject },
+            actor: user,
+          });
+        });
+      localAuditRepo.append({ actorId: user.id, actorEmail: user.email, action: 'assignments.create', targetId: newAssignment.id, mode: 'LOCAL_DEMO' });
     }
     setModalOpen(false);
     setEditing(null);
@@ -120,7 +134,9 @@ export const ManageAssignments = ({ user, addToast }) => {
                     <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-4">{a.subject} • ID: {a.id.split('-')[1]}</p>
                     <div className="flex flex-wrap items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-slate-400">
                       <span className="flex items-center gap-1.5"><Clock size={12} /> Due: {a.dueDate}</span>
-                      <span className="flex items-center gap-1.5"><Users size={12} /> Submissions: {a.submissions.filter(s => s.submittedAt).length} / {a.submissions.length}</span>
+                      <span className="flex items-center gap-1.5">
+                        <Users size={12} /> Submissions: {submissions.filter(s => s.assignmentId === a.id && !!s.submittedAt).length} / {users.filter(u => u.role === 'student' && u.class === a.class).length}
+                      </span>
                       <span className="flex items-center gap-1.5"><Hash size={12} /> Total Marks: {a.totalMarks}</span>
                     </div>
                   </div>

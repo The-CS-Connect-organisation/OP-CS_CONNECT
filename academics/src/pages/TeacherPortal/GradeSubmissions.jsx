@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, Search, Clock, FileText, User, ChevronRight, Filter, AlertCircle, X } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
@@ -8,9 +8,12 @@ import { Modal } from '../../components/ui/Modal';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
 import { useSound } from '../../hooks/useSound';
+import { assignmentsService } from '../../services/assignmentsService';
+import { notificationsService } from '../../services/notificationsService';
 
 export const GradeSubmissions = ({ user, addToast }) => {
-  const { data: assignments, update } = useStore(KEYS.ASSIGNMENTS, []);
+  const { data: assignments } = useStore(KEYS.ASSIGNMENTS, []);
+  const { data: users } = useStore(KEYS.USERS, []);
   const { playClick, playBlip } = useSound();
 
   const [selectedAsgn, setSelectedAsgn] = useState(null);
@@ -18,18 +21,62 @@ export const GradeSubmissions = ({ user, addToast }) => {
   const [gradingModal, setGradingModal] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [gradeData, setGradeData] = useState({ marks: '', feedback: '' });
+  const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const myAssignments = assignments.filter(a => a.teacherId === user.id);
 
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const subs = await assignmentsService.listSubmissions();
+        if (!alive) return;
+        setSubmissions(Array.isArray(subs) ? subs : []);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [user?.id]);
+
   const flatSubmissions = useMemo(() => {
     const list = [];
-    myAssignments.forEach(a => {
-      a.submissions?.forEach(s => {
-        list.push({ assignmentId: a.id, assignmentTitle: a.title, totalMarks: a.totalMarks, ...s });
+    const myIds = new Set(myAssignments.map((a) => a.id));
+
+    // Build a lookup of real submissions.
+    const byKey = new Map(
+      submissions
+        .filter((s) => myIds.has(s.assignmentId))
+        .map((s) => [`${s.assignmentId}:${s.studentId}`, s])
+    );
+
+    // Include pending entries for all students in the assignment's class.
+    myAssignments.forEach((a) => {
+      const studentsInClass = users.filter((u) => u.role === 'student' && u.class === a.class);
+      studentsInClass.forEach((stu) => {
+        const s = byKey.get(`${a.id}:${stu.id}`) ?? {
+          assignmentId: a.id,
+          studentId: stu.id,
+          studentName: stu.name,
+          status: 'pending',
+          submittedAt: null,
+          marks: null,
+          feedback: '',
+          attachment: null,
+        };
+        list.push({
+          assignmentId: a.id,
+          assignmentTitle: a.title,
+          totalMarks: a.totalMarks,
+          ...s,
+        });
       });
     });
+
     return list;
-  }, [myAssignments]);
+  }, [myAssignments, submissions, users]);
 
   const filteredSubmissions = flatSubmissions.filter(s => {
     if (filter === 'all') return true;
@@ -44,25 +91,40 @@ export const GradeSubmissions = ({ user, addToast }) => {
   };
 
   const handleSaveGrade = () => {
-    playBlip();
-    if (gradeData.marks === '') {
-      addToast('Please enter a grade score', 'error');
-      return;
-    }
-
-    const assignment = assignments.find(a => a.id === selectedSubmission.assignmentId);
-    if (!assignment) return;
-
-    const newSubmissions = assignment.submissions.map(s => {
-      if (s.studentId === selectedSubmission.studentId) {
-        return { ...s, marks: parseFloat(gradeData.marks), feedback: gradeData.feedback, status: 'graded', gradedAt: new Date().toISOString().split('T')[0] };
+    (async () => {
+      playBlip();
+      if (gradeData.marks === '') {
+        addToast('Please enter a grade score', 'error');
+        return;
       }
-      return s;
-    });
 
-    update(assignment.id, { submissions: newSubmissions });
-    setGradingModal(false);
-    addToast(`Grade published for ${selectedSubmission.studentName}`, 'success');
+      try {
+        const updated = await assignmentsService.grade({
+          assignmentId: selectedSubmission.assignmentId,
+          studentId: selectedSubmission.studentId,
+          grader: user,
+          marks: parseFloat(gradeData.marks),
+          feedback: gradeData.feedback,
+        });
+
+        // refresh list
+        const subs = await assignmentsService.listSubmissions();
+        setSubmissions(Array.isArray(subs) ? subs : []);
+
+        await notificationsService.emit({
+          userId: selectedSubmission.studentId,
+          message: `Assignment graded: ${selectedSubmission.assignmentTitle} (${gradeData.marks}/${selectedSubmission.totalMarks})`,
+          type: 'assignment',
+          meta: { assignmentId: selectedSubmission.assignmentId, marks: gradeData.marks },
+          actor: user,
+        });
+
+        setGradingModal(false);
+        addToast(`Grade published for ${selectedSubmission.studentName}`, 'success');
+      } catch (e) {
+        addToast(e?.message || 'Failed to publish grade', 'error');
+      }
+    })();
   };
 
   return (
@@ -72,7 +134,9 @@ export const GradeSubmissions = ({ user, addToast }) => {
            <div className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-widest border border-slate-200">
              Grading Service
            </div>
-           <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 ml-2">Pending Review: {flatSubmissions.filter(s => s.status === 'submitted').length}</span>
+           <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 ml-2">
+             Pending Review: {flatSubmissions.filter(s => s.status === 'submitted').length}
+           </span>
         </div>
         <h1 className="text-4xl font-bold tracking-tight text-slate-900 flex items-center gap-4">
            <CheckCircle className="text-slate-300" size={40} />
@@ -112,7 +176,12 @@ export const GradeSubmissions = ({ user, addToast }) => {
         {/* Submissions List */}
         <div className="lg:col-span-9 space-y-4">
           <AnimatePresence mode="popLayout">
-            {filteredSubmissions.length === 0 ? (
+            {loading ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-24 text-center bg-white border border-dashed border-slate-300 rounded-3xl">
+                <Search size={40} className="mx-auto mb-4 text-slate-200" />
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Loading submissions...</p>
+              </motion.div>
+            ) : filteredSubmissions.length === 0 ? (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-24 text-center bg-white border border-dashed border-slate-300 rounded-3xl">
                 <Search size={40} className="mx-auto mb-4 text-slate-200" />
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-400">No matching submissions found</p>
@@ -190,7 +259,18 @@ export const GradeSubmissions = ({ user, addToast }) => {
                {selectedSubmission.submittedAt ? (
                  <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-100 text-emerald-700 rounded-2xl">
                    <FileText size={16} />
-                   <p className="text-xs font-bold uppercase tracking-widest">Submission File: student_work_rev_01.pdf</p>
+                   {selectedSubmission.attachment?.fileName ? (
+                     <a
+                       href={selectedSubmission.attachment.dataUrl}
+                       target="_blank"
+                       rel="noreferrer"
+                       className="text-xs font-bold uppercase tracking-widest underline underline-offset-4"
+                     >
+                       Submission File: {selectedSubmission.attachment.fileName}
+                     </a>
+                   ) : (
+                     <p className="text-xs font-bold uppercase tracking-widest">Submission received</p>
+                   )}
                  </div>
                ) : (
                  <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-100 text-amber-700 rounded-2xl">

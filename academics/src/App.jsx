@@ -31,6 +31,7 @@ import { Grades } from './pages/AcademicPortal/Student/Grades';
 import { Notes } from './pages/AcademicPortal/Student/Notes';
 import { Profile } from './pages/AcademicPortal/Student/Profile';
 import { StudyPlanner } from './pages/AcademicPortal/Student/StudyPlanner';
+import { AssignmentDetails } from './pages/AcademicPortal/Student/AssignmentDetails';
 
 
 // Academic Portal - Shared Features
@@ -172,6 +173,11 @@ function App() {
           <Route path="/student/assignments" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <Assignments user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/assignments/:id" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <AssignmentDetails user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/student/attendance" element={

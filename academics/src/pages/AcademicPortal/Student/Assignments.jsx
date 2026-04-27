@@ -1,29 +1,50 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, CheckCircle, AlertCircle, Search, Calendar, Terminal, Activity, Hash, Layers, ChevronRight, Clock } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
 import { useSound } from '../../../hooks/useSound';
+import { assignmentsService } from '../../../services/assignmentsService';
+import { useNavigate } from 'react-router-dom';
 
 export const Assignments = ({ user }) => {
-  const { data: assignments } = useStore(KEYS.ASSIGNMENTS, []);
   const { playClick, playBlip } = useSound();
+  const navigate = useNavigate();
   
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
+  const [assignments, setAssignments] = useState([]);
+  const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   // Normalize class names for matching
   const normalizeClass = (cls) => cls?.replace(/[\s-]/g, '').toUpperCase();
-  const myAssignments = assignments.filter(a =>
-    normalizeClass(a.class) === normalizeClass(user.class)
-  );
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const list = await assignmentsService.listForUser(user);
+        const subs = await assignmentsService.listSubmissions();
+        if (!alive) return;
+        setAssignments(Array.isArray(list) ? list : []);
+        setSubmissions(Array.isArray(subs) ? subs : []);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [user?.id]);
+
+  const myAssignments = assignments.filter((a) => normalizeClass(a.class) === normalizeClass(user.class));
 
   const filtered = useMemo(() => {
     return myAssignments.filter(a => {
-      const sub = a.submissions.find(s => s.studentId === user.id);
+      const sub = submissions.find((s) => s.assignmentId === a.id && s.studentId === user.id);
       const status = sub?.status || 'pending';
 
       const matchesFilter =
@@ -95,7 +116,16 @@ export const Assignments = ({ user }) => {
       {/* Assignment Stream */}
       <div className="grid gap-4 relative z-10">
         <AnimatePresence mode="popLayout">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="py-32 text-center nova-card border-dashed border-[var(--border-default)]"
+            >
+              <Terminal size={48} className="mx-auto text-zinc-800 mb-6" />
+              <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Loading assignments...</p>
+            </motion.div>
+          ) : filtered.length === 0 ? (
             <motion.div 
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
@@ -106,7 +136,7 @@ export const Assignments = ({ user }) => {
             </motion.div>
           ) : (
             filtered.map((a, idx) => {
-              const sub = a.submissions.find(s => s.studentId === user.id);
+              const sub = submissions.find((s) => s.assignmentId === a.id && s.studentId === user.id);
               const isLate = new Date(a.dueDate) < new Date() && sub?.status !== 'graded';
               const isGraded = sub?.status === 'graded';
               
@@ -122,6 +152,7 @@ export const Assignments = ({ user }) => {
                   <Card 
                     className="group flex flex-col md:flex-row gap-6 p-6 border-[var(--border-default)] hover:border-white/20 transition-all duration-500 relative overflow-hidden"
                     onMouseEnter={() => { playClick(); }}
+                    onClick={() => navigate(`/student/assignments/${a.id}`)}
                   >
                     <div className={`absolute top-0 right-0 w-32 h-32 blur-[60px] rounded-full pointer-events-none transition-colors ${
                       isGraded ? 'bg-emerald-500/5' : isLate ? 'bg-white/[0.06]' : 'bg-white/[0.03]'

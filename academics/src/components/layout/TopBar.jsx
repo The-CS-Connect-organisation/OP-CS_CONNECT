@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Bell, Menu, UserCircle, Settings, LogOut, Command, ChevronRight } from 'lucide-react';
+import { Search, Bell, Menu, X, UserCircle, Settings, LogOut, Command, ChevronRight } from 'lucide-react';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
 import { useSound } from '../../hooks/useSound';
@@ -64,16 +64,19 @@ export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout }) => {
     >
       <div className="px-4 md:px-6 flex items-center justify-between relative z-10 w-full">
         <div className="flex items-center gap-4 flex-1 min-w-0">
-          {(!isMobile || isCollapsed) && (
-            <motion.button 
-              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-              onClick={() => { playBlip(); setCollapsed(!isCollapsed); }} 
-              className="md:hidden p-2 rounded-lg transition-colors hover:bg-black/05"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              <Menu size={20} />
-            </motion.button>
-          )}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              playBlip();
+              setCollapsed(!isCollapsed);
+            }}
+            className="p-2 rounded-lg transition-colors hover:bg-black/05"
+            style={{ color: 'var(--text-muted)' }}
+            aria-label={isCollapsed ? 'Open menu' : 'Close menu'}
+          >
+            {isMobile && !isCollapsed ? <X size={20} /> : <Menu size={20} />}
+          </motion.button>
 
           <div className="hidden md:flex flex-col min-w-0">
             <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-dim)' }}>

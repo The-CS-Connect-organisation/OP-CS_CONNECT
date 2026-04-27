@@ -1,18 +1,38 @@
 import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Award, FileUp, Plus, Upload } from 'lucide-react';
+import { Award, FileUp, Plus, Upload, Brain, Play, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useStore } from '../../../hooks/useStore';
 import { KEYS } from '../../../data/schema';
 import { DropzoneUpload } from '../../../components/ui/DropzoneUpload';
+import { notificationsService } from '../../../services/notificationsService';
+import { localAuditRepo } from '../../../services/localRepo';
 
 export const ExamCenter = ({ user, addToast }) => {
   const { data: exams, add } = useStore(KEYS.EXAMS, []);
   const { data: marks, add: addMark } = useStore(KEYS.MARKS, []);
   const { data: users } = useStore(KEYS.USERS, []);
+  const { data: questionBank, setData: setQuestionBank } = useStore('sms_question_bank', []);
+  const { data: attempts, setData: setAttempts } = useStore('sms_exam_attempts', []);
+
   const [form, setForm] = useState({ name: '', subject: '', class: '10-A', date: '', maxMarks: 100, paperUrl: '' });
   const [selectedExamId, setSelectedExamId] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [score, setScore] = useState('');
+
+  // Question bank (MCQ)
+  const [qForm, setQForm] = useState({
+    class: '10-A',
+    subject: '',
+    text: '',
+    marks: 1,
+    options: ['', '', '', ''],
+    correctIndex: 0,
+  });
+
+  // Student mock attempt UI
+  const [activeAttempt, setActiveAttempt] = useState(null); // { id, examId, questionIds, answers, startedAt }
+  const [activeQuestions, setActiveQuestions] = useState([]); // resolved question objects
+  const [activeIdx, setActiveIdx] = useState(0);
 
   const students = useMemo(() => users.filter((u) => u.role === 'student'), [users]);
   const visibleExams = useMemo(() => {
@@ -20,11 +40,31 @@ export const ExamCenter = ({ user, addToast }) => {
     return exams;
   }, [exams, user]);
 
+  const myAttempts = useMemo(() => {
+    if (user.role !== 'student') return [];
+    return (attempts || []).filter((a) => a.studentId === user.id).sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt));
+  }, [attempts, user]);
+
   const createExam = () => {
     if (!form.name || !form.subject || !form.date) return;
-    add({ id: `exam-${Date.now()}`, ...form, createdBy: user.id, createdAt: new Date().toISOString() });
+    const exam = { id: `exam-${Date.now()}`, ...form, createdBy: user.id, createdAt: new Date().toISOString() };
+    add(exam);
     addToast('Exam created', 'success');
     setForm({ name: '', subject: '', class: '10-A', date: '', maxMarks: 100, paperUrl: '' });
+
+    // Basic in-app notification for students in that class
+    users
+      .filter((u) => u.role === 'student' && u.class === exam.class)
+      .forEach((stu) => {
+        notificationsService.emit({
+          userId: stu.id,
+          message: `New exam scheduled: ${exam.name} (${exam.subject}) on ${exam.date}`,
+          type: 'exam',
+          meta: { examId: exam.id, class: exam.class, subject: exam.subject, date: exam.date },
+          actor: user,
+        });
+      });
+    localAuditRepo.append({ actorId: user.id, actorEmail: user.email, action: 'exams.create', targetId: exam.id, mode: 'LOCAL_DEMO' });
   };
 
   const submitMarks = () => {
@@ -45,6 +85,87 @@ export const ExamCenter = ({ user, addToast }) => {
     });
     addToast('Marks saved', 'success');
     setScore('');
+  };
+
+  const addQuestion = () => {
+    if (!qForm.subject || !qForm.text || qForm.options.some((o) => !o.trim())) {
+      addToast?.('Fill question, subject, and all options', 'error');
+      return;
+    }
+    const q = {
+      id: `q-${Date.now()}`,
+      type: 'mcq',
+      class: qForm.class,
+      subject: qForm.subject,
+      text: qForm.text,
+      marks: Number(qForm.marks || 1),
+      options: qForm.options.map((o) => o.trim()),
+      correctIndex: Number(qForm.correctIndex || 0),
+      createdAt: new Date().toISOString(),
+      createdBy: user.id,
+    };
+    setQuestionBank([q, ...(Array.isArray(questionBank) ? questionBank : [])]);
+    addToast?.('Question added to bank', 'success');
+    setQForm((d) => ({ ...d, subject: d.subject, text: '', marks: 1, options: ['', '', '', ''], correctIndex: 0 }));
+    localAuditRepo.append({ actorId: user.id, actorEmail: user.email, action: 'questions.create', targetId: q.id, mode: 'LOCAL_DEMO' });
+  };
+
+  const startMock = (exam) => {
+    if (!exam) return;
+    const pool = (Array.isArray(questionBank) ? questionBank : []).filter(
+      (q) => q.type === 'mcq' && (!exam.class || q.class === exam.class) && (!exam.subject || q.subject === exam.subject)
+    );
+    if (pool.length === 0) {
+      addToast?.('No questions available for this exam. Ask teacher to add a question bank.', 'error');
+      return;
+    }
+    const shuffled = pool.slice().sort(() => Math.random() - 0.5);
+    const picked = shuffled.slice(0, Math.min(10, shuffled.length));
+    const attempt = {
+      id: `att-${exam.id}-${user.id}-${Date.now()}`,
+      examId: exam.id,
+      examName: exam.name,
+      subject: exam.subject,
+      class: exam.class,
+      studentId: user.id,
+      startedAt: new Date().toISOString(),
+      finishedAt: null,
+      questionIds: picked.map((q) => q.id),
+      answers: {},
+      score: null,
+      maxScore: picked.reduce((s, q) => s + (q.marks || 1), 0),
+    };
+    setActiveAttempt(attempt);
+    setActiveQuestions(picked);
+    setActiveIdx(0);
+  };
+
+  const setAnswer = (questionId, answer) => {
+    setActiveAttempt((prev) => {
+      if (!prev) return prev;
+      return { ...prev, answers: { ...(prev.answers || {}), [questionId]: answer } };
+    });
+  };
+
+  const finishMock = () => {
+    if (!activeAttempt) return;
+    const answers = activeAttempt.answers || {};
+    let scoreSum = 0;
+    for (const q of activeQuestions) {
+      const a = answers[q.id];
+      if (q.type === 'mcq' && Number(a) === Number(q.correctIndex)) scoreSum += Number(q.marks || 1);
+    }
+    const finished = {
+      ...activeAttempt,
+      finishedAt: new Date().toISOString(),
+      score: scoreSum,
+    };
+    setAttempts([finished, ...(Array.isArray(attempts) ? attempts : [])]);
+    setActiveAttempt(null);
+    setActiveQuestions([]);
+    setActiveIdx(0);
+    addToast?.(`Mock completed. Score: ${scoreSum}/${finished.maxScore}`, 'success');
+    localAuditRepo.append({ actorId: user.id, actorEmail: user.email, action: 'exams.mockFinish', targetId: finished.examId, mode: 'LOCAL_DEMO' });
   };
 
   return (
@@ -147,12 +268,22 @@ export const ExamCenter = ({ user, addToast }) => {
                     <h3 className="text-base font-semibold text-gray-900">{exam.name}</h3>
                     <p className="text-sm mt-0.5 text-gray-500">{exam.subject} · Class {exam.class} · {exam.date}</p>
                   </div>
-                  {exam.paperUrl && (
-                    <a href={exam.paperUrl} target="_blank" rel="noreferrer"
-                      className="inline-flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-lg border transition-colors hover:bg-gray-50 text-gray-600 border-gray-200">
-                      <FileUp size={13} /> View Paper
-                    </a>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {user.role === 'student' && (
+                      <button
+                        onClick={() => startMock(exam)}
+                        className="inline-flex items-center gap-2 text-sm font-semibold px-3 py-1.5 rounded-lg border transition-colors hover:bg-gray-50 text-gray-800 border-gray-200"
+                      >
+                        <Play size={13} /> Start Mock
+                      </button>
+                    )}
+                    {exam.paperUrl && (
+                      <a href={exam.paperUrl} target="_blank" rel="noreferrer"
+                        className="inline-flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-lg border transition-colors hover:bg-gray-50 text-gray-600 border-gray-200">
+                        <FileUp size={13} /> View Paper
+                      </a>
+                    )}
+                  </div>
                 </div>
                 {myMarks.length > 0 && (
                   <div className="mt-3 pt-3 border-t space-y-2 border-gray-200">
@@ -169,6 +300,140 @@ export const ExamCenter = ({ user, addToast }) => {
               </motion.div>
             );
           })}
+        </div>
+      )}
+
+      {/* Student mock attempt runner */}
+      {user.role === 'student' && activeAttempt && (
+        <div className="glass-card p-6 backdrop-blur-xl space-y-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                <Brain size={16} /> Mock Attempt
+              </h2>
+              <p className="text-sm text-gray-500">{activeAttempt.examName} · {activeAttempt.subject}</p>
+            </div>
+            <button onClick={finishMock} className="btn-primary flex items-center gap-2 text-sm py-2 px-4">
+              <CheckCircle2 size={15} /> Finish & Score
+            </button>
+          </div>
+
+          {activeQuestions.length > 0 && (
+            <>
+              <div className="flex items-center justify-between text-xs text-gray-500">
+                <span>Question {activeIdx + 1} / {activeQuestions.length}</span>
+                <span>Max score: {activeAttempt.maxScore}</span>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-white/70 border border-gray-200">
+                <p className="font-semibold text-gray-900 mb-3">{activeQuestions[activeIdx].text}</p>
+                <div className="space-y-2">
+                  {activeQuestions[activeIdx].options.map((opt, i) => {
+                    const selected = Number(activeAttempt.answers?.[activeQuestions[activeIdx].id]) === i;
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => setAnswer(activeQuestions[activeIdx].id, i)}
+                        className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-colors ${
+                          selected ? 'border-emerald-400 bg-emerald-50 text-emerald-900' : 'border-gray-200 bg-white hover:bg-gray-50'
+                        }`}
+                      >
+                        {String.fromCharCode(65 + i)}. {opt}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <button
+                  onClick={() => setActiveIdx((i) => Math.max(0, i - 1))}
+                  disabled={activeIdx === 0}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm disabled:opacity-40"
+                >
+                  <ChevronLeft size={16} /> Prev
+                </button>
+                <button
+                  onClick={() => setActiveIdx((i) => Math.min(activeQuestions.length - 1, i + 1))}
+                  disabled={activeIdx >= activeQuestions.length - 1}
+                  className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 text-sm disabled:opacity-40"
+                >
+                  Next <ChevronRight size={16} />
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Student attempt history / analytics */}
+      {user.role === 'student' && (
+        <div className="glass-card p-6 backdrop-blur-xl space-y-3">
+          <h3 className="text-sm font-semibold text-gray-700">My Mock Attempts</h3>
+          {myAttempts.length === 0 ? (
+            <p className="text-sm text-gray-500">No attempts yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {myAttempts.slice(0, 10).map((a) => (
+                <div key={a.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200">
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">{a.examName}</p>
+                    <p className="text-xs text-gray-500">{a.subject} · {new Date(a.startedAt).toLocaleString()}</p>
+                  </div>
+                  <div className="font-mono font-bold text-gray-900">
+                    {a.score ?? '-'} / {a.maxScore ?? '-'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Question bank management */}
+      {(user.role === 'admin' || user.role === 'teacher') && (
+        <div className="glass-card p-6 backdrop-blur-xl space-y-4">
+          <h2 className="text-sm font-semibold flex items-center gap-2 text-gray-600">
+            <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" /> Question Bank (MCQ)
+          </h2>
+
+          <div className="grid md:grid-cols-2 gap-3">
+            <input className="input-field" placeholder="Subject" value={qForm.subject} onChange={(e) => setQForm((d) => ({ ...d, subject: e.target.value }))} />
+            <input className="input-field" placeholder="Class" value={qForm.class} onChange={(e) => setQForm((d) => ({ ...d, class: e.target.value }))} />
+          </div>
+          <textarea className="input-field min-h-[110px]" placeholder="Question text" value={qForm.text} onChange={(e) => setQForm((d) => ({ ...d, text: e.target.value }))} />
+
+          <div className="grid md:grid-cols-2 gap-3">
+            {qForm.options.map((opt, idx) => (
+              <input
+                key={idx}
+                className="input-field"
+                placeholder={`Option ${String.fromCharCode(65 + idx)}`}
+                value={opt}
+                onChange={(e) =>
+                  setQForm((d) => {
+                    const next = d.options.slice();
+                    next[idx] = e.target.value;
+                    return { ...d, options: next };
+                  })
+                }
+              />
+            ))}
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-3">
+            <select className="input-field" value={qForm.correctIndex} onChange={(e) => setQForm((d) => ({ ...d, correctIndex: Number(e.target.value) }))}>
+              {[0, 1, 2, 3].map((i) => <option key={i} value={i}>Correct: {String.fromCharCode(65 + i)}</option>)}
+            </select>
+            <input className="input-field" type="number" min={1} value={qForm.marks} onChange={(e) => setQForm((d) => ({ ...d, marks: Number(e.target.value) }))} />
+            <button onClick={addQuestion} className="btn-primary flex items-center justify-center gap-2 text-sm py-2.5 px-5">
+              <Plus size={15} /> Add Question
+            </button>
+          </div>
+
+          <div className="pt-3 border-t border-gray-200">
+            <p className="text-xs text-gray-500">Total questions: {(Array.isArray(questionBank) ? questionBank : []).length}</p>
+          </div>
         </div>
       )}
     </div>
