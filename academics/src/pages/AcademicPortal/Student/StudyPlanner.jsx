@@ -17,7 +17,7 @@ import {
   Lightbulb
 } from 'lucide-react';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 const STUDY_TIPS = [
   {
@@ -101,7 +101,7 @@ export const StudyPlanner = ({ user, addToast }) => {
         doc.setFont('helvetica', 'bold');
         doc.text('Performance Targets', 25, y);
         
-        doc.autoTable({
+        autoTable(doc, {
           startY: y + 5,
           margin: { left: 25 },
           head: [['Metric', 'Value', 'Status']],
@@ -122,7 +122,7 @@ export const StudyPlanner = ({ user, addToast }) => {
         doc.text('Key Focus Chapters', 25, y);
         
         const chapters = formData.weakChapters ? formData.weakChapters.split(',').map(c => c.trim()).filter(c => c !== '') : ['General Review'];
-        doc.autoTable({
+        autoTable(doc, {
           startY: y + 5,
           margin: { left: 25 },
           body: chapters.map(ch => [ch, 'High Priority', 'Requires Review']),
@@ -154,7 +154,7 @@ export const StudyPlanner = ({ user, addToast }) => {
           schedule.push([`Day ${i}`, date.toLocaleDateString(), phase, task]);
         }
 
-        doc.autoTable({
+        autoTable(doc, {
           startY: y + 5,
           margin: { left: 25 },
           head: [['Day', 'Date', 'Phase', 'Action Plan']],
