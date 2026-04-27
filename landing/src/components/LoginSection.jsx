@@ -51,11 +51,11 @@ export default function LoginSection({ sectionRef }) {
       );
     } catch {
       // sessionStorage unavailable — just go to portal root
-      window.location.href = `/${portal}/#/login`;
+      window.location.href = `/OP-CS_CONNECT/${portal}/#/login`;
       return;
     }
 
-    window.location.href = `/${portal}/#/login`;
+    window.location.href = `/OP-CS_CONNECT/${portal}/#/login`;
   };
 
   const handleDemoSelect = (demoEmail, demoPassword) => {
