@@ -480,7 +480,7 @@ export const StudentDashboard = ({ user }) => {
               <Award size={14} /> Earned Badges
             </h3>
             <div className="grid grid-cols-4 gap-2">
-              {badges.map((badge, i) => <BadgeCard key={i} badge={badge} />)}
+              {earnedBadges.map((badge, i) => <BadgeCard key={i} badge={badge} />)}
             </div>
           </div>
         </div>
