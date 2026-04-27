@@ -44,6 +44,7 @@ export const NexusHub = ({ user, addToast }) => {
   const [researchPapers, setResearchPapers] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [channelMembers, setChannelMembers] = useState([]);
   
   // ── Stream Chat Integration ──
   const [client, setClient] = useState(null);
@@ -101,6 +102,7 @@ export const NexusHub = ({ user, addToast }) => {
 
       channel.watch().then((state) => {
         setMessages(state.messages);
+        setChannelMembers(Object.values(state.members || {}).map(m => m.user));
         setChatChannel(channel);
       });
 
@@ -612,24 +614,19 @@ export const NexusHub = ({ user, addToast }) => {
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Members — {selectedClub?.members}</p>
                   </div>
                   <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                    {[
-                      { name: 'Alex Chen', status: 'Online', role: 'President' },
-                      { name: 'Sarah Blake', status: 'In Voice', role: 'Member' },
-                      { name: 'Michael Sun', status: 'Offline', role: 'Member' },
-                      { name: 'Chloe Wu', status: 'Online', role: 'Mentor' }
-                    ].map((member, i) => (
-                      <div key={i} className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${member.status === 'Offline' ? 'opacity-40' : 'hover:bg-white cursor-pointer shadow-sm shadow-transparent hover:shadow-slate-200'}`}>
+                    {channelMembers.map((member, i) => (
+                      <div key={member.id || i} className={`flex items-center gap-3 p-2.5 rounded-xl transition-all ${!member.online ? 'opacity-40' : 'hover:bg-white cursor-pointer shadow-sm shadow-transparent hover:shadow-slate-200'}`}>
                         <div className="relative">
-                           <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-[10px] text-slate-500">
-                             {member.name[0]}
+                           <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center font-bold text-[10px] text-slate-500 overflow-hidden">
+                             {member.image ? <img src={member.image} alt="" className="w-full h-full object-cover" /> : member.name?.[0] || 'U'}
                            </div>
-                           {member.status !== 'Offline' && (
-                             <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-slate-50 ${member.status === 'In Voice' ? 'bg-indigo-500' : 'bg-emerald-500'}`} />
+                           {member.online && (
+                             <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-slate-50 bg-emerald-500`} />
                            )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-bold text-slate-800 truncate">{member.name}</p>
-                          <p className={`text-[10px] font-bold ${member.role === 'President' ? 'text-indigo-600' : 'text-slate-400'}`}>{member.role}</p>
+                          <p className="text-xs font-bold text-slate-800 truncate">{member.name || 'Anonymous'}</p>
+                          <p className={`text-[10px] font-bold text-slate-400`}>{member.role || 'Member'}</p>
                         </div>
                       </div>
                     ))}
@@ -661,25 +658,29 @@ export const NexusHub = ({ user, addToast }) => {
               </div>
 
               <div className="flex-1 flex flex-wrap items-center justify-center gap-8 p-10">
-                {[1, 2, 3].map(i => (
+                {channelMembers.slice(0, 4).map((member, i) => (
                   <motion.div
-                    key={i}
+                    key={member.id || i}
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
                     className="relative group cursor-pointer"
                   >
                     <div className="w-32 h-32 rounded-3xl bg-slate-800 border-2 border-indigo-500/30 flex items-center justify-center transition-all group-hover:border-indigo-500 relative overflow-hidden">
-                      <span className="text-5xl font-black text-indigo-500/20">{i === 1 ? 'Y' : 'U'}</span>
-                      {callType === 'video' && i === 1 && (
+                      {member.image ? (
+                        <img src={member.image} className="w-full h-full object-cover opacity-50" alt="" />
+                      ) : (
+                        <span className="text-5xl font-black text-indigo-500/20">{member.name?.[0] || 'U'}</span>
+                      )}
+                      {callType === 'video' && member.id === user?.id && (
                         <div className="absolute inset-0 bg-slate-700 flex items-center justify-center">
                           <span className="text-xs text-white/50 font-bold tracking-tight">Camera Restricted</span>
                         </div>
                       )}
                     </div>
-                    <div className="absolute -bottom-2 inset-x-0 mx-auto w-fit px-4 py-1 bg-slate-900 border border-slate-800 rounded-full text-[10px] text-white font-bold shadow-xl">
-                      {i === 1 ? 'You (Me)' : `Student #${i}`}
+                    <div className="absolute -bottom-2 inset-x-0 mx-auto w-fit px-4 py-1 bg-slate-900 border border-slate-800 rounded-full text-[10px] text-white font-bold shadow-xl truncate max-w-[120px]">
+                      {member.id === user?.id ? 'You' : member.name}
                     </div>
-                    {i === 1 && <div className="absolute top-2 right-2 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900 shadow-[0_0_8px_#10b981] animate-pulse" />}
+                    {member.online && <div className="absolute top-2 right-2 w-3 h-3 bg-emerald-500 rounded-full border-2 border-slate-900 shadow-[0_0_8px_#10b981] animate-pulse" />}
                   </motion.div>
                 ))}
               </div>
