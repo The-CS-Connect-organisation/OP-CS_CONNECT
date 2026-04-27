@@ -1,5 +1,10 @@
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://op-cs-connect-backend-vym7.onrender.com/api';
+
+// Initialize authToken from localStorage if available
 let authToken = null;
+if (typeof window !== 'undefined') {
+  authToken = localStorage.getItem('sms_auth_token');
+}
 
 export class ApiClientError extends Error {
   constructor(message, status = 500, details = null) {

@@ -1,7 +1,12 @@
 // Hardcoded for GitHub Pages deployment - .env files don't work on static hosting
 const API_BASE_URL = 'https://op-csconnect-backend-production.up.railway.app/api';
 // Force rebuild - updated backend URL
+
+// Initialize authToken from localStorage if available
 let authToken = null;
+if (typeof window !== 'undefined') {
+  authToken = localStorage.getItem('sms_auth_token');
+}
 
 export class ApiClientError extends Error {
   constructor(message, status = 500, details = null) {
