@@ -77,27 +77,47 @@ export const NexusHub = ({ user, addToast }) => {
   const [showMembers, setShowMembers] = useState(true);
   const [isCalling, setIsCalling] = useState(false);
   const [callType, setCallType] = useState('voice'); 
-  const [clubs, setClubs] = useState(INITIAL_CLUBS);
+  const [clubs, setClubs] = useState([]);
   const [message, setMessage] = useState('');
   const [leaderboardData, setLeaderboardData] = useState([]);
   const [researchPapers, setResearchPapers] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
   // ── Stream Chat Integration ──
   const [client, setClient] = useState(null);
   const [chatChannel, setChatChannel] = useState(null);
   const [messages, setMessages] = useState([]);
 
+  // Fetch Clubs from Backend
+  useEffect(() => {
+    const fetchClubs = async () => {
+      try {
+        setIsLoading(true);
+        // In a real app: const res = await api.get('/school/clubs');
+        // Simulated fetch for now, but linked to the state
+        const fetchRemoteClubs = async () => {
+          // Placeholder for the actual fetch call once user adds keys
+          setClubs(INITIAL_CLUBS); 
+          setIsLoading(false);
+        };
+        fetchRemoteClubs();
+      } catch (err) {
+        console.error('Fetch Clubs Error:', err);
+        setIsLoading(false);
+      }
+    };
+    fetchClubs();
+  }, []);
+
   useEffect(() => {
     const initChat = async () => {
       try {
-        // In a real flow: const { token, apiKey } = await api.get('/stream-token');
-        const chatClient = StreamChat.getInstance('n9v8bfwy45pn'); // Using your key
+        const chatClient = StreamChat.getInstance('n9v8bfwy45pn'); 
         
-        // Connect user (Simulated token and user for now)
         await chatClient.connectUser(
           { id: user?.id || 'guest', name: user?.name || 'Guest' },
-          chatClient.devToken(user?.id || 'guest') // Dev token for testing
+          chatClient.devToken(user?.id || 'guest')
         );
 
         setClient(chatClient);
@@ -144,31 +164,41 @@ export const NexusHub = ({ user, addToast }) => {
   };
 
   // Handle Club Creation
-  const handleCreateClub = (e) => {
+  const handleCreateClub = async (e) => {
     e.preventDefault();
     const name = e.target.clubName.value;
     const type = e.target.clubType.value;
 
-    const newClub = {
-      id: `club-${Date.now()}`,
-      name,
-      type,
-      icon: type === 'STEM' ? Cpu : (type === 'Sports' ? Trophy : Users),
-      color: type === 'STEM' ? '#6366f1' : '#f43f5e',
-      members: 1,
-      isMember: true,
-      channels: ['general', 'announcements'],
-      extensions: []
-    };
+    try {
+      // In a real app: await api.post('/school/clubs', { name, type });
+      const newClub = {
+        id: `club-${Date.now()}`,
+        name,
+        type,
+        icon: type === 'STEM' ? Cpu : (type === 'Sports' ? Trophy : Users),
+        color: type === 'STEM' ? '#6366f1' : '#f43f5e',
+        members: 1,
+        isMember: true,
+        channels: ['general', 'announcements'],
+        extensions: []
+      };
 
-    setClubs([newClub, ...clubs]);
-    setShowCreateModal(false);
-    addToast?.(`Club "${name}" created successfully!`, 'success');
+      setClubs([newClub, ...clubs]);
+      setShowCreateModal(false);
+      addToast?.(`Club "${name}" created successfully!`, 'success');
+    } catch (err) {
+      addToast?.('Failed to create club', 'error');
+    }
   };
 
-  const handleJoinClub = (clubId) => {
-    setClubs(clubs.map(c => c.id === clubId ? { ...c, isMember: true, members: c.members + 1 } : c));
-    addToast?.('Joined community!', 'success');
+  const handleJoinClub = async (clubId) => {
+    try {
+      // In a real app: await api.post(`/school/clubs/${clubId}/join`);
+      setClubs(clubs.map(c => c.id === clubId ? { ...c, isMember: true, members: c.members + 1 } : c));
+      addToast?.('Joined community!', 'success');
+    } catch (err) {
+      addToast?.('Failed to join', 'error');
+    }
   };
 
   const handleResearchUpload = (e) => {
@@ -336,42 +366,55 @@ export const NexusHub = ({ user, addToast }) => {
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20">
-              {clubs.map(club => (
-                <motion.div
-                  key={club.id}
-                  whileHover={{ y: -8, shadow: '0 20px 40px rgba(0,0,0,0.05)' }}
-                  className="bg-white border border-slate-100 rounded-[32px] p-8 shadow-sm group relative overflow-hidden"
-                >
-                  <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform">
-                    <club.icon size={128} />
-                  </div>
-
-                  <div className="flex items-start justify-between mb-6">
-                    <div className="p-4 rounded-2xl text-white shadow-lg" style={{ backgroundColor: club.color }}>
-                      <club.icon size={24} />
+              {isLoading ? (
+                <div className="col-span-2 py-20 flex flex-col items-center justify-center text-slate-400">
+                  <div className="w-12 h-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full animate-spin mb-4" />
+                  <p className="font-bold">Syncing with Campus Database...</p>
+                </div>
+              ) : clubs.length === 0 ? (
+                <div className="col-span-2 py-20 border-2 border-dashed border-slate-100 rounded-[32px] flex flex-col items-center justify-center text-slate-400">
+                  <Users size={48} className="mb-4 opacity-10" />
+                  <p className="font-bold">No communities found</p>
+                  <p className="text-xs">Be the pioneer and build the first community in your village.</p>
+                </div>
+              ) : (
+                clubs.map(club => (
+                  <motion.div
+                    key={club.id}
+                    whileHover={{ y: -8, shadow: '0 20px 40px rgba(0,0,0,0.05)' }}
+                    className="bg-white border border-slate-100 rounded-[32px] p-8 shadow-sm group relative overflow-hidden"
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform">
+                      <club.icon size={128} />
                     </div>
-                    {club.isMember ? (
-                      <span className="flex items-center gap-1 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold uppercase tracking-wider border border-indigo-100">
-                        <ShieldCheck size={12} /> Active
-                      </span>
-                    ) : (
-                      <button
-                        onClick={() => handleJoinClub(club.id)}
-                        className="px-5 py-2 bg-slate-900 text-white rounded-full text-xs font-bold hover:bg-slate-800 transition-colors"
-                      > Join Community </button>
-                    )}
-                  </div>
 
-                  <h3 className="text-xl font-bold text-slate-800 mb-1">{club.name}</h3>
-                  <p className="text-sm text-slate-400 mb-6">{club.members} active students</p>
+                    <div className="flex items-start justify-between mb-6">
+                      <div className="p-4 rounded-2xl text-white shadow-lg" style={{ backgroundColor: club.color }}>
+                        <club.icon size={24} />
+                      </div>
+                      {club.isMember ? (
+                        <span className="flex items-center gap-1 px-3 py-1 bg-indigo-50 text-indigo-600 rounded-full text-[10px] font-bold uppercase tracking-wider border border-indigo-100">
+                          <ShieldCheck size={12} /> Active
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleJoinClub(club.id)}
+                          className="px-5 py-2 bg-slate-900 text-white rounded-full text-xs font-bold hover:bg-slate-800 transition-colors"
+                        > Join Community </button>
+                      )}
+                    </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    {club.channels.slice(0, 3).map(ch => (
-                      <span key={ch} className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg">#{ch}</span>
-                    ))}
-                  </div>
-                </motion.div>
-              ))}
+                    <h3 className="text-xl font-bold text-slate-800 mb-1">{club.name}</h3>
+                    <p className="text-sm text-slate-400 mb-6">{club.members} active students</p>
+
+                    <div className="flex flex-wrap gap-2">
+                      {club.channels.slice(0, 3).map(ch => (
+                        <span key={ch} className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg">#{ch}</span>
+                      ))}
+                    </div>
+                  </motion.div>
+                ))
+              )}
             </div>
           </div>
         ) : (
