@@ -2,12 +2,11 @@ import { io } from 'socket.io-client';
 import { getFromStorage } from '../data/schema';
 import { KEYS } from '../data/schema';
 const getSocketOrigin = () => {
-  // Hardcoded for GitHub Pages deployment
-  const base = 'https://op-cs-connect-backend-vym7.onrender.com/api';
+  const base = 'https://op-csconnect-backend-production.up.railway.app/api';
   try {
     return new URL(base).origin;
   } catch {
-    return 'https://op-cs-connect-backend-vym7.onrender.com';
+    return 'https://op-csconnect-backend-production.up.railway.app';
   }
 };
 
