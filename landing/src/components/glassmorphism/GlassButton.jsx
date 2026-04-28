@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import '../../styles/glassmorphism.css';
 
-export const GlassButton = ({ 
+const GlassButton = ({ 
   children, 
   onClick,
   blur = 10,
@@ -54,3 +54,5 @@ export const GlassButton = ({
     </button>
   );
 };
+
+export default GlassButton;

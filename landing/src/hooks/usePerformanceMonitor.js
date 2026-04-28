@@ -4,22 +4,22 @@ import { useState, useEffect, useRef } from 'react';
  * Monitor FPS and detect performance degradation
  * Returns current FPS and performance quality level
  */
-export const usePerformanceMonitor = () => {
+const usePerformanceMonitor = () => {
   const [performance, setPerformance] = useState({
     fps: 60,
     quality: 'high', // 'high', 'medium', 'low'
-    isLowPerformance: false
+    shouldReduceQuality: false
   });
   
   const frameCount = useRef(0);
-  const lastTime = useRef(performance.now());
+  const lastTime = useRef(Date.now());
   const fpsHistory = useRef([]);
 
   useEffect(() => {
     let animationFrameId;
 
     const measureFPS = () => {
-      const now = performance.now();
+      const now = Date.now();
       const delta = now - lastTime.current;
       
       if (delta >= 1000) { // Update every second
@@ -36,17 +36,17 @@ export const usePerformanceMonitor = () => {
         
         // Determine quality level
         let quality = 'high';
-        let isLowPerformance = false;
+        let shouldReduceQuality = false;
         
         if (avgFPS < 30) {
           quality = 'low';
-          isLowPerformance = true;
+          shouldReduceQuality = true;
         } else if (avgFPS < 55) {
           quality = 'medium';
-          isLowPerformance = true;
+          shouldReduceQuality = true;
         }
         
-        setPerformance({ fps: Math.round(avgFPS), quality, isLowPerformance });
+        setPerformance({ fps: Math.round(avgFPS), quality, shouldReduceQuality });
         
         frameCount.current = 0;
         lastTime.current = now;
@@ -62,3 +62,5 @@ export const usePerformanceMonitor = () => {
 
   return performance;
 };
+
+export default usePerformanceMonitor;

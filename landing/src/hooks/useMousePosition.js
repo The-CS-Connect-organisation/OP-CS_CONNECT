@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react';
  * Track mouse position with throttling for 60fps performance
  * Returns normalized coordinates (-1 to 1) for easy 3D transformations
  */
-export const useMousePosition = (throttleMs = 16.67) => {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0, normalizedX: 0, normalizedY: 0 });
+const useMousePosition = (throttleMs = 16.67) => {
+  const [mousePosition, setMousePosition] = useState({ x: null, y: null, normalizedX: 0, normalizedY: 0 });
   const lastUpdate = useRef(0);
 
   useEffect(() => {
@@ -31,3 +31,5 @@ export const useMousePosition = (throttleMs = 16.67) => {
 
   return mousePosition;
 };
+
+export default useMousePosition;

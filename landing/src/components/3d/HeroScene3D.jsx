@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { useMousePosition } from '../../hooks/useMousePosition';
-import { useReducedMotion } from '../../hooks/useReducedMotion';
+import useMousePosition from '../../hooks/useMousePosition';
+import useReducedMotion from '../../hooks/useReducedMotion';
 
-export const HeroScene3D = () => {
+const HeroScene3D = () => {
   const containerRef = useRef(null);
   const sceneRef = useRef(null);
   const rendererRef = useRef(null);
@@ -122,8 +122,10 @@ export const HeroScene3D = () => {
           mesh.position.y = mesh.userData.initialY + floatY;
 
           // Mouse parallax
-          mesh.position.x += mousePosition.normalizedX * 0.001;
-          mesh.position.y += mousePosition.normalizedY * 0.001;
+          if (mousePosition.x !== null) {
+            mesh.position.x += mousePosition.normalizedX * 0.001;
+            mesh.position.y += mousePosition.normalizedY * 0.001;
+          }
         });
 
         renderer.render(scene, camera);
@@ -168,7 +170,7 @@ export const HeroScene3D = () => {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [mousePosition.normalizedX, mousePosition.normalizedY, prefersReducedMotion]);
+  }, [mousePosition.normalizedX, mousePosition.normalizedY, mousePosition.x, prefersReducedMotion]);
 
   if (prefersReducedMotion) return null;
 
@@ -180,3 +182,5 @@ export const HeroScene3D = () => {
     />
   );
 };
+
+export default HeroScene3D;
