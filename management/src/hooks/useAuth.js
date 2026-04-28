@@ -37,6 +37,7 @@ export const useAuth = () => {
               setUser(payload.user);
               setToStorage(KEYS.CURRENT_USER, payload.user);
               window.location.href = `/OP-CS_CONNECT/management/#/${payload.user.role}/dashboard`;
+              window.location.reload();
             } else {
               setLoading(false);
             }

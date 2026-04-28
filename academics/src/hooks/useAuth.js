@@ -23,6 +23,7 @@ export const useAuth = () => {
               setUser(res.user);
               // Navigate to dashboard after successful autofill login
               window.location.href = `/OP-CS_CONNECT/academics/#/${res.user.role}/dashboard`;
+              window.location.reload();
             } else {
               setLoading(false);
             }
