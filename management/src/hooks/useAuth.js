@@ -158,6 +158,8 @@ export const useAuth = () => {
     disconnectSocket();
     removeFromStorage(KEYS.CURRENT_USER);
     removeFromStorage(KEYS.AUTH_TOKEN);
+    // Go back to landing page
+    window.location.href = '/OP-CS_CONNECT/';
   }, []);
 
   return { user, loading, login, signup, logout, isAuthenticated: !!user };

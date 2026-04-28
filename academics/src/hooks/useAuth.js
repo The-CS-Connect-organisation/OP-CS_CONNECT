@@ -11,26 +11,21 @@ export const useAuth = () => {
   useEffect(() => {
     initializeApp();
 
-    // Handle autofill from landing page
+    // Handle autofill from landing page sessionStorage
     const raw = sessionStorage.getItem('schoolsync_autofill');
     if (raw) {
       try {
         const { email, password, portal } = JSON.parse(raw);
         if (portal === 'academics') {
           sessionStorage.removeItem('schoolsync_autofill');
-          authService.login(email, password).then((res) => {
-            if (res?.success) {
-              setUser(res.user);
-              // Navigate to dashboard after successful autofill login
-              window.location.href = `/OP-CS_CONNECT/academics/#/${res.user.role}/dashboard`;
-            } else {
-              console.error('Autofill login failed:', res?.error);
-              setLoading(false);
-            }
-          }).catch((err) => {
-            console.error('Autofill login error:', err);
-            setLoading(false);
-          });
+          authService.login(email, password)
+            .then((res) => {
+              if (res?.success) {
+                setUser(res.user);
+              }
+            })
+            .catch(() => {})
+            .finally(() => setLoading(false));
           return;
         }
       } catch {
@@ -59,6 +54,8 @@ export const useAuth = () => {
     setUser(null);
     disconnectSocket();
     authService.logout();
+    // Go back to landing page
+    window.location.href = '/OP-CS_CONNECT/';
   }, []);
 
   return { user, loading, login, signup, logout, isAuthenticated: !!user };
