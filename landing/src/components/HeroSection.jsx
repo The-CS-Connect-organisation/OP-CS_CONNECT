@@ -926,9 +926,7 @@ export default function HeroSection({ loginRef }) {
       {/* Hyperframe border */}
       {!reducedMotion && <HyperframeBorder />}
 
-      {/* Education-themed floating elements */}
-      {!reducedMotion && <EducationElements />}
-
+      
       {/* Knowledge transfer animation */}
       {!reducedMotion && <KnowledgeFlow />}
 
