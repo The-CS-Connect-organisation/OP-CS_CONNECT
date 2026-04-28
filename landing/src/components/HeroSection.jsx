@@ -858,6 +858,9 @@ export default function HeroSection({ loginRef }) {
         />
       )}
 
+      {/* Top Bar */}
+      <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-orange-500 to-orange-600 z-20" />
+      
       {/* Content */}
       <motion.div
         className="relative z-10 text-center max-w-6xl mx-auto"
@@ -866,143 +869,82 @@ export default function HeroSection({ loginRef }) {
         animate="visible"
         style={{ y: contentY }}
       >
-        {/* Professional Education Logo */}
+        {/* Simple Logo - no animations */}
         <motion.div
           variants={itemVariants}
-          className="mb-16"
+          className="mb-12"
           style={{ y: logoY, opacity: logoOpacity }}
         >
-          <EducationLogo />
+          <img
+            src="/OP-CS_CONNECT/schoolsync.png"
+            alt="SchoolSync"
+            className="w-full max-w-3xl mx-auto"
+          />
         </motion.div>
 
-        {/* Headline with character reveal and glow effect */}
+        {/* Clean Headline - no duplicates or flickering */}
         <motion.h1
           variants={itemVariants}
           className="text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.05] mb-6"
           style={{ color: '#1f2937' }}
         >
-          <GlitchText className="inline-block">
-            One Platform.
-          </GlitchText>
-          <motion.div
-            className="inline-block"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-            whileHover={{
-              textShadow: '0 0 30px rgba(245,158,11,0.5)',
-            }}
-          >
-            {reducedMotion ? (
-              'One Platform.'
-            ) : (
-              'One Platform.'.split('').map((char, i) => (
-                <motion.span
-                  key={i}
-                  className="inline-block"
-                  initial={{ opacity: 0, y: 20, rotateX: -90 }}
-                  animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                  whileHover={{
-                    scale: 1.2,
-                    color: '#f59e0b',
-                  }}
-                  transition={{
-                    duration: 0.5,
-                    delay: 0.5 + i * 0.03,
-                    ease: [0.16, 1, 0.3, 1],
-                  }}
-                >
-                  {char === ' ' ? '\u00A0' : char}
-                </motion.span>
-              ))
-            )}
-          </motion.div>
-          <br />
-          <motion.div
-            className="inline-block"
-            style={{
-              background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text'
-            }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            whileHover={{
-              filter: 'brightness(1.2)',
-            }}
-          >
-            {reducedMotion ? (
-              'Every Learner.'
-            ) : (
-              'Every Learner.'.split('').map((char, i) => (
-                <motion.span
-                  key={i}
-                  className="inline-block"
-                  initial={{ opacity: 0, y: 20, rotateX: -90 }}
-                  animate={{ opacity: 1, y: 0, rotateX: 0 }}
-                  whileHover={{
-                    scale: 1.2,
-                  }}
-                  transition={{
-                    duration: 0.5,
-                    delay: 0.7 + i * 0.03,
-                    ease: [0.16, 1, 0.3, 1],
-                  }}
-                >
-                  {char === ' ' ? '\u00A0' : char}
-                </motion.span>
-              ))
-            )}
-          </motion.div>
+          One Platform.
         </motion.h1>
+        
+        <motion.h2
+          variants={itemVariants}
+          className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-700 mb-8"
+          style={{
+            background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text'
+          }}
+        >
+          Complete School Management
+        </motion.h2>
 
-        {/* Subtext with scramble effect */}
+        {/* Clean Subtext */}
         <motion.p
           variants={itemVariants}
           className="text-xl sm:text-2xl max-w-3xl mx-auto leading-relaxed mb-12 font-normal"
           style={{ color: '#6b7280' }}
         >
-          {reducedMotion ? (
-            'The unified school management system for students, teachers, parents, and administrators.'
-          ) : (
-            <ScrambleText
-              text="The unified school management system for students, teachers, parents, and administrators."
-            />
-          )}
+          The unified school management system for students, teachers, parents, and administrators.
         </motion.p>
 
         {/* CTA Buttons with magnetic effect */}
         <motion.div 
           variants={itemVariants} 
-          className="flex flex-col sm:flex-row items-center justify-center gap-4"
+          className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-8"
         >
-          <MagneticButton onClick={scrollToLogin} primary>
+          <MagneticButton primary onClick={scrollToLogin}>
             Get Started
           </MagneticButton>
-          <MagneticButton onClick={scrollToLogin} secondary>
-            View Demo
+          <MagneticButton secondary onClick={() => window.open('#features', '_self')}>
+            Learn More
           </MagneticButton>
+        </motion.div>
+
+        {/* Scroll indicator with proper spacing */}
+        <motion.div variants={itemVariants} className="mt-12">
+          <motion.button
+            onClick={scrollToLogin}
+            className="flex flex-col items-center text-gray-500 hover:text-orange-500 transition-colors"
+            whileHover={{ y: -5 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <span className="text-sm mb-2">Scroll Down</span>
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <ArrowDown size={24} />
+            </motion.div>
+          </motion.button>
         </motion.div>
       </motion.div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.5, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        style={{ color: '#9ca3af' }}
-      >
-        <span className="text-xs font-medium tracking-widest uppercase">Scroll</span>
-        <motion.div
-          animate={reducedMotion ? {} : { y: [0, 8, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        >
-          <ArrowDown size={20} />
-        </motion.div>
-      </motion.div>
-    </section>
+          </section>
   );
 }
