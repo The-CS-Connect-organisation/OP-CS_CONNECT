@@ -70,7 +70,7 @@ const LoadingScreen = () => (
 );
 
 // Allowed roles for this portal
-const ALLOWED_ROLES = ['student', 'parent', 'teacher'];
+const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'admin'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
