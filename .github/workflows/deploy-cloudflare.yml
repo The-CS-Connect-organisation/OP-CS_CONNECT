@@ -1,0 +1,82 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Build landing
+      - name: Install landing deps
+        run: npm install
+        working-directory: landing
+
+      - name: Build landing
+        run: npm run build
+        working-directory: landing
+
+      # Build academics
+      - name: Install academics deps
+        run: npm install
+        working-directory: academics
+
+      - name: Build academics
+        run: npm run build
+        working-directory: academics
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
+      # Build management
+      - name: Install management deps
+        run: npm install
+        working-directory: management
+
+      - name: Build management
+        run: npm run build
+        working-directory: management
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
+      # Combine all three builds
+      - name: Prepare deploy folder
+        run: |
+          mkdir -p deploy/OP-CS_CONNECT/academics
+          mkdir -p deploy/OP-CS_CONNECT/management
+          
+          # Copy each portal to its subdirectory
+          cp -r academics/dist/* deploy/OP-CS_CONNECT/academics/
+          cp -r management/dist/* deploy/OP-CS_CONNECT/management/
+          
+          # Fix client-side routing
+          cp academics/dist/index.html deploy/OP-CS_CONNECT/academics/404.html
+          cp management/dist/index.html deploy/OP-CS_CONNECT/management/404.html
+          
+          # Landing goes to root
+          cp -r landing/dist/* deploy/OP-CS_CONNECT/
+          cp landing/dist/index.html deploy/OP-CS_CONNECT/404.html
+
+      # Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: cornerstone-schoolsync
+          directory: deploy/OP-CS_CONNECT
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
