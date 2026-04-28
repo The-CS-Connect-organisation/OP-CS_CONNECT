@@ -1,31 +1,21 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowDown, Sparkles } from 'lucide-react';
-import HeroScene3D from './3d/HeroScene3D.jsx';
-import AnimatedText from './animations/AnimatedText.jsx';
-import ParallaxLayer from './animations/ParallaxLayer.jsx';
-import DNAHelixAnimation from './nerdy/DNAHelixAnimation.jsx';
-import AtomOrbitAnimation from './nerdy/AtomOrbitAnimation.jsx';
-import TypewriterTextEffect from './nerdy/TypewriterTextEffect.jsx';
-import useReducedMotion from '../hooks/useReducedMotion.js';
-import usePerformanceMonitor from '../hooks/usePerformanceMonitor.js';
+import { ArrowDown } from 'lucide-react';
 
 const containerVariants = {
   hidden: {},
   visible: {
-    transition: { staggerChildren: 0.15, delayChildren: 0.2 },
+    transition: { staggerChildren: 0.15, delayChildren: 0.3 },
   },
 };
 
 const itemVariants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] } },
 };
 
 export default function HeroSection({ loginRef }) {
   const [reducedMotion, setReducedMotion] = useState(false);
-  const prefersReducedMotion = useReducedMotion();
-  const { shouldReduceQuality } = usePerformanceMonitor();
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -39,71 +29,24 @@ export default function HeroSection({ loginRef }) {
     loginRef?.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const orb1Animate = reducedMotion
-    ? {}
-    : { x: [0, 60, -30, 0], y: [0, -40, 60, 0] };
-
-  const orb2Animate = reducedMotion
-    ? {}
-    : { x: [0, -50, 40, 0], y: [0, 50, -30, 0] };
-
-  const orbTransition = {
-    duration: 12,
-    repeat: Infinity,
-    repeatType: 'mirror',
-    ease: 'easeInOut',
-  };
-
   return (
     <section
       aria-label="Hero"
       className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-[#0a0a0a] px-6"
     >
-      {/* Three.js 3D Scene */}
-      {!prefersReducedMotion && !shouldReduceQuality && (
-        <div className="absolute inset-0 pointer-events-none z-0">
-          <HeroScene3D />
-        </div>
-      )}
-
-      {/* Nerdy 3D elements in parallax layers */}
-      {!prefersReducedMotion && !shouldReduceQuality && (
-        <>
-          <ParallaxLayer speed={0.3} depth={0.2} className="absolute top-[10%] right-[5%] pointer-events-none z-[2]">
-            <DNAHelixAnimation height={250} width={150} />
-          </ParallaxLayer>
-          <ParallaxLayer speed={0.4} depth={0.3} className="absolute bottom-[15%] left-[8%] pointer-events-none z-[2]">
-            <AtomOrbitAnimation size={180} electronsCount={3} />
-          </ParallaxLayer>
-        </>
-      )}
-
-      {/* Animated background orbs */}
-      <motion.div
+      {/* Subtle gradient background */}
+      <div
         aria-hidden="true"
-        className="absolute top-[15%] left-[10%] w-[500px] h-[500px] rounded-full pointer-events-none z-[1]"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(circle, rgba(255,107,157,0.18) 0%, rgba(196,77,255,0.08) 60%, transparent 80%)',
-          filter: 'blur(40px)',
+          background: 'radial-gradient(circle at 50% 50%, rgba(99,102,241,0.08) 0%, transparent 50%)',
         }}
-        animate={orb1Animate}
-        transition={orbTransition}
-      />
-      <motion.div
-        aria-hidden="true"
-        className="absolute bottom-[10%] right-[5%] w-[600px] h-[600px] rounded-full pointer-events-none z-[1]"
-        style={{
-          background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, rgba(255,107,157,0.06) 60%, transparent 80%)',
-          filter: 'blur(60px)',
-        }}
-        animate={orb2Animate}
-        transition={{ ...orbTransition, duration: 16 }}
       />
 
       {/* Grid overlay */}
       <div
         aria-hidden="true"
-        className="absolute inset-0 pointer-events-none opacity-[0.03] z-[1]"
+        className="absolute inset-0 pointer-events-none opacity-[0.02]"
         style={{
           backgroundImage:
             'linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)',
@@ -113,43 +56,45 @@ export default function HeroSection({ loginRef }) {
 
       {/* Content */}
       <motion.div
-        className="relative z-10 text-center max-w-4xl mx-auto"
+        className="relative z-10 text-center max-w-5xl mx-auto"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
-        {/* Badge */}
-        <motion.div variants={itemVariants} className="inline-flex items-center gap-2 mb-8">
-          <div className="flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-[#ff6b9d]/20 text-xs font-semibold text-[#ff6b9d] tracking-wide uppercase">
-            <Sparkles size={12} />
-            Cornerstone SchoolSync Platform
-          </div>
+        {/* Logo */}
+        <motion.div variants={itemVariants} className="mb-12">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 220" className="w-full max-w-2xl mx-auto">
+            <defs>
+              <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#f59e0b"/>
+                <stop offset="100%" stopColor="#f97316"/>
+              </linearGradient>
+            </defs>
+            <rect x="10" y="10" width="150" height="200" rx="22" fill="#111827"/>
+            <rect x="26" y="26" width="56" height="168" rx="14" fill="url(#g1)"/>
+            <text x="54" y="128" fontSize="66" fontFamily="Georgia, serif" fontWeight="700" textAnchor="middle" fill="#ffffff">C</text>
+            <text x="182" y="116" fontSize="90" fontFamily="Georgia, serif" fontWeight="700" fill="#ffffff">Cornerstone</text>
+            <text x="188" y="168" fontSize="34" fontFamily="Brush Script MT, cursive" fill="#f97316">We Lay Foundation for your child's future...</text>
+          </svg>
         </motion.div>
 
-        {/* Headline with AnimatedText */}
-        <motion.div variants={itemVariants}>
-          <AnimatedText
-            text="One Platform. Every Learner."
-            splitBy="word"
-            staggerDelay={0.08}
-            duration={2}
-            gradient={true}
-            gradientColors={['#ffffff', '#6366f1', '#a855f7', '#ec4899']}
-            className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05] mb-6"
-            as="h1"
-          />
-        </motion.div>
+        {/* Headline */}
+        <motion.h1
+          variants={itemVariants}
+          className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05] mb-6 text-white"
+        >
+          One Platform.
+          <br />
+          <span className="gradient-text">Every Learner.</span>
+        </motion.h1>
 
-        {/* Subtext with typewriter effect */}
-        <motion.div variants={itemVariants} className="mb-10">
-          <TypewriterTextEffect
-            text="The unified school management system for students, teachers, parents, and administrators — built for the modern classroom."
-            speed={30}
-            delay={1000}
-            showCursor={false}
-            className="text-lg sm:text-xl text-white/50 max-w-2xl mx-auto leading-relaxed font-light"
-          />
-        </motion.div>
+        {/* Subtext */}
+        <motion.p
+          variants={itemVariants}
+          className="text-lg sm:text-xl text-white/50 max-w-2xl mx-auto leading-relaxed mb-10 font-light"
+        >
+          The unified school management system for students, teachers, parents, and administrators — built for the modern classroom.
+        </motion.p>
 
         {/* CTA */}
         <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -171,7 +116,7 @@ export default function HeroSection({ loginRef }) {
 
       {/* Scroll indicator */}
       <motion.div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/20 z-10"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-white/20"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5, duration: 0.8 }}

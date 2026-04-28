@@ -32,8 +32,6 @@ export const useAuth = () => {
     setUser(null);
     disconnectSocket();
     authService.logout();
-    // Go back to landing page
-    window.location.href = '/OP-CS_CONNECT/';
   }, []);
 
   return { user, loading, login, signup, logout, isAuthenticated: !!user };

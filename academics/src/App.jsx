@@ -74,6 +74,8 @@ const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'admin'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
+  const location = useLocation();
+  
   if (!user) return <Navigate to="/login" replace />;
   
   // If user role is not allowed in this portal at all, auto-logout and bounce
@@ -84,7 +86,11 @@ const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }
 
   // If user role is valid for portal but doesn't match specific route (e.g. parent at student/dash)
   if (requiredRole && user.role !== requiredRole) {
-    return <Navigate to={`/${user.role}/dashboard`} replace />;
+    // Prevent redirect loop - only redirect if not already on correct dashboard
+    const correctPath = `/${user.role}/dashboard`;
+    if (location.pathname !== correctPath) {
+      return <Navigate to={correctPath} replace />;
+    }
   }
   
   return (
