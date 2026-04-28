@@ -22,7 +22,7 @@ const itemVariants = {
 };
 
 // Particle component with mouse interaction
-const Particle = ({ x, y, size, color, velocity, mouseX, mouseY }) => {
+const Particle = ({ x, y, size, color, velocity, mouseX, mouseY, id }) => {
   const distance = useTransform(
     () => {
       const dx = mouseX.get() - x;
@@ -32,8 +32,9 @@ const Particle = ({ x, y, size, color, velocity, mouseX, mouseY }) => {
     [mouseX, mouseY]
   );
 
-  const scale = useTransform(distance, [0, 200], [2, 1]);
-  const opacity = useTransform(distance, [0, 200], [1, 0.3]);
+  const scale = useTransform(distance, [0, 300], [3, 0.8]);
+  const opacity = useTransform(distance, [0, 300], [1, 0.2]);
+  const blur = useTransform(distance, [0, 200], [0, 2]);
 
   return (
     <motion.div
@@ -46,13 +47,16 @@ const Particle = ({ x, y, size, color, velocity, mouseX, mouseY }) => {
         backgroundColor: color,
         scale,
         opacity,
+        filter: `blur(${blur}px)`,
+        boxShadow: `0 0 ${size}px ${color}`,
       }}
       animate={{
-        x: [0, velocity.x * 100, 0],
-        y: [0, velocity.y * 100, 0],
+        x: [0, velocity.x * 150, velocity.x * -100, 0],
+        y: [0, velocity.y * 150, velocity.y * -100, 0],
+        rotate: [0, 180, 360],
       }}
       transition={{
-        duration: 3 + Math.random() * 2,
+        duration: 4 + Math.random() * 3,
         repeat: Infinity,
         ease: 'easeInOut',
       }}
@@ -71,15 +75,19 @@ const FloatingShape = ({ delay, duration, size, color, position }) => {
         height: size,
         background: color,
         borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
+        boxShadow: `0 0 40px ${color}`,
       }}
       animate={{
-        rotate: [0, 360],
-        scale: [1, 1.2, 1],
+        rotate: [0, 360, 720],
+        scale: [1, 1.4, 0.8, 1.2, 1],
         borderRadius: [
           '30% 70% 70% 30% / 30% 30% 70% 70%',
           '50% 50% 20% 80% / 25% 80% 20% 75%',
+          '80% 20% 50% 50% / 60% 40% 60% 40%',
           '30% 70% 70% 30% / 30% 30% 70% 70%',
         ],
+        x: [0, 30, -20, 0],
+        y: [0, -40, 20, 0],
       }}
       transition={{
         duration,
@@ -91,7 +99,173 @@ const FloatingShape = ({ delay, duration, size, color, position }) => {
   );
 };
 
-// Morphing blob component
+// Glitch text component
+const GlitchText = ({ children, className = "" }) => {
+  return (
+    <motion.div
+      className={`relative inline-block ${className}`}
+      whileHover={{
+        textShadow: [
+          "2px 2px 0 #ff00ff, -2px -2px 0 #00ffff",
+          "-2px 2px 0 #ff00ff, 2px -2px 0 #00ffff",
+          "2px 2px 0 #ff00ff, -2px -2px 0 #00ffff",
+        ],
+        x: [0, -2, 2, 0],
+        y: [0, 2, -2, 0],
+      }}
+      transition={{
+        duration: 0.3,
+        repeat: Infinity,
+        repeatDelay: 3,
+      }}
+    >
+      <motion.span
+        className="absolute inset-0 text-red-500 opacity-50"
+        animate={{
+          x: [0, -1, 1, 0],
+        }}
+        transition={{
+          duration: 0.1,
+          repeat: Infinity,
+          repeatDelay: 2,
+        }}
+      >
+        {children}
+      </motion.span>
+      <motion.span
+        className="absolute inset-0 text-cyan-500 opacity-50"
+        animate={{
+          x: [0, 1, -1, 0],
+        }}
+        transition={{
+          duration: 0.1,
+          repeat: Infinity,
+          repeatDelay: 2.5,
+        }}
+      >
+        {children}
+      </motion.span>
+      <span>{children}</span>
+    </motion.div>
+  );
+};
+
+// Rainbow wave component
+const RainbowWave = () => {
+  return (
+    <motion.div
+      className="absolute inset-0 pointer-events-none opacity-30"
+      animate={{
+        background: [
+          "linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
+          "linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
+          "linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
+          "linear-gradient(180deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
+          "linear-gradient(225deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
+          "linear-gradient(270deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
+          "linear-gradient(315deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
+          "linear-gradient(360deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
+        ],
+      }}
+      transition={{
+        duration: 10,
+        repeat: Infinity,
+        ease: "linear",
+      }}
+      style={{
+        mixBlendMode: "screen",
+      }}
+    />
+  );
+};
+
+// Explosive particle burst on mouse move
+const ExplosiveBurst = ({ x, y, trigger }) => {
+  if (!trigger) return null;
+
+  return (
+    <>
+      {[...Array(8)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-2 h-2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full pointer-events-none"
+          style={{
+            left: x,
+            top: y,
+            boxShadow: "0 0 10px #f59e0b",
+          }}
+          initial={{ scale: 0, opacity: 1 }}
+          animate={{
+            scale: [0, 2, 0],
+            opacity: [1, 0.8, 0],
+            x: Math.cos((i * Math.PI * 2) / 8) * 100,
+            y: Math.sin((i * Math.PI * 2) / 8) * 100,
+          }}
+          transition={{
+            duration: 0.8,
+            ease: "easeOut",
+          }}
+        />
+      ))}
+    </>
+  );
+};
+
+// Matrix rain effect
+const MatrixRain = () => {
+  const [drops, setDrops] = useState([]);
+
+  useEffect(() => {
+    const characters = "01";
+    const newDrops = [];
+    for (let i = 0; i < 20; i++) {
+      newDrops.push({
+        x: Math.random() * 100,
+        delay: Math.random() * 5,
+        chars: Array.from({ length: 10 }, () => characters[Math.floor(Math.random() * characters.length)]),
+      });
+    }
+    setDrops(newDrops);
+  }, []);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {drops.map((drop, i) => (
+        <motion.div
+          key={i}
+          className="absolute text-green-500 text-xs font-mono opacity-20"
+          style={{
+            left: `${drop.x}%`,
+            top: -50,
+          }}
+          animate={{
+            y: [0, window.innerHeight + 100],
+          }}
+          transition={{
+            duration: 5 + drop.delay,
+            repeat: Infinity,
+            delay: drop.delay,
+            ease: "linear",
+          }}
+        >
+          {drop.chars.join("\n")}
+        </motion.div>
+      ))}
+    </div>
+  );
+};
+
+// Magnetic field distortion
+const MagneticField = ({ mouseX, mouseY }) => {
+  return (
+    <motion.div
+      className="absolute inset-0 pointer-events-none"
+      style={{
+        background: `radial-gradient(circle 200px at ${mouseX}px ${mouseY}px, rgba(245,158,11,0.1) 0%, transparent 50%)`,
+      }}
+    />
+  );
+};
 const MorphingBlob = ({ delay, duration, size, color, position }) => {
   return (
     <motion.div
@@ -291,6 +465,8 @@ export default function HeroSection({ loginRef }) {
   const [reducedMotion, setReducedMotion] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [particles, setParticles] = useState([]);
+  const [burstTrigger, setBurstTrigger] = useState(false);
+  const [burstPosition, setBurstPosition] = useState({ x: 0, y: 0 });
   const containerRef = useRef(null);
   const { scrollY } = useScroll();
   
@@ -316,14 +492,14 @@ export default function HeroSection({ loginRef }) {
   useEffect(() => {
     if (reducedMotion) return;
     
-    const newParticles = Array.from({ length: 50 }, () => ({
+    const newParticles = Array.from({ length: 80 }, () => ({ // Increased from 50 to 80
       x: Math.random() * 100,
       y: Math.random() * 100,
-      size: Math.random() * 4 + 2,
-      color: ['#f59e0b', '#f97316', '#fbbf24', '#fcd34d'][Math.floor(Math.random() * 4)],
+      size: Math.random() * 6 + 2, // Increased size range
+      color: ['#f59e0b', '#f97316', '#fbbf24', '#fcd34d', '#ff00ff', '#00ffff'][Math.floor(Math.random() * 6)], // Added more colors
       velocity: {
-        x: (Math.random() - 0.5) * 2,
-        y: (Math.random() - 0.5) * 2,
+        x: (Math.random() - 0.5) * 3,
+        y: (Math.random() - 0.5) * 3,
       },
     }));
     setParticles(newParticles);
@@ -339,6 +515,13 @@ export default function HeroSection({ loginRef }) {
       setMousePosition({ x, y });
       mouseX.set(e.clientX - rect.left);
       mouseY.set(e.clientY - rect.top);
+      
+      // Trigger explosive burst randomly on mouse movement
+      if (Math.random() > 0.95) {
+        setBurstPosition({ x: e.clientX - rect.left, y: e.clientY - rect.top });
+        setBurstTrigger(true);
+        setTimeout(() => setBurstTrigger(false), 100);
+      }
     };
 
     window.addEventListener('mousemove', handleMouseMove);
@@ -359,9 +542,23 @@ export default function HeroSection({ loginRef }) {
       {!reducedMotion && (
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
           {particles.map((particle, i) => (
-            <Particle key={i} {...particle} mouseX={mouseX} mouseY={mouseY} />
+            <Particle key={i} {...particle} mouseX={mouseX} mouseY={mouseY} id={i} />
           ))}
         </div>
+      )}
+
+      {/* Matrix rain effect */}
+      {!reducedMotion && <MatrixRain />}
+
+      {/* Rainbow wave overlay */}
+      {!reducedMotion && <RainbowWave />}
+
+      {/* Magnetic field distortion */}
+      {!reducedMotion && <MagneticField mouseX={mouseX} mouseY={mouseY} />}
+
+      {/* Explosive bursts */}
+      {!reducedMotion && (
+        <ExplosiveBurst x={burstPosition.x} y={burstPosition.y} trigger={burstTrigger} />
       )}
 
       {/* Animated grid lines */}
@@ -524,6 +721,9 @@ export default function HeroSection({ loginRef }) {
           className="text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.05] mb-6"
           style={{ color: '#1f2937' }}
         >
+          <GlitchText className="inline-block">
+            One Platform.
+          </GlitchText>
           <motion.div
             className="inline-block"
             initial={{ opacity: 0, y: 20 }}
