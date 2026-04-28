@@ -263,52 +263,149 @@ const HyperframeParallaxLayer = ({ children, depth = 1, mouseX, mouseY }) => {
 const HyperframeMorphText = ({ text, className = "" }) => {
   const [displayText, setDisplayText] = useState(text);
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()";
+  const [isHovering, setIsHovering] = useState(false);
+  
+  useEffect(() => {
+    if (isHovering) {
+      let iterations = 0;
+      const interval = setInterval(() => {
+        setDisplayText(
+          text
+            .split("")
+            .map((char, index) => {
+              if (index < iterations) {
+                return text[index];
+              }
+              return chars[Math.floor(Math.random() * chars.length)];
+            })
+            .join("")
+        );
+        
+        if (iterations >= text.length) {
+          clearInterval(interval);
+        }
+        
+        iterations += 1 / 3;
+      }, 30);
+    } else {
+      setDisplayText(text);
+    }
+  }, [isHovering, text]);
   
   return (
     <motion.span
       className={className}
-      onHoverStart={() => {
-        let iterations = 0;
-        const interval = setInterval(() => {
-          setDisplayText(
-            text
-              .split("")
-              .map((char, index) => {
-                if (index < iterations) {
-                  return text[index];
-                }
-                return chars[Math.floor(Math.random() * chars.length)];
-              })
-              .join("")
-          );
-          
-          if (iterations >= text.length) {
-            clearInterval(interval);
-          }
-          
-          iterations += 1 / 3;
-        }, 30);
-      }}
-      onHoverEnd={() => setDisplayText(text)}
+      onHoverStart={() => setIsHovering(true)}
+      onHoverEnd={() => setIsHovering(false)}
     >
       {displayText}
     </motion.span>
   );
 };
 
-// Peak Studio Logo Component
+// Siri Intro Hyperframe - Orb + Avatar Reveal
+const SiriIntroHyperframe = ({ children }) => {
+  return (
+    <motion.div
+      className="relative w-full h-full"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+    >
+      {/* Ambient Orb - Scene 1 */}
+      <motion.div
+        className="absolute inset-0 flex items-center justify-center"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 1.5, ease: "power2.out" }}
+      >
+        <motion.div
+          className="w-64 h-64 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.8, 1, 0.8],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          style={{
+            boxShadow: "0 0 80px rgba(245,158,11,0.6)",
+          }}
+        >
+          <motion.div
+            className="absolute inset-4 bg-white/20 rounded-full"
+            animate={{
+              scale: [1, 0.8, 1],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+          />
+        </motion.div>
+      </motion.div>
+      
+      {/* Avatar/Content Reveal - Scene 2 */}
+      <motion.div
+        className="relative z-10"
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, delay: 1.5, ease: "power2.out" }}
+      >
+        {children}
+      </motion.div>
+    </motion.div>
+  );
+};
+
+// UI 3D Reveal Hyperframe - Rotating Panel
+const UI3DRevealHyperframe = ({ children }) => {
+  return (
+    <motion.div
+      className="relative w-full h-full"
+      style={{
+        perspective: "1200px",
+      }}
+    >
+      <motion.div
+        initial={{
+          rotateY: -35,
+          rotateX: 15,
+        }}
+        animate={{
+          rotateY: 0,
+          rotateX: 0,
+        }}
+        transition={{
+          duration: 2,
+          ease: "power2.out",
+        }}
+        style={{
+          transformStyle: "preserve-3d",
+        }}
+      >
+        {children}
+      </motion.div>
+    </motion.div>
+  );
+};
+
+// Combined Peak Studio Logo with HeyGen Hyperframes
 const PeakStudioLogo = ({ mouseX, mouseY }) => {
   return (
-    <HyperframeContainer>
-      <Hyperframe3DReveal delay={0.5}>
+    <SiriIntroHyperframe>
+      <UI3DRevealHyperframe>
         <motion.div
           className="relative w-full max-w-4xl mx-auto"
           style={{
             transformStyle: "preserve-3d",
           }}
           animate={{
-            rotateY: useTransform(mouseX, [-500, 500], [-5, 5]),
-            rotateX: useTransform(mouseY, [-500, 500], [5, -5]),
+            rotateY: useTransform(mouseX, [-500, 500], [-3, 3]),
+            rotateX: useTransform(mouseY, [-500, 500], [3, -3]),
           }}
           transition={{
             type: "spring",
@@ -324,7 +421,7 @@ const PeakStudioLogo = ({ mouseX, mouseY }) => {
               boxShadow: "0 25px 50px -12px rgba(245, 158, 11, 0.5)",
             }}
             whileHover={{
-              scale: 1.05,
+              scale: 1.02,
               boxShadow: "0 30px 60px -12px rgba(245, 158, 11, 0.7)",
             }}
           >
@@ -352,10 +449,7 @@ const PeakStudioLogo = ({ mouseX, mouseY }) => {
                 textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
               }}
             >
-              <HyperframeMorphText 
-                text="SchoolSync" 
-                className="inline-block"
-              />
+              SchoolSync
             </motion.h1>
             
             {/* Tagline */}
@@ -400,12 +494,10 @@ const PeakStudioLogo = ({ mouseX, mouseY }) => {
             />
           </motion.div>
         </motion.div>
-      </Hyperframe3DReveal>
-    </HyperframeContainer>
+      </UI3DRevealHyperframe>
+    </SiriIntroHyperframe>
   );
 };
-
-// Knowledge transfer animation
 const KnowledgeFlow = () => {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
