@@ -22,6 +22,7 @@ import { Signup } from './pages/Common/Signup';
 // Pages - Portals (Dashboards)
 import { StudentDashboard } from './pages/AcademicPortal/Dashboard/StudentDashboard';
 import { ParentDashboard } from './pages/ManagementPortal/Parent/ParentDashboard';
+import { DriverDashboard } from './pages/DriverPortal/DriverDashboard';
 
 // Academic Portal - Student Pages
 import { Timetable } from './pages/AcademicPortal/Student/Timetable';
@@ -32,7 +33,8 @@ import { Notes } from './pages/AcademicPortal/Student/Notes';
 import { Profile } from './pages/AcademicPortal/Student/Profile';
 import { StudyPlanner } from './pages/AcademicPortal/Student/StudyPlanner';
 import { AssignmentDetails } from './pages/AcademicPortal/Student/AssignmentDetails';
-
+import { BusTracking } from './pages/AcademicPortal/Student/BusTracking';
+import { DriverTracking } from './pages/AcademicPortal/Student/DriverTracking';
 
 // Academic Portal - Shared Features
 import { SettingsPanel } from './pages/AcademicPortal/shared/Settings';
@@ -70,7 +72,7 @@ const LoadingScreen = () => (
 );
 
 // Allowed roles for this portal
-const ALLOWED_ROLES = ['student', 'parent', 'teacher'];
+const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
@@ -235,6 +237,16 @@ function App() {
               <SettingsPanel user={user} />
             </ProtectedRoute>
           } />
+          <Route path="/student/bus-tracking" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <BusTracking user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/driver-tracking" element={
+            <ProtectedRoute {...layoutProps} user={user}>
+              <DriverTracking />
+            </ProtectedRoute>
+          } />
 
           {/* 🏢 Management Portal Features for Parents (In Academics) */}
           <Route path="/parent/dashboard" element={
@@ -267,8 +279,20 @@ function App() {
               <CommunicationHub user={user} />
             </ProtectedRoute>
           } />
+          <Route path="/parent/bus-tracking" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
+              <BusTracking user={user} />
+            </ProtectedRoute>
+          } />
 
-          {/* 👨‍🏫 Teacher Portal */}
+          {/* � Driver Portal */}
+          <Route path="/driver/dashboard" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="driver">
+              <DriverDashboard user={user} />
+            </ProtectedRoute>
+          } />
+
+          {/* �👨‍🏫 Teacher Portal */}
           <Route path="/teacher/dashboard" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
               <TeacherDashboard user={user} />
