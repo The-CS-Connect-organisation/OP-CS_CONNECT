@@ -1,0 +1,15 @@
+# Dependencies - NEVER commit these
+node_modules/
+
+# Build output
+dist/
+build/
+.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.log
