@@ -103,12 +103,12 @@ const FloatingShape = ({ delay, duration, size, color, position }) => {
 const GlitchText = ({ children, className = "" }) => {
   return (
     <motion.div
-      className={`relative inline-block ${className}`}
+      className={`relative inline-block z-10 ${className}`}
       whileHover={{
         textShadow: [
-          "2px 2px 0 #ff00ff, -2px -2px 0 #00ffff",
-          "-2px 2px 0 #ff00ff, 2px -2px 0 #00ffff",
-          "2px 2px 0 #ff00ff, -2px -2px 0 #00ffff",
+          "2px 2px 0 #f59e0b, -2px -2px 0 #ffffff",
+          "-2px 2px 0 #f59e0b, 2px -2px 0 #ffffff",
+          "2px 2px 0 #f59e0b, -2px -2px 0 #ffffff",
         ],
         x: [0, -2, 2, 0],
         y: [0, 2, -2, 0],
@@ -120,7 +120,7 @@ const GlitchText = ({ children, className = "" }) => {
       }}
     >
       <motion.span
-        className="absolute inset-0 text-red-500 opacity-50"
+        className="absolute inset-0 text-orange-500 opacity-50"
         animate={{
           x: [0, -1, 1, 0],
         }}
@@ -133,7 +133,7 @@ const GlitchText = ({ children, className = "" }) => {
         {children}
       </motion.span>
       <motion.span
-        className="absolute inset-0 text-cyan-500 opacity-50"
+        className="absolute inset-0 text-white opacity-50"
         animate={{
           x: [0, 1, -1, 0],
         }}
@@ -150,64 +150,286 @@ const GlitchText = ({ children, className = "" }) => {
   );
 };
 
-// Rainbow wave component
-const RainbowWave = () => {
+// Professional education logo animation
+const EducationLogo = () => {
   return (
-    <motion.div
-      className="absolute inset-0 pointer-events-none opacity-30"
-      animate={{
-        background: [
-          "linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
-          "linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
-          "linear-gradient(135deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
-          "linear-gradient(180deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
-          "linear-gradient(225deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
-          "linear-gradient(270deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
-          "linear-gradient(315deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
-          "linear-gradient(360deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3)",
-        ],
-      }}
-      transition={{
-        duration: 10,
-        repeat: Infinity,
-        ease: "linear",
-      }}
-      style={{
-        mixBlendMode: "screen",
-      }}
-    />
+    <motion.div 
+      className="relative w-full max-w-2xl mx-auto"
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {/* School building icon */}
+      <motion.div 
+        className="flex justify-center items-center mb-8"
+        animate={{
+          rotateY: [0, 360],
+        }}
+        transition={{
+          duration: 20,
+          repeat: Infinity,
+          ease: "linear"
+        }}
+        style={{ perspective: 1000 }}
+      >
+        <motion.div className="relative">
+          {/* Building base */}
+          <motion.div 
+            className="w-32 h-24 bg-gradient-to-b from-orange-500 to-orange-600 mx-auto relative"
+            animate={{
+              boxShadow: [
+                "0 10px 30px rgba(245,158,11,0.3)",
+                "0 20px 50px rgba(245,158,11,0.5)",
+                "0 10px 30px rgba(245,158,11,0.3)"
+              ]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            {/* Windows */}
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-4 h-4 bg-white rounded"
+                style={{
+                  left: `${20 + (i % 3) * 25}px`,
+                  top: `${8 + Math.floor(i / 3) * 12}px`
+                }}
+                animate={{
+                  opacity: [0.5, 1, 0.5],
+                  scale: [1, 1.2, 1]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  delay: i * 0.2
+                }}
+              />
+            ))}
+            {/* Door */}
+            <motion.div 
+              className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-8 bg-white rounded-t"
+              animate={{
+                height: [32, 28, 32]
+              }}
+              transition={{
+                duration: 4,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          </motion.div>
+          {/* Roof */}
+          <motion.div 
+            className="absolute -top-8 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[64px] border-r-[64px] border-b-[32px] border-l-transparent border-r-transparent border-b-orange-400"
+            animate={{
+              translateY: [0, -5, 0]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          {/* Flag */}
+          <motion.div 
+            className="absolute -top-12 left-1/2 -translate-x-1/2"
+            animate={{
+              rotate: [0, 5, -5, 0]
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <div className="w-1 h-8 bg-white" />
+            <motion.div 
+              className="w-8 h-6 bg-orange-500 -mt-1 ml-1"
+              animate={{
+                scaleX: [1, 1.1, 1]
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+          </motion.div>
+        </motion.div>
+      </motion.div>
+      
+      {/* SchoolSync text with professional animation */}
+      <motion.h1 
+        className="text-6xl font-bold text-center mb-4"
+        style={{ color: '#1f2937' }}
+        animate={{
+          background: [
+            "linear-gradient(90deg, #1f2937 0%, #f59e0b 50%, #1f2937 100%)",
+            "linear-gradient(90deg, #1f2937 0%, #f59e0b 50%, #1f2937 100%)"
+          ],
+          backgroundClip: "text",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundSize: "200% 100%"
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: "linear"
+        }}
+      >
+        SchoolSync
+      </motion.h1>
+      
+      {/* Tagline */}
+      <motion.p 
+        className="text-xl text-gray-600 text-center"
+        animate={{
+          opacity: [0.7, 1, 0.7]
+        }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      >
+        Empowering Education Through Innovation
+      </motion.p>
+    </motion.div>
   );
 };
 
-// Explosive particle burst on mouse move
-const ExplosiveBurst = ({ x, y, trigger }) => {
-  if (!trigger) return null;
+// Education-themed floating elements
+const EducationElements = () => {
+  const elements = [
+    { icon: "📚", delay: 0, duration: 15, x: 10, y: 20 },
+    { icon: "🎓", delay: 2, duration: 18, x: 80, y: 30 },
+    { icon: "📝", delay: 4, duration: 12, x: 15, y: 70 },
+    { icon: "🏆", delay: 1, duration: 20, x: 85, y: 60 },
+    { icon: "📐", delay: 3, duration: 16, x: 25, y: 45 },
+    { icon: "🔬", delay: 5, duration: 14, x: 75, y: 15 },
+  ];
 
+  return (
+    <>
+      {elements.map((elem, i) => (
+        <motion.div
+          key={i}
+          className="absolute text-4xl pointer-events-none"
+          style={{
+            left: `${elem.x}%`,
+            top: `${elem.y}%`,
+          }}
+          animate={{
+            y: [0, -20, 0],
+            rotate: [0, 10, -10, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: elem.duration,
+            repeat: Infinity,
+            delay: elem.delay,
+            ease: "easeInOut",
+          }}
+        >
+          {elem.icon}
+        </motion.div>
+      ))}
+    </>
+  );
+};
+
+// Knowledge transfer animation
+const KnowledgeFlow = () => {
+  return (
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {[...Array(5)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-2 h-2 bg-orange-500 rounded-full"
+          style={{
+            left: `${20 + i * 15}%`,
+            top: "50%",
+          }}
+          animate={{
+            x: [0, 100],
+            opacity: [0, 1, 0],
+            scale: [0, 1.5, 0],
+          }}
+          transition={{
+            duration: 3,
+            repeat: Infinity,
+            delay: i * 0.6,
+            ease: "easeInOut",
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+// Student achievement stars
+const AchievementStars = () => {
   return (
     <>
       {[...Array(8)].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute w-2 h-2 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full pointer-events-none"
+          className="absolute text-yellow-400 pointer-events-none"
           style={{
-            left: x,
-            top: y,
-            boxShadow: "0 0 10px #f59e0b",
+            left: `${10 + (i % 4) * 25}%`,
+            top: `${10 + Math.floor(i / 4) * 40}%`,
           }}
-          initial={{ scale: 0, opacity: 1 }}
           animate={{
-            scale: [0, 2, 0],
-            opacity: [1, 0.8, 0],
-            x: Math.cos((i * Math.PI * 2) / 8) * 100,
-            y: Math.sin((i * Math.PI * 2) / 8) * 100,
+            scale: [0, 1, 0],
+            rotate: [0, 180],
+            opacity: [0, 1, 0],
           }}
           transition={{
-            duration: 0.8,
-            ease: "easeOut",
+            duration: 2,
+            repeat: Infinity,
+            delay: i * 0.3,
+            ease: "easeInOut",
           }}
-        />
+        >
+          ⭐
+        </motion.div>
       ))}
     </>
+  );
+};
+
+// Hyperframe border animation
+const HyperframeBorder = () => {
+  return (
+    <motion.div
+      className="absolute inset-4 pointer-events-none"
+      style={{
+        border: "3px solid transparent",
+        background: "linear-gradient(45deg, #f59e0b, #ffffff, #f59e0b) border-box",
+        WebkitMask: "linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0)",
+        WebkitMaskComposite: "xor",
+        maskComposite: "exclude",
+      }}
+      animate={{
+        background: [
+          "linear-gradient(0deg, #f59e0b, #ffffff, #f59e0b)",
+          "linear-gradient(90deg, #f59e0b, #ffffff, #f59e0b)",
+          "linear-gradient(180deg, #f59e0b, #ffffff, #f59e0b)",
+          "linear-gradient(270deg, #f59e0b, #ffffff, #f59e0b)",
+          "linear-gradient(360deg, #f59e0b, #ffffff, #f59e0b)",
+        ],
+      }}
+      transition={{
+        duration: 8,
+        repeat: Infinity,
+        ease: "linear",
+      }}
+    />
   );
 };
 
@@ -496,7 +718,7 @@ export default function HeroSection({ loginRef }) {
       x: Math.random() * 100,
       y: Math.random() * 100,
       size: Math.random() * 6 + 2, // Increased size range
-      color: ['#f59e0b', '#f97316', '#fbbf24', '#fcd34d', '#ff00ff', '#00ffff'][Math.floor(Math.random() * 6)], // Added more colors
+      color: ['#f59e0b', '#f97316', '#fbbf24', '#fcd34d', '#ffffff', '#f3f4f6'][Math.floor(Math.random() * 6)], // White and orange colors only
       velocity: {
         x: (Math.random() - 0.5) * 3,
         y: (Math.random() - 0.5) * 3,
@@ -547,56 +769,20 @@ export default function HeroSection({ loginRef }) {
         </div>
       )}
 
-      {/* Matrix rain effect */}
-      {!reducedMotion && <MatrixRain />}
+      {/* Hyperframe border */}
+      {!reducedMotion && <HyperframeBorder />}
 
-      {/* Rainbow wave overlay */}
-      {!reducedMotion && <RainbowWave />}
+      {/* Education-themed floating elements */}
+      {!reducedMotion && <EducationElements />}
 
-      {/* Magnetic field distortion */}
-      {!reducedMotion && <MagneticField mouseX={mouseX} mouseY={mouseY} />}
+      {/* Knowledge transfer animation */}
+      {!reducedMotion && <KnowledgeFlow />}
 
-      {/* Explosive bursts */}
-      {!reducedMotion && (
-        <ExplosiveBurst x={burstPosition.x} y={burstPosition.y} trigger={burstTrigger} />
-      )}
+      {/* Student achievement stars */}
+      {!reducedMotion && <AchievementStars />}
 
       {/* Animated grid lines */}
       {!reducedMotion && <AnimatedGrid />}
-
-      {/* Floating geometric shapes */}
-      {!reducedMotion && (
-        <>
-          <FloatingShape
-            delay={0}
-            duration={20}
-            size={200}
-            color="linear-gradient(135deg, rgba(245,158,11,0.1) 0%, rgba(249,115,22,0.05) 100%)"
-            position={{ top: '10%', left: '5%' }}
-          />
-          <FloatingShape
-            delay={2}
-            duration={25}
-            size={150}
-            color="linear-gradient(135deg, rgba(251,191,36,0.1) 0%, rgba(245,158,11,0.05) 100%)"
-            position={{ top: '60%', right: '10%' }}
-          />
-          <FloatingShape
-            delay={4}
-            duration={18}
-            size={180}
-            color="linear-gradient(135deg, rgba(252,211,77,0.1) 0%, rgba(251,191,36,0.05) 100%)"
-            position={{ bottom: '20%', left: '15%' }}
-          />
-          <FloatingShape
-            delay={1}
-            duration={22}
-            size={120}
-            color="linear-gradient(135deg, rgba(249,115,22,0.1) 0%, rgba(245,158,11,0.05) 100%)"
-            position={{ top: '30%', right: '20%' }}
-          />
-        </>
-      )}
 
       {/* Morphing blobs */}
       {!reducedMotion && (
@@ -680,39 +866,13 @@ export default function HeroSection({ loginRef }) {
         animate="visible"
         style={{ y: contentY }}
       >
-        {/* Cornerstone Logo with 3D tilt effect */}
+        {/* Professional Education Logo */}
         <motion.div
           variants={itemVariants}
           className="mb-16"
           style={{ y: logoY, opacity: logoOpacity }}
         >
-          <motion.div
-            style={{
-              perspective: 1000,
-            }}
-          >
-            <motion.img
-              src="/OP-CS_CONNECT/schoolsync.png"
-              alt="SchoolSync"
-              className="w-full max-w-3xl mx-auto"
-              initial={{ scale: 0.9, opacity: 0, rotateX: 10, rotateY: -10 }}
-              animate={{
-                scale: 1,
-                opacity: 1,
-                rotateX: useTransform(mouseX, [-500, 500], [5, -5]),
-                rotateY: useTransform(mouseY, [-500, 500], [-5, 5]),
-              }}
-              transition={{
-                duration: 1,
-                ease: [0.16, 1, 0.3, 1],
-                delay: 0.2,
-              }}
-              whileHover={{
-                scale: 1.05,
-                filter: 'brightness(1.1)',
-              }}
-            />
-          </motion.div>
+          <EducationLogo />
         </motion.div>
 
         {/* Headline with character reveal and glow effect */}
