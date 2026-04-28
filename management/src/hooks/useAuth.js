@@ -56,23 +56,8 @@ export const useAuth = () => {
       }
       return { success: false, error: 'Invalid server response' };
     } catch (err) {
-      if (!shouldAllowLocalFallback() && err?.status && err.status < 500) {
-        return { success: false, error: err.message || 'Invalid email or password' };
-      }
+      return { success: false, error: err.message || 'Invalid email or password' };
     }
-
-    const users = getFromStorage(KEYS.USERS, []);
-    const found = users.find(u => u.email === cleanEmail && u.password === cleanPassword);
-    if (found) {
-      if (found.isActive === false) {
-        return { success: false, error: 'Account is disabled. Please contact admin.' };
-      }
-      const { password: _, ...userWithoutPassword } = found;
-      setUser(userWithoutPassword);
-      setToStorage(KEYS.CURRENT_USER, userWithoutPassword);
-      return { success: true, user: userWithoutPassword };
-    }
-    return { success: false, error: 'Invalid email or password' };
   }, []);
 
   const signup = useCallback(async (data) => {
@@ -100,27 +85,9 @@ export const useAuth = () => {
         return { success: true, user: userFromApi };
       }
       return { success: false, error: 'Invalid server response' };
-    } catch {
-      // Fallback
+    } catch (err) {
+      return { success: false, error: err.message || 'Email already registered' };
     }
-
-    const users = getFromStorage(KEYS.USERS, []);
-    if (users.find(u => u.email === cleanData.email)) {
-      return { success: false, error: 'Email already registered' };
-    }
-    const newUser = {
-      ...cleanData,
-      id: `${cleanData.role}-${Date.now()}`,
-      avatar: cleanData.role === 'student' ? '👦' : cleanData.role === 'teacher' ? '👨‍🏫' : '👩‍💼',
-      joined: new Date().toISOString().split('T')[0],
-      isActive: true,
-    };
-    users.push(newUser);
-    setToStorage(KEYS.USERS, users);
-    const { password: _, ...userWithoutPassword } = newUser;
-    setUser(userWithoutPassword);
-    setToStorage(KEYS.CURRENT_USER, userWithoutPassword);
-    return { success: true, user: userWithoutPassword };
   }, []);
 
   const logout = useCallback(() => {
