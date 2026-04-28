@@ -17,7 +17,7 @@ export class ApiClientError extends Error {
 
 const buildUrl = (path) => {
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-  return `${API_BASE_URL}${normalizedPath.toLowerCase()}`;
+  return `${API_BASE_URL}${normalizedPath}`;
 };
 
 export const setAuthToken = (token) => {
