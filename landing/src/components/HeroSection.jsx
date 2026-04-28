@@ -16,7 +16,7 @@ const itemVariants = {
     y: 0, 
     transition: { 
       duration: 0.6, 
-      ease: [0.25, 0.1, 0.25, 1] // Apple's signature easing
+      ease: [0.25, 0.1, 0.25, 1]
     } 
   },
 };
@@ -44,9 +44,9 @@ export default function HeroSection({ loginRef }) {
       {/* Subtle gradient orb */}
       <div
         aria-hidden="true"
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full pointer-events-none opacity-30 blur-3xl"
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full pointer-events-none opacity-20 blur-3xl"
         style={{
-          background: 'radial-gradient(circle, rgba(245,158,11,0.15) 0%, transparent 70%)',
+          background: 'radial-gradient(circle, rgba(245,158,11,0.2) 0%, transparent 70%)',
         }}
       />
 
@@ -59,50 +59,11 @@ export default function HeroSection({ loginRef }) {
       >
         {/* Cornerstone Logo */}
         <motion.div variants={itemVariants} className="mb-16">
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            viewBox="0 0 920 220" 
+          <img 
+            src="/cornerstone-logo.svg" 
+            alt="Cornerstone SchoolSync" 
             className="w-full max-w-3xl mx-auto"
-          >
-            <defs>
-              <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#f59e0b"/>
-                <stop offset="100%" stopColor="#f97316"/>
-              </linearGradient>
-            </defs>
-            <rect x="10" y="10" width="150" height="200" rx="22" fill="#1f2937"/>
-            <rect x="26" y="26" width="56" height="168" rx="14" fill="url(#logoGradient)"/>
-            <text 
-              x="54" 
-              y="128" 
-              fontSize="66" 
-              fontFamily="Georgia, serif" 
-              fontWeight="700" 
-              textAnchor="middle" 
-              fill="#ffffff"
-            >
-              C
-            </text>
-            <text 
-              x="182" 
-              y="116" 
-              fontSize="90" 
-              fontFamily="Georgia, serif" 
-              fontWeight="700" 
-              fill="#1f2937"
-            >
-              Cornerstone
-            </text>
-            <text 
-              x="188" 
-              y="168" 
-              fontSize="34" 
-              fontFamily="Brush Script MT, cursive" 
-              fill="#f97316"
-            >
-              We Lay Foundation for your child's future...
-            </text>
-          </svg>
+          />
         </motion.div>
 
         {/* Headline */}
