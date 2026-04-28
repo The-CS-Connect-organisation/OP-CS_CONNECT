@@ -150,354 +150,200 @@ const GlitchText = ({ children, className = "" }) => {
   );
 };
 
-// HeyGen-style hyperframe components
-const HyperframeContainer = ({ children }) => {
+// Professional education logo animation
+const EducationLogo = () => {
   return (
-    <motion.div
-      className="relative w-full h-full overflow-hidden"
-      style={{
-        perspective: "1000px",
-        transformStyle: "preserve-3d",
-      }}
+    <motion.div 
+      className="relative w-full max-w-2xl mx-auto"
+      initial={{ scale: 0.8, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
     >
-      {children}
-    </motion.div>
-  );
-};
-
-const Hyperframe3DReveal = ({ children, delay = 0 }) => {
-  return (
-    <motion.div
-      initial={{
-        rotateX: -90,
-        opacity: 0,
-        transformPerspective: 1000,
-      }}
-      animate={{
-        rotateX: 0,
-        opacity: 1,
-      }}
-      transition={{
-        duration: 1.5,
-        delay,
-        ease: [0.16, 1, 0.3, 1],
-      }}
-      style={{
-        transformStyle: "preserve-3d",
-      }}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
-const HyperframeSliceReveal = ({ children, direction = "left", delay = 0 }) => {
-  return (
-    <motion.div
-      initial={{
-        clipPath: direction === "left" 
-          ? "inset(0 100% 0 0)"
-          : direction === "right"
-          ? "inset(0 0 0 100%)"
-          : "inset(100% 0 0 0)",
-        opacity: 0,
-      }}
-      animate={{
-        clipPath: "inset(0 0 0 0)",
-        opacity: 1,
-      }}
-      transition={{
-        duration: 1.2,
-        delay,
-        ease: [0.16, 1, 0.3, 1],
-      }}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
-const HyperframeGlitch = ({ children, intensity = 1 }) => {
-  return (
-    <motion.div
-      whileHover={{
-        x: [-2 * intensity, 2 * intensity, -1 * intensity, 1 * intensity, 0],
-        y: [1 * intensity, -1 * intensity, 2 * intensity, -2 * intensity, 0],
-        filter: [
-          "hue-rotate(0deg)",
-          "hue-rotate(90deg)",
-          "hue-rotate(180deg)",
-          "hue-rotate(270deg)",
-          "hue-rotate(360deg)",
-        ],
-      }}
-      transition={{
-        duration: 0.3,
-        repeat: Infinity,
-        repeatDelay: 2,
-      }}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
-const HyperframeParallaxLayer = ({ children, depth = 1, mouseX, mouseY }) => {
-  const x = useTransform(mouseX, [-500, 500], [depth * -20, depth * 20]);
-  const y = useTransform(mouseY, [-500, 500], [depth * -20, depth * 20]);
-  
-  return (
-    <motion.div
-      style={{
-        x,
-        y,
-        z: depth * -100,
-        transformStyle: "preserve-3d",
-      }}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
-const HyperframeMorphText = ({ text, className = "" }) => {
-  const [displayText, setDisplayText] = useState(text);
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()";
-  const [isHovering, setIsHovering] = useState(false);
-  
-  useEffect(() => {
-    if (isHovering) {
-      let iterations = 0;
-      const interval = setInterval(() => {
-        setDisplayText(
-          text
-            .split("")
-            .map((char, index) => {
-              if (index < iterations) {
-                return text[index];
-              }
-              return chars[Math.floor(Math.random() * chars.length)];
-            })
-            .join("")
-        );
-        
-        if (iterations >= text.length) {
-          clearInterval(interval);
-        }
-        
-        iterations += 1 / 3;
-      }, 30);
-    } else {
-      setDisplayText(text);
-    }
-  }, [isHovering, text]);
-  
-  return (
-    <motion.span
-      className={className}
-      onHoverStart={() => setIsHovering(true)}
-      onHoverEnd={() => setIsHovering(false)}
-    >
-      {displayText}
-    </motion.span>
-  );
-};
-
-// Siri Intro Hyperframe - Orb + Avatar Reveal
-const SiriIntroHyperframe = ({ children }) => {
-  return (
-    <motion.div
-      className="relative w-full h-full"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-    >
-      {/* Ambient Orb - Scene 1 */}
-      <motion.div
-        className="absolute inset-0 flex items-center justify-center"
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 1.5, ease: "power2.out" }}
-      >
-        <motion.div
-          className="w-64 h-64 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full"
-          animate={{
-            scale: [1, 1.2, 1],
-            opacity: [0.8, 1, 0.8],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          style={{
-            boxShadow: "0 0 80px rgba(245,158,11,0.6)",
-          }}
-        >
-          <motion.div
-            className="absolute inset-4 bg-white/20 rounded-full"
-            animate={{
-              scale: [1, 0.8, 1],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-          />
-        </motion.div>
-      </motion.div>
-      
-      {/* Avatar/Content Reveal - Scene 2 */}
-      <motion.div
-        className="relative z-10"
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 1.5, ease: "power2.out" }}
-      >
-        {children}
-      </motion.div>
-    </motion.div>
-  );
-};
-
-// UI 3D Reveal Hyperframe - Rotating Panel
-const UI3DRevealHyperframe = ({ children }) => {
-  return (
-    <motion.div
-      className="relative w-full h-full"
-      style={{
-        perspective: "1200px",
-      }}
-    >
-      <motion.div
-        initial={{
-          rotateY: -35,
-          rotateX: 15,
-        }}
+      {/* School building icon */}
+      <motion.div 
+        className="flex justify-center items-center mb-8"
         animate={{
-          rotateY: 0,
-          rotateX: 0,
+          rotateY: [0, 360],
         }}
         transition={{
-          duration: 2,
-          ease: "power2.out",
+          duration: 20,
+          repeat: Infinity,
+          ease: "linear"
         }}
-        style={{
-          transformStyle: "preserve-3d",
-        }}
+        style={{ perspective: 1000 }}
       >
-        {children}
-      </motion.div>
-    </motion.div>
-  );
-};
-
-// Combined Peak Studio Logo with HeyGen Hyperframes
-const PeakStudioLogo = ({ mouseX, mouseY }) => {
-  return (
-    <SiriIntroHyperframe>
-      <UI3DRevealHyperframe>
-        <motion.div
-          className="relative w-full max-w-4xl mx-auto"
-          style={{
-            transformStyle: "preserve-3d",
-          }}
-          animate={{
-            rotateY: useTransform(mouseX, [-500, 500], [-3, 3]),
-            rotateX: useTransform(mouseY, [-500, 500], [3, -3]),
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 100,
-            damping: 20,
-          }}
-        >
-          {/* 3D Logo Container */}
-          <motion.div
-            className="relative bg-gradient-to-br from-orange-500 to-orange-600 p-12 rounded-3xl shadow-2xl"
-            style={{
-              transform: "translateZ(50px)",
-              boxShadow: "0 25px 50px -12px rgba(245, 158, 11, 0.5)",
+        <motion.div className="relative">
+          {/* Building base */}
+          <motion.div 
+            className="w-32 h-24 bg-gradient-to-b from-orange-500 to-orange-600 mx-auto relative"
+            animate={{
+              boxShadow: [
+                "0 10px 30px rgba(245,158,11,0.3)",
+                "0 20px 50px rgba(245,158,11,0.5)",
+                "0 10px 30px rgba(245,158,11,0.3)"
+              ]
             }}
-            whileHover={{
-              scale: 1.02,
-              boxShadow: "0 30px 60px -12px rgba(245, 158, 11, 0.7)",
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
             }}
           >
-            {/* Animated Background Pattern */}
-            <motion.div
-              className="absolute inset-0 rounded-3xl opacity-20"
-              style={{
-                background: "repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.1) 10px, rgba(255,255,255,0.1) 20px)",
-              }}
+            {/* Windows */}
+            {[...Array(6)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute w-4 h-4 bg-white rounded"
+                style={{
+                  left: `${20 + (i % 3) * 25}px`,
+                  top: `${8 + Math.floor(i / 3) * 12}px`
+                }}
+                animate={{
+                  opacity: [0.5, 1, 0.5],
+                  scale: [1, 1.2, 1]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  delay: i * 0.2
+                }}
+              />
+            ))}
+            {/* Door */}
+            <motion.div 
+              className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-8 bg-white rounded-t"
               animate={{
-                x: [0, 20, 0],
-                y: [0, 20, 0],
-              }}
-              transition={{
-                duration: 10,
-                repeat: Infinity,
-                ease: "linear",
-              }}
-            />
-            
-            {/* SchoolSync Title */}
-            <motion.h1
-              className="text-6xl md:text-8xl font-black text-white text-center mb-4 relative z-10"
-              style={{
-                textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
-              }}
-            >
-              SchoolSync
-            </motion.h1>
-            
-            {/* Tagline */}
-            <motion.p
-              className="text-xl md:text-2xl text-white/90 text-center relative z-10"
-              animate={{
-                opacity: [0.8, 1, 0.8],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            >
-              Empowering Education Through Innovation
-            </motion.p>
-            
-            {/* Floating Elements */}
-            <motion.div
-              className="absolute -top-4 -right-4 w-16 h-16 bg-white/20 rounded-full"
-              animate={{
-                scale: [1, 1.2, 1],
-                rotate: [0, 180, 360],
+                height: [32, 28, 32]
               }}
               transition={{
                 duration: 4,
                 repeat: Infinity,
-                ease: "easeInOut",
+                ease: "easeInOut"
               }}
             />
-            <motion.div
-              className="absolute -bottom-4 -left-4 w-12 h-12 bg-white/20 rounded-full"
+          </motion.div>
+          {/* Roof */}
+          <motion.div 
+            className="absolute -top-8 left-1/2 -translate-x-1/2 w-0 h-0 border-l-[64px] border-r-[64px] border-b-[32px] border-l-transparent border-r-transparent border-b-orange-400"
+            animate={{
+              translateY: [0, -5, 0]
+            }}
+            transition={{
+              duration: 3,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          />
+          {/* Flag */}
+          <motion.div 
+            className="absolute -top-12 left-1/2 -translate-x-1/2"
+            animate={{
+              rotate: [0, 5, -5, 0]
+            }}
+            transition={{
+              duration: 4,
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <div className="w-1 h-8 bg-white" />
+            <motion.div 
+              className="w-8 h-6 bg-orange-500 -mt-1 ml-1"
               animate={{
-                scale: [1, 1.3, 1],
-                rotate: [0, -180, -360],
+                scaleX: [1, 1.1, 1]
               }}
               transition={{
-                duration: 5,
+                duration: 2,
                 repeat: Infinity,
-                ease: "easeInOut",
+                ease: "easeInOut"
               }}
             />
           </motion.div>
         </motion.div>
-      </UI3DRevealHyperframe>
-    </SiriIntroHyperframe>
+      </motion.div>
+      
+      {/* SchoolSync text with professional animation */}
+      <motion.h1 
+        className="text-6xl font-bold text-center mb-4"
+        style={{ color: '#1f2937' }}
+        animate={{
+          background: [
+            "linear-gradient(90deg, #1f2937 0%, #f59e0b 50%, #1f2937 100%)",
+            "linear-gradient(90deg, #1f2937 0%, #f59e0b 50%, #1f2937 100%)"
+          ],
+          backgroundClip: "text",
+          WebkitBackgroundClip: "text",
+          WebkitTextFillColor: "transparent",
+          backgroundSize: "200% 100%"
+        }}
+        transition={{
+          duration: 3,
+          repeat: Infinity,
+          ease: "linear"
+        }}
+      >
+        SchoolSync
+      </motion.h1>
+      
+      {/* Tagline */}
+      <motion.p 
+        className="text-xl text-gray-600 text-center"
+        animate={{
+          opacity: [0.7, 1, 0.7]
+        }}
+        transition={{
+          duration: 2,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
+      >
+        Empowering Education Through Innovation
+      </motion.p>
+    </motion.div>
   );
 };
+
+// Education-themed floating elements
+const EducationElements = () => {
+  const elements = [
+    { icon: "📚", delay: 0, duration: 15, x: 10, y: 20 },
+    { icon: "🎓", delay: 2, duration: 18, x: 80, y: 30 },
+    { icon: "📝", delay: 4, duration: 12, x: 15, y: 70 },
+    { icon: "🏆", delay: 1, duration: 20, x: 85, y: 60 },
+    { icon: "📐", delay: 3, duration: 16, x: 25, y: 45 },
+    { icon: "🔬", delay: 5, duration: 14, x: 75, y: 15 },
+  ];
+
+  return (
+    <>
+      {elements.map((elem, i) => (
+        <motion.div
+          key={i}
+          className="absolute text-4xl pointer-events-none"
+          style={{
+            left: `${elem.x}%`,
+            top: `${elem.y}%`,
+          }}
+          animate={{
+            y: [0, -20, 0],
+            rotate: [0, 10, -10, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: elem.duration,
+            repeat: Infinity,
+            delay: elem.delay,
+            ease: "easeInOut",
+          }}
+        >
+          {elem.icon}
+        </motion.div>
+      ))}
+    </>
+  );
+};
+
+// Knowledge transfer animation
 const KnowledgeFlow = () => {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -926,7 +772,9 @@ export default function HeroSection({ loginRef }) {
       {/* Hyperframe border */}
       {!reducedMotion && <HyperframeBorder />}
 
-      
+      {/* Education-themed floating elements */}
+      {!reducedMotion && <EducationElements />}
+
       {/* Knowledge transfer animation */}
       {!reducedMotion && <KnowledgeFlow />}
 
@@ -1018,45 +866,97 @@ export default function HeroSection({ loginRef }) {
         animate="visible"
         style={{ y: contentY }}
       >
-        {/* Peak Studio Logo */}
+        {/* Professional Education Logo */}
         <motion.div
           variants={itemVariants}
-          className="mb-12"
+          className="mb-16"
           style={{ y: logoY, opacity: logoOpacity }}
         >
-          <PeakStudioLogo mouseX={mouseX} mouseY={mouseY} />
+          <EducationLogo />
         </motion.div>
 
-        {/* Headline with hyperframe effects */}
-        <motion.div
+        {/* Headline with character reveal and glow effect */}
+        <motion.h1
           variants={itemVariants}
-          className="mb-8"
+          className="text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.05] mb-6"
+          style={{ color: '#1f2937' }}
         >
-          <HyperframeSliceReveal direction="left" delay={0.8}>
-            <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black tracking-tight leading-[1.05] mb-6" style={{ color: '#1f2937' }}>
-              <HyperframeGlitch intensity={2}>
-                <GlitchText className="inline-block">
-                  One Platform.
-                </GlitchText>
-              </HyperframeGlitch>
-            </h1>
-          </HyperframeSliceReveal>
-          
-          <HyperframeSliceReveal direction="right" delay={1.0}>
-            <motion.div
-              className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-700 mb-8"
-              whileHover={{
-                scale: 1.02,
-                textShadow: "0 0 20px rgba(245,158,11,0.3)",
-              }}
-              transition={{
-                duration: 0.3,
-              }}
-            >
-              Complete School Management
-            </motion.div>
-          </HyperframeSliceReveal>
-        </motion.div>
+          <GlitchText className="inline-block">
+            One Platform.
+          </GlitchText>
+          <motion.div
+            className="inline-block"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+            whileHover={{
+              textShadow: '0 0 30px rgba(245,158,11,0.5)',
+            }}
+          >
+            {reducedMotion ? (
+              'One Platform.'
+            ) : (
+              'One Platform.'.split('').map((char, i) => (
+                <motion.span
+                  key={i}
+                  className="inline-block"
+                  initial={{ opacity: 0, y: 20, rotateX: -90 }}
+                  animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                  whileHover={{
+                    scale: 1.2,
+                    color: '#f59e0b',
+                  }}
+                  transition={{
+                    duration: 0.5,
+                    delay: 0.5 + i * 0.03,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                >
+                  {char === ' ' ? '\u00A0' : char}
+                </motion.span>
+              ))
+            )}
+          </motion.div>
+          <br />
+          <motion.div
+            className="inline-block"
+            style={{
+              background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text'
+            }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            whileHover={{
+              filter: 'brightness(1.2)',
+            }}
+          >
+            {reducedMotion ? (
+              'Every Learner.'
+            ) : (
+              'Every Learner.'.split('').map((char, i) => (
+                <motion.span
+                  key={i}
+                  className="inline-block"
+                  initial={{ opacity: 0, y: 20, rotateX: -90 }}
+                  animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                  whileHover={{
+                    scale: 1.2,
+                  }}
+                  transition={{
+                    duration: 0.5,
+                    delay: 0.7 + i * 0.03,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                >
+                  {char === ' ' ? '\u00A0' : char}
+                </motion.span>
+              ))
+            )}
+          </motion.div>
+        </motion.h1>
 
         {/* Subtext with scramble effect */}
         <motion.p
@@ -1074,71 +974,35 @@ export default function HeroSection({ loginRef }) {
         </motion.p>
 
         {/* CTA Buttons with magnetic effect */}
-        <motion.div
-          variants={itemVariants}
-          className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12"
+        <motion.div 
+          variants={itemVariants} 
+          className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
-          <HyperframeSliceReveal direction="bottom" delay={1.2}>
-            <MagneticButton
-              primary
-              onClick={scrollToLogin}
-              className="mb-0"
-            >
-              Get Started
-            </MagneticButton>
-          </HyperframeSliceReveal>
-          
-          <HyperframeSliceReveal direction="bottom" delay={1.4}>
-            <MagneticButton
-              secondary
-              onClick={() => window.open('#features', '_self')}
-              className="mb-0"
-            >
-              Learn More
-            </MagneticButton>
-          </HyperframeSliceReveal>
-        </motion.div>
-        
-        {/* Scroll indicator with proper spacing */}
-        <motion.div
-          variants={itemVariants}
-          className="mt-8"
-        >
-          <motion.button
-            onClick={scrollToLogin}
-            className="flex flex-col items-center text-gray-500 hover:text-orange-500 transition-colors"
-            whileHover={{ y: -5 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <span className="text-sm mb-2">Scroll Down</span>
-            <motion.div
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <ArrowDown size={24} />
-            </motion.div>
-          </motion.button>
+          <MagneticButton onClick={scrollToLogin} primary>
+            Get Started
+          </MagneticButton>
+          <MagneticButton onClick={scrollToLogin} secondary>
+            View Demo
+          </MagneticButton>
         </motion.div>
       </motion.div>
 
-      {/* Animated gradient orb with parallax */}
+      {/* Scroll indicator */}
       <motion.div
-        aria-hidden="true"
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] rounded-full pointer-events-none blur-3xl"
-        style={{
-          y: orbY,
-          background: 'radial-gradient(circle, rgba(245,158,11,0.15) 0%, rgba(249,115,22,0.1) 40%, transparent 70%)',
-        }}
-        animate={{
-          scale: [1, 1.1, 1],
-          opacity: [0.15, 0.25, 0.15],
-        }}
-        transition={{
-          duration: 8,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-      />
+        className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1.5, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+        style={{ color: '#9ca3af' }}
+      >
+        <span className="text-xs font-medium tracking-widest uppercase">Scroll</span>
+        <motion.div
+          animate={reducedMotion ? {} : { y: [0, 8, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <ArrowDown size={20} />
+        </motion.div>
+      </motion.div>
     </section>
   );
 }
