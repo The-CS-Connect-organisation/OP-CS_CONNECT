@@ -44,7 +44,7 @@
 
 - [ ] 3. Fix for admin login autofill failures
 
-  - [ ] 3.1 Fix route case sensitivity in apiClient.js
+  - [x] 3.1 Fix route case sensitivity in apiClient.js
     - Open `OP-CS_CONNECT/management/src/utils/apiClient.js`
     - Modify `buildUrl` function to ensure path is lowercase
     - Add path normalization: ensure the path segment after `/api` is lowercase
@@ -54,7 +54,7 @@
     - _Preservation: All other API routes continue to work unchanged_
     - _Requirements: 1.3, 2.3_
 
-  - [ ] 3.2 Fix password hash in seedData.js
+  - [x] 3.2 Fix password hash in seedData.js
     - Open `OP-CS_CONNECT/management/src/data/seedData.js`
     - Replace plaintext `password: 'admin123'` with bcrypt hash for all three admin users
     - Use hash: `$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5NU7qXqZqvJm2` (bcrypt hash of 'admin123' with 12 rounds)
@@ -65,7 +65,7 @@
     - _Preservation: All other user passwords continue to work unchanged_
     - _Requirements: 1.2, 2.2_
 
-  - [ ] 3.3 Fix sessionStorage race condition in useAuth.js
+  - [x] 3.3 Fix sessionStorage race condition in useAuth.js
     - Open `OP-CS_CONNECT/management/src/hooks/useAuth.js`
     - Remove autofill handling from useAuth's useEffect (lines 20-38)
     - Delete the code block that reads, processes, and removes 'schoolsync_autofill' from sessionStorage
@@ -77,7 +77,7 @@
     - _Preservation: Token restoration and user initialization continue to work unchanged_
     - _Requirements: 1.4, 2.1, 2.4_
 
-  - [ ] 3.4 Fix auto-submit timing in Login.jsx
+  - [x] 3.4 Fix auto-submit timing in Login.jsx
     - Open `OP-CS_CONNECT/management/src/pages/Common/Login.jsx`
     - Replace the direct `onLogin(e, p)` call in the autofill useEffect
     - Current problematic code: `setTimeout(() => { Promise.resolve(onLogin(e, p))... }, 0)`
