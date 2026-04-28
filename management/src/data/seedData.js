@@ -14,9 +14,9 @@ export const initializeApp = () => {
 
   const seedUsers = () => {
     const admins = [
-      { id: 'admin-1', name: 'Alicia Morgan', email: 'admin@schoolsync.edu', password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5NU7qXqZqvJm2', role: 'admin', avatar: '👩‍💼', joined: daysAgo(420), phone: '+91 90000 00001' },
-      { id: 'admin-2', name: 'Rahul Venkataraman', email: 'rahul.admin@schoolsync.edu', password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5NU7qXqZqvJm2', role: 'admin', avatar: '👨‍💼', joined: daysAgo(380), phone: '+91 90000 00002' },
-      { id: 'admin-3', name: 'Neha Kapoor', email: 'neha.admin@schoolsync.edu', password: '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5NU7qXqZqvJm2', role: 'admin', avatar: '👩‍💼', joined: daysAgo(340), phone: '+91 90000 00003' },
+      { id: 'admin-1', name: 'Alicia Morgan', email: 'admin@schoolsync.edu', password: 'admin123', role: 'admin', avatar: '👩‍💼', joined: daysAgo(420), phone: '+91 90000 00001' },
+      { id: 'admin-2', name: 'Rahul Venkataraman', email: 'rahul.admin@schoolsync.edu', password: 'admin123', role: 'admin', avatar: '👨‍💼', joined: daysAgo(380), phone: '+91 90000 00002' },
+      { id: 'admin-3', name: 'Neha Kapoor', email: 'neha.admin@schoolsync.edu', password: 'admin123', role: 'admin', avatar: '👩‍💼', joined: daysAgo(340), phone: '+91 90000 00003' },
     ];
     const teachers = [
       ['James Anderson', 'Mathematics'], ['Emily Chen', 'Science'], ['Arjun Mehta', 'Physics'], ['Sara Iqbal', 'English'],
