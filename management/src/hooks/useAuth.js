@@ -1,10 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { KEYS, getFromStorage, removeFromStorage, setToStorage } from '../data/schema';
 import { initializeApp } from '../data/seedData';
 import { request, setAuthToken } from '../utils/apiClient';
 import { disconnectSocket } from '../utils/socketClient';
 
 export const useAuth = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -37,9 +39,7 @@ export const useAuth = () => {
               setUser(payload.user);
               setToStorage(KEYS.CURRENT_USER, payload.user);
               setLoading(false);
-              setTimeout(() => {
-                window.location.replace(`/OP-CS_CONNECT/management/#/${payload.user.role}/dashboard`);
-              }, 100);
+              navigate(`/${payload.user.role}/dashboard`, { replace: true });
             } else {
               setLoading(false);
             }
@@ -64,7 +64,7 @@ export const useAuth = () => {
       }
     }
     setLoading(false);
-  }, []);
+  }, [navigate]);
 
   const login = useCallback(async (email, password) => {
     const cleanEmail = String(email).trim().toLowerCase();

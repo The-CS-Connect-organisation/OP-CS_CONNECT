@@ -1,10 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { KEYS, getFromStorage } from '../data/schema';
 import { initializeApp } from '../data/seedData';
 import { disconnectSocket } from '../utils/socketClient';
 import { authService } from '../services/authService';
 
 export const useAuth = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -23,9 +25,7 @@ export const useAuth = () => {
               setUser(res.user);
               setLoading(false);
               // Navigate to dashboard after successful autofill login
-              setTimeout(() => {
-                window.location.replace(`/OP-CS_CONNECT/academics/#/${res.user.role}/dashboard`);
-              }, 100);
+              navigate(`/${res.user.role}/dashboard`, { replace: true });
             } else {
               setLoading(false);
             }
@@ -40,7 +40,7 @@ export const useAuth = () => {
     const currentUser = getFromStorage(KEYS.CURRENT_USER);
     if (currentUser) setUser(currentUser);
     setLoading(false);
-  }, []);
+  }, [navigate]);
 
   const login = useCallback(async (email, password) => {
     const res = await authService.login(email, password);
