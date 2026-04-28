@@ -21,6 +21,7 @@ export const useAuth = () => {
           authService.login(email, password).then((res) => {
             if (res?.success) {
               setUser(res.user);
+              setLoading(false);
               // Navigate to dashboard after successful autofill login
               setTimeout(() => {
                 window.location.replace(`/OP-CS_CONNECT/academics/#/${res.user.role}/dashboard`);

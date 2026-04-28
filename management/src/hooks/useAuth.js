@@ -36,6 +36,7 @@ export const useAuth = () => {
               if (payload.token) { setAuthToken(payload.token); setToStorage(KEYS.AUTH_TOKEN, payload.token); }
               setUser(payload.user);
               setToStorage(KEYS.CURRENT_USER, payload.user);
+              setLoading(false);
               setTimeout(() => {
                 window.location.replace(`/OP-CS_CONNECT/management/#/${payload.user.role}/dashboard`);
               }, 100);
