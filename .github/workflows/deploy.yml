@@ -67,8 +67,6 @@ jobs:
           # Landing goes to root LAST so it doesn't overwrite portal 404s
           cp -r landing/dist/* deploy/
           cp landing/dist/index.html deploy/404.html
-          # Copy Cloudflare redirects file for dual hosting support
-          cp _redirects deploy/_redirects
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
