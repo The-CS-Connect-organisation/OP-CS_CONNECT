@@ -7,11 +7,11 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
         {/* Logo */}
         <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#ff6b9d] to-[#c44dff] flex items-center justify-center">
+          <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-[#f59e0b] to-[#f97316] flex items-center justify-center">
             <span className="text-white font-black text-xs">C</span>
           </div>
           <span className="text-sm font-bold text-white/60">
-            Cornerstone <span className="text-[#ff6b9d]">SchoolSync</span>
+            Cornerstone <span className="text-[#f59e0b]">SchoolSync</span>
           </span>
         </div>
 
