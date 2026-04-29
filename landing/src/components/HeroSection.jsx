@@ -855,19 +855,14 @@ export default function HeroSection({ loginRef }) {
         />
       )}
 
-      {/* Logo in Corner */}
-      <motion.div
-        className="absolute top-8 left-8 z-20"
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ duration: 0.8, delay: 0.2 }}
-      >
+      {/* Logo in Corner - Fixed */}
+      <div className="absolute top-8 left-8 z-20">
         <img
           src="/OP-CS_CONNECT/logos/schoolsyncbgfreelogo.png"
           alt="SchoolSync"
           className="w-32 h-auto"
         />
-      </motion.div>
+      </div>
       
       {/* Content */}
       <motion.div
