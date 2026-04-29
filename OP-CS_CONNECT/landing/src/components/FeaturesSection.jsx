@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { useRef } from 'react';
 import {
   BookOpen,
   BarChart3,
@@ -8,6 +9,10 @@ import {
   CreditCard,
   Users,
   CalendarDays,
+  Bus,
+  Library,
+  ClipboardList,
+  Megaphone,
 } from 'lucide-react';
 
 const FEATURES = [
@@ -15,138 +20,197 @@ const FEATURES = [
     id: 'attendance',
     icon: Clock,
     title: 'Smart Attendance',
-    description: 'Real-time tracking with instant parent notifications.',
-    portal: 'academic',
-    accent: '#ff6b9d',
+    description: 'Real-time biometric & QR tracking with instant parent SMS/email alerts and monthly reports.',
   },
   {
     id: 'grades',
     icon: BarChart3,
     title: 'Grades & Analytics',
-    description: 'Detailed performance insights across all subjects.',
-    portal: 'academic',
-    accent: '#c44dff',
+    description: 'AI-powered performance insights, subject-wise trends, and predictive grade forecasting.',
   },
   {
     id: 'timetable',
     icon: CalendarDays,
     title: 'Timetable Manager',
-    description: 'Drag-and-drop scheduling for classes and exams.',
-    portal: 'shared',
-    accent: '#6366f1',
+    description: 'Drag-and-drop scheduling with conflict detection, substitute teacher auto-assignment.',
   },
   {
     id: 'ai-lab',
     icon: FlaskConical,
     title: 'AI Lab',
-    description: 'AI-powered tutoring and assignment assistance.',
-    portal: 'academic',
-    accent: '#ff6b9d',
+    description: 'GPT-powered tutoring, auto-grading, plagiarism detection, and personalised learning paths.',
   },
   {
     id: 'comms',
     icon: MessageSquare,
     title: 'Communication Hub',
-    description: 'Unified messaging between staff, students, and parents.',
-    portal: 'shared',
-    accent: '#c44dff',
+    description: 'Unified messaging, announcements, parent-teacher chat, and emergency broadcast system.',
   },
   {
     id: 'fees',
     icon: CreditCard,
     title: 'Fee Management',
-    description: 'Automated invoicing, payments, and payroll tracking.',
-    portal: 'management',
-    accent: '#6366f1',
+    description: 'Automated invoicing, online payments, late-fee reminders, and full payroll tracking.',
   },
   {
     id: 'users',
     icon: Users,
     title: 'User Management',
-    description: 'Role-based access control for every stakeholder.',
-    portal: 'management',
-    accent: '#ff6b9d',
+    description: 'Granular role-based access control for every stakeholder — students, staff, parents, admins.',
   },
   {
     id: 'assignments',
     icon: BookOpen,
     title: 'Assignments',
-    description: 'Submit, grade, and track coursework in one place.',
-    portal: 'academic',
-    accent: '#c44dff',
+    description: 'Submit, grade, and track coursework with rubric-based marking and deadline reminders.',
+  },
+  {
+    id: 'bus',
+    icon: Bus,
+    title: 'Bus Tracking',
+    description: 'Live GPS tracking of school buses, ETA notifications to parents, and route optimisation.',
+  },
+  {
+    id: 'library',
+    icon: Library,
+    title: 'Library Interface',
+    description: 'Digital catalogue, book issue/return tracking, overdue alerts, and e-book integration.',
+  },
+  {
+    id: 'exams',
+    icon: ClipboardList,
+    title: 'Exam Portal',
+    description: 'Online & offline exam scheduling, auto-generated hall tickets, and result publishing.',
+  },
+  {
+    id: 'events',
+    icon: Megaphone,
+    title: 'Events & Notices',
+    description: 'School event calendar, notice board, RSVP management, and photo gallery for activities.',
   },
 ];
 
 function FeatureCard({ feature, index }) {
   const Icon = feature.icon;
+  const cardRef = useRef(null);
+  
   return (
     <motion.div
+      ref={cardRef}
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.6, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
-      className="group relative p-6 rounded-2xl glass border border-white/[0.06] hover:border-white/[0.12] transition-all duration-300 hover:-translate-y-1 cursor-default"
+      viewport={{ once: true, margin: '-100px' }}
+      transition={{ 
+        duration: 0.7, 
+        delay: index * 0.1, 
+        ease: [0.16, 1, 0.3, 1] 
+      }}
+      whileHover={{ 
+        y: -8,
+        transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
+      }}
+      className="group relative p-8 rounded-3xl bg-white border border-gray-100 hover:border-orange-200 hover:shadow-2xl transition-all duration-300"
     >
-      {/* Glow on hover */}
-      <div
-        className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+      {/* Hover gradient effect */}
+      <motion.div
+        className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         style={{
-          background: `radial-gradient(circle at 50% 0%, ${feature.accent}12 0%, transparent 70%)`,
+          background: 'linear-gradient(135deg, rgba(245,158,11,0.03) 0%, rgba(249,115,22,0.05) 100%)',
         }}
       />
 
       {/* Icon */}
-      <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center mb-4"
-        style={{ background: `${feature.accent}18`, border: `1px solid ${feature.accent}30` }}
+      <motion.div
+        className="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
+        style={{ 
+          background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
+        }}
+        whileHover={{ 
+          scale: 1.1,
+          rotate: [0, -5, 5, 0],
+          transition: { duration: 0.4 }
+        }}
       >
-        <Icon size={20} style={{ color: feature.accent }} />
-      </div>
+        <Icon size={28} className="text-white" />
+      </motion.div>
 
       {/* Text */}
-      <h3 className="text-sm font-bold text-white mb-1.5">{feature.title}</h3>
-      <p className="text-xs text-white/40 leading-relaxed">{feature.description}</p>
-
-      {/* Portal badge */}
-      <div className="mt-4">
-        <span
-          className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
-          style={{
-            color: feature.accent,
-            background: `${feature.accent}15`,
-          }}
-        >
-          {feature.portal === 'shared' ? 'All Portals' : feature.portal === 'academic' ? 'Academic' : 'Management'}
-        </span>
-      </div>
+      <h3 className="relative text-lg font-bold text-gray-900 mb-2">{feature.title}</h3>
+      <p className="relative text-sm text-gray-600 leading-relaxed">{feature.description}</p>
     </motion.div>
   );
 }
 
 export default function FeaturesSection() {
+  const sectionRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start end', 'end start']
+  });
+
+  const y = useTransform(scrollYProgress, [0, 1], [100, -100]);
+
   return (
-    <section aria-label="Features" className="relative py-28 px-6 bg-[#0a0a0a]">
+    <section 
+      ref={sectionRef}
+      aria-label="Features" 
+      className="relative py-32 px-6 bg-gradient-to-b from-white via-gray-50 to-white overflow-hidden"
+    >
+      {/* Floating gradient orbs */}
+      <motion.div
+        className="absolute top-20 right-10 w-96 h-96 rounded-full blur-3xl pointer-events-none"
+        style={{
+          y,
+          background: 'radial-gradient(circle, rgba(245,158,11,0.1) 0%, transparent 70%)',
+        }}
+      />
+      <motion.div
+        className="absolute bottom-20 left-10 w-96 h-96 rounded-full blur-3xl pointer-events-none"
+        style={{
+          y: useTransform(scrollYProgress, [0, 1], [-50, 50]),
+          background: 'radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%)',
+        }}
+      />
+
       {/* Section header */}
       <motion.div
-        className="text-center max-w-2xl mx-auto mb-16"
-        initial={{ opacity: 0, y: 20 }}
+        className="relative text-center max-w-3xl mx-auto mb-20"
+        initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-60px' }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        viewport={{ once: true, margin: '-80px' }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
       >
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass border border-white/10 text-xs font-semibold text-white/50 tracking-wide uppercase mb-6">
+        <motion.div 
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 border border-orange-200 text-sm font-semibold text-orange-600 tracking-wide uppercase mb-6"
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+        >
           Everything You Need
-        </div>
-        <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight mb-4">
+        </motion.div>
+        <motion.h2 
+          className="text-5xl sm:text-6xl font-bold text-gray-900 tracking-tight mb-6"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+        >
           Built for every role in your school
-        </h2>
-        <p className="text-white/40 text-base leading-relaxed">
+        </motion.h2>
+        <motion.p 
+          className="text-xl text-gray-600 leading-relaxed"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+        >
           From attendance to AI-powered tutoring — SchoolSync covers the full lifecycle of school management.
-        </p>
+        </motion.p>
       </motion.div>
 
-      {/* Cards grid */}
-      <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Cards grid - 4 cols × 3 rows */}
+      <div className="relative max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {FEATURES.map((feature, i) => (
           <FeatureCard key={feature.id} feature={feature} index={i} />
         ))}

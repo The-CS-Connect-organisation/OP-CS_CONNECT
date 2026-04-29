@@ -1,10 +1,12 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { KEYS, getFromStorage, removeFromStorage, setToStorage } from '../data/schema';
 import { initializeApp } from '../data/seedData';
 import { request, setAuthToken } from '../utils/apiClient';
 import { disconnectSocket } from '../utils/socketClient';
 
 export const useAuth = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -19,35 +21,6 @@ export const useAuth = () => {
   useEffect(() => {
     initializeApp();
 
-    // Handle autofill from landing page
-    const raw = sessionStorage.getItem('schoolsync_autofill');
-    if (raw) {
-      try {
-        const { email, password, portal } = JSON.parse(raw);
-        if (portal === 'management') {
-          sessionStorage.removeItem('schoolsync_autofill');
-          const token = getFromStorage(KEYS.AUTH_TOKEN);
-          if (token) setAuthToken(token);
-          request('/auth/login', {
-            method: 'POST',
-            body: JSON.stringify({ email, password }),
-          }).then((payload) => {
-            if (payload?.user) {
-              if (payload.token) { setAuthToken(payload.token); setToStorage(KEYS.AUTH_TOKEN, payload.token); }
-              setUser(payload.user);
-              setToStorage(KEYS.CURRENT_USER, payload.user);
-              window.location.replace(`/${payload.user.role}/dashboard`);
-            } else {
-              setLoading(false);
-            }
-          }).catch(() => setLoading(false));
-          return;
-        }
-      } catch {
-        sessionStorage.removeItem('schoolsync_autofill');
-      }
-    }
-
     const currentUser = getFromStorage(KEYS.CURRENT_USER);
     const token = getFromStorage(KEYS.AUTH_TOKEN);
     if (token) setAuthToken(token);
@@ -61,7 +34,7 @@ export const useAuth = () => {
       }
     }
     setLoading(false);
-  }, []);
+  }, [navigate]);
 
   const login = useCallback(async (email, password) => {
     const cleanEmail = String(email).trim().toLowerCase();
@@ -85,23 +58,8 @@ export const useAuth = () => {
       }
       return { success: false, error: 'Invalid server response' };
     } catch (err) {
-      if (!shouldAllowLocalFallback() && err?.status && err.status < 500) {
-        return { success: false, error: err.message || 'Invalid email or password' };
-      }
+      return { success: false, error: err.message || 'Invalid email or password' };
     }
-
-    const users = getFromStorage(KEYS.USERS, []);
-    const found = users.find(u => u.email === cleanEmail && u.password === cleanPassword);
-    if (found) {
-      if (found.isActive === false) {
-        return { success: false, error: 'Account is disabled. Please contact admin.' };
-      }
-      const { password: _, ...userWithoutPassword } = found;
-      setUser(userWithoutPassword);
-      setToStorage(KEYS.CURRENT_USER, userWithoutPassword);
-      return { success: true, user: userWithoutPassword };
-    }
-    return { success: false, error: 'Invalid email or password' };
   }, []);
 
   const signup = useCallback(async (data) => {
@@ -129,27 +87,9 @@ export const useAuth = () => {
         return { success: true, user: userFromApi };
       }
       return { success: false, error: 'Invalid server response' };
-    } catch {
-      // Fallback
+    } catch (err) {
+      return { success: false, error: err.message || 'Email already registered' };
     }
-
-    const users = getFromStorage(KEYS.USERS, []);
-    if (users.find(u => u.email === cleanData.email)) {
-      return { success: false, error: 'Email already registered' };
-    }
-    const newUser = {
-      ...cleanData,
-      id: `${cleanData.role}-${Date.now()}`,
-      avatar: cleanData.role === 'student' ? '👦' : cleanData.role === 'teacher' ? '👨‍🏫' : '👩‍💼',
-      joined: new Date().toISOString().split('T')[0],
-      isActive: true,
-    };
-    users.push(newUser);
-    setToStorage(KEYS.USERS, users);
-    const { password: _, ...userWithoutPassword } = newUser;
-    setUser(userWithoutPassword);
-    setToStorage(KEYS.CURRENT_USER, userWithoutPassword);
-    return { success: true, user: userWithoutPassword };
   }, []);
 
   const logout = useCallback(() => {
@@ -158,6 +98,8 @@ export const useAuth = () => {
     disconnectSocket();
     removeFromStorage(KEYS.CURRENT_USER);
     removeFromStorage(KEYS.AUTH_TOKEN);
+    // Go back to landing page
+    window.location.href = '/OP-CS_CONNECT/';
   }, []);
 
   return { user, loading, login, signup, logout, isAuthenticated: !!user };

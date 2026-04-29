@@ -6,7 +6,7 @@ import DemoCredentialsPanel from './DemoCredentialsPanel.jsx';
 const PORTAL_CONFIG = {
   academics: {
     label: 'Academic Portal',
-    accent: '#ff6b9d',
+    accent: '#f59e0b',
     placeholder: 'student@schoolsync.edu',
     hint: 'For students, teachers & parents',
   },
@@ -51,11 +51,11 @@ export default function LoginSection({ sectionRef }) {
       );
     } catch {
       // sessionStorage unavailable — just go to portal root
-      window.location.href = `/${portal}/login`;
+      window.location.href = `/OP-CS_CONNECT/${portal}/#/login`;
       return;
     }
 
-    window.location.href = `/${portal}/login`;
+    window.location.href = `/OP-CS_CONNECT/${portal}/#/login`;
   };
 
   const handleDemoSelect = (demoEmail, demoPassword) => {
@@ -126,7 +126,7 @@ export default function LoginSection({ sectionRef }) {
                 aria-checked={portal === p}
                 onClick={() => handlePortalSwitch(p)}
                 className="relative flex-1 py-2.5 text-sm font-semibold rounded-xl z-10 transition-colors duration-200"
-                style={{ color: portal === p ? (p === 'academics' ? '#ff6b9d' : '#ffffff') : 'rgba(255,255,255,0.35)' }}
+                style={{ color: portal === p ? (p === 'academics' ? '#f59e0b' : '#ffffff') : 'rgba(255,255,255,0.35)' }}
               >
                 {PORTAL_CONFIG[p].label}
                 {portal === p && (
@@ -136,11 +136,11 @@ export default function LoginSection({ sectionRef }) {
                     style={{
                       background:
                         p === 'academics'
-                          ? 'rgba(255,107,157,0.12)'
+                          ? 'rgba(245,158,11,0.12)'
                           : 'rgba(255,255,255,0.08)',
                       border:
                         p === 'academics'
-                          ? '1px solid rgba(255,107,157,0.25)'
+                          ? '1px solid rgba(245,158,11,0.25)'
                           : '1px solid rgba(255,255,255,0.15)',
                     }}
                     transition={{ type: 'spring', stiffness: 400, damping: 35 }}
@@ -184,7 +184,7 @@ export default function LoginSection({ sectionRef }) {
                   aria-invalid={!!errors.email}
                   aria-describedby={errors.email ? 'email-error' : undefined}
                   className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 pl-11 pr-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-white/20 focus:bg-white/[0.06] transition-all"
-                  style={errors.email ? { borderColor: '#ff6b9d55' } : {}}
+                  style={errors.email ? { borderColor: '#f59e0b55' } : {}}
                 />
                 <Mail
                   size={16}
@@ -192,7 +192,7 @@ export default function LoginSection({ sectionRef }) {
                 />
               </div>
               {errors.email && (
-                <p id="email-error" role="alert" className="text-xs text-[#ff6b9d] mt-1.5 ml-1">
+                <p id="email-error" role="alert" className="text-xs text-[#f59e0b] mt-1.5 ml-1">
                   {errors.email}
                 </p>
               )}
@@ -216,7 +216,7 @@ export default function LoginSection({ sectionRef }) {
                   aria-invalid={!!errors.password}
                   aria-describedby={errors.password ? 'password-error' : undefined}
                   className="w-full bg-white/[0.04] border border-white/[0.08] rounded-xl py-3 pl-11 pr-11 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-white/20 focus:bg-white/[0.06] transition-all"
-                  style={errors.password ? { borderColor: '#ff6b9d55' } : {}}
+                  style={errors.password ? { borderColor: '#f59e0b55' } : {}}
                 />
                 <Lock
                   size={16}
@@ -232,7 +232,7 @@ export default function LoginSection({ sectionRef }) {
                 </button>
               </div>
               {errors.password && (
-                <p id="password-error" role="alert" className="text-xs text-[#ff6b9d] mt-1.5 ml-1">
+                <p id="password-error" role="alert" className="text-xs text-[#f59e0b] mt-1.5 ml-1">
                   {errors.password}
                 </p>
               )}
@@ -244,11 +244,11 @@ export default function LoginSection({ sectionRef }) {
               disabled={loading}
               className="w-full h-12 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all duration-200 active:scale-[0.98] mt-2"
               style={{
-                background: portal === 'academics' ? '#ff6b9d' : '#ffffff',
+                background: portal === 'academics' ? 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)' : '#ffffff',
                 color: portal === 'academics' ? '#ffffff' : '#0a0a0a',
                 boxShadow:
                   portal === 'academics'
-                    ? '0 8px 24px rgba(255,107,157,0.3)'
+                    ? '0 8px 24px rgba(245,158,11,0.3)'
                     : '0 8px 24px rgba(255,255,255,0.15)',
                 opacity: loading ? 0.7 : 1,
                 cursor: loading ? 'wait' : 'pointer',

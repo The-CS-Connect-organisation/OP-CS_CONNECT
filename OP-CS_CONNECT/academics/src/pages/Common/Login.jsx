@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useSound } from '../../hooks/useSound';
@@ -10,8 +10,9 @@ export const Login = ({ onLogin, onSwitch }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { playClick, playBlip } = useSound();
+  const autofillAttempted = useRef(false);
 
-  // Auto-fill from landing page sessionStorage credential pass
+  // Auto-fill AND auto-submit from landing page sessionStorage in one shot
   useEffect(() => {
     const raw = sessionStorage.getItem('schoolsync_autofill');
     if (!raw) return;
@@ -19,14 +20,21 @@ export const Login = ({ onLogin, onSwitch }) => {
       const { email: e, password: p, portal } = JSON.parse(raw);
       if (portal !== 'academics') return;
       sessionStorage.removeItem('schoolsync_autofill');
+      if (!e || !p) return;
+      // Set state for visual feedback
       setEmail(e);
       setPassword(p);
-      // Trigger submit after state settles
-      setTimeout(() => {
-        onLogin(e, p).then((result) => {
-          if (!result.success) setError(result.error);
-        });
-      }, 0);
+      // Submit immediately without waiting for re-render
+      setLoading(true);
+      onLogin(e, p).then((result) => {
+        if (!result?.success) {
+          setError(result?.error || 'Login failed');
+          setLoading(false);
+        }
+      }).catch(() => {
+        setError('Login failed. Please try again.');
+        setLoading(false);
+      });
     } catch {
       sessionStorage.removeItem('schoolsync_autofill');
     }

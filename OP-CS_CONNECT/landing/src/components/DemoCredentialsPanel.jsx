@@ -9,7 +9,7 @@ export const DEMO_CREDENTIALS = [
     email: 'alex@schoolsync.edu',
     password: 'student123',
     portal: 'academics',
-    accent: '#ff6b9d',
+    accent: '#f59e0b',
   },
   {
     role: 'teacher',
@@ -18,7 +18,7 @@ export const DEMO_CREDENTIALS = [
     email: 'james@schoolsync.edu',
     password: 'teacher123',
     portal: 'academics',
-    accent: '#c44dff',
+    accent: '#f97316',
   },
   {
     role: 'parent',
@@ -27,7 +27,7 @@ export const DEMO_CREDENTIALS = [
     email: 'parent@schoolsync.edu',
     password: 'parent123',
     portal: 'academics',
-    accent: '#6366f1',
+    accent: '#ea580c',
   },
   {
     role: 'admin',

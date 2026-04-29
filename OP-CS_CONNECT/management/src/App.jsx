@@ -115,7 +115,7 @@ function App() {
   const layoutProps = {
     theme,
     toggleTheme,
-    logout,
+    onLogout: logout,
     notifications: userNotifications,
     onMarkRead: markNotificationRead,
     portalLogout: logout,

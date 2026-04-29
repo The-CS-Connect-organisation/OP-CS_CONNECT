@@ -5,7 +5,7 @@ import {
   LayoutDashboard, BookOpen, Clock, CheckCircle, Banknote, 
   ChevronLeft, ChevronRight, X, Sparkles, Bot,
   LogOut, Settings, MessageCircle, FileText, ChevronDown,
-  ClipboardList, UserCheck, PencilLine, Globe
+  ClipboardList, UserCheck, PencilLine, Globe, Bus
 } from 'lucide-react';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
@@ -34,6 +34,7 @@ const ROLE_NAV = {
       section: 'Services',
       items: [
         { title: 'Fees', icon: Banknote, route: '/student/fees' },
+        { title: 'Bus Tracking', icon: Bus, route: '/student/bus-tracking' },
         { title: 'Exams', icon: ClipboardList, route: '/student/exams' },
       ]
     },
@@ -64,6 +65,12 @@ const ROLE_NAV = {
         { title: 'Attendance', icon: UserCheck, route: '/parent/attendance' },
         { title: 'Grades', icon: CheckCircle, route: '/parent/grades' },
         { title: 'Fees', icon: Banknote, route: '/parent/fees' },
+      ]
+    },
+    {
+      section: 'Services',
+      items: [
+        { title: 'Bus Tracking', icon: Bus, route: '/parent/bus-tracking' },
       ]
     },
     {

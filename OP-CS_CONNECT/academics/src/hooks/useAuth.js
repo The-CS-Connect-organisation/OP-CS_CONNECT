@@ -1,45 +1,22 @@
 import { useState, useCallback, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { KEYS, getFromStorage } from '../data/schema';
 import { initializeApp } from '../data/seedData';
 import { disconnectSocket } from '../utils/socketClient';
 import { authService } from '../services/authService';
 
 export const useAuth = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     initializeApp();
 
-    // Handle autofill from landing page
-    const raw = sessionStorage.getItem('schoolsync_autofill');
-    if (raw) {
-      try {
-        const { email, password, portal } = JSON.parse(raw);
-        if (portal === 'academics') {
-          sessionStorage.removeItem('schoolsync_autofill');
-          authService.login(email, password).then((res) => {
-            if (res?.success) {
-              setUser(res.user);
-              // Navigate to dashboard after successful autofill login
-              window.location.replace(
-                `/OP-CS_CONNECT/academics/${res.user.role}/dashboard`
-              );
-            } else {
-              setLoading(false);
-            }
-          }).catch(() => setLoading(false));
-          return;
-        }
-      } catch {
-        sessionStorage.removeItem('schoolsync_autofill');
-      }
-    }
-
     const currentUser = getFromStorage(KEYS.CURRENT_USER);
     if (currentUser) setUser(currentUser);
     setLoading(false);
-  }, []);
+  }, [navigate]);
 
   const login = useCallback(async (email, password) => {
     const res = await authService.login(email, password);

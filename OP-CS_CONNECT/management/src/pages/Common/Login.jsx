@@ -12,7 +12,7 @@ export const Login = ({ onLogin, onSwitch }) => {
   const [loading, setLoading] = useState(false);
   const { playClick, playBlip } = useSound();
 
-  // Auto-fill from landing page sessionStorage credential pass
+  // Auto-fill AND auto-submit from landing page sessionStorage in one shot
   useEffect(() => {
     const raw = sessionStorage.getItem('schoolsync_autofill');
     if (!raw) return;
@@ -20,19 +20,38 @@ export const Login = ({ onLogin, onSwitch }) => {
       const { email: e, password: p, portal } = JSON.parse(raw);
       if (portal !== 'management') return;
       sessionStorage.removeItem('schoolsync_autofill');
+      if (!e || !p) return;
       setEmail(e);
       setPassword(p);
-      // Trigger submit after state settles
-      setTimeout(() => {
-        Promise.resolve(onLogin(e, p)).then((result) => {
-          if (!result.success) setError(result.error);
-        });
-      }, 0);
+      setLoading(true);
+      Promise.resolve(onLogin(e, p)).then((result) => {
+        if (!result?.success) {
+          setError(result?.error || 'Login failed');
+          setLoading(false);
+        }
+      }).catch(() => {
+        setError('Login failed. Please try again.');
+        setLoading(false);
+      });
     } catch {
       sessionStorage.removeItem('schoolsync_autofill');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Auto-submit when autofill data has populated state
+  useEffect(() => {
+    if (autofillAttempted.current && email && password) {
+      autofillAttempted.current = false; // Prevent multiple submissions
+      setLoading(true);
+      Promise.resolve(onLogin(email, password)).then((result) => {
+        if (!result.success) {
+          setError(result.error);
+          setLoading(false);
+        }
+      });
+    }
+  }, [email, password, onLogin]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
