@@ -48,7 +48,7 @@ export default function Navbar({ loginRef }) {
           whileTap={{ scale: 0.98 }}
         >
           <motion.img
-            src="/OP-CS_CONNECT/cslogo.png"
+            src="/cslogo.png"
             alt="Cornerstone"
             className="h-10"
             whileHover={{ rotate: [0, -5, 5, 0] }}

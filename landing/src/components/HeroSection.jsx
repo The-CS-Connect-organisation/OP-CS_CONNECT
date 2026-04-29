@@ -710,9 +710,12 @@ export default function HeroSection({ loginRef }) {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  // Generate particles
+  // Generate particles - only once on mount
   useEffect(() => {
-    if (reducedMotion) return;
+    if (reducedMotion) {
+      setParticles([]);
+      return;
+    }
     
     const newParticles = Array.from({ length: 80 }, () => ({ // Increased from 50 to 80
       x: Math.random() * 100,
@@ -725,7 +728,7 @@ export default function HeroSection({ loginRef }) {
       },
     }));
     setParticles(newParticles);
-  }, [reducedMotion]);
+  }, []); // Empty dependency array - only run once
 
   // Mouse tracking
   useEffect(() => {
@@ -858,16 +861,9 @@ export default function HeroSection({ loginRef }) {
       {/* Logo in Corner - Completely Fixed */}
       <div className="absolute top-8 left-8 z-20 pointer-events-none">
         <img
-          src="/OP-CS_CONNECT/logos/schoolsyncbgfreelogo.png"
+          src="/schoolsync.png"
           alt="SchoolSync"
           className="w-32 h-auto"
-          onError={(e) => {
-            console.log('BG-free logo failed, trying fallback');
-            e.target.src = '/OP-CS_CONNECT/logos/schoolsync.png';
-          }}
-          onLoad={() => {
-            console.log('Logo loaded successfully');
-          }}
         />
       </div>
       
