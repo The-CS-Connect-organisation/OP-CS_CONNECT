@@ -54,6 +54,9 @@ export default function Navbar({ loginRef }) {
             whileHover={{ rotate: [0, -5, 5, 0] }}
             transition={{ duration: 0.5 }}
           />
+          <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-600">
+            SchoolSync
+          </span>
         </motion.a>
 
         {/* Sign In Button */}

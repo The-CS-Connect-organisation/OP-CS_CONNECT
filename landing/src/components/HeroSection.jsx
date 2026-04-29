@@ -765,7 +765,7 @@ export default function HeroSection({ loginRef }) {
     <section
       ref={containerRef}
       aria-label="Hero"
-      className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-white px-6"
+      className="relative min-h-[85vh] flex flex-col items-center justify-center overflow-hidden bg-white px-6 py-20"
     >
       {/* Particle background */}
       {!reducedMotion && (
@@ -862,42 +862,42 @@ export default function HeroSection({ loginRef }) {
         />
       )}
 
-      {/* Logo in Corner - Completely Fixed */}
-      <div className="absolute top-8 left-8 z-20 pointer-events-none">
-        <img
-          src="/OP-CS_CONNECT/schoolsync.png"
-          alt="SchoolSync"
-          className="w-32 h-auto"
-        />
-      </div>
-      
-      {/* Content - without mouse movement */}
+      {/* Content - Centered and Compact */}
       <motion.div
-        className="relative z-10 text-center max-w-6xl mx-auto"
+        className="relative z-10 text-center max-w-4xl mx-auto"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
+        {/* SchoolSync Text Logo */}
+        <motion.div
+          variants={itemVariants}
+          className="mb-8"
+        >
+          <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-600 tracking-tight">
+            SchoolSync
+          </h1>
+        </motion.div>
 
         {/* Professional Headline */}
-        <motion.h1
-          variants={itemVariants}
-          className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-4"
-        >
-          One Platform.
-        </motion.h1>
-        
         <motion.h2
           variants={itemVariants}
-          className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-700 mb-6"
+          className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-4"
+        >
+          One Platform.
+        </motion.h2>
+        
+        <motion.h3
+          variants={itemVariants}
+          className="text-xl sm:text-2xl font-semibold text-gray-700 mb-6"
         >
           Complete School Management
-        </motion.h2>
+        </motion.h3>
 
         {/* Professional Description */}
         <motion.p
           variants={itemVariants}
-          className="text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed mb-8 text-gray-600"
+          className="text-lg max-w-2xl mx-auto leading-relaxed mb-8 text-gray-600"
         >
           The unified school management system for students, teachers, parents, and administrators.
         </motion.p>
