@@ -855,8 +855,19 @@ export default function HeroSection({ loginRef }) {
         />
       )}
 
-      {/* Top Bar */}
-      <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-orange-500 to-orange-600 z-20" />
+      {/* Logo in Corner */}
+      <motion.div
+        className="absolute top-8 left-8 z-20"
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, delay: 0.2 }}
+      >
+        <img
+          src="/OP-CS_CONNECT/logos/schoolsyncbgfreelogo.png"
+          alt="SchoolSync"
+          className="w-32 h-auto"
+        />
+      </motion.div>
       
       {/* Content */}
       <motion.div
@@ -866,19 +877,6 @@ export default function HeroSection({ loginRef }) {
         animate="visible"
         style={{ y: contentY }}
       >
-        {/* Professional School Logo */}
-        <motion.div
-          variants={itemVariants}
-          className="mb-8"
-          style={{ y: logoY, opacity: logoOpacity }}
-        >
-          <img
-            src="/OP-CS_CONNECT/schoolsync.png"
-            alt="SchoolSync"
-            className="w-full max-w-2xl mx-auto h-auto"
-            style={{ filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))' }}
-          />
-        </motion.div>
 
         {/* Professional Headline */}
         <motion.h1
@@ -917,17 +915,20 @@ export default function HeroSection({ loginRef }) {
             Get Started
           </motion.button>
           <motion.button
-            onClick={() => window.open('#features', '_self')}
+            onClick={() => alert('Please contact an administrator to sign up.')}
             className="px-8 py-3 bg-white text-orange-500 font-semibold rounded-lg border-2 border-orange-500 hover:bg-orange-50 transition-colors"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            Learn More
+            Sign Up
           </motion.button>
         </motion.div>
 
-        {/* Scroll indicator with proper spacing */}
-        <motion.div variants={itemVariants} className="mt-12">
+        {/* Centered Scroll indicator */}
+        <motion.div 
+          variants={itemVariants} 
+          className="flex justify-center mt-12"
+        >
           <motion.button
             onClick={scrollToLogin}
             className="flex flex-col items-center text-gray-500 hover:text-orange-500 transition-colors"
