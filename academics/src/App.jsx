@@ -114,7 +114,7 @@ function App() {
   const { data: notifications, update: updateNotification } = useStore(KEYS.NOTIFICATIONS, []);
   
   const userNotifications = useMemo(() => {
-    if (!user) return [];
+    if (!user || !Array.isArray(notifications)) return [];
     return notifications
       .filter(n => n.userId === user.id)
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
