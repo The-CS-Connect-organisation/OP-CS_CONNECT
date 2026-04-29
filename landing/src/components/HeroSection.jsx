@@ -872,7 +872,7 @@ export default function HeroSection({ loginRef }) {
       </div>
       
       {/* Content - without mouse movement */}
-      <div
+      <motion.div
         className="relative z-10 text-center max-w-6xl mx-auto"
         variants={containerVariants}
         initial="hidden"
@@ -947,6 +947,6 @@ export default function HeroSection({ loginRef }) {
         </motion.div>
       </motion.div>
 
-          </section>
+    </section>
   );
 }
