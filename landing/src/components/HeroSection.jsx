@@ -866,9 +866,6 @@ export default function HeroSection({ loginRef }) {
           src="/OP-CS_CONNECT/logos/schoolsyncbgfreelogo.png"
           alt="SchoolSync"
           className="w-32 h-auto"
-          onError={(e) => {
-            e.target.src = '/OP-CS_CONNECT/schoolsync.png';
-          }}
         />
       </motion.div>
       
