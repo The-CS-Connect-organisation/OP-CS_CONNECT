@@ -9,6 +9,10 @@ import {
   CreditCard,
   Users,
   CalendarDays,
+  Bus,
+  Library,
+  ClipboardList,
+  Megaphone,
 } from 'lucide-react';
 
 const FEATURES = [
@@ -16,49 +20,73 @@ const FEATURES = [
     id: 'attendance',
     icon: Clock,
     title: 'Smart Attendance',
-    description: 'Real-time tracking with instant parent notifications.',
+    description: 'Real-time biometric & QR tracking with instant parent SMS/email alerts and monthly reports.',
   },
   {
     id: 'grades',
     icon: BarChart3,
     title: 'Grades & Analytics',
-    description: 'Detailed performance insights across all subjects.',
+    description: 'AI-powered performance insights, subject-wise trends, and predictive grade forecasting.',
   },
   {
     id: 'timetable',
     icon: CalendarDays,
     title: 'Timetable Manager',
-    description: 'Drag-and-drop scheduling for classes and exams.',
+    description: 'Drag-and-drop scheduling with conflict detection, substitute teacher auto-assignment.',
   },
   {
     id: 'ai-lab',
     icon: FlaskConical,
     title: 'AI Lab',
-    description: 'AI-powered tutoring and assignment assistance.',
+    description: 'GPT-powered tutoring, auto-grading, plagiarism detection, and personalised learning paths.',
   },
   {
     id: 'comms',
     icon: MessageSquare,
     title: 'Communication Hub',
-    description: 'Unified messaging between staff, students, and parents.',
+    description: 'Unified messaging, announcements, parent-teacher chat, and emergency broadcast system.',
   },
   {
     id: 'fees',
     icon: CreditCard,
     title: 'Fee Management',
-    description: 'Automated invoicing, payments, and payroll tracking.',
+    description: 'Automated invoicing, online payments, late-fee reminders, and full payroll tracking.',
   },
   {
     id: 'users',
     icon: Users,
     title: 'User Management',
-    description: 'Role-based access control for every stakeholder.',
+    description: 'Granular role-based access control for every stakeholder — students, staff, parents, admins.',
   },
   {
     id: 'assignments',
     icon: BookOpen,
     title: 'Assignments',
-    description: 'Submit, grade, and track coursework in one place.',
+    description: 'Submit, grade, and track coursework with rubric-based marking and deadline reminders.',
+  },
+  {
+    id: 'bus',
+    icon: Bus,
+    title: 'Bus Tracking',
+    description: 'Live GPS tracking of school buses, ETA notifications to parents, and route optimisation.',
+  },
+  {
+    id: 'library',
+    icon: Library,
+    title: 'Library Interface',
+    description: 'Digital catalogue, book issue/return tracking, overdue alerts, and e-book integration.',
+  },
+  {
+    id: 'exams',
+    icon: ClipboardList,
+    title: 'Exam Portal',
+    description: 'Online & offline exam scheduling, auto-generated hall tickets, and result publishing.',
+  },
+  {
+    id: 'events',
+    icon: Megaphone,
+    title: 'Events & Notices',
+    description: 'School event calendar, notice board, RSVP management, and photo gallery for activities.',
   },
 ];
 
@@ -181,7 +209,7 @@ export default function FeaturesSection() {
         </motion.p>
       </motion.div>
 
-      {/* Cards grid */}
+      {/* Cards grid - 4 cols × 3 rows */}
       <div className="relative max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {FEATURES.map((feature, i) => (
           <FeatureCard key={feature.id} feature={feature} index={i} />

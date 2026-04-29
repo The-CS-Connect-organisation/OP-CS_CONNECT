@@ -24,40 +24,60 @@ export default function Navbar({ loginRef }) {
       role="banner"
       className="fixed top-0 left-0 right-0 z-50"
       style={{
-        backgroundColor: scrolled ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0)',
-        backdropFilter: scrolled ? 'blur(20px)' : 'blur(0px)',
-        WebkitBackacity: scrolled ? 'blur(20px)' : 'blur(0px)',
-        borderBottom: scrolled ? '1px solid rgba(0,0,0,0.06)' : '1px solid transparent',
-        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+        background: scrolled
+          ? 'rgba(255,255,255,0.6)'
+          : 'rgba(255,255,255,0.25)',
+        backdropFilter: 'blur(16px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(16px) saturate(180%)',
+        borderBottom: scrolled
+          ? '1px solid rgba(255,255,255,0.5)'
+          : '1px solid rgba(255,255,255,0.2)',
+        boxShadow: scrolled
+          ? '0 4px 24px rgba(245,158,11,0.08), 0 1px 0 rgba(255,255,255,0.6) inset'
+          : '0 1px 0 rgba(255,255,255,0.3) inset',
+        transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
     >
       <nav
         role="navigation"
         aria-label="Main navigation"
-        className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between"
+        className="max-w-7xl mx-auto px-6 h-[56px] flex items-center justify-between"
       >
-        {/* Logo */}
-        <motion.a 
-          href="#" 
-          className="flex items-center gap-3 group" 
-          aria-label="Cornerstone home"
+        {/* Logos - Compact in corner */}
+        <motion.div 
+          className="flex items-center gap-2" 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.98 }}
         >
-          <motion.img
-            src="/OP-CS_CONNECT/cslogo.png"
-            alt="Cornerstone"
-            className="h-10"
-            whileHover={{ rotate: [0, -5, 5, 0] }}
-            transition={{ duration: 0.5 }}
-          />
-          <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-600">
-            SchoolSync
-          </span>
-        </motion.a>
+          {/* SchoolSync Text Logo */}
+          <a 
+            href="#" 
+            aria-label="SchoolSync home"
+          >
+            <span className="text-lg font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-orange-600 leading-none">
+              SchoolSync
+            </span>
+          </a>
+          
+          {/* Separator */}
+          <div className="h-6 w-px bg-gray-300"></div>
+          
+          {/* Cornerstone Logo - Smaller and compact */}
+          <a 
+            href="https://www.cornerstoneschool.edu.in/" 
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center" 
+            aria-label="Cornerstone School website"
+          >
+            <img
+              src="/OP-CS_CONNECT/cslogo.png"
+              alt="Cornerstone"
+              className="h-6"
+            />
+          </a>
+        </motion.div>
 
         {/* Sign In Button */}
         <motion.a
