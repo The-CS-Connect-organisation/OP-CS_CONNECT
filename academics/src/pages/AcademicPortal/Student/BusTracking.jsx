@@ -6,7 +6,7 @@ import { Badge } from '../../../components/ui/Badge';
 import { busService } from '../../../services/busService';
 import { useSound } from '../../../hooks/useSound';
 import { getSocket } from '../../../utils/socketClient';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
@@ -64,6 +64,17 @@ const createStopIcon = () => {
 
 const busIcon = createBusIcon();
 const stopIcon = createStopIcon();
+
+// Map bounds setter component - fixes react-leaflet v4 bounds issue
+const MapBounds = ({ bounds }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (bounds && bounds.length === 2) {
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [map, bounds]);
+  return null;
+};
 
 export const BusTracking = ({ user }) => {
   const { playClick } = useSound();
@@ -287,11 +298,11 @@ export const BusTracking = ({ user }) => {
                   <div className="h-[500px] relative">
                     <MapContainer
                       center={center}
-                      bounds={mapBounds}
                       zoom={13}
                       style={{ height: '100%', width: '100%' }}
                       zoomControl={true}
                     >
+                      <MapBounds bounds={mapBounds} />
                       <TileLayer
                         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
