@@ -436,8 +436,12 @@ const HyperframeBorder = () => {
 // Matrix rain effect
 const MatrixRain = () => {
   const [drops, setDrops] = useState([]);
+  const [viewportHeight, setViewportHeight] = useState(1000);
 
   useEffect(() => {
+    // Set viewport height once on mount
+    setViewportHeight(window.innerHeight);
+    
     const characters = "01";
     const newDrops = [];
     for (let i = 0; i < 20; i++) {
@@ -461,7 +465,7 @@ const MatrixRain = () => {
             top: -50,
           }}
           animate={{
-            y: [0, window.innerHeight + 100],
+            y: [0, viewportHeight + 100],
           }}
           transition={{
             duration: 5 + drop.delay,
@@ -861,7 +865,7 @@ export default function HeroSection({ loginRef }) {
       {/* Logo in Corner - Completely Fixed */}
       <div className="absolute top-8 left-8 z-20 pointer-events-none">
         <img
-          src="/schoolsync.png"
+          src="/OP-CS_CONNECT/schoolsync.png"
           alt="SchoolSync"
           className="w-32 h-auto"
         />
