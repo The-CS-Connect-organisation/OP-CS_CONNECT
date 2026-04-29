@@ -855,22 +855,28 @@ export default function HeroSection({ loginRef }) {
         />
       )}
 
-      {/* Logo in Corner - Fixed */}
-      <div className="absolute top-8 left-8 z-20">
+      {/* Logo in Corner - Completely Fixed */}
+      <div className="absolute top-8 left-8 z-20 pointer-events-none">
         <img
           src="/OP-CS_CONNECT/logos/schoolsyncbgfreelogo.png"
           alt="SchoolSync"
           className="w-32 h-auto"
+          onError={(e) => {
+            console.log('BG-free logo failed, trying fallback');
+            e.target.src = '/OP-CS_CONNECT/logos/schoolsync.png';
+          }}
+          onLoad={() => {
+            console.log('Logo loaded successfully');
+          }}
         />
       </div>
       
-      {/* Content */}
-      <motion.div
+      {/* Content - without mouse movement */}
+      <div
         className="relative z-10 text-center max-w-6xl mx-auto"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        style={{ y: contentY }}
       >
 
         {/* Professional Headline */}
