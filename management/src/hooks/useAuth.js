@@ -21,36 +21,6 @@ export const useAuth = () => {
   useEffect(() => {
     initializeApp();
 
-    // Handle autofill from landing page
-    const raw = sessionStorage.getItem('schoolsync_autofill');
-    if (raw) {
-      try {
-        const { email, password, portal } = JSON.parse(raw);
-        if (portal === 'management') {
-          sessionStorage.removeItem('schoolsync_autofill');
-          const token = getFromStorage(KEYS.AUTH_TOKEN);
-          if (token) setAuthToken(token);
-          request('/auth/login', {
-            method: 'POST',
-            body: JSON.stringify({ email, password }),
-          }).then((payload) => {
-            if (payload?.user) {
-              if (payload.token) { setAuthToken(payload.token); setToStorage(KEYS.AUTH_TOKEN, payload.token); }
-              setUser(payload.user);
-              setToStorage(KEYS.CURRENT_USER, payload.user);
-              setLoading(false);
-              navigate(`/${payload.user.role}/dashboard`, { replace: true });
-            } else {
-              setLoading(false);
-            }
-          }).catch(() => setLoading(false));
-          return;
-        }
-      } catch {
-        sessionStorage.removeItem('schoolsync_autofill');
-      }
-    }
-
     const currentUser = getFromStorage(KEYS.CURRENT_USER);
     const token = getFromStorage(KEYS.AUTH_TOKEN);
     if (token) setAuthToken(token);
