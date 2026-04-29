@@ -769,9 +769,6 @@ export default function HeroSection({ loginRef }) {
         </div>
       )}
 
-      {/* Hyperframe border */}
-      {!reducedMotion && <HyperframeBorder />}
-
       {/* Education-themed floating elements */}
       {!reducedMotion && <EducationElements />}
 
@@ -869,61 +866,64 @@ export default function HeroSection({ loginRef }) {
         animate="visible"
         style={{ y: contentY }}
       >
-        {/* Simple Logo - no animations */}
+        {/* Professional School Logo */}
         <motion.div
           variants={itemVariants}
-          className="mb-12"
+          className="mb-8"
           style={{ y: logoY, opacity: logoOpacity }}
         >
           <img
             src="/OP-CS_CONNECT/schoolsync.png"
             alt="SchoolSync"
-            className="w-full max-w-3xl mx-auto"
+            className="w-full max-w-2xl mx-auto h-auto"
+            style={{ filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1))' }}
           />
         </motion.div>
 
-        {/* Clean Headline - no duplicates or flickering */}
+        {/* Professional Headline */}
         <motion.h1
           variants={itemVariants}
-          className="text-6xl sm:text-7xl lg:text-8xl font-bold tracking-tight leading-[1.05] mb-6"
-          style={{ color: '#1f2937' }}
+          className="text-5xl sm:text-6xl lg:text-7xl font-bold text-gray-900 mb-4"
         >
           One Platform.
         </motion.h1>
         
         <motion.h2
           variants={itemVariants}
-          className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-gray-700 mb-8"
-          style={{
-            background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}
+          className="text-xl sm:text-2xl lg:text-3xl font-semibold text-gray-700 mb-6"
         >
           Complete School Management
         </motion.h2>
 
-        {/* Clean Subtext */}
+        {/* Professional Description */}
         <motion.p
           variants={itemVariants}
-          className="text-xl sm:text-2xl max-w-3xl mx-auto leading-relaxed mb-12 font-normal"
-          style={{ color: '#6b7280' }}
+          className="text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed mb-10 text-gray-600"
         >
           The unified school management system for students, teachers, parents, and administrators.
         </motion.p>
 
-        {/* CTA Buttons with magnetic effect */}
+        {/* Professional CTA Buttons */}
         <motion.div 
           variants={itemVariants} 
-          className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-8"
+          className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8"
         >
-          <MagneticButton primary onClick={scrollToLogin}>
+          <motion.button
+            onClick={scrollToLogin}
+            className="px-8 py-3 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             Get Started
-          </MagneticButton>
-          <MagneticButton secondary onClick={() => window.open('#features', '_self')}>
+          </motion.button>
+          <motion.button
+            onClick={() => window.open('#features', '_self')}
+            className="px-8 py-3 bg-white text-orange-500 font-semibold rounded-lg border-2 border-orange-500 hover:bg-orange-50 transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             Learn More
-          </MagneticButton>
+          </motion.button>
         </motion.div>
 
         {/* Scroll indicator with proper spacing */}
