@@ -866,6 +866,9 @@ export default function HeroSection({ loginRef }) {
           src="/OP-CS_CONNECT/logos/schoolsyncbgfreelogo.png"
           alt="SchoolSync"
           className="w-32 h-auto"
+          onError={(e) => {
+            e.target.src = '/OP-CS_CONNECT/schoolsync.png';
+          }}
         />
       </motion.div>
       
@@ -896,7 +899,7 @@ export default function HeroSection({ loginRef }) {
         {/* Professional Description */}
         <motion.p
           variants={itemVariants}
-          className="text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed mb-10 text-gray-600"
+          className="text-lg sm:text-xl max-w-3xl mx-auto leading-relaxed mb-8 text-gray-600"
         >
           The unified school management system for students, teachers, parents, and administrators.
         </motion.p>
@@ -927,7 +930,7 @@ export default function HeroSection({ loginRef }) {
         {/* Centered Scroll indicator */}
         <motion.div 
           variants={itemVariants} 
-          className="flex justify-center mt-12"
+          className="flex justify-center"
         >
           <motion.button
             onClick={scrollToLogin}
