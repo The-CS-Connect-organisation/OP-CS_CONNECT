@@ -40,7 +40,11 @@ export const authService = {
     console.log('🔐 Using LOCAL_DEMO mode');
     const found = localUsersRepo.findByEmail(cleanEmail);
     console.log('🔐 User found:', found?.name || 'NOT FOUND');
-    if (!found || found.password !== cleanPassword) return { success: false, error: 'Invalid email or password' };
+    console.log('🔐 Password check - entered:', cleanPassword, 'stored:', found?.password);
+    if (!found || found.password !== cleanPassword) {
+      console.log('🔐 Password mismatch or user not found');
+      return { success: false, error: 'Invalid email or password' };
+    }
     if (found.isActive === false) return { success: false, error: 'Account is disabled. Please contact admin.' };
     const { password: _pw, ...userWithoutPassword } = found;
     setSession({ user: userWithoutPassword, token: null });
