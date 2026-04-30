@@ -137,7 +137,9 @@ export const initializeApp = () => {
   // Force re-seed when seed data structure changes (e.g., email fixes).
   const SEED_VERSION = 5; // Bump this to force re-seed (Driver persistence fix)
   const storedVersion = getFromStorage('sms_seed_version', 0);
+  console.log('🌱 Seed initialization - storedVersion:', storedVersion, 'SEED_VERSION:', SEED_VERSION);
   if (storedVersion < SEED_VERSION) {
+    console.log('🌱 Version mismatch - clearing stale data');
     // Clear stale user data
     localStorage.removeItem(KEYS.USERS);
     localStorage.removeItem(KEYS.FEES);
@@ -149,9 +151,13 @@ export const initializeApp = () => {
 
   // Ensure `users` exists.
   let users = getFromStorage(KEYS.USERS, null);
+  console.log('🌱 Users from storage:', users?.length || 0, 'users');
   if (!Array.isArray(users) || users.length === 0) {
+    console.log('🌱 Seeding users...');
     users = seedUsers();
+    console.log('🌱 Seeded users:', users.length, 'users');
     setToStorage(KEYS.USERS, users);
+    console.log('🌱 Users saved to localStorage');
   }
 
   // Ensure `fees` exists for current users.
