@@ -33,7 +33,36 @@ export const Login = ({ onLogin, onSwitch }) => {
   useEffect(() => {
     const raw = sessionStorage.getItem('schoolsync_autofill');
     console.log('Checking sessionStorage for autofill:', raw);
-    if (!raw) return;
+    if (!raw) {
+      // Also check URL hash for credentials
+      const hash = window.location.hash;
+      const params = new URLSearchParams(hash.split('?')[1]);
+      const autologin = params.get('autologin');
+      const pass = params.get('pass');
+      if (autologin && pass) {
+        console.log('Found credentials in URL hash:', { email: autologin });
+        setEmail(decodeURIComponent(autologin));
+        setPassword(decodeURIComponent(pass));
+        setLoading(true);
+        onLogin(decodeURIComponent(autologin), decodeURIComponent(pass)).then((result) => {
+          console.log('Auto-login result:', result);
+          if (result?.success) {
+            setLoginSuccess(true);
+            navigate(`/${result.user.role}/dashboard`);
+            // Clean URL
+            window.location.hash = window.location.hash.split('?')[0];
+          } else {
+            setError(result?.error || 'Login failed');
+            setLoading(false);
+          }
+        }).catch((err) => {
+          console.error('Auto-login error:', err);
+          setError('Login failed. Please try again.');
+          setLoading(false);
+        });
+      }
+      return;
+    }
     try {
       const { email: e, password: p, portal } = JSON.parse(raw);
       console.log('Parsed autofill data:', { email: e, portal });
