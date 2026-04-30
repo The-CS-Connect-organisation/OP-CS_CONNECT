@@ -135,7 +135,7 @@ export const initializeApp = () => {
   };
 
   // Force re-seed when seed data structure changes (e.g., email fixes).
-  const SEED_VERSION = 4; // Bump this to force re-seed (Added Drivers)
+  const SEED_VERSION = 5; // Bump this to force re-seed (Driver persistence fix)
   const storedVersion = getFromStorage('sms_seed_version', 0);
   if (storedVersion < SEED_VERSION) {
     // Clear stale user data
