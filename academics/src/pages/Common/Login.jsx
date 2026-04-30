@@ -21,6 +21,7 @@ export const Login = ({ onLogin, onSwitch }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
   const { playClick, playBlip } = useSound();
   const autofillAttempted = useRef(false);
 
@@ -54,8 +55,9 @@ export const Login = ({ onLogin, onSwitch }) => {
       onLogin(e, p).then((result) => {
         console.log('Auto-login result:', result);
         if (result?.success) {
-          // Navigation is handled by useAuth hook
-          console.log('Login successful, useAuth will handle navigation');
+          setLoginSuccess(true);
+          console.log('Login successful, navigating to dashboard');
+          navigate(`/${result.user.role}/dashboard`);
         } else {
           console.error('Auto-login failed:', result?.error);
           setError(result?.error || 'Login failed');
@@ -84,7 +86,8 @@ export const Login = ({ onLogin, onSwitch }) => {
     
     const result = await onLogin(email.trim().toLowerCase(), password.trim());
     if (result.success) {
-      // Navigation is handled by useAuth hook
+      setLoginSuccess(true);
+      navigate(`/${result.user.role}/dashboard`);
     } else {
       setError(result.error);
       setLoading(false);
