@@ -37,6 +37,7 @@ import AdminExams from './pages/AdminPortal/AdminExams';
 import AdminFees from './pages/AdminPortal/AdminFees';
 import AdminAILab from './pages/AdminPortal/AdminAILab';
 import AdminComms from './pages/AdminPortal/AdminComms';
+import AdminBusAssignment from './pages/AdminPortal/AdminBusAssignment';
 
 // Academic Portal - Student Pages
 import { Timetable } from './pages/AcademicPortal/Student/Timetable';
@@ -511,6 +512,11 @@ function App() {
           <Route path="/admin/comms" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <AdminComms user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/bus-assignment" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminBusAssignment user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 

@@ -31,6 +31,12 @@ const ROLE_NAV = {
       ]
     },
     {
+      section: 'Transportation',
+      items: [
+        { title: 'Bus Assignment', icon: Bus, route: '/admin/bus-assignment' },
+      ]
+    },
+    {
       section: 'Communication',
       items: [
         { title: 'Announcements', icon: FileText, route: '/admin/announcements' },
@@ -38,10 +44,9 @@ const ROLE_NAV = {
       ]
     },
     {
-      section: 'Tools',
+      section: 'Settings',
       items: [
-        { title: 'AI Lab', icon: Sparkles, route: '/admin/ai-lab' },
-        { title: 'Settings', icon: Settings, route: '/admin/settings' },
+        { title: 'Configuration', icon: Settings, route: '/admin/settings' },
       ]
     },
   ],

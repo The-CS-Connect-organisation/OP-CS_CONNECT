@@ -20,25 +20,19 @@ import {
  * @description Main admin dashboard with school-wide analytics and management tools
  */
 const AdminDashboard = ({ user, addToast }) => {
-  // Mock data - would come from backend API
+  // Empty states - data would come from backend API
   const [stats] = useState({
-    totalStudents: 1250,
-    totalTeachers: 85,
-    totalParents: 1180,
-    totalClasses: 42,
-    attendanceToday: 94.5,
-    feesCollected: 89.2,
-    upcomingExams: 3,
-    pendingNotices: 7,
+    totalStudents: 0,
+    totalTeachers: 0,
+    totalParents: 0,
+    totalClasses: 0,
+    attendanceToday: 0,
+    feesCollected: 0,
+    upcomingExams: 0,
+    pendingNotices: 0,
   });
 
-  const [recentActivities] = useState([
-    { id: 1, type: 'student', message: 'New student admitted: John Doe', time: '5 min ago' },
-    { id: 2, type: 'teacher', message: 'Teacher Sarah Wilson marked attendance', time: '12 min ago' },
-    { id: 3, type: 'fees', message: 'Fee payment received: $1,250', time: '25 min ago' },
-    { id: 4, type: 'exam', message: 'Math exam scheduled for Grade 10', time: '1 hour ago' },
-    { id: 5, type: 'notice', message: 'New announcement: Sports Day', time: '2 hours ago' },
-  ]);
+  const [recentActivities] = useState([]);
 
   const quickActions = [
     { icon: UserPlus, label: 'Add User', color: 'bg-blue-500', action: () => addToast?.('Opening user creation form...', 'info') },
@@ -136,39 +130,15 @@ const AdminDashboard = ({ user, addToast }) => {
             <h2 className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
               Recent Activity
             </h2>
-            <button className="text-sm font-medium" style={{ color: 'var(--primary)' }}>
-              View All
-            </button>
           </div>
-          <div className="space-y-4">
-            {recentActivities.map((activity) => (
-              <div key={activity.id} className="flex items-start gap-3 pb-4 border-b last:border-0"
-                style={{ borderColor: 'var(--border-color)' }}>
-                <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                  activity.type === 'student' ? 'bg-blue-100' :
-                  activity.type === 'teacher' ? 'bg-green-100' :
-                  activity.type === 'fees' ? 'bg-yellow-100' :
-                  activity.type === 'exam' ? 'bg-purple-100' :
-                  'bg-gray-100'
-                }`}>
-                  <Activity size={16} className={
-                    activity.type === 'student' ? 'text-blue-600' :
-                    activity.type === 'teacher' ? 'text-green-600' :
-                    activity.type === 'fees' ? 'text-yellow-600' :
-                    activity.type === 'exam' ? 'text-purple-600' :
-                    'text-gray-600'
-                  } />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    {activity.message}
-                  </p>
-                  <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-                    {activity.time}
-                  </p>
-                </div>
-              </div>
-            ))}
+          <div className="flex flex-col items-center justify-center py-12">
+            <Activity size={48} style={{ color: 'var(--text-muted)' }} className="mb-3 opacity-50" />
+            <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>
+              No recent activities
+            </p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+              Activity will appear here as users interact with the system
+            </p>
           </div>
         </div>
 
