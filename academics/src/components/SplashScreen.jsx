@@ -1,8 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence, useAnimation } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, GraduationCap, BookOpen, Users, Bus, UserCog } from 'lucide-react';
 
 const PHRASES = ['Learn.', 'Grow.', 'Succeed.'];
+
+// Demo credentials for each role
+const DEMO_PROFILES = [
+  { role: 'Student',  icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'alex@schoolsync.edu',   password: 'student123' },
+  { role: 'Teacher',  icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'james@schoolsync.edu',  password: 'teacher123' },
+  { role: 'Parent',   icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent@schoolsync.edu', password: 'parent123'  },
+  { role: 'Driver',   icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver1@schoolsync.edu',password: 'driver123'  },
+  { role: 'Admin',    icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin@schoolsync.edu',  password: 'admin123'   },
+];
 
 const AuroraBlob = ({ color, x, y, size, delay, duration }) => (
   <motion.div
@@ -254,6 +263,42 @@ const SplashScreen = ({ onComplete, onLogin }) => {
               className="w-full mt-4"
             >
               <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+                {/* Quick Login Role Buttons */}
+                <div className="mb-5">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-3 text-center">Quick Login</p>
+                  <div className="grid grid-cols-5 gap-2">
+                    {DEMO_PROFILES.map(({ role, icon: Icon, color, bg, email: demoEmail, password: demoPass }) => (
+                      <motion.button
+                        key={role}
+                        type="button"
+                        whileHover={{ scale: 1.06 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => { setEmail(demoEmail); setPassword(demoPass); setLoginError(''); }}
+                        className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all"
+                        style={{
+                          background: email === demoEmail ? bg : '#f9fafb',
+                          borderColor: email === demoEmail ? color : '#e5e7eb',
+                        }}
+                        title={`Login as ${role}`}
+                      >
+                        <Icon size={16} style={{ color }} />
+                        <span className="text-[9px] font-bold uppercase tracking-wide" style={{ color: email === demoEmail ? color : '#9ca3af' }}>
+                          {role}
+                        </span>
+                      </motion.button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="relative mb-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-100" />
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-white px-3 text-[10px] text-gray-400 uppercase tracking-widest font-semibold">or enter manually</span>
+                  </div>
+                </div>
+
                 <form onSubmit={handleLogin} className="space-y-4">
                   {/* Email */}
                   <div className="space-y-1.5">
