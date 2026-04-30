@@ -95,12 +95,20 @@ const LoadingScreen = () => (
 const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin'];
 
 // Protected Route Component
-const ProtectedRoute = ({ user, children, requiredRole, portalLogout, autoLoginInProgress, ...props }) => {
-  // Check if auto-login credentials are present - if so, show loading instead of redirecting
-  const hasAutoLogin = () => { const hash = window.location.hash; const params = new URLSearchParams(hash.split("?")[1]); return params.has("autologin") && params.has("pass"); };
+const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
+  // Check if auto-login credentials are present in URL hash - if so, show loading instead of redirecting
+  const hasAutoLogin = () => { 
+    try {
+      const hash = window.location.hash;
+      const params = new URLSearchParams(hash.split("?")[1]);
+      return params.has("autologin") && params.has("pass");
+    } catch {
+      return false;
+    }
+  };
 
   if (!user) {
-    if (hasAutoLogin() || autoLoginInProgress) {
+    if (hasAutoLogin()) {
       return <LoadingScreen />;
     }
     return <Navigate to="/login" replace />;
@@ -203,7 +211,6 @@ function App() {
     notifications: userNotifications,
     onMarkRead: markNotificationRead,
     portalLogout: logout,
-    autoLoginInProgress,
   };
 
   return (
