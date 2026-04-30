@@ -96,7 +96,24 @@ const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
-  if (!user) return <Navigate to="/login" replace />;
+  // Check if auto-login credentials are present - if so, show loading instead of redirecting
+  const hasAutoLogin = () => {
+    try {
+      const raw = sessionStorage.getItem('schoolsync_autofill');
+      if (raw) {
+        const { portal } = JSON.parse(raw);
+        return portal === 'academics';
+      }
+    } catch {}
+    return false;
+  };
+
+  if (!user) {
+    if (hasAutoLogin()) {
+      return <LoadingScreen />;
+    }
+    return <Navigate to="/login" replace />;
+  }
   
   // If user role is not allowed in this portal at all, auto-logout and bounce
   if (!ALLOWED_ROLES.includes(user.role)) {
