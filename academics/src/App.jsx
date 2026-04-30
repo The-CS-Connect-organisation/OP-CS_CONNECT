@@ -111,7 +111,9 @@ const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }
     if (hasAutoLogin()) {
       return <LoadingScreen />;
     }
-    return <Navigate to="/login" replace />;
+    // Preserve hash when redirecting to login so credentials are available
+    const currentHash = window.location.hash;
+    return <Navigate to={`/login${currentHash}`} replace />;
   }
   
   // If user role is not allowed in this portal at all, auto-logout and bounce
