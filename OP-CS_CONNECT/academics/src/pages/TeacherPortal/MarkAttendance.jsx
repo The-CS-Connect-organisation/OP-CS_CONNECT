@@ -1,29 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Check, X, ChevronLeft, ChevronRight, Activity, Calendar, Users, Zap, Clock, Search } from 'lucide-react';
+import { Check, X, ChevronLeft, ChevronRight, Users, Zap, Clock, Search } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
-import { useStore } from '../../hooks/useStore';
-import { KEYS } from '../../data/schema';
+import { teacherApi } from '../../services/apiDataLayer';
 import { useSound } from '../../hooks/useSound';
 
 export const MarkAttendance = ({ user, addToast }) => {
-  const { data: users } = useStore(KEYS.USERS, []);
-  const { data: attendance, add, update } = useStore(KEYS.ATTENDANCE, []);
   const { playClick, playBlip, playSwitch } = useSound();
 
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [selectedClass, setSelectedClass] = useState('10-A');
   const [visibleMonth, setVisibleMonth] = useState(() => new Date());
   const [marks, setMarks] = useState({});
-
-  const students = useMemo(
-    () => users.filter(u => u.role === 'student' && u.class === selectedClass),
-    [users, selectedClass]
-  );
-
-  const subjects = user.subjects || ['General'];
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const statusConfig = {
     present: { icon: Check, color: 'text-slate-400', activeColor: 'bg-emerald-600 text-white shadow-emerald-600/20', label: 'Present' },
@@ -31,58 +23,76 @@ export const MarkAttendance = ({ user, addToast }) => {
     absent: { icon: X, color: 'text-slate-400', activeColor: 'bg-rose-600 text-white shadow-rose-600/20', label: 'Absent' },
   };
 
-  const getAggregatedStatusForStudent = (studentId, date) => {
-    const recs = attendance.filter(a => a.studentId === studentId && a.date === date);
-    if (recs.length === 0) return 'none';
-    const statuses = recs.map(r => r.status);
-    if (statuses.includes('absent')) return 'absent';
-    if (statuses.includes('late')) return 'late';
-    if (statuses.includes('present')) return 'present';
-    return 'none';
-  };
+  // Load attendance data when class or date changes
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await teacherApi.getClassAttendance(selectedClass, selectedDate);
+        if (!alive) return;
+        // API returns { success, data: { students: [...], attendance: [...] } }
+        const data = res?.data?.data ?? res?.data ?? {};
+        const studentList = data.students ?? [];
+        const existingAttendance = data.attendance ?? [];
+
+        setStudents(studentList);
+
+        // Pre-fill marks from existing attendance
+        const initialMarks = {};
+        existingAttendance.forEach(entry => {
+          initialMarks[entry.studentId] = entry.status;
+        });
+        // Default unmarked students to 'present'
+        studentList.forEach(s => {
+          if (!initialMarks[s._id ?? s.id]) {
+            initialMarks[s._id ?? s.id] = 'present';
+          }
+        });
+        setMarks(initialMarks);
+      } catch (err) {
+        if (!alive) return;
+        addToast?.('Failed to load attendance data', 'error');
+        setStudents([]);
+        setMarks({});
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [selectedClass, selectedDate]);
 
   const daySummary = useMemo(() => {
-    const map = { present: [], late: [], absent: [], none: [] };
-    for (const s of students) {
-      const status = getAggregatedStatusForStudent(s.id, selectedDate);
-      map[status]?.push(s);
-    }
+    const map = { present: 0, late: 0, absent: 0, none: 0 };
+    students.forEach(s => {
+      const id = s._id ?? s.id;
+      const status = marks[id] ?? 'none';
+      if (map[status] !== undefined) map[status]++;
+      else map.none++;
+    });
     return map;
-  }, [students, attendance, selectedDate]);
-
-  useEffect(() => {
-    const next = {};
-    for (const s of students) {
-      const status = getAggregatedStatusForStudent(s.id, selectedDate);
-      if (status !== 'none') next[s.id] = status;
-    }
-    setMarks(next);
-  }, [selectedDate, selectedClass, students]);
+  }, [students, marks]);
 
   const handleMark = (studentId, status) => {
     playSwitch();
     setMarks(prev => ({ ...prev, [studentId]: status }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     playBlip();
-    let changedCount = 0;
-    for (const subject of subjects) {
-      for (const student of students) {
-        const status = marks[student.id] || 'present';
-        const existing = attendance.find(
-          a => a.studentId === student.id && a.date === selectedDate && a.subject === subject
-        );
-        const payload = { studentId: student.id, date: selectedDate, subject, status };
-        if (existing) {
-          update(existing.id, payload);
-        } else {
-          add({ id: `att-${student.id}-${selectedDate}-${subject}-${Date.now()}`, ...payload });
-        }
-        changedCount++;
-      }
+    try {
+      setSubmitting(true);
+      const entries = students.map(s => {
+        const id = s._id ?? s.id;
+        return { studentId: id, status: marks[id] || 'present', notes: '' };
+      });
+      await teacherApi.markAttendance(selectedClass, selectedDate, entries);
+      addToast?.(`Attendance saved for ${selectedClass} - ${selectedDate}`, 'success');
+    } catch (err) {
+      addToast?.(err?.message || 'Failed to save attendance', 'error');
+    } finally {
+      setSubmitting(false);
     }
-    addToast?.(`Attendance saved for ${selectedClass} - ${selectedDate}`, 'success');
   };
 
   const monthDays = useMemo(() => {
@@ -93,59 +103,63 @@ export const MarkAttendance = ({ user, addToast }) => {
     const startDate = new Date(year, month, 1 - firstWeekday);
     const cells = [];
     for (let i = 0; i < 42; i++) {
-        const d = new Date(startDate);
-        d.setDate(startDate.getDate() + i);
-        cells.push(d);
+      const d = new Date(startDate);
+      d.setDate(startDate.getDate() + i);
+      cells.push(d);
     }
     return cells;
   }, [visibleMonth]);
-
-  const getDayIndicator = (dateObj) => {
-    const dateStr = dateObj.toISOString().split('T')[0];
-    const studentsIds = new Set(students.map(s => s.id));
-    const recs = attendance.filter(a => a.date === dateStr && studentsIds.has(a.studentId));
-    if (recs.length === 0) return null;
-    return true;
-  };
 
   return (
     <div className="space-y-8 max-w-[1400px] mx-auto w-full pt-4 pb-12 font-sans">
       <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
         <div className="flex items-center gap-2 mb-4">
-           <div className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-widest border border-slate-200">
-             Student Records
-           </div>
-           <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-2">
-             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-             Live Sync Enabled
-           </div>
+          <div className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-widest border border-slate-200">
+            Student Records
+          </div>
+          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-slate-400 ml-2">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Live Sync Enabled
+          </div>
         </div>
         <h1 className="text-4xl font-bold tracking-tight text-slate-900 flex items-center gap-4">
-           <Users className="text-slate-300" size={40} />
-           Mark Attendance
+          <Users className="text-slate-300" size={40} />
+          Mark Attendance
         </h1>
       </motion.div>
 
       <Card className="flex flex-col md:flex-row gap-6 p-6 bg-white border border-slate-200 rounded-3xl shadow-sm">
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Date</label>
-          <input type="date" value={selectedDate} onChange={e => { playClick(); setSelectedDate(e.target.value); }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-slate-900 focus:bg-white transition-all" />
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={e => { playClick(); setSelectedDate(e.target.value); }}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-slate-900 focus:bg-white transition-all"
+          />
         </div>
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Class</label>
-          <select value={selectedClass} onChange={e => { playClick(); setSelectedClass(e.target.value); }} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-slate-900 focus:bg-white transition-all min-w-[140px]">
+          <select
+            value={selectedClass}
+            onChange={e => { playClick(); setSelectedClass(e.target.value); }}
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold focus:outline-none focus:border-slate-900 focus:bg-white transition-all min-w-[140px]"
+          >
             <option value="10-A">10-A</option>
             <option value="10-B">10-B</option>
+            <option value="11-A">11-A</option>
+            <option value="11-B">11-B</option>
           </select>
         </div>
         <div className="flex-1" />
-        <Button 
-          variant="primary" 
-          onClick={handleSubmit} 
-          className="bg-slate-900 hover:bg-slate-800 text-white min-w-[200px] rounded-2xl h-12 shadow-xl shadow-slate-900/10 self-center" 
+        <Button
+          variant="primary"
+          onClick={handleSubmit}
+          disabled={submitting || loading}
+          className="bg-slate-900 hover:bg-slate-800 text-white min-w-[200px] rounded-2xl h-12 shadow-xl shadow-slate-900/10 self-center"
           icon={Zap}
         >
-          Publish Records
+          {submitting ? 'Saving...' : 'Publish Records'}
         </Button>
       </Card>
 
@@ -158,17 +172,23 @@ export const MarkAttendance = ({ user, addToast }) => {
                 {visibleMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </h3>
               <div className="flex gap-1">
-                <button onClick={() => { playClick(); setVisibleMonth(new Date(visibleMonth.setMonth(visibleMonth.getMonth() - 1))); }} className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-all">
+                <button
+                  onClick={() => { playClick(); setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() - 1, 1)); }}
+                  className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-all"
+                >
                   <ChevronLeft size={16} />
                 </button>
-                <button onClick={() => { playClick(); setVisibleMonth(new Date(visibleMonth.setMonth(visibleMonth.getMonth() + 1))); }} className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-all">
+                <button
+                  onClick={() => { playClick(); setVisibleMonth(new Date(visibleMonth.getFullYear(), visibleMonth.getMonth() + 1, 1)); }}
+                  className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-all"
+                >
                   <ChevronRight size={16} />
                 </button>
               </div>
             </div>
 
             <div className="grid grid-cols-7 gap-1 mb-4 text-[9px] font-bold text-slate-400 uppercase text-center">
-              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d}>{d}</div>)}
+              {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => <div key={i}>{d}</div>)}
             </div>
 
             <div className="grid grid-cols-7 gap-1">
@@ -176,22 +196,20 @@ export const MarkAttendance = ({ user, addToast }) => {
                 const dateStr = dObj.toISOString().split('T')[0];
                 const isCurrentMonth = dObj.getMonth() === visibleMonth.getMonth();
                 const isSelected = dateStr === selectedDate;
-                const hasData = getDayIndicator(dObj);
 
                 return (
                   <button
                     key={dateStr}
                     onClick={() => { playClick(); setSelectedDate(dateStr); }}
                     className={`aspect-square rounded-xl text-[10px] font-bold transition-all flex flex-col items-center justify-center gap-1 border ${
-                      isSelected 
-                        ? 'border-slate-900 bg-slate-900 text-white shadow-lg shadow-slate-900/10' 
-                        : isCurrentMonth 
-                          ? 'border-transparent text-slate-600 hover:bg-slate-50' 
+                      isSelected
+                        ? 'border-slate-900 bg-slate-900 text-white shadow-lg shadow-slate-900/10'
+                        : isCurrentMonth
+                          ? 'border-transparent text-slate-600 hover:bg-slate-50'
                           : 'border-transparent opacity-20'
                     }`}
                   >
                     <span>{dObj.getDate()}</span>
-                    {hasData && !isSelected && <div className="h-1 w-1 rounded-full bg-slate-900" />}
                   </button>
                 );
               })}
@@ -201,17 +219,17 @@ export const MarkAttendance = ({ user, addToast }) => {
           <Card className="p-8 bg-slate-50 border border-slate-200 rounded-3xl">
             <h4 className="text-[10px] font-bold uppercase text-slate-500 tracking-widest mb-6">Daily Summary</h4>
             <div className="space-y-5">
-               {[
-                 { label: 'Present', count: daySummary.present.length, color: 'text-emerald-600' },
-                 { label: 'Late', count: daySummary.late.length, color: 'text-amber-600' },
-                 { label: 'Absent', count: daySummary.absent.length, color: 'text-rose-600' },
-                 { label: 'Unmarked', count: daySummary.none.length, color: 'text-slate-400' }
-               ].map(item => (
-                 <div key={item.label} className="flex items-center justify-between border-b border-slate-100 pb-2">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{item.label}</span>
-                    <span className={`text-xl font-bold ${item.color}`}>{String(item.count).padStart(2, '0')}</span>
-                 </div>
-               ))}
+              {[
+                { label: 'Present', count: daySummary.present, color: 'text-emerald-600' },
+                { label: 'Late', count: daySummary.late, color: 'text-amber-600' },
+                { label: 'Absent', count: daySummary.absent, color: 'text-rose-600' },
+                { label: 'Unmarked', count: daySummary.none, color: 'text-slate-400' }
+              ].map(item => (
+                <div key={item.label} className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{item.label}</span>
+                  <span className={`text-xl font-bold ${item.color}`}>{String(item.count).padStart(2, '0')}</span>
+                </div>
+              ))}
             </div>
           </Card>
         </div>
@@ -219,33 +237,38 @@ export const MarkAttendance = ({ user, addToast }) => {
         {/* Student List */}
         <div className="lg:col-span-8 space-y-4">
           <AnimatePresence mode="popLayout">
-            {students.length === 0 ? (
-              <div className="py-24 text-center bg-white border border-dashed border-slate-300 rounded-3xl">
+            {loading ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-24 text-center bg-white border border-dashed border-slate-300 rounded-3xl">
+                <Search size={40} className="mx-auto mb-4 text-slate-200" />
+                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Loading students...</p>
+              </motion.div>
+            ) : students.length === 0 ? (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-24 text-center bg-white border border-dashed border-slate-300 rounded-3xl">
                 <Search size={40} className="mx-auto mb-4 text-slate-200" />
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-400">No students found in {selectedClass}</p>
-              </div>
+              </motion.div>
             ) : (
               students.map((student, idx) => {
-                const current = marks[student.id] || 'present';
+                const id = student._id ?? student.id;
+                const current = marks[id] || 'present';
                 return (
                   <motion.div
-                    key={student.id}
+                    key={id}
                     initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.03 }}
                   >
-                    <Card 
+                    <Card
                       className="flex items-center gap-6 p-4 bg-white border border-slate-200 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/50 transition-all rounded-3xl group"
-                      onMouseEnter={playClick}
                     >
                       <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 font-bold group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all">
-                        {student.rollNo || '??'}
+                        {student.rollNo || student.rollNumber || '??'}
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="text-base font-bold text-slate-900 truncate">{student.name}</h4>
-                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 mt-0.5">ID: {student.id}</p>
+                        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400 mt-0.5">ID: {id}</p>
                       </div>
-                      
+
                       <div className="flex gap-2 p-1 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
                         {Object.entries(statusConfig).map(([status, config]) => {
                           const Icon = config.icon;
@@ -253,10 +276,10 @@ export const MarkAttendance = ({ user, addToast }) => {
                           return (
                             <button
                               key={status}
-                              onClick={() => handleMark(student.id, status)}
+                              onClick={() => handleMark(id, status)}
                               className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 ${
-                                isActive 
-                                  ? `${config.activeColor} shadow-lg scale-110` 
+                                isActive
+                                  ? `${config.activeColor} shadow-lg scale-110`
                                   : `${config.color} hover:bg-white hover:text-slate-900`
                               }`}
                               title={config.label}

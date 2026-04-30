@@ -52,6 +52,11 @@ export const authService = {
       role: data?.role,
     };
 
+    // Validate required fields
+    if (!cleanData.name || !cleanData.email || !cleanData.password || !cleanData.role) {
+      return { success: false, error: 'Name, email, password, and role are required' };
+    }
+
     if (getDataMode() === DATA_MODES.REMOTE_API) {
       const payload = await apiRequest('/auth/signup', {
         method: 'POST',

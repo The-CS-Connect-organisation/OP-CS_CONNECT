@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck } from 'lucide-react';
 import { useSound } from '../../hooks/useSound';
 
 export const Login = ({ onLogin, onSwitch }) => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -27,7 +29,10 @@ export const Login = ({ onLogin, onSwitch }) => {
       // Submit immediately without waiting for re-render
       setLoading(true);
       onLogin(e, p).then((result) => {
-        if (!result?.success) {
+        if (result?.success) {
+          // Navigate to dashboard based on user role
+          navigate(`/${result.user.role}/dashboard`);
+        } else {
           setError(result?.error || 'Login failed');
           setLoading(false);
         }
@@ -51,7 +56,10 @@ export const Login = ({ onLogin, onSwitch }) => {
     await new Promise(r => setTimeout(r, 800));
     
     const result = await onLogin(email.trim().toLowerCase(), password.trim());
-    if (!result.success) {
+    if (result.success) {
+      // Navigate to dashboard based on user role
+      navigate(`/${result.user.role}/dashboard`);
+    } else {
       setError(result.error);
       setLoading(false);
     }

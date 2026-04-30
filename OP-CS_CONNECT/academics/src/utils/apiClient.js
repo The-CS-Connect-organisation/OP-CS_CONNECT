@@ -45,13 +45,15 @@ export const request = async (path, options = {}) => {
 
   let payload = null;
   try {
-    payload = await response.json();
-  } catch {
+    const text = await response.text();
+    payload = text ? JSON.parse(text) : null;
+  } catch (parseError) {
+    // If response is not JSON, create a generic payload
     payload = null;
   }
 
   if (!response.ok) {
-    const message = payload?.message || 'Request failed';
+    const message = payload?.message || `HTTP ${response.status}: Request failed`;
     throw new ApiClientError(message, response.status, payload?.details ?? null);
   }
 
