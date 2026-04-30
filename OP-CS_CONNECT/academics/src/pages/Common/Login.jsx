@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, GraduationCap, BookOpen, Users, Bus, UserCog } from 'lucide-react';
 import { useSound } from '../../hooks/useSound';
+import { ForgotPassword } from './ForgotPassword';
 
 const DEMO_PROFILES = [
   { role: 'Student', icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'alex@schoolsync.edu',    password: 'student123' },
@@ -19,8 +20,13 @@ export const Login = ({ onLogin, onSwitch }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
   const { playClick, playBlip } = useSound();
   const autofillAttempted = useRef(false);
+
+  if (showForgot) {
+    return <ForgotPassword onBack={() => setShowForgot(false)} />;
+  }
 
   // Auto-fill AND auto-submit from landing page sessionStorage in one shot
   useEffect(() => {
@@ -169,7 +175,7 @@ export const Login = ({ onLogin, onSwitch }) => {
             <div className="space-y-2">
               <div className="flex items-center justify-between ml-1">
                 <label className="text-xs font-semibold text-slate-700">Password</label>
-                <button type="button" className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors">Forgot?</button>
+                <button type="button" onClick={() => setShowForgot(true)} className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors">Forgot?</button>
               </div>
               <div className="relative group">
                 <input 

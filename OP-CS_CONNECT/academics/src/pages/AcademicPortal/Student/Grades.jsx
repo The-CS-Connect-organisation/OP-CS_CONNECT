@@ -1,23 +1,54 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Award, TrendingUp, BookOpen, Download, FileText, Terminal, Activity, Hash, Layers, Zap, ChevronRight, BarChart3, Database } from 'lucide-react';
+import { Award, TrendingUp, BookOpen, Download, FileText, Terminal, Activity, Hash, Layers, Zap, ChevronRight, BarChart3, Database, Loader2 } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { MarksChart, SubjectWiseChart } from '../../../components/charts/MarksChart';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
 import { useSound } from '../../../hooks/useSound';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { studentApi } from '../../../services/apiDataLayer';
+import { getDataMode, DATA_MODES } from '../../../config/dataMode';
+import { useStore } from '../../../hooks/useStore';
+import { KEYS } from '../../../data/schema';
 
 export const Grades = ({ user }) => {
-  const { data: marks } = useStore(KEYS.MARKS, []);
-  const { data: exams } = useStore(KEYS.EXAMS, []);
   const { playClick, playBlip } = useSound();
-  const myMarks = marks.filter(m => m.studentId === user.id);
-  
   const [selectedBoard, setSelectedBoard] = useState('CBSE');
+  const [apiMarks, setApiMarks] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  // Local store fallback
+  const { data: localMarks } = useStore(KEYS.MARKS, []);
+
+  useEffect(() => {
+    if (getDataMode() !== DATA_MODES.REMOTE_API) return;
+    let alive = true;
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await studentApi.getGrades();
+        if (alive && res?.marks) setApiMarks(res.marks);
+      } catch (e) {
+        console.error('Failed to load grades:', e);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [user?.id]);
+
+  // Use API data if available, fall back to local store
+  const rawMarks = getDataMode() === DATA_MODES.REMOTE_API ? apiMarks : localMarks;
+  const myMarks = rawMarks.filter(m => m.studentId === user.id || m.student_id === user.id).map(m => ({
+    ...m,
+    marksObtained: m.marksObtained ?? m.score ?? 0,
+    totalMarks: m.totalMarks ?? m.max_marks ?? 100,
+    examName: m.examName ?? m.exam_name ?? m.exam_type ?? 'Exam',
+    subject: m.subject ?? '',
+    grade: m.grade ?? '',
+  }));
 
   const overallAvg = useMemo(() => {
     if (myMarks.length === 0) return 0;

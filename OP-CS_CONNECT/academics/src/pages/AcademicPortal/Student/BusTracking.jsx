@@ -65,6 +65,43 @@ const createStopIcon = () => {
 const busIcon = createBusIcon();
 const stopIcon = createStopIcon();
 
+// Custom user location icon
+const createUserIcon = () => {
+  return L.divIcon({
+    className: 'custom-user-icon',
+    html: `
+      <div style="
+        background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        border: 3px solid white;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        animation: pulse 2s infinite;
+      ">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+      </div>
+      <style>
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.1); opacity: 0.8; }
+        }
+      </style>
+    `,
+    iconSize: [32, 32],
+    iconAnchor: [16, 16],
+    popupAnchor: [0, -16],
+  });
+};
+
+const userIcon = createUserIcon();
+
 // Map bounds setter component - fixes react-leaflet v4 bounds issue
 const MapBounds = ({ bounds }) => {
   const map = useMap();
@@ -83,9 +120,29 @@ export const BusTracking = ({ user }) => {
   const [buses, setBuses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
     loadRoutes();
+    // Get user's location for map centering
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.log('Geolocation error:', error);
+          // Default to Delhi if geolocation fails
+          setUserLocation({ latitude: 28.6139, longitude: 77.2090 });
+        }
+      );
+    } else {
+      // Default to Delhi if geolocation not supported
+      setUserLocation({ latitude: 28.6139, longitude: 77.2090 });
+    }
   }, []);
 
   useEffect(() => {
@@ -170,6 +227,11 @@ export const BusTracking = ({ user }) => {
   const getMapBounds = () => {
     const positions = [];
     
+    // Add user location if available
+    if (userLocation?.latitude && userLocation?.longitude) {
+      positions.push([userLocation.latitude, userLocation.longitude]);
+    }
+    
     // Add bus locations
     buses.forEach(bus => {
       if (bus.current_location?.latitude && bus.current_location?.longitude) {
@@ -187,8 +249,10 @@ export const BusTracking = ({ user }) => {
     }
     
     if (positions.length === 0) {
-      // Default to a central location (can be configured)
-      return [[28.6139, 77.2090], [28.6139, 77.2090]]; // Delhi as default
+      // Default to user location or Delhi
+      const defaultLat = userLocation?.latitude || 28.6139;
+      const defaultLng = userLocation?.longitude || 77.2090;
+      return [[defaultLat, defaultLng], [defaultLat, defaultLng]];
     }
     
     const lats = positions.map(p => p[0]);
@@ -210,7 +274,9 @@ export const BusTracking = ({ user }) => {
 
   const mapBounds = getMapBounds();
   const routePath = getRoutePath();
-  const center = selectedRoute?.stops?.[0]?.latitude && selectedRoute.stops[0]?.longitude
+  const center = userLocation?.latitude && userLocation?.longitude
+    ? [userLocation.latitude, userLocation.longitude]
+    : selectedRoute?.stops?.[0]?.latitude && selectedRoute.stops[0]?.longitude
     ? [selectedRoute.stops[0].latitude, selectedRoute.stops[0].longitude]
     : [28.6139, 77.2090];
 
@@ -361,6 +427,23 @@ export const BusTracking = ({ user }) => {
                             </Popup>
                           </Marker>
                         ) : null
+                      )}
+                      
+                      {/* User location marker */}
+                      {userLocation?.latitude && userLocation?.longitude && (
+                        <Marker
+                          position={[userLocation.latitude, userLocation.longitude]}
+                          icon={userIcon}
+                        >
+                          <Popup>
+                            <div className="font-sans">
+                              <p className="font-bold text-sm">Your Location</p>
+                              <p className="text-xs text-gray-600">
+                                {userLocation.latitude.toFixed(4)}, {userLocation.longitude.toFixed(4)}
+                              </p>
+                            </div>
+                          </Popup>
+                        </Marker>
                       )}
                     </MapContainer>
                   </div>

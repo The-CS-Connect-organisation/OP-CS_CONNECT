@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { CheckSquare, TrendingUp, Calendar, Activity, Terminal, Hash, Layers, Zap, Info, Clock } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
@@ -7,11 +7,38 @@ import { AttendanceChart } from '../../../components/charts/AttendanceChart';
 import { useStore } from '../../../hooks/useStore';
 import { KEYS } from '../../../data/schema';
 import { useSound } from '../../../hooks/useSound';
+import { studentApi } from '../../../services/apiDataLayer';
+import { getDataMode, DATA_MODES } from '../../../config/dataMode';
 
 export const Attendance = ({ user }) => {
-  const { data: attendance } = useStore(KEYS.ATTENDANCE, []);
+  const { data: localAttendance } = useStore(KEYS.ATTENDANCE, []);
   const { playClick } = useSound();
-  const myAttendance = attendance.filter(a => a.studentId === user.id);
+  const [apiAttendance, setApiAttendance] = useState([]);
+
+  useEffect(() => {
+    if (getDataMode() !== DATA_MODES.REMOTE_API) return;
+    let alive = true;
+    (async () => {
+      try {
+        const res = await studentApi.getAttendance();
+        if (alive && res?.records) setApiAttendance(res.records);
+      } catch (e) {
+        console.error('Failed to load attendance:', e);
+      }
+    })();
+    return () => { alive = false; };
+  }, [user?.id]);
+
+  const rawAttendance = getDataMode() === DATA_MODES.REMOTE_API ? apiAttendance : localAttendance;
+  const myAttendance = rawAttendance
+    .filter(a => a.studentId === user.id || a.student_id === user.id)
+    .map(a => ({
+      ...a,
+      studentId: a.studentId ?? a.student_id,
+      status: a.status ?? 'present',
+      subject: a.subject ?? a.class_id ?? '',
+      date: a.date ?? a.created_at ?? '',
+    }));
 
   const stats = useMemo(() => {
     const total = myAttendance.length;

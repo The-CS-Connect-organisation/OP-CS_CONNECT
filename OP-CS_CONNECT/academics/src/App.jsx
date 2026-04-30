@@ -18,12 +18,25 @@ import SplashScreen from './components/SplashScreen';
 // Pages - Common
 import { Login } from './pages/Common/Login';
 import { Signup } from './pages/Common/Signup';
+import { NotFound } from './pages/Common/NotFound';
 
 // Pages - Portals (Dashboards)
 import { StudentDashboard } from './pages/AcademicPortal/Dashboard/StudentDashboard';
 import { ParentDashboard } from './pages/ManagementPortal/Parent/ParentDashboard';
 import { DriverDashboard } from './pages/DriverPortal/DriverDashboard';
 import { DriverProfile } from './pages/DriverPortal/DriverProfile';
+
+// Admin Portal Pages
+import { AdminDashboard } from './pages/AdminPortal/AdminDashboard';
+import { AdminAnalytics } from './pages/AdminPortal/AdminAnalytics';
+import { AdminUsers } from './pages/AdminPortal/AdminUsers';
+import { AdminTimetable } from './pages/AdminPortal/AdminTimetable';
+import { AdminAnnouncements } from './pages/AdminPortal/AdminAnnouncements';
+import { AdminPayroll } from './pages/AdminPortal/AdminPayroll';
+import { AdminExams } from './pages/AdminPortal/AdminExams';
+import { AdminFees } from './pages/AdminPortal/AdminFees';
+import { AdminAILab } from './pages/AdminPortal/AdminAILab';
+import { AdminComms } from './pages/AdminPortal/AdminComms';
 
 // Academic Portal - Student Pages
 import { Timetable } from './pages/AcademicPortal/Student/Timetable';
@@ -79,7 +92,7 @@ const LoadingScreen = () => (
 );
 
 // Allowed roles for this portal
-const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver'];
+const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
@@ -286,6 +299,21 @@ function App() {
               <CommunicationHub user={user} />
             </ProtectedRoute>
           } />
+          <Route path="/parent/timetable" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
+              <Timetable user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/parent/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
+              <Profile user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/parent/notifications" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
+              <NotificationCenter user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
           <Route path="/parent/bus-tracking" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
               <BusTracking user={user} />
@@ -386,13 +414,65 @@ function App() {
             </ProtectedRoute>
           } />
 
+          {/* 👨‍💼 Admin Portal */}
+          <Route path="/admin/dashboard" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminDashboard user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/analytics" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminAnalytics user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/users" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminUsers user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/timetable" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminTimetable user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/announcements" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminAnnouncements user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/payroll-hr" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminPayroll user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/exams" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminExams user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/fees" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminFees user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/ai-lab" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminAILab user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/comms" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminComms user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+
           {/* 🏁 Terminal Entry/Exit */}
           <Route path="/" element={
             user && ALLOWED_ROLES.includes(user.role) 
               ? <Navigate to={`/${user.role}/dashboard`} replace /> 
               : <Navigate to="/login" replace />
           } />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound user={user} />} />
         </Routes>
     </>
   );

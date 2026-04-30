@@ -60,6 +60,7 @@ const ROLE_NAV = {
         { title: 'Timetable', icon: Clock, route: '/student/timetable' },
         { title: 'Attendance', icon: UserCheck, route: '/student/attendance' },
         { title: 'Notes', icon: BookOpen, route: '/student/notes' },
+        { title: 'Study Planner', icon: Calendar, route: '/student/planner' },
       ]
     },
     {
@@ -67,6 +68,7 @@ const ROLE_NAV = {
       items: [
         { title: 'Fees', icon: Banknote, route: '/student/fees' },
         { title: 'Exams', icon: ClipboardList, route: '/student/exams' },
+        { title: 'Bus Tracking', icon: Heart, route: '/student/bus-tracking' },
       ]
     },
     {
@@ -74,6 +76,8 @@ const ROLE_NAV = {
       items: [
         { title: 'AI Assistant', icon: Sparkles, route: '/student/ai-lab' },
         { title: 'Messages', icon: MessageCircle, route: '/student/comms' },
+        { title: 'Nexus Hub', icon: Users, route: '/student/nexus' },
+        { title: 'Profile', icon: Users, route: '/student/profile' },
       ]
     },
   ],
@@ -143,13 +147,22 @@ const ROLE_NAV = {
       items: [
         { title: 'Attendance', icon: UserCheck, route: '/parent/attendance' },
         { title: 'Grades', icon: CheckCircle, route: '/parent/grades' },
+        { title: 'Timetable', icon: Clock, route: '/parent/timetable' },
         { title: 'Fees', icon: Banknote, route: '/parent/fees' },
+      ]
+    },
+    {
+      section: 'Services',
+      items: [
+        { title: 'Bus Tracking', icon: Heart, route: '/parent/bus-tracking' },
+        { title: 'Notifications', icon: Bell, route: '/parent/notifications' },
       ]
     },
     {
       section: 'Tools',
       items: [
         { title: 'Messages', icon: MessageCircle, route: '/parent/comms' },
+        { title: 'Profile', icon: Users, route: '/parent/profile' },
       ]
     },
   ],

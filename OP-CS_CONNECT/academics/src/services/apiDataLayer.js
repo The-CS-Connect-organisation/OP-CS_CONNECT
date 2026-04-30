@@ -448,36 +448,176 @@ export const teacherApi = {
 // ============================================================================
 
 export const studentApi = {
-  async getAssignments(classId = null) {
-    const query = classId ? `?classId=${classId}` : '';
-    return makeRequest('GET', `/student/assignments${query}`);
+  // Profile
+  async getProfile() {
+    return makeRequest('GET', '/student/profile', null, { cacheKey: 'student:profile' });
   },
 
-  async getAssignmentDetails(assignmentId) {
-    return makeRequest('GET', `/student/assignments/${assignmentId}`);
+  async updateProfile(updates) {
+    return makeRequest('PUT', '/student/profile', updates, { useCache: false });
+  },
+
+  // Dashboard
+  async getDashboard() {
+    return makeRequest('GET', '/student/dashboard', null, { cacheKey: 'student:dashboard' });
+  },
+
+  // Grades
+  async getGrades(subject = null, term = null) {
+    let query = '?';
+    if (subject) query += `subject=${subject}&`;
+    if (term) query += `term=${term}`;
+    return makeRequest('GET', `/student/grades${query}`, null, { cacheKey: `student:grades:${subject}:${term}` });
+  },
+
+  // Attendance
+  async getAttendance(startDate = null, endDate = null, subject = null) {
+    let query = '?';
+    if (startDate) query += `startDate=${startDate}&`;
+    if (endDate) query += `endDate=${endDate}&`;
+    if (subject) query += `subject=${subject}`;
+    return makeRequest('GET', `/student/attendance${query}`, null, { cacheKey: 'student:attendance' });
+  },
+
+  // Assignments
+  async getAssignments(status = null) {
+    const query = status ? `?status=${status}` : '';
+    return makeRequest('GET', `/student/assignments${query}`, null, { cacheKey: `student:assignments:${status}` });
   },
 
   async submitAssignment(assignmentId, submission) {
-    return makeRequest('POST', `/student/assignments/${assignmentId}/submit`, submission);
+    return makeRequest('POST', `/school/assignments/${assignmentId}/submissions`, submission, { useCache: false });
   },
 
-  async getAttendance(classId = null) {
-    const query = classId ? `?classId=${classId}` : '';
-    return makeRequest('GET', `/student/attendance${query}`);
+  // Notifications
+  async getNotifications() {
+    return makeRequest('GET', '/student/notifications', null, { useCache: false });
   },
 
-  async getGrades(classId = null) {
-    const query = classId ? `?classId=${classId}` : '';
-    return makeRequest('GET', `/student/grades${query}`);
+  // Timetable
+  async getTimetable() {
+    return makeRequest('GET', '/student/timetable', null, { cacheKey: 'student:timetable' });
   },
 
+  // Notes (from school routes)
   async getNotes(classId = null) {
     const query = classId ? `?classId=${classId}` : '';
-    return makeRequest('GET', `/student/notes${query}`);
+    return makeRequest('GET', `/school/notes${query}`);
   },
 
+  // Progress (from student-assistant)
   async getProgress() {
-    return makeRequest('GET', '/student/progress');
+    return makeRequest('GET', '/student-assistant/analytics');
+  },
+};
+
+// ============================================================================
+// STUDENT ASSISTANT API (AI-Powered Study Companion)
+// ============================================================================
+
+export const studentAssistantApi = {
+  // AI Doubt Resolution
+  async resolveDoubt(question, subject = null, context = null, imageUrl = null) {
+    return makeRequest('POST', '/student-assistant/doubts/resolve', {
+      question,
+      subject,
+      context,
+      imageUrl,
+    }, { useCache: false });
+  },
+
+  async getDoubtHistory(subject = null, page = 1, limit = 20) {
+    let query = `?page=${page}&limit=${limit}`;
+    if (subject) query += `&subject=${subject}`;
+    return makeRequest('GET', `/student-assistant/doubts/history${query}`);
+  },
+
+  // Study Plan
+  async generateStudyPlan(days = 7, focusAreas = [], examDate = null) {
+    return makeRequest('POST', '/student-assistant/study-plan/generate', {
+      days,
+      focusAreas,
+      examDate,
+    }, { useCache: false });
+  },
+
+  async getStudyPlan(planId) {
+    return makeRequest('GET', `/student-assistant/study-plan/${planId}`);
+  },
+
+  async updateStudyPlanProgress(planId, taskId, completed) {
+    return makeRequest('PATCH', `/student-assistant/study-plan/${planId}/progress`, {
+      taskId,
+      completed,
+    }, { useCache: false });
+  },
+
+  // Flashcards
+  async generateFlashcards(text, subject, topic) {
+    return makeRequest('POST', '/student-assistant/flashcards/generate', {
+      text,
+      subject,
+      topic,
+    }, { useCache: false });
+  },
+
+  async getFlashcards(subject = null) {
+    const query = subject ? `?subject=${subject}` : '';
+    return makeRequest('GET', `/student-assistant/flashcards${query}`);
+  },
+
+  async reviewFlashcard(setId, cardId, rating) {
+    return makeRequest('POST', '/student-assistant/flashcards/review', {
+      setId,
+      cardId,
+      rating,
+    }, { useCache: false });
+  },
+
+  // Practice Tests
+  async generatePracticeTest(subject, topic, difficulty = 'medium', questionCount = 10, timeLimit = null) {
+    return makeRequest('POST', '/student-assistant/practice-tests/generate', {
+      subject,
+      topic,
+      difficulty,
+      questionCount,
+      timeLimit,
+    }, { useCache: false });
+  },
+
+  async submitPracticeTest(testId, answers) {
+    return makeRequest('POST', `/student-assistant/practice-tests/${testId}/submit`, {
+      answers,
+    }, { useCache: false });
+  },
+
+  async getPracticeTests(subject = null, status = 'all') {
+    let query = '';
+    if (subject) query += `?subject=${subject}`;
+    if (status !== 'all') query += `&status=${status}`;
+    return makeRequest('GET', `/student-assistant/practice-tests${query}`);
+  },
+
+  // Study Analytics
+  async getStudyAnalytics(period = 30) {
+    return makeRequest('GET', `/student-assistant/analytics?period=${period}`);
+  },
+
+  // AI Answer Scorer
+  async scoreAnswer(text, subject = 'english', questionPrompt = null, maxScore = 10, imageUrl = null) {
+    return makeRequest('POST', '/student-assistant/score-answer', {
+      text,
+      subject,
+      questionPrompt,
+      maxScore,
+      imageUrl,
+    }, { useCache: false });
+  },
+
+  async getAnswerAnalysisHistory(subject = null, page = 1, limit = 20) {
+    let query = `?page=${page}&limit=${limit}`;
+    if (subject) query += `&subject=${subject}`;
+    return makeRequest('GET', `/student-assistant/answer-history${query}`);
   },
 };
 
