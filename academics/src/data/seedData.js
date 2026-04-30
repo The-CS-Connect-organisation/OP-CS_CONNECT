@@ -152,10 +152,14 @@ export const initializeApp = () => {
   // Ensure `users` exists.
   let users = getFromStorage(KEYS.USERS, null);
   console.log('🌱 Users from storage:', users?.length || 0, 'users');
+  if (users && users.length > 0) {
+    console.log('🌱 First user:', users[0]);
+  }
   if (!Array.isArray(users) || users.length === 0) {
     console.log('🌱 Seeding users...');
     users = seedUsers();
     console.log('🌱 Seeded users:', users.length, 'users');
+    console.log('🌱 First seeded user:', users[0]);
     setToStorage(KEYS.USERS, users);
     console.log('🌱 Users saved to localStorage');
   }
