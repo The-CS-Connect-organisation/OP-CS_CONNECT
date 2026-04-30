@@ -133,7 +133,12 @@ function App() {
     // Only show splash if not already seen in this session
     return !sessionStorage.getItem('hasSeenSplash');
   });
-  const [autoLoginInProgress, setAutoLoginInProgress] = useState(false);
+  const [autoLoginInProgress, setAutoLoginInProgress] = useState(() => {
+    // Check if credentials are in URL hash on initial load
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.split('?')[1]);
+    return params.has('autologin') && params.has('pass');
+  });
   
   const handleSplashComplete = useCallback(() => {
     sessionStorage.setItem('hasSeenSplash', 'true');
