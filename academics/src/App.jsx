@@ -27,16 +27,16 @@ import { DriverDashboard } from './pages/DriverPortal/DriverDashboard';
 import { DriverProfile } from './pages/DriverPortal/DriverProfile';
 
 // Admin Portal Pages
-import { AdminDashboard } from './pages/AdminPortal/AdminDashboard';
-import { AdminAnalytics } from './pages/AdminPortal/AdminAnalytics';
-import { AdminUsers } from './pages/AdminPortal/AdminUsers';
-import { AdminTimetable } from './pages/AdminPortal/AdminTimetable';
-import { AdminAnnouncements } from './pages/AdminPortal/AdminAnnouncements';
-import { AdminPayroll } from './pages/AdminPortal/AdminPayroll';
-import { AdminExams } from './pages/AdminPortal/AdminExams';
-import { AdminFees } from './pages/AdminPortal/AdminFees';
-import { AdminAILab } from './pages/AdminPortal/AdminAILab';
-import { AdminComms } from './pages/AdminPortal/AdminComms';
+import AdminDashboard from './pages/AdminPortal/AdminDashboard';
+import AdminAnalytics from './pages/AdminPortal/AdminAnalytics';
+import AdminUsers from './pages/AdminPortal/AdminUsers';
+import AdminTimetable from './pages/AdminPortal/AdminTimetable';
+import AdminAnnouncements from './pages/AdminPortal/AdminAnnouncements';
+import AdminPayroll from './pages/AdminPortal/AdminPayroll';
+import AdminExams from './pages/AdminPortal/AdminExams';
+import AdminFees from './pages/AdminPortal/AdminFees';
+import AdminAILab from './pages/AdminPortal/AdminAILab';
+import AdminComms from './pages/AdminPortal/AdminComms';
 
 // Academic Portal - Student Pages
 import { Timetable } from './pages/AcademicPortal/Student/Timetable';

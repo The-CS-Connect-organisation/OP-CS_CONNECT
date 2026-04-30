@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { GraduationCap, BookOpen, Users, ShieldCheck } from 'lucide-react';
+import { GraduationCap, BookOpen, Users, ShieldCheck, Car } from 'lucide-react';
 
 export const DEMO_CREDENTIALS = [
   {
@@ -37,6 +37,15 @@ export const DEMO_CREDENTIALS = [
     password: 'admin123',
     portal: 'management',
     accent: '#ffffff',
+  },
+  {
+    role: 'driver',
+    label: 'Driver',
+    icon: Car,
+    email: 'driver@schoolsync.edu',
+    password: 'driver123',
+    portal: 'academics',
+    accent: '#10b981',
   },
 ];
 
