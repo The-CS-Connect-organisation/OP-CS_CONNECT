@@ -117,6 +117,20 @@ const ROLE_NAV = {
       ]
     },
   ],
+  driver: [
+    {
+      section: 'Overview',
+      items: [
+        { title: 'Dashboard', icon: LayoutDashboard, route: '/driver/dashboard' },
+      ]
+    },
+    {
+      section: 'My Account',
+      items: [
+        { title: 'Profile', icon: Users, route: '/driver/profile' },
+      ]
+    },
+  ],
   parent: [
     {
       section: 'Overview',

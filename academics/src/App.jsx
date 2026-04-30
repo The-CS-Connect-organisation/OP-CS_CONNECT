@@ -23,6 +23,7 @@ import { Signup } from './pages/Common/Signup';
 import { StudentDashboard } from './pages/AcademicPortal/Dashboard/StudentDashboard';
 import { ParentDashboard } from './pages/ManagementPortal/Parent/ParentDashboard';
 import { DriverDashboard } from './pages/DriverPortal/DriverDashboard';
+import { DriverProfile } from './pages/DriverPortal/DriverProfile';
 
 // Academic Portal - Student Pages
 import { Timetable } from './pages/AcademicPortal/Student/Timetable';
@@ -291,10 +292,15 @@ function App() {
             </ProtectedRoute>
           } />
 
-          {/* � Driver Portal */}
+          {/* Driver Portal */}
           <Route path="/driver/dashboard" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="driver">
               <DriverDashboard user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/driver/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="driver">
+              <DriverProfile user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 
