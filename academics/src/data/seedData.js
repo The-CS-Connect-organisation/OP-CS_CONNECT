@@ -58,7 +58,7 @@ export const initializeApp = () => {
       email: idx === 0 ? 'parent@schoolsync.edu' : `parent${idx + 1}@schoolsync.edu`,
       password: 'parent123',
       role: 'parent',
-      avatar: '🧑',
+      avatar: '👨‍👩‍👧',
       joined: daysAgo(250 - idx * 2),
       phone: `+91 90300 00${String(idx + 1).padStart(3, '0')}`,
     }));
