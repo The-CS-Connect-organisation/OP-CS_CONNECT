@@ -120,7 +120,8 @@ const SplashScreen = ({ onComplete, onLogin }) => {
     try {
       const result = await onLogin(email.trim().toLowerCase(), password.trim());
       if (result?.success) {
-        // onComplete will be called by useAuth navigate
+        // Dismiss splash so the dashboard can render
+        onComplete();
       } else {
         setLoginError(result?.error || 'Invalid email or password');
         setLoginLoading(false);
