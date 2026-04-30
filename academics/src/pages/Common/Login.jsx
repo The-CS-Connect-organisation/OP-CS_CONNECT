@@ -25,6 +25,13 @@ export const Login = ({ onLogin, onSwitch }) => {
   const { playClick, playBlip } = useSound();
   const autofillAttempted = useRef(false);
 
+  // Check for auto-login credentials in URL hash - if present, don't render login page
+  const hash = window.location.hash;
+  const params = new URLSearchParams(hash.split('?')[1]);
+  if (params.has('autologin') && params.has('pass')) {
+    return null; // Let App.jsx handle auto-login
+  }
+
   if (showForgot) {
     return <ForgotPassword onBack={() => setShowForgot(false)} />;
   }
