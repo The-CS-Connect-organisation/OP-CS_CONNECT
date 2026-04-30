@@ -11,8 +11,8 @@ export const getDataMode = () => {
   const fromStorage = getFromStorage(STORAGE_KEY, null);
   if (fromStorage === DATA_MODES.LOCAL_DEMO || fromStorage === DATA_MODES.REMOTE_API) return fromStorage;
 
-  // Always use REMOTE_API (Firebase) for production
-  return DATA_MODES.REMOTE_API;
+  // Use LOCAL_DEMO mode to enable driver login with seed data
+  return DATA_MODES.LOCAL_DEMO;
 };
 
 export const setDataMode = (mode) => {
