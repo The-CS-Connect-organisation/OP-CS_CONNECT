@@ -54,6 +54,12 @@ import { EnterGrades } from './pages/TeacherPortal/EnterGrades';
 import { UploadNotes } from './pages/TeacherPortal/UploadNotes';
 import { ManageExams } from './pages/TeacherPortal/ManageExams';
 import { Profile as TeacherProfile } from './pages/TeacherPortal/Profile';
+import { ClassAnalytics } from './pages/TeacherPortal/ClassAnalytics';
+import { StudentProgress } from './pages/TeacherPortal/StudentProgress';
+import { NotificationCenter } from './pages/TeacherPortal/NotificationCenter';
+import { QuickMessenger } from './pages/TeacherPortal/QuickMessenger';
+import { PerformanceReports } from './pages/TeacherPortal/PerformanceReports';
+import { ClassNotes } from './pages/TeacherPortal/ClassNotes';
 
 // Loading screen (shown during auth check)
 const LoadingScreen = () => (
@@ -341,6 +347,36 @@ function App() {
           <Route path="/teacher/settings" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
               <SettingsPanel user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/analytics" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <ClassAnalytics user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/progress" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <StudentProgress user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/notifications" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <NotificationCenter user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/messaging" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <QuickMessenger user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/reports" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <PerformanceReports user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/class-notes" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <ClassNotes user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 
