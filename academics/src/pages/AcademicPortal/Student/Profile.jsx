@@ -1,9 +1,12 @@
 import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import { User, Mail, Phone, Calendar, MapPin, BookOpen, Award, TrendingUp, Activity, ShieldCheck, Zap, Hash, Terminal } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
 import { useStore } from '../../../hooks/useStore';
 import { KEYS } from '../../../data/schema';
 import { useSound } from '../../../hooks/useSound';
+import { studentApi } from '../../../services/apiDataLayer';
+import { getDataMode, DATA_MODES } from '../../../config/dataMode';
 
 const Badge = ({ children, color = 'zinc', className = '' }) => (
   <span className={`px-2 py-1 rounded border font-mono text-[10px] font-semibold ${color === 'rose' ? 'bg-rose-950/30 border-rose-900 text-[var(--text-muted)]' : 'bg-[var(--bg-elevated)] border-[var(--border-default)] text-[var(--text-muted)]'} ${className}`}>
@@ -15,13 +18,31 @@ export const Profile = ({ user }) => {
   const { data: marks } = useStore(KEYS.MARKS, []);
   const { data: attendance } = useStore(KEYS.ATTENDANCE, []);
   const { playClick, playBlip } = useSound();
+  const [apiProfile, setApiProfile] = useState(null);
+
+  useEffect(() => {
+    if (getDataMode() !== DATA_MODES.REMOTE_API) return;
+    let alive = true;
+    (async () => {
+      try {
+        const res = await studentApi.getProfile();
+        if (alive && res?.profile) setApiProfile(res.profile);
+      } catch (e) {
+        console.error('Failed to load profile:', e);
+      }
+    })();
+    return () => { alive = false; };
+  }, [user?.id]);
+
+  // Merge API profile data with user object
+  const profileData = apiProfile ? { ...user, ...apiProfile } : user;
 
   const myMarks = marks.filter(m => m.studentId === user.id);
   const avgMarks = myMarks.length > 0 ? Math.round(myMarks.reduce((a, b) => a + b.marksObtained, 0) / myMarks.length) : 0;
 
   const myAttendance = attendance.filter(a => a.status === 'present' && a.studentId === user.id);
   const totalAttDays = attendance.filter(a => a.studentId === user.id).length;
-  const attendanceRate = totalAttDays > 0 ? Math.round((myAttendance.length / totalAttDays) * 100) : 0;
+  const attendanceRate = totalAttDays > 0 ? Math.round((myAttendance.length / totalAttDays) * 100) : (apiProfile?.attendancePercent || 0);
 
   const infoFields = [
     { icon: Mail, label: 'EMAIL_ADDRESS', value: user.email },

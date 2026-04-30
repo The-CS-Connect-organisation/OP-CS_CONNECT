@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Clock, MapPin, User, Hash, Terminal, Activity, Zap, Layers, ChevronRight, BookOpen, GraduationCap } from 'lucide-react';
 import { useStore } from '../../../hooks/useStore';
 import { KEYS } from '../../../data/schema';
 import { useSound } from '../../../hooks/useSound';
+import { studentApi } from '../../../services/apiDataLayer';
+import { getDataMode, DATA_MODES } from '../../../config/dataMode';
 
 // Subject color mapping
 const SUBJECT_COLORS = {
@@ -35,9 +37,26 @@ const DAY_ICONS = {
 };
 
 export const Timetable = ({ user }) => {
-  const { data: timetable } = useStore(KEYS.TIMETABLE, {});
+  const { data: localTimetable } = useStore(KEYS.TIMETABLE, {});
+  const [apiTimetable, setApiTimetable] = useState(null);
   const { playClick, playBlip } = useSound();
   const [selectedDay, setSelectedDay] = useState(new Date().toLocaleDateString('en-US', { weekday: 'long' }));
+
+  useEffect(() => {
+    if (getDataMode() !== DATA_MODES.REMOTE_API) return;
+    let alive = true;
+    (async () => {
+      try {
+        const res = await studentApi.getTimetable();
+        if (alive && res?.timetable) setApiTimetable(res.timetable);
+      } catch (e) {
+        console.error('Failed to load timetable:', e);
+      }
+    })();
+    return () => { alive = false; };
+  }, [user?.id]);
+
+  const timetable = (getDataMode() === DATA_MODES.REMOTE_API && apiTimetable) ? apiTimetable : localTimetable;
   
   const classTimetable = timetable[user.class] || [];
   const todaySchedule = classTimetable.find(t => t.day === selectedDay)?.slots || [];
