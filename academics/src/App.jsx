@@ -95,12 +95,12 @@ const LoadingScreen = () => (
 const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin'];
 
 // Protected Route Component
-const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
+const ProtectedRoute = ({ user, children, requiredRole, portalLogout, autoLoginInProgress, ...props }) => {
   // Check if auto-login credentials are present - if so, show loading instead of redirecting
   const hasAutoLogin = () => { const hash = window.location.hash; const params = new URLSearchParams(hash.split("?")[1]); return params.has("autologin") && params.has("pass"); };
 
   if (!user) {
-    if (hasAutoLogin()) {
+    if (hasAutoLogin() || autoLoginInProgress) {
       return <LoadingScreen />;
     }
     return <Navigate to="/login" replace />;
@@ -133,6 +133,7 @@ function App() {
     // Only show splash if not already seen in this session
     return !sessionStorage.getItem('hasSeenSplash');
   });
+  const [autoLoginInProgress, setAutoLoginInProgress] = useState(false);
   
   const handleSplashComplete = useCallback(() => {
     sessionStorage.setItem('hasSeenSplash', 'true');
@@ -172,12 +173,16 @@ function App() {
     
     if (autologin && pass) {
       console.log('Auto-login from URL:', { email: autologin });
+      setAutoLoginInProgress(true);
       login(decodeURIComponent(autologin), decodeURIComponent(pass)).then((result) => {
         console.log('Auto-login result:', result);
+        setAutoLoginInProgress(false);
         if (result?.success) {
           // Clean URL by removing credentials
           window.location.hash = window.location.hash.split('?')[0];
         }
+      }).catch(() => {
+        setAutoLoginInProgress(false);
       });
     }
   }, [user, login]);
@@ -193,6 +198,7 @@ function App() {
     notifications: userNotifications,
     onMarkRead: markNotificationRead,
     portalLogout: logout,
+    autoLoginInProgress,
   };
 
   return (
