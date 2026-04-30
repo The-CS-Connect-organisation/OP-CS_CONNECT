@@ -21,7 +21,7 @@ const ROUTE_MAP = {
   grading: '/teacher/submissions',
   analytics: '/teacher/analytics',
   progress: '/teacher/progress',
-  messaging: '/teacher/messenger',
+  messaging: '/teacher/messaging',
   notes: '/teacher/class-notes',
   notifications: '/teacher/notifications',
   reports: '/teacher/reports',

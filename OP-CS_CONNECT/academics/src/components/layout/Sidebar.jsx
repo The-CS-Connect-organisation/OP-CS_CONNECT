@@ -89,16 +89,45 @@ const ROLE_NAV = {
       items: [
         { title: 'Assignments', icon: FileText, route: '/teacher/assignments' },
         { title: 'Attendance', icon: UserCheck, route: '/teacher/attendance' },
-        { title: 'Grading', icon: PencilLine, route: '/teacher/grading' },
-        { title: 'Notes', icon: BookOpen, route: '/teacher/notes' },
+        { title: 'Grading', icon: PencilLine, route: '/teacher/submissions' },
+        { title: 'Class Notes', icon: BookOpen, route: '/teacher/class-notes' },
+        { title: 'Exams', icon: ClipboardList, route: '/teacher/exams' },
+      ]
+    },
+    {
+      section: 'Analytics',
+      items: [
+        { title: 'Class Analytics', icon: BarChart3, route: '/teacher/analytics' },
+        { title: 'Student Progress', icon: CheckCircle, route: '/teacher/progress' },
+        { title: 'Performance Reports', icon: FileText, route: '/teacher/reports' },
+      ]
+    },
+    {
+      section: 'Communication',
+      items: [
+        { title: 'Quick Messenger', icon: MessageCircle, route: '/teacher/messaging' },
+        { title: 'Notifications', icon: Bell, route: '/teacher/notifications' },
+        { title: 'Comms Hub', icon: Megaphone, route: '/teacher/comms' },
       ]
     },
     {
       section: 'Tools',
       items: [
         { title: 'AI Lab', icon: Bot, route: '/teacher/ai-lab' },
-        { title: 'Messages', icon: MessageCircle, route: '/teacher/comms' },
-        { title: 'Exams', icon: ClipboardList, route: '/teacher/exams' },
+      ]
+    },
+  ],
+  driver: [
+    {
+      section: 'Overview',
+      items: [
+        { title: 'Dashboard', icon: LayoutDashboard, route: '/driver/dashboard' },
+      ]
+    },
+    {
+      section: 'My Account',
+      items: [
+        { title: 'Profile', icon: Users, route: '/driver/profile' },
       ]
     },
   ],

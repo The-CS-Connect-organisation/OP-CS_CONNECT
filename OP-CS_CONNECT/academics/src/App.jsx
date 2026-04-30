@@ -23,6 +23,7 @@ import { Signup } from './pages/Common/Signup';
 import { StudentDashboard } from './pages/AcademicPortal/Dashboard/StudentDashboard';
 import { ParentDashboard } from './pages/ManagementPortal/Parent/ParentDashboard';
 import { DriverDashboard } from './pages/DriverPortal/DriverDashboard';
+import { DriverProfile } from './pages/DriverPortal/DriverProfile';
 
 // Academic Portal - Student Pages
 import { Timetable } from './pages/AcademicPortal/Student/Timetable';
@@ -54,6 +55,12 @@ import { EnterGrades } from './pages/TeacherPortal/EnterGrades';
 import { UploadNotes } from './pages/TeacherPortal/UploadNotes';
 import { ManageExams } from './pages/TeacherPortal/ManageExams';
 import { Profile as TeacherProfile } from './pages/TeacherPortal/Profile';
+import { ClassAnalytics } from './pages/TeacherPortal/ClassAnalytics';
+import { StudentProgress } from './pages/TeacherPortal/StudentProgress';
+import { NotificationCenter } from './pages/TeacherPortal/NotificationCenter';
+import { QuickMessenger } from './pages/TeacherPortal/QuickMessenger';
+import { PerformanceReports } from './pages/TeacherPortal/PerformanceReports';
+import { ClassNotes } from './pages/TeacherPortal/ClassNotes';
 
 // Loading screen (shown during auth check)
 const LoadingScreen = () => (
@@ -132,7 +139,7 @@ function App() {
     }
   }, [user, logout, addToast]);
 
-  if (showSplash) return <SplashScreen onComplete={handleSplashComplete} />;
+  if (showSplash) return <SplashScreen onComplete={handleSplashComplete} onLogin={login} />;
   // Using custom loading screen for portal sync feel
   if (authLoading) return <LoadingScreen />;
 
@@ -285,10 +292,15 @@ function App() {
             </ProtectedRoute>
           } />
 
-          {/* � Driver Portal */}
+          {/* Driver Portal */}
           <Route path="/driver/dashboard" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="driver">
               <DriverDashboard user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/driver/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="driver">
+              <DriverProfile user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 
@@ -341,6 +353,36 @@ function App() {
           <Route path="/teacher/settings" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
               <SettingsPanel user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/analytics" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <ClassAnalytics user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/progress" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <StudentProgress user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/notifications" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <NotificationCenter user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/messaging" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <QuickMessenger user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/reports" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <PerformanceReports user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/class-notes" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <ClassNotes user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 
