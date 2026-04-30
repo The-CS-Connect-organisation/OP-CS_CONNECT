@@ -31,30 +31,44 @@ export const Login = ({ onLogin, onSwitch }) => {
   // Auto-fill AND auto-submit from landing page sessionStorage in one shot
   useEffect(() => {
     const raw = sessionStorage.getItem('schoolsync_autofill');
+    console.log('Checking sessionStorage for autofill:', raw);
     if (!raw) return;
     try {
       const { email: e, password: p, portal } = JSON.parse(raw);
-      if (portal !== 'academics') return;
+      console.log('Parsed autofill data:', { email: e, portal });
+      if (portal !== 'academics') {
+        console.log('Portal mismatch, skipping autofill');
+        return;
+      }
       sessionStorage.removeItem('schoolsync_autofill');
-      if (!e || !p) return;
+      if (!e || !p) {
+        console.log('Missing credentials, skipping autofill');
+        return;
+      }
       // Set state for visual feedback
       setEmail(e);
       setPassword(p);
       // Submit immediately without waiting for re-render
       setLoading(true);
+      console.log('Attempting auto-login with:', e);
       onLogin(e, p).then((result) => {
+        console.log('Auto-login result:', result);
         if (result?.success) {
           // Navigate to dashboard based on user role
+          console.log('Navigating to dashboard:', `/${result.user.role}/dashboard`);
           navigate(`/${result.user.role}/dashboard`);
         } else {
+          console.error('Auto-login failed:', result?.error);
           setError(result?.error || 'Login failed');
           setLoading(false);
         }
-      }).catch(() => {
+      }).catch((err) => {
+        console.error('Auto-login error:', err);
         setError('Login failed. Please try again.');
         setLoading(false);
       });
-    } catch {
+    } catch (err) {
+      console.error('Autofill parse error:', err);
       sessionStorage.removeItem('schoolsync_autofill');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
