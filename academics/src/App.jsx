@@ -178,15 +178,13 @@ function App() {
 
   // Auto-login from landing page URL hash when landing on dashboard
   useEffect(() => {
-    if (user) return;
-    
     // Check URL hash for auto-login credentials
     const hash = window.location.hash;
     const params = new URLSearchParams(hash.split('?')[1]);
     const autologin = params.get('autologin');
     const pass = params.get('pass');
     
-    if (autologin && pass) {
+    if (autologin && pass && !user) {
       console.log('Auto-login from URL:', { email: autologin });
       setAutoLoginInProgress(true);
       login(decodeURIComponent(autologin), decodeURIComponent(pass)).then((result) => {
