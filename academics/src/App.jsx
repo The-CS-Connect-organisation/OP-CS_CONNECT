@@ -152,6 +152,21 @@ function App() {
     }
   }, [user, logout, addToast]);
 
+  // Auto-login from landing page sessionStorage when landing on dashboard
+  useEffect(() => {
+    const raw = sessionStorage.getItem('schoolsync_autofill');
+    if (!raw || user) return;
+    try {
+      const { email, password, portal } = JSON.parse(raw);
+      if (portal === 'academics' && email && password) {
+        login(email, password);
+        sessionStorage.removeItem('schoolsync_autofill');
+      }
+    } catch (err) {
+      console.error('Auto-login error:', err);
+    }
+  }, [user, login]);
+
   if (showSplash) return <SplashScreen onComplete={handleSplashComplete} onLogin={login} />;
   // Using custom loading screen for portal sync feel
   if (authLoading) return <LoadingScreen />;

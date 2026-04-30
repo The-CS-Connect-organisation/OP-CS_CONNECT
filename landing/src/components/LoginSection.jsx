@@ -40,6 +40,16 @@ export default function LoginSection({ sectionRef }) {
     setErrors({});
     setLoading(true);
 
+    // Determine role from email
+    const roleMap = {
+      'alex@schoolsync.edu': 'student',
+      'james@schoolsync.edu': 'teacher',
+      'parent@schoolsync.edu': 'parent',
+      'driver@schoolsync.edu': 'driver',
+      'admin@schoolsync.edu': 'admin',
+    };
+    const role = roleMap[email.trim().toLowerCase()] || 'student';
+
     try {
       sessionStorage.setItem(
         'schoolsync_autofill',
@@ -47,6 +57,7 @@ export default function LoginSection({ sectionRef }) {
           email: email.trim().toLowerCase(),
           password: password.trim(),
           portal,
+          role,
         })
       );
     } catch {
@@ -55,7 +66,8 @@ export default function LoginSection({ sectionRef }) {
       return;
     }
 
-    window.location.href = `/OP-CS_CONNECT/${portal}/#/login`;
+    // Redirect directly to dashboard
+    window.location.href = `/OP-CS_CONNECT/${portal}/#/${role}/dashboard`;
   };
 
   const handleDemoSelect = (demoEmail, demoPassword) => {
