@@ -4,9 +4,8 @@
  * Abstracts all HTTP calls to backend API
  */
 
-import { env } from '../config/env';
-
-const API_BASE_URL = env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// Hardcoded for GitHub Pages deployment - .env files don't work on static hosting
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://op-cs-connect-backend-vym7.onrender.com/api';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
