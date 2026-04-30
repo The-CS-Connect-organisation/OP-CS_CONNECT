@@ -12,6 +12,39 @@ import { KEYS } from '../../data/schema';
 import { useSound } from '../../hooks/useSound';
 
 const ROLE_NAV = {
+  admin: [
+    {
+      section: 'Overview',
+      items: [
+        { title: 'Dashboard', icon: LayoutDashboard, route: '/admin/dashboard' },
+      ]
+    },
+    {
+      section: 'Management',
+      items: [
+        { title: 'Users', icon: UserCheck, route: '/admin/users' },
+        { title: 'Analytics', icon: CheckCircle, route: '/admin/analytics' },
+        { title: 'Timetable', icon: Clock, route: '/admin/timetable' },
+        { title: 'Exams', icon: ClipboardList, route: '/admin/exams' },
+        { title: 'Fees', icon: Banknote, route: '/admin/fees' },
+        { title: 'Payroll', icon: Banknote, route: '/admin/payroll' },
+      ]
+    },
+    {
+      section: 'Communication',
+      items: [
+        { title: 'Announcements', icon: FileText, route: '/admin/announcements' },
+        { title: 'Messages', icon: MessageCircle, route: '/admin/comms' },
+      ]
+    },
+    {
+      section: 'Tools',
+      items: [
+        { title: 'AI Lab', icon: Sparkles, route: '/admin/ai-lab' },
+        { title: 'Settings', icon: Settings, route: '/admin/settings' },
+      ]
+    },
+  ],
   student: [
     {
       section: 'Overview',
@@ -109,6 +142,7 @@ const ROLE_NAV = {
 };
 
 const ROLE_COLOR = {
+  admin: { bg: '#3b82f6', text: 'white', label: 'Admin' },
   parent: { bg: '#6366f1', text: 'white', label: 'Parent' },
   student: { bg: '#ff6b9d', text: 'white', label: 'Student' },
   teacher: { bg: '#a855f7', text: 'white', label: 'Teacher' },
