@@ -154,12 +154,14 @@ export const initializeApp = () => {
   console.log('🌱 Users from storage:', users?.length || 0, 'users');
   if (users && users.length > 0) {
     console.log('🌱 First user:', users[0]);
+    console.log('🌱 Admin users:', users.filter(u => u.role === 'admin').map(u => ({ name: u.name, email: u.email })));
   }
   if (!Array.isArray(users) || users.length === 0) {
     console.log('🌱 Seeding users...');
     users = seedUsers();
     console.log('🌱 Seeded users:', users.length, 'users');
     console.log('🌱 First seeded user:', users[0]);
+    console.log('🌱 Admin users seeded:', users.filter(u => u.role === 'admin').map(u => ({ name: u.name, email: u.email })));
     setToStorage(KEYS.USERS, users);
     console.log('🌱 Users saved to localStorage');
   }
