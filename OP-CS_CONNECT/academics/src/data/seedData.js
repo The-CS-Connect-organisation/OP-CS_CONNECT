@@ -63,7 +63,7 @@ export const initializeApp = () => {
       phone: `+91 90300 00${String(idx + 1).padStart(3, '0')}`,
     }));
     const drivers = [
-      { id: 'driver-1', name: 'Rajesh Kumar', email: 'driver1@schoolsync.edu', password: 'driver123', role: 'driver', avatar: '🚌', joined: daysAgo(200), phone: '+91 90400 00001', busNumber: 'BUS-001', licensePlate: 'DL-01-AB-1234', routeId: 'route-1' },
+      { id: 'driver-1', name: 'Rajesh Kumar', email: 'driver@schoolsync.edu', password: 'driver123', role: 'driver', avatar: '🚌', joined: daysAgo(200), phone: '+91 90400 00001', busNumber: 'BUS-001', licensePlate: 'DL-01-AB-1234', routeId: 'route-1' },
       { id: 'driver-2', name: 'Suresh Patel', email: 'driver2@schoolsync.edu', password: 'driver123', role: 'driver', avatar: '🚌', joined: daysAgo(190), phone: '+91 90400 00002', busNumber: 'BUS-002', licensePlate: 'DL-01-CD-5678', routeId: 'route-2' },
       { id: 'driver-3', name: 'Mohan Singh', email: 'driver3@schoolsync.edu', password: 'driver123', role: 'driver', avatar: '🚌', joined: daysAgo(180), phone: '+91 90400 00003', busNumber: 'BUS-003', licensePlate: 'DL-01-EF-9012', routeId: 'route-3' },
     ];
