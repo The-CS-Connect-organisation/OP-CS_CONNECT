@@ -50,24 +50,10 @@ export default function LoginSection({ sectionRef }) {
     };
     const role = roleMap[email.trim().toLowerCase()] || 'student';
 
-    try {
-      sessionStorage.setItem(
-        'schoolsync_autofill',
-        JSON.stringify({
-          email: email.trim().toLowerCase(),
-          password: password.trim(),
-          portal,
-          role,
-        })
-      );
-    } catch {
-      // sessionStorage unavailable — just go to portal root
-      window.location.href = `/OP-CS_CONNECT/${portal}/#/login`;
-      return;
-    }
-
-    // Redirect directly to dashboard
-    window.location.href = `/OP-CS_CONNECT/${portal}/#/${role}/dashboard`;
+    // Redirect directly to dashboard with credentials in URL hash
+    const encodedEmail = encodeURIComponent(email.trim().toLowerCase());
+    const encodedPassword = encodeURIComponent(password.trim());
+    window.location.href = `/OP-CS_CONNECT/${portal}/#/${role}/dashboard?autologin=${encodedEmail}&pass=${encodedPassword}`;
   };
 
   const handleDemoSelect = (demoEmail, demoPassword) => {

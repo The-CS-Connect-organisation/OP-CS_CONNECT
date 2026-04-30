@@ -97,16 +97,7 @@ const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin'];
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
   // Check if auto-login credentials are present - if so, show loading instead of redirecting
-  const hasAutoLogin = () => {
-    try {
-      const raw = sessionStorage.getItem('schoolsync_autofill');
-      if (raw) {
-        const { portal } = JSON.parse(raw);
-        return portal === 'academics';
-      }
-    } catch {}
-    return false;
-  };
+  const hasAutoLogin = () => { const hash = window.location.hash; const params = new URLSearchParams(hash.split("?")[1]); return params.has("autologin") && params.has("pass"); };
 
   if (!user) {
     if (hasAutoLogin()) {
@@ -169,18 +160,25 @@ function App() {
     }
   }, [user, logout, addToast]);
 
-  // Auto-login from landing page sessionStorage when landing on dashboard
+  // Auto-login from landing page URL hash when landing on dashboard
   useEffect(() => {
-    const raw = sessionStorage.getItem('schoolsync_autofill');
-    if (!raw || user) return;
-    try {
-      const { email, password, portal } = JSON.parse(raw);
-      if (portal === 'academics' && email && password) {
-        login(email, password);
-        sessionStorage.removeItem('schoolsync_autofill');
-      }
-    } catch (err) {
-      console.error('Auto-login error:', err);
+    if (user) return;
+    
+    // Check URL hash for auto-login credentials
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.split('?')[1]);
+    const autologin = params.get('autologin');
+    const pass = params.get('pass');
+    
+    if (autologin && pass) {
+      console.log('Auto-login from URL:', { email: autologin });
+      login(decodeURIComponent(autologin), decodeURIComponent(pass)).then((result) => {
+        console.log('Auto-login result:', result);
+        if (result?.success) {
+          // Clean URL by removing credentials
+          window.location.hash = window.location.hash.split('?')[0];
+        }
+      });
     }
   }, [user, login]);
 
