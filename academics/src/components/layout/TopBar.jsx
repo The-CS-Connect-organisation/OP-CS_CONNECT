@@ -65,20 +65,6 @@ export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout, user: pr
     >
       <div className="px-4 md:px-6 flex items-center justify-between relative z-10 w-full">
         <div className="flex items-center gap-4 flex-1 min-w-0">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => {
-              playBlip();
-              setCollapsed(!isCollapsed);
-            }}
-            className="p-2 rounded-lg transition-colors hover:bg-black/05 relative z-50"
-            style={{ color: 'var(--text-muted)' }}
-            aria-label={isCollapsed ? 'Open menu' : 'Close menu'}
-          >
-            {isCollapsed ? <Menu size={20} /> : <X size={20} />}
-          </motion.button>
-
           <div className="hidden md:flex flex-col min-w-0">
             <div className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-dim)' }}>
               {breadcrumbs.map((crumb, i) => (

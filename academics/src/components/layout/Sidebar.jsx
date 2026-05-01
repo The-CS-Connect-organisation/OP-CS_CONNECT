@@ -214,7 +214,7 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
       <motion.aside
         initial={false}
         animate={{ 
-          width: isCollapsed ? '72px' : '256px',
+          width: '256px',
         }}
         transition={{ type: 'spring', damping: 28, stiffness: 220 }}
         className="fixed top-0 left-0 h-screen z-50 flex flex-col overflow-hidden border-r"
@@ -224,41 +224,26 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
           boxShadow: 'var(--shadow-sm)',
         }}
       >
-        {/* Logo Area */}
         <div className="h-[64px] flex items-center justify-between px-4 border-b flex-shrink-0" style={{ borderColor: 'var(--border-default)' }}>
-          <AnimatePresence mode="popLayout">
-            {!isCollapsed ? (
-              <motion.div 
-                key="expanded"
-                initial={{ opacity: 0, x: -12 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -12, transition: { duration: 0.1 } }}
-                className="flex items-center gap-3 overflow-hidden whitespace-nowrap"
-              >
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                  style={{ background: '#111111', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
-                  <span className="text-[var(--text-primary)] font-bold text-sm">C</span>
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="font-bold tracking-tight text-sm" style={{ color: 'var(--text-primary)' }}>Cornerstone</span>
-                  <span className="text-[10px] font-medium flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    SchoolSync
-                  </span>
-                </div>
-              </motion.div>
-            ) : (
-              <motion.div key="collapsed" className="w-full flex justify-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <div 
-                  className="w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer hover:scale-105 transition-transform"
-                  style={{ background: '#111111', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}
-                  onClick={() => setCollapsed(false)}
-                >
-                  <span className="text-[var(--text-primary)] font-bold text-sm">C</span>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <motion.div 
+            key="expanded"
+            initial={{ opacity: 0, x: -12 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -12, transition: { duration: 0.1 } }}
+            className="flex items-center gap-3 overflow-hidden whitespace-nowrap"
+          >
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+              style={{ background: '#111111', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
+              <span className="text-[var(--text-primary)] font-bold text-sm">C</span>
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="font-bold tracking-tight text-sm" style={{ color: 'var(--text-primary)' }}>Cornerstone</span>
+              <span className="text-[10px] font-medium flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                SchoolSync
+              </span>
+            </div>
+          </motion.div>
 
           {isMobile && !isCollapsed && (
             <button onClick={() => setCollapsed(true)} className="md:hidden p-1 rounded-lg hover:bg-black/05 transition-colors" style={{ color: 'var(--text-muted)' }}>
@@ -271,28 +256,22 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
         <div className="flex-1 overflow-y-auto no-scrollbar py-3 flex flex-col gap-0.5 relative z-10 px-2">
           {navGroups.map((group, gIdx) => (
             <div key={group.section} className={gIdx > 0 ? 'mt-1' : ''}>
-              {!isCollapsed && (
-                <button
-                  onClick={() => toggleSection(group.section)}
-                  className="w-full flex items-center justify-between px-3 py-1.5 mb-0.5 rounded-lg transition-colors hover:bg-black/03"
-                >
-                  <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-dim)' }}>
-                    {group.section}
-                  </span>
-                  <ChevronDown 
-                    size={11} 
-                    className={`transition-transform duration-200`}
-                    style={{ 
-                      color: 'var(--text-dim)',
-                      transform: collapsedSections[group.section] ? 'rotate(-90deg)' : 'rotate(0deg)'
-                    }}
-                  />
-                </button>
-              )}
-
-              {isCollapsed && gIdx > 0 && (
-                <div className="mx-3 my-2 h-[1px]" style={{ background: 'var(--border-default)' }} />
-              )}
+              <button
+                onClick={() => toggleSection(group.section)}
+                className="w-full flex items-center justify-between px-3 py-1.5 mb-0.5 rounded-lg transition-colors hover:bg-black/03"
+              >
+                <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-dim)' }}>
+                  {group.section}
+                </span>
+                <ChevronDown 
+                  size={11} 
+                  className={`transition-transform duration-200`}
+                  style={{ 
+                    color: 'var(--text-dim)',
+                    transform: collapsedSections[group.section] ? 'rotate(-90deg)' : 'rotate(0deg)'
+                  }}
+                />
+              </button>
 
               <AnimatePresence initial={false}>
                 {!collapsedSections[group.section] && group.items.map((item) => {
@@ -305,14 +284,11 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
                       key={item.title}
                       onClick={() => { playBlip(); navigate(item.route); }}
                       onMouseEnter={playClick}
-                      className={`relative flex items-center gap-3 py-2 rounded-xl transition-all duration-150 w-full overflow-hidden ${
-                        isCollapsed ? 'justify-center px-1' : 'px-3'
-                      }`}
+                      className="relative flex items-center gap-3 py-2 rounded-xl transition-all duration-150 w-full overflow-hidden px-3"
                       style={{ 
                         background: isActive ? 'rgba(0,0,0,0.07)' : 'transparent',
                         color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
                       }}
-                      title={isCollapsed ? item.title : undefined}
                     >
                       {isActive && (
                         <motion.div 
@@ -325,18 +301,11 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
                       
                       <item.icon size={17} className="shrink-0" />
                       
-                      <AnimatePresence>
-                        {!isCollapsed && (
-                          <motion.span
-                            initial={{ opacity: 0, width: 0 }}
-                            animate={{ opacity: 1, width: 'auto' }}
-                            exit={{ opacity: 0, width: 0 }}
-                            className="text-sm font-medium whitespace-nowrap overflow-hidden"
-                          >
-                            {item.title}
-                          </motion.span>
-                        )}
-                      </AnimatePresence>
+                      <motion.span
+                        className="text-sm font-medium whitespace-nowrap overflow-hidden"
+                      >
+                        {item.title}
+                      </motion.span>
                     </motion.button>
                   );
                 })}
@@ -347,55 +316,41 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
 
         {/* Footer */}
         <div className="border-t p-2 space-y-0.5" style={{ borderColor: 'var(--border-default)' }}>
-          <AnimatePresence>
-            {!isCollapsed && (
-              <motion.div 
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
-                className="mb-2 p-2 rounded-xl flex items-center gap-3"
-                style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}
-              >
-                <div 
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
-                  style={{ background: roleColor.bg, color: roleColor.text }}
-                >
-                  {user?.name?.charAt(0) || 'U'}
-                </div>
-                <div className="flex flex-col min-w-0">
-                  <span className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{user?.name}</span>
-                  <span className="text-[10px] font-medium capitalize" style={{ color: 'var(--text-muted)' }}>{role}</span>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+            className="mb-2 p-2 rounded-xl flex items-center gap-3"
+            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}
+          >
+            <div 
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
+              style={{ background: roleColor.bg, color: roleColor.text }}
+            >
+              {user?.name?.charAt(0) || 'U'}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{user?.name}</span>
+              <span className="text-[10px] font-medium capitalize" style={{ color: 'var(--text-muted)' }}>{role}</span>
+            </div>
+          </motion.div>
 
           <button
             onClick={() => { playBlip(); navigate(`/${role}/settings`); }}
             onMouseEnter={playClick}
-            className={`flex items-center gap-2.5 w-full py-2 rounded-xl transition-all hover:bg-black/05 ${isCollapsed ? 'justify-center' : 'px-3'}`}
+            className="flex items-center gap-2.5 w-full py-2 rounded-xl transition-all hover:bg-black/05 px-3"
             style={{ color: 'var(--text-muted)' }}
           >
             <Settings size={17} />
-            {!isCollapsed && <span className="text-sm font-medium">Settings</span>}
-          </button>
-
-          <button
-            onClick={() => { playBlip(); setCollapsed(!isCollapsed); }}
-            onMouseEnter={playClick}
-            className={`flex items-center gap-2.5 w-full py-2 rounded-xl transition-all hover:bg-black/05 ${isCollapsed ? 'justify-center' : 'px-3'}`}
-            style={{ color: 'var(--text-muted)' }}
-          >
-            {isCollapsed ? <ChevronRight size={17} /> : <ChevronLeft size={17} />}
-            {!isCollapsed && <span className="text-sm font-medium">Collapse</span>}
+            <span className="text-sm font-medium">Settings</span>
           </button>
 
           <button
             onClick={() => { playBlip(); onLogout(); }}
             onMouseEnter={playClick}
-            className={`flex items-center gap-2.5 w-full py-2 rounded-xl transition-all hover:bg-red-50 ${isCollapsed ? 'justify-center' : 'px-3'}`}
+            className="flex items-center gap-2.5 w-full py-2 rounded-xl transition-all hover:bg-red-50 px-3"
             style={{ color: 'var(--text-muted)' }}
           >
             <LogOut size={17} />
-            {!isCollapsed && <span className="text-sm font-medium">Sign out</span>}
+            <span className="text-sm font-medium">Sign out</span>
           </button>
         </div>
       </motion.aside>
