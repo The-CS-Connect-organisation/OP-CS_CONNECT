@@ -14,16 +14,19 @@ export const getStreamClient = () => {
 
 /**
  * Fetch a signed Stream token from the backend.
- * The backend generates production tokens using the Stream API secret.
+ * Falls back to a dev token if the backend call fails (local demo mode).
  */
 export const createUserToken = async (userId) => {
   try {
     const payload = await request('/school/stream-token');
     if (payload?.token) return payload.token;
   } catch (err) {
-    console.error('[GetStream] Failed to fetch token from backend:', err);
-    throw new Error('Failed to get Stream Chat token. Backend may be unavailable.');
+    console.warn('[GetStream] Backend token request failed, using dev token:', err?.message);
+    // fall through to dev token
   }
+  // Dev token (only works if Stream app has dev mode enabled)
+  const client = getStreamClient();
+  return client.devToken(userId);
 };
 
 /**
