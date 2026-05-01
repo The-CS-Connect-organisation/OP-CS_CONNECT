@@ -5,7 +5,7 @@ import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 
 export const Layout = ({ children, user, logout, notifications = [], onMarkRead, theme, toggleTheme, portalLogout }) => {
-  const [isCollapsed, setCollapsed] = useState(false);
+  const [isCollapsed, setCollapsed] = useState(true);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const location = useLocation();
 
