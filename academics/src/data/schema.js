@@ -31,19 +31,43 @@ const emitStorageChange = (key) => {
   window.dispatchEvent(new CustomEvent(STORAGE_EVENT, { detail: { key } }));
 };
 
-// Stub functions - all data comes from Firebase
+// Stub functions - all data comes from Firebase, except CURRENT_USER which uses localStorage for session persistence
 export const getFromStorage = (key, defaultValue = null) => {
-  // No localStorage - return default value
+  // Only CURRENT_USER and AUTH_TOKEN use localStorage for session persistence
+  if (key === KEYS.CURRENT_USER || key === KEYS.AUTH_TOKEN) {
+    try {
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : defaultValue;
+    } catch (err) {
+      console.error(`Error reading from localStorage for ${key}:`, err);
+      return defaultValue;
+    }
+  }
+  // All other data comes from Firebase - return default value
   return defaultValue;
 };
 
 export const setToStorage = (key, value) => {
-  // No localStorage - stub function
+  // Only CURRENT_USER and AUTH_TOKEN use localStorage for session persistence
+  if (key === KEYS.CURRENT_USER || key === KEYS.AUTH_TOKEN) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (err) {
+      console.error(`Error writing to localStorage for ${key}:`, err);
+    }
+  }
   emitStorageChange(key);
   return true;
 };
 
 export const removeFromStorage = (key) => {
-  // No localStorage - stub function
+  // Only CURRENT_USER and AUTH_TOKEN use localStorage
+  if (key === KEYS.CURRENT_USER || key === KEYS.AUTH_TOKEN) {
+    try {
+      localStorage.removeItem(key);
+    } catch (err) {
+      console.error(`Error removing from localStorage for ${key}:`, err);
+    }
+  }
   emitStorageChange(key);
 };
