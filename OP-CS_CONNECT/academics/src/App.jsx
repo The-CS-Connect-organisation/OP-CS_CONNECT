@@ -23,6 +23,7 @@ import { NotFound } from './pages/Common/NotFound';
 // Pages - Portals (Dashboards)
 import { StudentDashboard } from './pages/AcademicPortal/Dashboard/StudentDashboard';
 import { ParentDashboard } from './pages/ManagementPortal/Parent/ParentDashboard';
+import { Profile as ParentProfile } from './pages/ManagementPortal/Parent/Profile';
 import { DriverDashboard } from './pages/DriverPortal/DriverDashboard';
 import { DriverProfile } from './pages/DriverPortal/DriverProfile';
 
@@ -37,6 +38,10 @@ import AdminExams from './pages/AdminPortal/AdminExams';
 import AdminFees from './pages/AdminPortal/AdminFees';
 import AdminAILab from './pages/AdminPortal/AdminAILab';
 import AdminComms from './pages/AdminPortal/AdminComms';
+import AdminBusAssignment from './pages/AdminPortal/AdminBusAssignment';
+import { Profile as AdminProfile } from './pages/AdminPortal/Profile';
+import { CreateAccount } from './pages/AdminPortal/CreateAccount';
+import AdminAccounts from './pages/AdminPortal/AdminAccounts';
 
 // Academic Portal - Student Pages
 import { Timetable } from './pages/AcademicPortal/Student/Timetable';
@@ -96,7 +101,25 @@ const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
-  if (!user) return <Navigate to="/login" replace />;
+  // Check if auto-login credentials are present in URL hash - if so, show loading instead of redirecting
+  const hasAutoLogin = () => { 
+    try {
+      const hash = window.location.hash;
+      const params = new URLSearchParams(hash.split("?")[1]);
+      return params.has("autologin") && params.has("pass");
+    } catch {
+      return false;
+    }
+  };
+
+  if (!user) {
+    if (hasAutoLogin()) {
+      return <LoadingScreen />;
+    }
+    // Use window.location to preserve hash when redirecting to login
+    window.location.href = window.location.origin + window.location.pathname + '#/login' + window.location.hash.replace('#/', '?');
+    return null;
+  }
   
   // If user role is not allowed in this portal at all, auto-logout and bounce
   if (!ALLOWED_ROLES.includes(user.role)) {
@@ -125,6 +148,12 @@ function App() {
     // Only show splash if not already seen in this session
     return !sessionStorage.getItem('hasSeenSplash');
   });
+  const [autoLoginInProgress, setAutoLoginInProgress] = useState(() => {
+    // Check if credentials are in URL hash on initial load
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.split('?')[1]);
+    return params.has('autologin') && params.has('pass');
+  });
   
   const handleSplashComplete = useCallback(() => {
     sessionStorage.setItem('hasSeenSplash', 'true');
@@ -151,6 +180,30 @@ function App() {
       logout();
     }
   }, [user, logout, addToast]);
+
+  // Auto-login from landing page URL hash when landing on dashboard
+  useEffect(() => {
+    // Check URL hash for auto-login credentials
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.split('?')[1]);
+    const autologin = params.get('autologin');
+    const pass = params.get('pass');
+    
+    if (autologin && pass && !user) {
+      console.log('Auto-login from URL:', { email: autologin });
+      setAutoLoginInProgress(true);
+      login(decodeURIComponent(autologin), decodeURIComponent(pass)).then((result) => {
+        console.log('Auto-login result:', result);
+        setAutoLoginInProgress(false);
+        if (result?.success) {
+          // Clean URL by removing credentials
+          window.location.hash = window.location.hash.split('?')[0];
+        }
+      }).catch(() => {
+        setAutoLoginInProgress(false);
+      });
+    }
+  }, [user, login]);
 
   if (showSplash) return <SplashScreen onComplete={handleSplashComplete} onLogin={login} />;
   // Using custom loading screen for portal sync feel
@@ -306,7 +359,7 @@ function App() {
           } />
           <Route path="/parent/profile" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
-              <Profile user={user} />
+              <ParentProfile user={user} />
             </ProtectedRoute>
           } />
           <Route path="/parent/notifications" element={
@@ -463,6 +516,26 @@ function App() {
           <Route path="/admin/comms" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <AdminComms user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/bus-assignment" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminBusAssignment user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminProfile user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/create-account" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <CreateAccount user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/accounts" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminAccounts user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 

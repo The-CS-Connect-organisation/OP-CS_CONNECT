@@ -12,6 +12,44 @@ import { KEYS } from '../../data/schema';
 import { useSound } from '../../hooks/useSound';
 
 const ROLE_NAV = {
+  admin: [
+    {
+      section: 'Overview',
+      items: [
+        { title: 'Dashboard', icon: LayoutDashboard, route: '/admin/dashboard' },
+      ]
+    },
+    {
+      section: 'Management',
+      items: [
+        { title: 'Users', icon: UserCheck, route: '/admin/users' },
+        { title: 'Analytics', icon: CheckCircle, route: '/admin/analytics' },
+        { title: 'Timetable', icon: Clock, route: '/admin/timetable' },
+        { title: 'Exams', icon: ClipboardList, route: '/admin/exams' },
+        { title: 'Fees', icon: Banknote, route: '/admin/fees' },
+        { title: 'Payroll', icon: Banknote, route: '/admin/payroll' },
+      ]
+    },
+    {
+      section: 'Transportation',
+      items: [
+        { title: 'Bus Assignment', icon: Bus, route: '/admin/bus-assignment' },
+      ]
+    },
+    {
+      section: 'Communication',
+      items: [
+        { title: 'Announcements', icon: FileText, route: '/admin/announcements' },
+        { title: 'Messages', icon: MessageCircle, route: '/admin/comms' },
+      ]
+    },
+    {
+      section: 'Settings',
+      items: [
+        { title: 'Configuration', icon: Settings, route: '/admin/settings' },
+      ]
+    },
+  ],
   student: [
     {
       section: 'Overview',
@@ -109,6 +147,7 @@ const ROLE_NAV = {
 };
 
 const ROLE_COLOR = {
+  admin: { bg: '#3b82f6', text: 'white', label: 'Admin' },
   parent: { bg: '#6366f1', text: 'white', label: 'Parent' },
   student: { bg: '#ff6b9d', text: 'white', label: 'Student' },
   teacher: { bg: '#a855f7', text: 'white', label: 'Teacher' },
@@ -178,6 +217,12 @@ export const AcademicSidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout 
               </motion.div>
             )}
           </AnimatePresence>
+
+          {isMobile && !isCollapsed && (
+            <button onClick={() => setCollapsed(true)} className="md:hidden p-1 rounded-lg hover:bg-black/05 transition-colors" style={{ color: 'var(--text-muted)' }}>
+              <X size={18} />
+            </button>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar py-3 flex flex-col gap-0.5 px-2">
