@@ -47,7 +47,11 @@ export const authService = {
     }
     if (found.isActive === false) return { success: false, error: 'Account is disabled. Please contact admin.' };
     const { password: _pw, ...userWithoutPassword } = found;
-    setSession({ user: userWithoutPassword, token: null });
+    // Generate a dummy JWT token for local development (format: header.payload.signature)
+    const dummyToken = btoa(JSON.stringify({ alg: 'HS256' })) + '.' + 
+                       btoa(JSON.stringify({ sub: found.id, email: cleanEmail, role: found.role })) + 
+                       '.' + 'dummy_signature';
+    setSession({ user: userWithoutPassword, token: dummyToken });
     localAuditRepo.append({ actorEmail: cleanEmail, action: 'auth.login', mode: 'LOCAL_DEMO' });
     return { success: true, user: userWithoutPassword };
   },
@@ -89,7 +93,11 @@ export const authService = {
     };
     setToStorage(KEYS.USERS, [...users, newUser]);
     const { password: _pw, ...userWithoutPassword } = newUser;
-    setSession({ user: userWithoutPassword, token: null });
+    // Generate a dummy JWT token for local development
+    const dummyToken = btoa(JSON.stringify({ alg: 'HS256' })) + '.' + 
+                       btoa(JSON.stringify({ sub: newUser.id, email: cleanData.email, role: newUser.role })) + 
+                       '.' + 'dummy_signature';
+    setSession({ user: userWithoutPassword, token: dummyToken });
     localAuditRepo.append({ actorEmail: cleanData.email, action: 'auth.signup', mode: 'LOCAL_DEMO' });
     return { success: true, user: userWithoutPassword };
   },
