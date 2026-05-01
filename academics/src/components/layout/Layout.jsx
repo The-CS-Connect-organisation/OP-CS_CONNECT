@@ -30,6 +30,7 @@ export const Layout = ({ children, user, logout, notifications = [], onMarkRead,
       </div>
 
       <SidebarComponent 
+        user={user}
         isMobile={isMobile} 
         isCollapsed={isCollapsed} 
         setCollapsed={setCollapsed} 

@@ -175,8 +175,9 @@ const ROLE_COLOR = {
   parent: { bg: '#6366f1', text: 'white', label: 'Parent' },
 };
 
-export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
-  const { data: user } = useStore(KEYS.CURRENT_USER, null);
+export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, onLogout }) => {
+  const { data: storedUser } = useStore(KEYS.CURRENT_USER, null);
+  const user = propsUser || storedUser;
   const location = useLocation();
   const navigate = useNavigate();
   const { playClick, playBlip } = useSound();
