@@ -71,11 +71,11 @@ export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout }) => {
               playBlip();
               setCollapsed(!isCollapsed);
             }}
-            className="p-2 rounded-lg transition-colors hover:bg-black/05 relative z-50"
+            className="p-2 rounded-lg transition-colors hover:bg-black/05 relative z-50 md:hidden"
             style={{ color: 'var(--text-muted)' }}
             aria-label={isCollapsed ? 'Open menu' : 'Close menu'}
           >
-            {isMobile && !isCollapsed ? <X size={20} /> : <Menu size={20} />}
+            {isCollapsed ? <Menu size={20} /> : <X size={20} />}
           </motion.button>
 
           <div className="hidden md:flex flex-col min-w-0">
