@@ -11,7 +11,6 @@ import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
 import { useSound } from '../../hooks/useSound';
 
-/* ── Navigation Groups per Role ── */
 const ROLE_NAV = {
   admin: [
     {
@@ -169,7 +168,6 @@ const ROLE_NAV = {
   ],
 };
 
-/* ── Role colors ── */
 const ROLE_COLOR = {
   admin: { bg: '#111111', text: 'white', label: 'Admin' },
   teacher: { bg: '#a855f7', text: 'white', label: 'Teacher' },
@@ -202,7 +200,6 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
 
   return (
     <>
-      {/* Mobile overlay */}
       {isMobile && !isCollapsed && (
         <motion.div 
           initial={{ opacity: 0 }}
@@ -218,7 +215,6 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
         initial={false}
         animate={{ 
           width: isCollapsed ? '72px' : '256px',
-          x: isMobile && isCollapsed ? '-100%' : '0%'
         }}
         transition={{ type: 'spring', damping: 28, stiffness: 220 }}
         className="fixed top-0 left-0 h-screen z-50 flex flex-col overflow-hidden border-r"
@@ -228,7 +224,7 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
           boxShadow: 'var(--shadow-sm)',
         }}
       >
-        {/* ── Logo Area ── */}
+        {/* Logo Area */}
         <div className="h-[64px] flex items-center justify-between px-4 border-b flex-shrink-0" style={{ borderColor: 'var(--border-default)' }}>
           <AnimatePresence mode="popLayout">
             {!isCollapsed ? (
@@ -271,11 +267,10 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
           )}
         </div>
 
-        {/* ── Navigation ── */}
+        {/* Navigation */}
         <div className="flex-1 overflow-y-auto no-scrollbar py-3 flex flex-col gap-0.5 relative z-10 px-2">
           {navGroups.map((group, gIdx) => (
             <div key={group.section} className={gIdx > 0 ? 'mt-1' : ''}>
-              {/* Section header */}
               {!isCollapsed && (
                 <button
                   onClick={() => toggleSection(group.section)}
@@ -319,7 +314,6 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
                       }}
                       title={isCollapsed ? item.title : undefined}
                     >
-                      {/* Active indicator */}
                       {isActive && (
                         <motion.div 
                           layoutId="sidebarIndicator" 
@@ -351,7 +345,7 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
           ))}
         </div>
 
-        {/* ── Footer ── */}
+        {/* Footer */}
         <div className="border-t p-2 space-y-0.5" style={{ borderColor: 'var(--border-default)' }}>
           <AnimatePresence>
             {!isCollapsed && (
