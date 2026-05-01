@@ -285,25 +285,25 @@ export const DriverTracking = ({ user }) => {
               <div className="bg-[var(--bg-elevated)] p-4 rounded-lg border border-[var(--border-default)]">
                 <p className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-1">Latitude</p>
                 <p className="text-lg font-bold text-[var(--text-primary)] font-mono">
-                  {currentLocation.latitude.toFixed(6)}
+                  {currentLocation?.latitude ? currentLocation.latitude.toFixed(6) : 'N/A'}
                 </p>
               </div>
               <div className="bg-[var(--bg-elevated)] p-4 rounded-lg border border-[var(--border-default)]">
                 <p className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-1">Longitude</p>
                 <p className="text-lg font-bold text-[var(--text-primary)] font-mono">
-                  {currentLocation.longitude.toFixed(6)}
+                  {currentLocation?.longitude ? currentLocation.longitude.toFixed(6) : 'N/A'}
                 </p>
               </div>
               <div className="bg-[var(--bg-elevated)] p-4 rounded-lg border border-[var(--border-default)]">
                 <p className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-1">Speed</p>
                 <p className="text-lg font-bold text-[var(--text-primary)] font-mono">
-                  {currentLocation.speed.toFixed(1)} km/h
+                  {(currentLocation?.speed ?? 0).toFixed(1)} km/h
                 </p>
               </div>
               <div className="bg-[var(--bg-elevated)] p-4 rounded-lg border border-[var(--border-default)]">
                 <p className="text-[9px] font-mono text-[var(--text-muted)] uppercase tracking-widest mb-1">Accuracy</p>
                 <p className="text-lg font-bold text-[var(--text-primary)] font-mono">
-                  ±{currentLocation.accuracy.toFixed(0)} m
+                  ±{(currentLocation?.accuracy ?? 0).toFixed(0)} m
                 </p>
               </div>
             </div>

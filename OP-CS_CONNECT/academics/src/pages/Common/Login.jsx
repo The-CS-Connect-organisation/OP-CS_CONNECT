@@ -21,8 +21,16 @@ export const Login = ({ onLogin, onSwitch }) => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
   const { playClick, playBlip } = useSound();
   const autofillAttempted = useRef(false);
+
+  // Check for auto-login credentials in URL hash - if present, don't render login page
+  const hash = window.location.hash;
+  const params = new URLSearchParams(hash.split('?')[1]);
+  if (params.has('autologin') && params.has('pass')) {
+    return null; // Let App.jsx handle auto-login
+  }
 
   if (showForgot) {
     return <ForgotPassword onBack={() => setShowForgot(false)} />;
@@ -32,7 +40,36 @@ export const Login = ({ onLogin, onSwitch }) => {
   useEffect(() => {
     const raw = sessionStorage.getItem('schoolsync_autofill');
     console.log('Checking sessionStorage for autofill:', raw);
-    if (!raw) return;
+    if (!raw) {
+      // Also check URL hash for credentials
+      const hash = window.location.hash;
+      const params = new URLSearchParams(hash.split('?')[1]);
+      const autologin = params.get('autologin');
+      const pass = params.get('pass');
+      if (autologin && pass) {
+        console.log('Found credentials in URL hash:', { email: autologin });
+        setEmail(decodeURIComponent(autologin));
+        setPassword(decodeURIComponent(pass));
+        setLoading(true);
+        onLogin(decodeURIComponent(autologin), decodeURIComponent(pass)).then((result) => {
+          console.log('Auto-login result:', result);
+          if (result?.success) {
+            setLoginSuccess(true);
+            navigate(`/${result.user.role}/dashboard`);
+            // Clean URL
+            window.location.hash = window.location.hash.split('?')[0];
+          } else {
+            setError(result?.error || 'Login failed');
+            setLoading(false);
+          }
+        }).catch((err) => {
+          console.error('Auto-login error:', err);
+          setError('Login failed. Please try again.');
+          setLoading(false);
+        });
+      }
+      return;
+    }
     try {
       const { email: e, password: p, portal } = JSON.parse(raw);
       console.log('Parsed autofill data:', { email: e, portal });
@@ -54,8 +91,8 @@ export const Login = ({ onLogin, onSwitch }) => {
       onLogin(e, p).then((result) => {
         console.log('Auto-login result:', result);
         if (result?.success) {
-          // Navigate to dashboard based on user role
-          console.log('Navigating to dashboard:', `/${result.user.role}/dashboard`);
+          setLoginSuccess(true);
+          console.log('Login successful, navigating to dashboard');
           navigate(`/${result.user.role}/dashboard`);
         } else {
           console.error('Auto-login failed:', result?.error);
@@ -85,7 +122,7 @@ export const Login = ({ onLogin, onSwitch }) => {
     
     const result = await onLogin(email.trim().toLowerCase(), password.trim());
     if (result.success) {
-      // Navigate to dashboard based on user role
+      setLoginSuccess(true);
       navigate(`/${result.user.role}/dashboard`);
     } else {
       setError(result.error);
@@ -266,3 +303,6 @@ export const Login = ({ onLogin, onSwitch }) => {
     </div>
   );
 };
+
+
+

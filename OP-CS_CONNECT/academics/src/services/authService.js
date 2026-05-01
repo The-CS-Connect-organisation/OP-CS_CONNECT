@@ -22,8 +22,10 @@ export const authService = {
   async login(email, password) {
     const cleanEmail = clean(email).toLowerCase();
     const cleanPassword = clean(password);
+    console.log('🔐 Login attempt:', cleanEmail, 'dataMode:', getDataMode());
 
     if (getDataMode() === DATA_MODES.REMOTE_API) {
+      console.log('🔐 Using REMOTE_API mode');
       const payload = await apiRequest('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ email: cleanEmail, password: cleanPassword }),
@@ -35,8 +37,14 @@ export const authService = {
     }
 
     // LOCAL_DEMO
+    console.log('🔐 Using LOCAL_DEMO mode');
     const found = localUsersRepo.findByEmail(cleanEmail);
-    if (!found || found.password !== cleanPassword) return { success: false, error: 'Invalid email or password' };
+    console.log('🔐 User found:', found?.name || 'NOT FOUND');
+    console.log('🔐 Password check - entered:', cleanPassword, 'stored:', found?.password);
+    if (!found || found.password !== cleanPassword) {
+      console.log('🔐 Password mismatch or user not found');
+      return { success: false, error: 'Invalid email or password' };
+    }
     if (found.isActive === false) return { success: false, error: 'Account is disabled. Please contact admin.' };
     const { password: _pw, ...userWithoutPassword } = found;
     setSession({ user: userWithoutPassword, token: null });
