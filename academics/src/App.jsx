@@ -23,6 +23,7 @@ import { NotFound } from './pages/Common/NotFound';
 // Pages - Portals (Dashboards)
 import { StudentDashboard } from './pages/AcademicPortal/Dashboard/StudentDashboard';
 import { ParentDashboard } from './pages/ManagementPortal/Parent/ParentDashboard';
+import { Profile as ParentProfile } from './pages/ManagementPortal/Parent/Profile';
 import { DriverDashboard } from './pages/DriverPortal/DriverDashboard';
 import { DriverProfile } from './pages/DriverPortal/DriverProfile';
 
@@ -38,6 +39,9 @@ import AdminFees from './pages/AdminPortal/AdminFees';
 import AdminAILab from './pages/AdminPortal/AdminAILab';
 import AdminComms from './pages/AdminPortal/AdminComms';
 import AdminBusAssignment from './pages/AdminPortal/AdminBusAssignment';
+import { Profile as AdminProfile } from './pages/AdminPortal/Profile';
+import { CreateAccount } from './pages/AdminPortal/CreateAccount';
+import AdminAccounts from './pages/AdminPortal/AdminAccounts';
 
 // Academic Portal - Student Pages
 import { Timetable } from './pages/AcademicPortal/Student/Timetable';
@@ -355,7 +359,7 @@ function App() {
           } />
           <Route path="/parent/profile" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
-              <Profile user={user} />
+              <ParentProfile user={user} />
             </ProtectedRoute>
           } />
           <Route path="/parent/notifications" element={
@@ -517,6 +521,21 @@ function App() {
           <Route path="/admin/bus-assignment" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <AdminBusAssignment user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminProfile user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/create-account" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <CreateAccount user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/accounts" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminAccounts user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 

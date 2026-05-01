@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AcademicSidebar } from './AcademicSidebar';
+import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 
 export const Layout = ({ children, user, logout, notifications = [], onMarkRead, theme, toggleTheme, portalLogout }) => {
@@ -19,7 +19,7 @@ export const Layout = ({ children, user, logout, notifications = [], onMarkRead,
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const SidebarComponent = AcademicSidebar;
+  const SidebarComponent = Sidebar;
   const handleLogout = logout || portalLogout;
 
   return (

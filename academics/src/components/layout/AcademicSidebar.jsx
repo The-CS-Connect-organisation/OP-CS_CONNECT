@@ -217,6 +217,12 @@ export const AcademicSidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout 
               </motion.div>
             )}
           </AnimatePresence>
+
+          {isMobile && !isCollapsed && (
+            <button onClick={() => setCollapsed(true)} className="md:hidden p-1 rounded-lg hover:bg-black/05 transition-colors" style={{ color: 'var(--text-muted)' }}>
+              <X size={18} />
+            </button>
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto no-scrollbar py-3 flex flex-col gap-0.5 px-2">

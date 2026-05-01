@@ -1,4 +1,6 @@
 import { KEYS, getFromStorage, setToStorage } from './schema';
+import { getDataMode, DATA_MODES } from '../config/dataMode';
+import { apiRequest } from '../services/apiClient';
 
 export const initializeApp = () => {
   const isNonEmptyArray = (v) => Array.isArray(v) && v.length > 0;
@@ -134,18 +136,27 @@ export const initializeApp = () => {
     return attendance;
   };
 
+  // Check data mode - only seed in LOCAL_DEMO mode
+  const dataMode = getDataMode();
+  console.log('🌱 Data mode:', dataMode);
+
+  if (dataMode === DATA_MODES.REMOTE_API) {
+    console.log('🌱 REMOTE_API mode - skipping local seed (data comes from backend)');
+    return;
+  }
+
   // Force re-seed when seed data structure changes (e.g., email fixes).
   const SEED_VERSION = 5; // Bump this to force re-seed (Driver persistence fix)
   const storedVersion = getFromStorage('sms_seed_version', 0);
   console.log('🌱 Seed initialization - storedVersion:', storedVersion, 'SEED_VERSION:', SEED_VERSION);
   if (storedVersion < SEED_VERSION) {
     console.log('🌱 Version mismatch - clearing stale data');
-    // Clear stale user data
-    localStorage.removeItem(KEYS.USERS);
-    localStorage.removeItem(KEYS.FEES);
-    localStorage.removeItem(KEYS.ATTENDANCE);
-    localStorage.removeItem(KEYS.CURRENT_USER);
-    localStorage.removeItem(KEYS.AUTH_TOKEN);
+    // Clear stale user data using storage abstraction
+    setToStorage(KEYS.USERS, null);
+    setToStorage(KEYS.FEES, null);
+    setToStorage(KEYS.ATTENDANCE, null);
+    setToStorage(KEYS.CURRENT_USER, null);
+    setToStorage(KEYS.AUTH_TOKEN, null);
     setToStorage('sms_seed_version', SEED_VERSION);
   }
 
@@ -157,13 +168,13 @@ export const initializeApp = () => {
     console.log('🌱 Admin users:', users.filter(u => u.role === 'admin').map(u => ({ name: u.name, email: u.email })));
   }
   if (!Array.isArray(users) || users.length === 0) {
-    console.log('🌱 Seeding users...');
+    console.log('🌱 Seeding users for LOCAL_DEMO mode...');
     users = seedUsers();
     console.log('🌱 Seeded users:', users.length, 'users');
     console.log('🌱 First seeded user:', users[0]);
     console.log('🌱 Admin users seeded:', users.filter(u => u.role === 'admin').map(u => ({ name: u.name, email: u.email })));
     setToStorage(KEYS.USERS, users);
-    console.log('🌱 Users saved to localStorage');
+    console.log('🌱 Users saved to storage for LOCAL_DEMO mode');
   }
 
   // Ensure `fees` exists for current users.
