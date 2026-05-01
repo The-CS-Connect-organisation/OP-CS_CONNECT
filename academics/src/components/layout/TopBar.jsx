@@ -23,8 +23,9 @@ const getGreeting = () => {
   return 'Good evening';
 };
 
-export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout }) => {
-  const { data: user } = useStore(KEYS.CURRENT_USER, null);
+export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout, user: propsUser }) => {
+  const { data: storedUser } = useStore(KEYS.CURRENT_USER, null);
+  const user = propsUser || storedUser; // Use prop user if available, fallback to stored
   const [showProfile, setShowProfile] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [searchFocused, setSearchFocused] = useState(false);
