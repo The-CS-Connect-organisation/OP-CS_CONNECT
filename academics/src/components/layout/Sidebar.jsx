@@ -196,8 +196,6 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
     setCollapsedSections(prev => ({ ...prev, [section]: !prev[section] }));
   };
 
-  if (!user) return null;
-
   return (
     <>
       {isMobile && !isCollapsed && (
