@@ -188,8 +188,6 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
   const navGroups = ROLE_NAV[role] || [];
   const roleColor = ROLE_COLOR[role] || ROLE_COLOR.student;
   
-  console.log('Sidebar rendered with isCollapsed:', isCollapsed, 'isMobile:', isMobile);
-  
   useEffect(() => {
     if (isMobile) setCollapsed(true);
   }, [location.pathname, isMobile, setCollapsed]);
@@ -223,7 +221,7 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
           x: isMobile && isCollapsed ? '-100%' : '0%'
         }}
         transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-        className="fixed md:sticky top-0 left-0 h-screen z-50 flex flex-col overflow-hidden border-r"
+        className="fixed top-0 left-0 h-screen z-50 flex flex-col overflow-hidden border-r"
         style={{
           background: '#ffffff',
           borderColor: 'var(--border-default)',

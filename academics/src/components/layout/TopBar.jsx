@@ -69,10 +69,8 @@ export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout, user: pr
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
-              console.log('Hamburger clicked! Current isCollapsed:', isCollapsed);
               playBlip();
               setCollapsed(!isCollapsed);
-              console.log('After toggle, should be:', !isCollapsed);
             }}
             className="p-2 rounded-lg transition-colors hover:bg-black/05 relative z-50"
             style={{ color: 'var(--text-muted)' }}
