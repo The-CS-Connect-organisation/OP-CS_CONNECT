@@ -189,9 +189,9 @@ export const AcademicSidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout 
       
       <motion.aside
         initial={false}
-        animate={{ width: isCollapsed ? '72px' : '256px', x: isMobile && isCollapsed ? '-100%' : '0%' }}
+        animate={{ width: isCollapsed ? '72px' : '256px' }}
         transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-        className="fixed md:sticky top-0 left-0 h-screen z-50 flex flex-col overflow-hidden border-r"
+        className="fixed md:fixed top-0 left-0 h-screen z-50 flex flex-col overflow-hidden border-r"
         style={{ background: '#ffffff', borderColor: 'var(--border-default)', boxShadow: 'var(--shadow-sm)' }}
       >
         <div className="h-[64px] flex items-center justify-between px-4 border-b flex-shrink-0" style={{ borderColor: 'var(--border-default)' }}>
