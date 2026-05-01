@@ -188,6 +188,8 @@ export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {
   const navGroups = ROLE_NAV[role] || [];
   const roleColor = ROLE_COLOR[role] || ROLE_COLOR.student;
   
+  console.log('Sidebar rendered with isCollapsed:', isCollapsed, 'isMobile:', isMobile);
+  
   useEffect(() => {
     if (isMobile) setCollapsed(true);
   }, [location.pathname, isMobile, setCollapsed]);
