@@ -78,10 +78,15 @@ export const NexusHub = ({ user, addToast }) => {
     const initChat = async () => {
       try {
         const tokenRes = await request('/school/stream-token');
-        const chatClient = StreamChat.getInstance(tokenRes.apiKey); 
+        const chatClient = StreamChat.getInstance(tokenRes.apiKey);
+        
+        // Sanitize user ID to match backend sanitization
+        const sanitizedUserId = String(user?.id || 'guest')
+          .replace(/[^a-zA-Z0-9_-]/g, '_')
+          .substring(0, 64);
         
         await chatClient.connectUser(
-          { id: user?.id || 'guest', name: user?.name || 'Guest' },
+          { id: sanitizedUserId, name: user?.name || 'Guest' },
           tokenRes.token
         );
 
