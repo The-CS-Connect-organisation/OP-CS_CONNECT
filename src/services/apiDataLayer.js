@@ -185,11 +185,21 @@ async function performRequest(method, url, data, retries, timeout) {
  * Get auth token
  */
 function getAuthToken() {
-  const token = localStorage.getItem('authToken') || '';
-  if (!token) {
-    console.warn('No auth token found');
+  try {
+    const tokenJson = localStorage.getItem('sms_auth_token');
+    if (!tokenJson) {
+      console.warn('No auth token found');
+      return '';
+    }
+    // Parse if it's JSON (stored by setToStorage), otherwise use as-is
+    const token = typeof tokenJson === 'string' && tokenJson.startsWith('"') 
+      ? JSON.parse(tokenJson) 
+      : tokenJson;
+    return token || '';
+  } catch (e) {
+    console.warn('Error parsing auth token:', e);
+    return '';
   }
-  return token;
 }
 
 // ============================================================================
@@ -453,6 +463,10 @@ export const studentApi = {
     return makeRequest('GET', '/student/profile', null, { cacheKey: 'student:profile' });
   },
 
+  async getExpandedProfile(studentId) {
+    return makeRequest('GET', `/school/students/${studentId}/profile`, null, { cacheKey: `student:expanded-profile:${studentId}` });
+  },
+
   async updateProfile(updates) {
     return makeRequest('PUT', '/student/profile', updates, { useCache: false });
   },
@@ -674,8 +688,8 @@ export const apiUtils = {
   getCachedData,
   setCachedData,
   getAuthToken,
-  setAuthToken: (token) => localStorage.setItem('authToken', token),
-  removeAuthToken: () => localStorage.removeItem('authToken'),
+  setAuthToken: (token) => localStorage.setItem('sms_auth_token', token),
+  removeAuthToken: () => localStorage.removeItem('sms_auth_token'),
 };
 
 export default {

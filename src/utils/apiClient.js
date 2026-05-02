@@ -4,7 +4,18 @@ const API_BASE_URL = 'https://op-cs-connect-backend-vym7.onrender.com/api';
 // Initialize authToken from localStorage if available
 let authToken = null;
 if (typeof window !== 'undefined') {
-  authToken = localStorage.getItem('sms_auth_token');
+  const tokenJson = localStorage.getItem('sms_auth_token');
+  if (tokenJson) {
+    try {
+      // Parse if it's JSON (stored by setToStorage), otherwise use as-is
+      authToken = typeof tokenJson === 'string' && tokenJson.startsWith('"') 
+        ? JSON.parse(tokenJson) 
+        : tokenJson;
+    } catch (e) {
+      console.warn('Error parsing auth token:', e);
+      authToken = null;
+    }
+  }
 }
 
 export class ApiClientError extends Error {

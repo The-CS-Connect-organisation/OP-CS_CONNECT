@@ -29,6 +29,13 @@ import { request } from '../../../utils/apiClient';
 
 // No mock data since we use API
 
+// Sanitize user ID to match backend sanitization
+const sanitizeUserId = (userId) => {
+  return String(userId || 'guest')
+    .replace(/[^a-zA-Z0-9_-]/g, '_')
+    .substring(0, 64);
+};
+
 export const NexusHub = ({ user, addToast }) => {
   const [activeTab, setActiveTab] = useState('browse'); // 'browse' | 'club-view'
   const [activeSubTab, setActiveSubTab] = useState('chat'); // 'chat' | 'leaderboard' | 'research'
@@ -77,11 +84,21 @@ export const NexusHub = ({ user, addToast }) => {
   useEffect(() => {
     const initChat = async () => {
       try {
-        const tokenRes = await request('/school/stream-token');
-        const chatClient = StreamChat.getInstance(tokenRes.apiKey); 
+        // Use GET request with query param (endpoint is public)
+        const tokenRes = await fetch(
+          `https://op-cs-connect-backend-vym7.onrender.com/api/school/stream-token?userId=${encodeURIComponent(user?.id)}`,
+          { method: 'GET' }
+        ).then(r => r.json());
+        
+        const chatClient = StreamChat.getInstance(tokenRes.apiKey);
+        
+        // Use the same sanitization as backend
+        const sanitizedUserId = sanitizeUserId(user?.id);
+        
+        console.log('Connecting to Stream Chat with user ID:', sanitizedUserId);
         
         await chatClient.connectUser(
-          { id: user?.id || 'guest', name: user?.name || 'Guest' },
+          { id: sanitizedUserId, name: user?.name || 'Guest' },
           tokenRes.token
         );
 
@@ -286,7 +303,7 @@ export const NexusHub = ({ user, addToast }) => {
               <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 mb-2">Text Channels</p>
                 <nav className="space-y-1">
-                  {selectedClub?.channels.map(ch => (
+                  {(selectedClub?.channels || []).map(ch => (
                     <button
                       key={ch}
                       onClick={() => { setSelectedChannel(ch); setActiveSubTab('chat'); }}
@@ -317,7 +334,7 @@ export const NexusHub = ({ user, addToast }) => {
                 </nav>
               </div>
 
-              {selectedClub?.extensions.length > 0 && (
+              {(selectedClub?.extensions || []).length > 0 && (
                 <div>
                   <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest px-2 mb-2">Nexus Extensions</p>
                   <nav className="space-y-1">
@@ -410,7 +427,7 @@ export const NexusHub = ({ user, addToast }) => {
                       <p className="text-sm text-slate-400 mb-6">{club.members} active students</p>
 
                       <div className="flex flex-wrap gap-2">
-                        {club.channels.slice(0, 3).map(ch => (
+                        {(club.channels || []).slice(0, 3).map(ch => (
                           <span key={ch} className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg">#{ch}</span>
                         ))}
                       </div>
