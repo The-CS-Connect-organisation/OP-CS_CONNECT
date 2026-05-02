@@ -27,10 +27,10 @@ export const Assignments = ({ user }) => {
       try {
         setLoading(true);
         const list = await assignmentsService.listForUser(user);
-        const subs = await assignmentsService.listSubmissions();
         if (!alive) return;
         setAssignments(Array.isArray(list) ? list : []);
-        setSubmissions(Array.isArray(subs) ? subs : []);
+        // Don't fetch all submissions here - they're fetched per assignment
+        setSubmissions([]);
       } finally {
         if (alive) setLoading(false);
       }
