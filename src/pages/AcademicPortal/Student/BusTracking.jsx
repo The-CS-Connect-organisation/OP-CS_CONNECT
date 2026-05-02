@@ -135,13 +135,13 @@ export const BusTracking = ({ user }) => {
         },
         (error) => {
           console.log('Geolocation error:', error);
-          // Default to Delhi if geolocation fails
-          setUserLocation({ latitude: 28.6139, longitude: 77.2090 });
+          // Default to Aarav Menon's location (Hyderabad area)
+          setUserLocation({ latitude: 17.9187186, longitude: 78.9754009 });
         }
       );
     } else {
-      // Default to Delhi if geolocation not supported
-      setUserLocation({ latitude: 28.6139, longitude: 77.2090 });
+      // Default to Aarav Menon's location if geolocation not supported
+      setUserLocation({ latitude: 17.9187186, longitude: 78.9754009 });
     }
   }, []);
 
@@ -249,9 +249,9 @@ export const BusTracking = ({ user }) => {
     }
     
     if (positions.length === 0) {
-      // Default to user location or Delhi
-      const defaultLat = userLocation?.latitude || 28.6139;
-      const defaultLng = userLocation?.longitude || 77.2090;
+      // Default to user location or Aarav Menon's location
+      const defaultLat = userLocation?.latitude || 17.9187186;
+      const defaultLng = userLocation?.longitude || 78.9754009;
       return [[defaultLat, defaultLng], [defaultLat, defaultLng]];
     }
     
@@ -278,7 +278,7 @@ export const BusTracking = ({ user }) => {
     ? [userLocation.latitude, userLocation.longitude]
     : selectedRoute?.stops?.[0]?.latitude && selectedRoute.stops[0]?.longitude
     ? [selectedRoute.stops[0].latitude, selectedRoute.stops[0].longitude]
-    : [28.6139, 77.2090];
+    : [17.9187186, 78.9754009];
 
   return (
     <div className="space-y-10 max-w-[1400px] mx-auto w-full pt-4 pb-12">
