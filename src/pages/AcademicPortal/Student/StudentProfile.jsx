@@ -249,7 +249,51 @@ export const StudentProfile = ({ user, addToast }) => {
     return `XXXX-XXXX-${cleaned.slice(-4)}`;
   };
 
-  const data = profileData || user;
+  // Mock data for demonstration - only for this account
+  const mockProfileData = {
+    id: user?.id,
+    name: user?.name || 'Aarav Sharma',
+    email: user?.email || 'aarav.sharma@school.edu',
+    phone: user?.phone || '+91 98765 43210',
+    photo: user?.photo || null,
+    avatar: user?.avatar || '👨‍🎓',
+    
+    // Personal Information
+    admissionNumber: 'ADM-2022-001847',
+    rollNumber: '12',
+    dateOfBirth: '2008-03-15',
+    bloodGroup: 'O+',
+    religion: 'Hindu',
+    nationality: 'Indian',
+    class: '10-A',
+    section: 'A',
+    
+    // Identification
+    aadharNumber: '1234-5678-9012',
+    pen: 'PEN-2022-847562',
+    apaarId: 'APAAR-2022-847562-IN',
+    
+    // Parent Information
+    mother: {
+      fullName: 'Priya Sharma',
+      phone: '+91 98765 43211',
+      photo: null,
+      houseName: 'Sharma Residence',
+      address: '42, Maple Street\nGreen Valley Colony\nNew Delhi - 110001',
+      houseLocation: 'Near Central Park',
+    },
+    
+    father: {
+      fullName: 'Rajesh Sharma',
+      phone: '+91 98765 43212',
+      photo: null,
+      houseName: 'Sharma Residence',
+      address: '42, Maple Street\nGreen Valley Colony\nNew Delhi - 110001',
+      houseLocation: 'Near Central Park',
+    },
+  };
+
+  const data = profileData || mockProfileData;
   const age = calculateAge(data?.dateOfBirth);
 
   if (loading) {
