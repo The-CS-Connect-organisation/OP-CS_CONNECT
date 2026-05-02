@@ -50,7 +50,6 @@ import { Attendance } from './pages/AcademicPortal/Student/Attendance';
 import { Grades } from './pages/AcademicPortal/Student/Grades';
 import { Notes } from './pages/AcademicPortal/Student/Notes';
 import { Profile } from './pages/AcademicPortal/Student/Profile';
-import { StudentProfile } from './pages/AcademicPortal/Student/StudentProfile';
 import { StudyPlanner } from './pages/AcademicPortal/Student/StudyPlanner';
 import { AssignmentDetails } from './pages/AcademicPortal/Student/AssignmentDetails';
 import { BusTracking } from './pages/AcademicPortal/Student/BusTracking';
@@ -278,7 +277,7 @@ function App() {
           } />
           <Route path="/student/profile" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
-              <StudentProfile user={user} addToast={addToast} />
+              <Profile user={user} />
             </ProtectedRoute>
           } />
           <Route path="/student/planner" element={
