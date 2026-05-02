@@ -29,6 +29,13 @@ import { request } from '../../../utils/apiClient';
 
 // No mock data since we use API
 
+// Sanitize user ID to match backend sanitization
+const sanitizeUserId = (userId) => {
+  return String(userId || 'guest')
+    .replace(/[^a-zA-Z0-9_-]/g, '_')
+    .substring(0, 64);
+};
+
 export const NexusHub = ({ user, addToast }) => {
   const [activeTab, setActiveTab] = useState('browse'); // 'browse' | 'club-view'
   const [activeSubTab, setActiveSubTab] = useState('chat'); // 'chat' | 'leaderboard' | 'research'
@@ -80,10 +87,8 @@ export const NexusHub = ({ user, addToast }) => {
         const tokenRes = await request('/school/stream-token');
         const chatClient = StreamChat.getInstance(tokenRes.apiKey);
         
-        // Sanitize user ID to match backend sanitization
-        const sanitizedUserId = String(user?.id || 'guest')
-          .replace(/[^a-zA-Z0-9_-]/g, '_')
-          .substring(0, 64);
+        // Use the same sanitization as backend
+        const sanitizedUserId = sanitizeUserId(user?.id);
         
         await chatClient.connectUser(
           { id: sanitizedUserId, name: user?.name || 'Guest' },
