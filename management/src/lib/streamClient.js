@@ -1,7 +1,7 @@
 import { StreamChat } from 'stream-chat';
 import { request } from '../utils/apiClient';
 
-const API_KEY = 'n9v8bfwy45pn';
+const API_KEY = 'h8334x6zj8ze';
 
 let clientInstance = null;
 
