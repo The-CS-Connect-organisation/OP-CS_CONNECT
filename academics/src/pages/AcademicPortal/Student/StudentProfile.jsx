@@ -249,11 +249,11 @@ export const StudentProfile = ({ user, addToast }) => {
     return `XXXX-XXXX-${cleaned.slice(-4)}`;
   };
 
-  // Mock data for demonstration - only for this account
-  const mockProfileData = {
+  // Mock data for demonstration - only for Aarav Menon's account
+  const mockProfileData = user?.name === 'Aarav Menon' ? {
     id: user?.id,
-    name: user?.name || 'Aarav Sharma',
-    email: user?.email || 'aarav.sharma@school.edu',
+    name: user?.name || 'Aarav Menon',
+    email: user?.email || 'aarav.menon@school.edu',
     phone: user?.phone || '+91 98765 43210',
     photo: user?.photo || null,
     avatar: user?.avatar || '👨‍🎓',
@@ -275,25 +275,25 @@ export const StudentProfile = ({ user, addToast }) => {
     
     // Parent Information
     mother: {
-      fullName: 'Priya Sharma',
+      fullName: 'Priya Menon',
       phone: '+91 98765 43211',
       photo: null,
-      houseName: 'Sharma Residence',
+      houseName: 'Menon Residence',
       address: '42, Maple Street\nGreen Valley Colony\nNew Delhi - 110001',
       houseLocation: 'Near Central Park',
     },
     
     father: {
-      fullName: 'Rajesh Sharma',
+      fullName: 'Rajesh Menon',
       phone: '+91 98765 43212',
       photo: null,
-      houseName: 'Sharma Residence',
+      houseName: 'Menon Residence',
       address: '42, Maple Street\nGreen Valley Colony\nNew Delhi - 110001',
       houseLocation: 'Near Central Park',
     },
-  };
+  } : null;
 
-  const data = profileData || mockProfileData;
+  const data = profileData || mockProfileData || user;
   const age = calculateAge(data?.dateOfBirth);
 
   if (loading) {
