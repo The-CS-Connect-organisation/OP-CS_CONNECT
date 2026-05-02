@@ -187,9 +187,15 @@ export const StudentProfile = ({ user, addToast }) => {
     try {
       setError(null);
       if (getDataMode() === DATA_MODES.REMOTE_API) {
-        const res = await studentApi.getExpandedProfile(user?.id);
-        if (res?.profile) {
-          setProfileData(res.profile);
+        try {
+          const res = await studentApi.getExpandedProfile(user?.id);
+          if (res?.profile) {
+            setProfileData(res.profile);
+          }
+        } catch (apiError) {
+          // If expanded profile endpoint fails, use basic user data
+          console.warn('Expanded profile not available, using basic user data:', apiError);
+          setProfileData(null); // Will use user data as fallback
         }
       }
     } catch (e) {
