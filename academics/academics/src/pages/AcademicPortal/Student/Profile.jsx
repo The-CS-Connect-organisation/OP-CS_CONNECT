@@ -45,12 +45,12 @@ export const Profile = ({ user }) => {
   const attendanceRate = totalAttDays > 0 ? Math.round((myAttendance.length / totalAttDays) * 100) : (apiProfile?.attendancePercent || 0);
 
   const infoFields = [
-    { icon: Mail, label: 'EMAIL_ADDRESS', value: user.email },
+    { icon: Mail, label: 'Email', value: user.email },
     { icon: Phone, label: 'Phone', value: user.phone },
-    { icon: Calendar, label: 'SYNC_DATE', value: user.joined },
-    { icon: BookOpen, label: 'DOMAIN_CLASS', value: user.class },
-    { icon: Hash, label: 'NODE_ID', value: user.rollNo },
-    { icon: User, label: 'PARENT_AUTH', value: user.parentName },
+    { icon: Calendar, label: 'Joined Date', value: user.joined },
+    { icon: BookOpen, label: 'Class', value: user.class },
+    { icon: Hash, label: 'Roll Number', value: user.rollNo },
+    { icon: User, label: 'Parent Name', value: user.parentName },
     { icon: Phone, label: 'Parent Phone', value: user.parentPhone },
   ];
 
@@ -60,16 +60,16 @@ export const Profile = ({ user }) => {
       <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
         <div className="flex items-center gap-3 mb-4">
            <span className="px-3 py-1 bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-default)] rounded-sm text-[10px] font-semibold font-mono">
-             Identity_Core
+             Student Profile
            </span>
            <div className="h-[1px] w-8 bg-[var(--bg-floating)]" />
            <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-2">
-             <ShieldCheck size={10} className="text-[var(--text-muted)] animate-pulse" /> Security_Layer_Active
+             <ShieldCheck size={10} className="text-[var(--text-muted)] animate-pulse" /> Active
            </span>
         </div>
         <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[var(--text-primary)] flex items-center gap-4">
            <Activity className="text-[var(--text-muted)]" size={48} />
-           Protocol_ID
+           Student Information
         </h1>
       </motion.div>
 
@@ -119,9 +119,9 @@ export const Profile = ({ user }) => {
       {/* Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
         {[
-          { icon: Award, label: 'MEAN_EFFICIENCY', value: `${avgMarks}%`, color: 'rose' },
-          { icon: TrendingUp, label: 'QUORUM_UPTIME', value: `${attendanceRate}%`, color: 'zinc' },
-          { icon: Calendar, label: 'BUFFER_DURATION', value: `${Math.floor((Date.now() - new Date(user.joined).getTime()) / (1000 * 60 * 60 * 24))}d`, color: 'rose' },
+          { icon: Award, label: 'Average Marks', value: `${avgMarks}%`, color: 'rose' },
+          { icon: TrendingUp, label: 'Attendance Rate', value: `${attendanceRate}%`, color: 'zinc' },
+          { icon: Calendar, label: 'Days Since Enrollment', value: `${Math.floor((Date.now() - new Date(user.joined).getTime()) / (1000 * 60 * 60 * 24))}d`, color: 'rose' },
         ].map((s, idx) => (
           <motion.div key={idx} initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 + (idx * 0.1) }}>
             <Card className="relative p-10 group hover:border-white/20 transition-all duration-500 bg-nova-base/40 backdrop-blur-md">
