@@ -11,10 +11,10 @@ export const assignmentsService = {
   async listForUser(user) {
     if (!user) return [];
     if (getDataMode() === DATA_MODES.REMOTE_API) {
-      // Expected API: GET /assignments?class=10-A or GET /assignments/me
+      // Expected API: GET /school/assignments?class=10-A or GET /school/assignments/me
       // If backend differs, we can adjust later without touching pages.
       const query = user?.class ? `?class=${encodeURIComponent(user.class)}` : '';
-      const payload = await apiRequest(`/assignments${query}`, { method: 'GET' });
+      const payload = await apiRequest(`/school/assignments${query}`, { method: 'GET' });
       return payload?.assignments ?? payload ?? [];
     }
 
@@ -24,7 +24,7 @@ export const assignmentsService = {
 
   async listSubmissions({ assignmentId } = {}) {
     if (getDataMode() === DATA_MODES.REMOTE_API) {
-      const payload = await apiRequest(`/assignments/${assignmentId}/submissions`, { method: 'GET' });
+      const payload = await apiRequest(`/school/assignments/${assignmentId}/submissions`, { method: 'GET' });
       return payload?.submissions ?? payload ?? [];
     }
     const all = localSubmissionsRepo.list();
@@ -35,7 +35,7 @@ export const assignmentsService = {
     if (!assignment?.id || !student?.id) throw new Error('Missing assignment/student');
 
     if (getDataMode() === DATA_MODES.REMOTE_API) {
-      const payload = await apiRequest(`/assignments/${assignment.id}/submissions`, {
+      const payload = await apiRequest(`/school/assignments/${assignment.id}/submissions`, {
         method: 'POST',
         body: JSON.stringify({
           content: contentText ?? '',
@@ -77,7 +77,7 @@ export const assignmentsService = {
 
   async grade({ assignmentId, studentId, grader, marks, feedback }) {
     if (getDataMode() === DATA_MODES.REMOTE_API) {
-      const payload = await apiRequest(`/assignments/${assignmentId}/submissions/${studentId}/grade`, {
+      const payload = await apiRequest(`/school/assignments/${assignmentId}/submissions/${studentId}/grade`, {
         method: 'POST',
         body: JSON.stringify({ marks, feedback }),
       });
