@@ -59,6 +59,7 @@ import { DriverTracking } from './pages/AcademicPortal/Student/DriverTracking';
 // Academic Portal - Shared Features
 import { SettingsPanel } from './pages/AcademicPortal/shared/Settings';
 import { FeeManagement } from './pages/AcademicPortal/shared/FeeManagement';
+import { AILab } from './pages/AcademicPortal/shared/AILab';
 import { CommunicationHub } from './pages/AcademicPortal/shared/CommunicationHub';
 import { ExamCenter } from './pages/AcademicPortal/shared/ExamCenter';
 import { NexusHub } from './pages/AcademicPortal/shared/NexusHub';
