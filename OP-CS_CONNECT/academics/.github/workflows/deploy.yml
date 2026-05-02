@@ -1,0 +1,90 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      # Build landing (unified entry point)
+      - name: Install landing deps
+        run: npm install
+        working-directory: landing
+
+      - name: Build landing
+        run: npm run build
+        working-directory: landing
+
+      # Build academics
+      - name: Install academics deps
+        run: npm install
+        working-directory: academics
+
+      - name: Build academics
+        run: npm run build
+        working-directory: academics
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
+      # Build management
+      - name: Install management deps
+        run: npm install
+        working-directory: management
+
+      - name: Build management
+        run: npm run build
+        working-directory: management
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+
+      # Combine all three builds
+      - name: Prepare deploy folder
+        run: |
+          mkdir -p deploy/academics
+          mkdir -p deploy/management
+          # Copy each portal to its subdirectory first
+          cp -r academics/dist/* deploy/academics/
+          cp -r management/dist/* deploy/management/
+          # Fix client-side routing — each portal handles its own 404
+          cp academics/dist/index.html deploy/academics/404.html
+          cp management/dist/index.html deploy/management/404.html
+          # Landing goes to root LAST so it doesn't overwrite portal 404s
+          cp -r landing/dist/* deploy/
+          cp landing/dist/index.html deploy/404.html
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./deploy
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

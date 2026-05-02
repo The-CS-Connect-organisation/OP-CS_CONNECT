@@ -1,0 +1,124 @@
+# Implementation Plan
+
+- [ ] 1. Write bug condition exploration test
+  - **Property 1: Bug Condition** - Admin Autofill Authentication Failure
+  - **CRITICAL**: This test MUST FAIL on unfixed code - failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior - it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate the four cascading failures exist
+  - **Scoped PBT Approach**: Scope the property to the concrete failing case: admin@schoolsync.edu with password admin123 from landing page with portal='management'
+  - Test implementation details from Bug Condition in design:
+    - Verify backend route receives lowercase `/auth/login` (not `/AUTH/LOGIN`)
+    - Verify password `admin123` authenticates against bcrypt hash in seedData
+    - Verify sessionStorage autofill data is available to Login component (not consumed by useAuth)
+    - Verify Login component auto-submits form after reading autofill data
+  - The test assertions should match the Expected Behavior Properties from design (requirements 2.1, 2.2, 2.3, 2.4)
+  - Run test on UNFIXED code
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct - it proves the bug exists)
+  - Document counterexamples found:
+    - Route case mismatch: request sent to `/AUTH/LOGIN` instead of `/auth/login`
+    - Password authentication: plaintext `admin123` fails against bcrypt hash
+    - SessionStorage race: useAuth consumes autofill data before Login component reads it
+    - Auto-submit timing: form doesn't submit or submits with stale values
+  - Mark task complete when test is written, run, and failures are documented
+  - _Requirements: 1.1, 1.2, 1.3, 1.4_
+
+- [ ] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** - Non-Management Portal Behavior
+  - **IMPORTANT**: Follow observation-first methodology
+  - Observe behavior on UNFIXED code for non-buggy inputs:
+    - Manual login to Management Portal (direct navigation without sessionStorage)
+    - Academic Portal autofill from landing page (portal='academics')
+    - Backend authentication for student, teacher, parent roles
+    - Management Portal with empty/malformed sessionStorage
+  - Write property-based tests capturing observed behavior patterns from Preservation Requirements:
+    - For all manual Management Portal logins, form should be empty and login should work
+    - For all Academic Portal autofills, credentials should populate and authenticate
+    - For all non-admin user roles, backend authentication should succeed
+    - For all empty sessionStorage cases, no errors should occur
+  - Property-based testing generates many test cases for stronger guarantees
+  - Run tests on UNFIXED code
+  - **EXPECTED OUTCOME**: Tests PASS (this confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - _Requirements: 3.1, 3.2, 3.3, 3.4_
+
+- [ ] 3. Fix for admin login autofill failures
+
+  - [x] 3.1 Fix route case sensitivity in apiClient.js
+    - Open `OP-CS_CONNECT/management/src/utils/apiClient.js`
+    - Modify `buildUrl` function to ensure path is lowercase
+    - Add path normalization: ensure the path segment after `/api` is lowercase
+    - Verify the constructed URL uses `/auth/login` not `/AUTH/LOGIN`
+    - _Bug_Condition: isBugCondition(input) where input.portal === 'management' AND backendRouteReturns404(input)_
+    - _Expected_Behavior: Backend receives POST /auth/login (lowercase) and processes request successfully_
+    - _Preservation: All other API routes continue to work unchanged_
+    - _Requirements: 1.3, 2.3_
+
+  - [x] 3.2 Fix password hash in seedData.js
+    - Open `OP-CS_CONNECT/management/src/data/seedData.js`
+    - Replace plaintext `password: 'admin123'` with bcrypt hash for all three admin users
+    - Use hash: `$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5NU7qXqZqvJm2` (bcrypt hash of 'admin123' with 12 rounds)
+    - Update admin-1, admin-2, admin-3 entries
+    - Ensure consistency with backend's bcrypt.compare() expectations
+    - _Bug_Condition: isBugCondition(input) where input.password === 'admin123' AND passwordAuthenticationFails(input)_
+    - _Expected_Behavior: Backend successfully authenticates 'admin123' against bcrypt hash_
+    - _Preservation: All other user passwords continue to work unchanged_
+    - _Requirements: 1.2, 2.2_
+
+  - [x] 3.3 Fix sessionStorage race condition in useAuth.js
+    - Open `OP-CS_CONNECT/management/src/hooks/useAuth.js`
+    - Remove autofill handling from useAuth's useEffect (lines 20-38)
+    - Delete the code block that reads, processes, and removes 'schoolsync_autofill' from sessionStorage
+    - Keep token restoration logic for `KEYS.CURRENT_USER` and `KEYS.AUTH_TOKEN`
+    - Preserve `initializeApp()` call and existing user restoration
+    - This allows Login component to be the sole consumer of autofill data
+    - _Bug_Condition: isBugCondition(input) where autofillDataNotPopulatedInForm(input)_
+    - _Expected_Behavior: Login component successfully reads autofill data from sessionStorage_
+    - _Preservation: Token restoration and user initialization continue to work unchanged_
+    - _Requirements: 1.4, 2.1, 2.4_
+
+  - [x] 3.4 Fix auto-submit timing in Login.jsx
+    - Open `OP-CS_CONNECT/management/src/pages/Common/Login.jsx`
+    - Replace the direct `onLogin(e, p)` call in the autofill useEffect
+    - Current problematic code: `setTimeout(() => { Promise.resolve(onLogin(e, p))... }, 0)`
+    - New approach: Use a second useEffect that watches email and password state
+    - Add `const autofillAttempted = useRef(false)` to track if autofill has been processed
+    - Create useEffect with dependencies `[email, password]` that triggers submission when both are populated AND autofillAttempted is true
+    - In the autofill useEffect, set `autofillAttempted.current = true` after setting email and password
+    - This ensures state has settled before submission is triggered
+    - _Bug_Condition: isBugCondition(input) where autoSubmitNotTriggered(input)_
+    - _Expected_Behavior: Form automatically submits after autofill data populates state_
+    - _Preservation: Manual form submission continues to work unchanged_
+    - _Requirements: 1.1, 1.4, 2.1, 2.4_
+
+  - [ ] 3.5 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** - Admin Autofill Authentication Success
+    - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
+    - The test from task 1 encodes the expected behavior
+    - When this test passes, it confirms the expected behavior is satisfied
+    - Run bug condition exploration test from step 1
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - Verify all four issues are resolved:
+      - Backend route is lowercase `/auth/login`
+      - Password `admin123` authenticates successfully
+      - SessionStorage autofill data populates form fields
+      - Form auto-submits and user is redirected to dashboard
+    - _Requirements: 2.1, 2.2, 2.3, 2.4_
+
+  - [ ] 3.6 Verify preservation tests still pass
+    - **Property 2: Preservation** - Non-Management Portal Behavior
+    - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
+    - Run preservation property tests from step 2
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Confirm all preservation requirements are met:
+      - Manual Management Portal login works with empty form
+      - Academic Portal autofill continues to work
+      - Backend authentication for other roles unchanged
+      - Empty sessionStorage cases handle gracefully
+    - _Requirements: 3.1, 3.2, 3.3, 3.4_
+
+- [ ] 4. Checkpoint - Ensure all tests pass
+  - Run all tests (bug condition + preservation)
+  - Verify no regressions in existing functionality
+  - Test end-to-end flow: landing page → Management Portal → admin dashboard
+  - Ensure all tests pass, ask the user if questions arise
