@@ -21,6 +21,13 @@ const buildUrl = (path) => {
 
 export const setAuthToken = (token) => {
   authToken = token;
+  if (typeof window !== 'undefined') {
+    if (token) {
+      localStorage.setItem('sms_auth_token', token);
+    } else {
+      localStorage.removeItem('sms_auth_token');
+    }
+  }
 };
 
 export const request = async (path, options = {}) => {
