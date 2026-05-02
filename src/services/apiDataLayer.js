@@ -185,7 +185,7 @@ async function performRequest(method, url, data, retries, timeout) {
  * Get auth token
  */
 function getAuthToken() {
-  const token = localStorage.getItem('authToken') || '';
+  const token = localStorage.getItem('sms_auth_token') || '';
   if (!token) {
     console.warn('No auth token found');
   }
@@ -674,8 +674,8 @@ export const apiUtils = {
   getCachedData,
   setCachedData,
   getAuthToken,
-  setAuthToken: (token) => localStorage.setItem('authToken', token),
-  removeAuthToken: () => localStorage.removeItem('authToken'),
+  setAuthToken: (token) => localStorage.setItem('sms_auth_token', token),
+  removeAuthToken: () => localStorage.removeItem('sms_auth_token'),
 };
 
 export default {
