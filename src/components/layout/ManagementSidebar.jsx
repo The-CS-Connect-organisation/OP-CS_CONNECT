@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, Clock, Calendar, Banknote, 
   ChevronLeft, ChevronRight, X, Bot,
   LogOut, Settings, MessageCircle, BarChart3, ChevronDown,
-  ClipboardList, Megaphone
+  ClipboardList, Megaphone, Bus
 } from 'lucide-react';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
@@ -41,6 +41,12 @@ const ROLE_NAV = {
       items: [
         { title: 'AI Lab', icon: Bot, route: '/admin/ai-lab' },
         { title: 'Comms Hub', icon: MessageCircle, route: '/admin/comms' },
+      ]
+    },
+    {
+      section: 'Transportation',
+      items: [
+        { title: 'Bus Assignment', icon: Bus, route: '/admin/bus-assignment' },
       ]
     },
   ],

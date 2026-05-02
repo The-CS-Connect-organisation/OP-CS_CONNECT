@@ -75,4 +75,26 @@ export const busService = {
     }
     return null;
   },
+
+  async createBus(data) {
+    if (getDataMode() === DATA_MODES.REMOTE_API) {
+      const payload = await apiRequest('/bus/buses', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+      return payload?.bus ?? payload;
+    }
+    return null;
+  },
+
+  async createRoute(data) {
+    if (getDataMode() === DATA_MODES.REMOTE_API) {
+      const payload = await apiRequest('/bus/routes', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+      return payload?.route ?? payload;
+    }
+    return null;
+  },
 };

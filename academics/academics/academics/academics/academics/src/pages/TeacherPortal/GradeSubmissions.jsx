@@ -45,14 +45,44 @@ export const GradeSubmissions = ({ user, addToast }) => {
     return () => { alive = false; };
   }, [user?.id]);
 
+  // Fetch real submissions for each assignment
+  const [submissionsByAssignment, setSubmissionsByAssignment] = useState({});
+  const [submissionsLoading, setSubmissionsLoading] = useState(true);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      setSubmissionsLoading(true);
+      const submissionsMap = {};
+      for (const assignment of myAssignments) {
+        try {
+          const subs = await assignmentsService.listSubmissions({ assignmentId: assignment.id });
+          if (!alive) return;
+          submissionsMap[assignment.id] = Array.isArray(subs) ? subs : [];
+        } catch (error) {
+          if (!alive) return;
+          submissionsMap[assignment.id] = [];
+        }
+      }
+      if (!alive) return;
+      setSubmissionsByAssignment(submissionsMap);
+      setSubmissionsLoading(false);
+    })();
+    return () => { alive = false; };
+  }, [myAssignments]);
+
   const flatSubmissions = useMemo(() => {
     const list = [];
     const myIds = new Set(myAssignments.map(a => a.id));
 
     myAssignments.forEach(a => {
       const studentsInClass = users.filter(u => u.role === 'student' && u.class === a.class);
+      const assignmentSubmissions = submissionsByAssignment[a.id] || [];
+      const submissionMap = new Map(assignmentSubmissions.map(s => [`${a.id}:${s.studentId}`, s]));
+
       studentsInClass.forEach(stu => {
-        const s = {
+        const existingSubmission = submissionMap.get(`${a.id}:${stu.id}`);
+        const s = existingSubmission || {
           assignmentId: a.id,
           studentId: stu.id,
           studentName: stu.name,
@@ -72,7 +102,7 @@ export const GradeSubmissions = ({ user, addToast }) => {
     });
 
     return list;
-  }, [myAssignments, users]);
+  }, [myAssignments, users, submissionsByAssignment]);
 
   const filteredSubmissions = flatSubmissions.filter(s => {
     if (filter === 'all') return true;
@@ -183,7 +213,7 @@ export const GradeSubmissions = ({ user, addToast }) => {
         {/* Submissions List */}
         <div className="lg:col-span-9 space-y-4">
           <AnimatePresence mode="popLayout">
-            {loading ? (
+            {loading || submissionsLoading ? (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-24 text-center bg-white border border-dashed border-slate-300 rounded-3xl">
                 <Search size={40} className="mx-auto mb-4 text-slate-200" />
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Loading submissions...</p>

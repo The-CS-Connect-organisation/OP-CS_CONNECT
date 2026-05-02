@@ -1,0 +1,48 @@
+/* Animated Text Styles */
+.animated-text {
+  display: inline-block;
+  perspective: 1000px;
+  --gradient-position: 0%;
+}
+
+.animated-text-unit {
+  display: inline-block;
+  transform-origin: center bottom;
+  will-change: transform, opacity;
+}
+
+/* Prevent text selection during animation */
+.animated-text.animating {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Gradient animation */
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* Fallback for browsers that don't support background-clip: text */
+@supports not (background-clip: text) {
+  .animated-text {
+    background: none !important;
+    color: #6366f1;
+  }
+}
+
+/* Reduced motion fallback */
+@media (prefers-reduced-motion: reduce) {
+  .animated-text-unit {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  
+  .animated-text {
+    animation: none !important;
+  }
+}

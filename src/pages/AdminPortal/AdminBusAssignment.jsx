@@ -15,6 +15,8 @@ import {
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
 
+import { BusTracking } from '../AcademicPortal/Student/BusTracking';
+
 /**
  * @component AdminBusAssignment
  * @description Admin panel for managing bus assignments to drivers
@@ -25,6 +27,7 @@ const AdminBusAssignment = ({ user, addToast }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [showAssignModal, setShowAssignModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('assignments');
 
   // Filter drivers to only show driver role
   const driverList = drivers.filter(d => d.role === 'driver');
@@ -60,23 +63,53 @@ const AdminBusAssignment = ({ user, addToast }) => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-            Bus Assignment
+            Bus Assignment & Tracking
           </h1>
           <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
-            Manage bus assignments to drivers
+            Manage bus assignments and track live locations
           </p>
         </div>
+        {activeTab === 'assignments' && (
+          <button
+            onClick={() => setShowAssignModal(true)}
+            className="px-4 py-2 rounded-xl text-white text-sm font-medium flex items-center gap-2"
+            style={{ background: 'var(--primary)' }}
+          >
+            <Plus size={16} />
+            New Assignment
+          </button>
+        )}
+      </div>
+
+      {/* Tabs */}
+      <div className="flex border-b" style={{ borderColor: 'var(--border-color)' }}>
         <button
-          onClick={() => setShowAssignModal(true)}
-          className="px-4 py-2 rounded-xl text-white text-sm font-medium flex items-center gap-2"
-          style={{ background: 'var(--primary)' }}
+          onClick={() => setActiveTab('assignments')}
+          className={`py-3 px-6 font-medium text-sm border-b-2 transition-colors ${
+            activeTab === 'assignments'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+          style={activeTab === 'assignments' ? { color: 'var(--primary)', borderColor: 'var(--primary)' } : { color: 'var(--text-secondary)' }}
         >
-          <Plus size={16} />
-          New Assignment
+          Assignments
+        </button>
+        <button
+          onClick={() => setActiveTab('tracking')}
+          className={`py-3 px-6 font-medium text-sm border-b-2 transition-colors ${
+            activeTab === 'tracking'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+          style={activeTab === 'tracking' ? { color: 'var(--primary)', borderColor: 'var(--primary)' } : { color: 'var(--text-secondary)' }}
+        >
+          Live Tracking
         </button>
       </div>
 
-      {/* Stats */}
+      {activeTab === 'assignments' ? (
+        <>
+          {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <StatCard
           icon={Bus}
@@ -242,6 +275,10 @@ const AdminBusAssignment = ({ user, addToast }) => {
             </div>
           </motion.div>
         </div>
+      )}
+        </>
+      ) : (
+        <BusTracking user={user} />
       )}
     </div>
   );
