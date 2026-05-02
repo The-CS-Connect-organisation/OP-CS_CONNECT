@@ -1,0 +1,45 @@
+/* Typewriter Text Effect Styles */
+.typewriter-text {
+  display: inline-block;
+  font-family: 'Courier New', monospace;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.typewriter-cursor {
+  display: inline-block;
+  margin-left: 2px;
+  color: #6366f1;
+  font-weight: 700;
+  animation: cursorPulse 0.8s ease-in-out infinite;
+}
+
+.typewriter-cursor.blink {
+  animation: cursorBlink 1s step-end infinite;
+}
+
+@keyframes cursorPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes cursorBlink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0;
+  }
+}
+
+/* Reduced motion fallback */
+@media (prefers-reduced-motion: reduce) {
+  .typewriter-cursor {
+    animation: none;
+    opacity: 1;
+  }
+}

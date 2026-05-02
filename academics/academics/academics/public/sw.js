@@ -1,4 +1,4 @@
-const CACHE_NAME = 'schoolsync-v1';
+const CACHE_NAME = 'schoolsync-v2';
 const OFFLINE_ASSETS = ['/', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {

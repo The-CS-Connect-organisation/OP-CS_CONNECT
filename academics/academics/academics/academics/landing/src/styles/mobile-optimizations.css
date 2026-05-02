@@ -1,0 +1,146 @@
+/* Mobile-specific optimizations */
+
+/* Reduce animations on mobile */
+@media (max-width: 768px) {
+  /* Simplify 3D transforms */
+  .interactive-3d-card {
+    perspective: none;
+  }
+  
+  .interactive-3d-card-inner {
+    transform: none !important;
+  }
+  
+  /* Reduce particle opacity */
+  canvas {
+    opacity: 0.5;
+  }
+  
+  /* Simplify glassmorphism */
+  .glass,
+  .glass-card,
+  .glass-button,
+  .glass-input-wrapper,
+  .animated-nav {
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+  }
+  
+  /* Reduce animation complexity */
+  .animated-text-unit {
+    animation-duration: 0.3s !important;
+  }
+  
+  /* Disable parallax on mobile */
+  .parallax-layer {
+    transform: none !important;
+  }
+  
+  /* Simplify gradient animations */
+  .animated-gradient {
+    animation-duration: 20s;
+  }
+}
+
+/* Very small screens */
+@media (max-width: 480px) {
+  /* Further reduce effects */
+  .periodic-element {
+    width: 50px;
+    height: 50px;
+    font-size: 0.75rem;
+  }
+  
+  .loading-logo {
+    width: 80px;
+    height: 80px;
+  }
+  
+  /* Simplify scroll progress */
+  .scroll-progress {
+    height: 2px;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  .glass-card:hover,
+  .glass-button:hover,
+  .animated-nav-link:hover {
+    transform: none;
+  }
+  
+  /* Increase touch targets */
+  button,
+  a,
+  .glass-button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Optimize for retina displays */
+  canvas {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Landscape mobile */
+@media (max-width: 896px) and (orientation: landscape) {
+  /* Adjust hero section height */
+  section[aria-label="Hero"] {
+    min-height: 100vh;
+  }
+  
+  /* Reduce vertical spacing */
+  .py-28 {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+  }
+}
+
+/* Battery saver mode detection (experimental) */
+@media (prefers-reduced-data: reduce) {
+  /* Disable heavy animations */
+  canvas,
+  .animated-gradient,
+  .periodic-table-background {
+    display: none;
+  }
+  
+  /* Simplify all animations */
+  * {
+    animation-duration: 0.1s !important;
+    transition-duration: 0.1s !important;
+  }
+}
+
+/* Dark mode adjustments (if needed) */
+@media (prefers-color-scheme: dark) {
+  /* Already dark by default, but can add overrides */
+  .glass {
+    background: rgba(255, 255, 255, 0.03);
+  }
+}
+
+/* Print styles */
+@media print {
+  /* Hide decorative elements */
+  canvas,
+  .animated-gradient,
+  .periodic-table-background,
+  .scroll-progress,
+  .loading-animation {
+    display: none !important;
+  }
+  
+  /* Simplify layout */
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

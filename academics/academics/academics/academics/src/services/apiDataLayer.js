@@ -463,6 +463,10 @@ export const studentApi = {
     return makeRequest('GET', '/student/profile', null, { cacheKey: 'student:profile' });
   },
 
+  async getExpandedProfile(studentId) {
+    return makeRequest('GET', `/school/students/${studentId}/profile`, null, { cacheKey: `student:expanded-profile:${studentId}` });
+  },
+
   async updateProfile(updates) {
     return makeRequest('PUT', '/student/profile', updates, { useCache: false });
   },
