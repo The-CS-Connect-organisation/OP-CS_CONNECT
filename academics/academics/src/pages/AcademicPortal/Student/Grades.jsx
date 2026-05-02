@@ -156,9 +156,9 @@ export const Grades = ({ user }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { icon: TrendingUp, label: 'QUORUM_AVERAGE', value: `${overallAvg}%`, color: 'rose' },
-          { icon: Database, label: 'VECTORS_PROCESSED', value: myMarks.length, color: 'zinc' },
-          { icon: BarChart3, label: 'PEAK_PERFORMANCE', value: Object.keys(gradeDistribution).sort()[0] || '-', color: 'rose' },
+          { icon: TrendingUp, label: 'Overall Average', value: `${overallAvg}%`, color: 'rose' },
+          { icon: Database, label: 'Exams Taken', value: myMarks.length, color: 'zinc' },
+          { icon: BarChart3, label: 'Best Grade', value: Object.keys(gradeDistribution).sort()[0] || '-', color: 'rose' },
         ].map((s, idx) => (
           <motion.div key={idx} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.1 }}>
             <Card className="relative p-8 group hover:border-white/20 transition-all duration-500 bg-nova-base/40">
@@ -167,8 +167,8 @@ export const Grades = ({ user }) => {
                   <div className={`w-14 h-14 rounded-2xl bg-nova-base border border-[var(--border-default)] flex items-center justify-center mb-4 transition-all duration-500 group-hover:scale-110 ${s.color === 'rose' ? 'text-[var(--text-muted)] border-white/10 shadow-[0_0_15px_rgba(255,255,255,0.1)]' : 'text-[var(--text-muted)]'}`}>
                     <s.icon size={24} />
                   </div>
-                  <p className="text-4xl font-bold text-[var(--text-primary)] font-mono tracking-tighter mb-1">{s.value}</p>
-                  <p className="text-[10px] font-mono text-[var(--text-muted)] font-bold uppercase tracking-widest">{s.label}</p>
+                  <p className="text-4xl font-bold text-[var(--text-primary)] tracking-tighter mb-1">{s.value}</p>
+                  <p className="text-sm font-semibold text-[var(--text-muted)]">{s.label}</p>
                </div>
             </Card>
           </motion.div>
@@ -209,11 +209,11 @@ export const Grades = ({ user }) => {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="bg-nova-base/50">
-                  <th className="text-left py-6 px-8 text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-widest">Module_ID</th>
-                  <th className="text-left py-6 px-8 text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-widest">Subject_Entity</th>
-                  <th className="text-center py-6 px-8 text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-widest">Quantum_Index</th>
-                  <th className="text-center py-6 px-8 text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-widest">Grade_Value</th>
-                  <th className="text-center py-6 px-8 text-[10px] font-mono font-bold text-[var(--text-muted)] uppercase tracking-widest">Efficiency</th>
+                  <th className="text-left py-4 px-8 text-sm font-semibold text-[var(--text-muted)]">Exam</th>
+                  <th className="text-left py-4 px-8 text-sm font-semibold text-[var(--text-muted)]">Subject</th>
+                  <th className="text-center py-4 px-8 text-sm font-semibold text-[var(--text-muted)]">Marks</th>
+                  <th className="text-center py-4 px-8 text-sm font-semibold text-[var(--text-muted)]">Grade</th>
+                  <th className="text-center py-4 px-8 text-sm font-semibold text-[var(--text-muted)]">Percentage</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-900">
@@ -235,16 +235,16 @@ export const Grades = ({ user }) => {
                         className="group hover:bg-[var(--bg-elevated)] transition-colors cursor-crosshair"
                         onMouseEnter={playClick}
                       >
-                        <td className="py-5 px-8 text-sm font-bold text-[var(--text-primary)] uppercase tracking-wide group-hover:text-[var(--text-muted)] transition-colors">{m.examName}</td>
-                        <td className="py-5 px-8 text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">{m.subject}</td>
-                        <td className="py-5 px-8 text-center">
-                           <span className="font-mono text-xl font-bold text-[var(--text-primary)]">{m.marksObtained}</span>
-                           <span className="font-mono text-[10px] text-[var(--text-muted)] ml-1">/ {m.totalMarks}</span>
+                        <td className="py-4 px-8 text-sm font-semibold text-[var(--text-primary)] group-hover:text-[var(--text-muted)] transition-colors">{m.examName}</td>
+                        <td className="py-4 px-8 text-sm text-[var(--text-muted)]">{m.subject}</td>
+                        <td className="py-4 px-8 text-center">
+                           <span className="text-lg font-bold text-[var(--text-primary)]">{m.marksObtained}</span>
+                           <span className="text-xs text-[var(--text-muted)] ml-1">/ {m.totalMarks}</span>
                         </td>
-                        <td className="py-5 px-8 text-center">
-                           <Badge variant={gradeColors[m.grade] || 'default'} className="font-mono text-xs px-4 py-1 justify-center min-w-[50px]">{m.grade}</Badge>
+                        <td className="py-4 px-8 text-center">
+                           <Badge variant={gradeColors[m.grade] || 'default'} className="text-xs px-4 py-1 justify-center min-w-[50px]">{m.grade}</Badge>
                         </td>
-                        <td className="py-5 px-8 text-center text-[10px] font-mono text-[var(--text-muted)] font-bold tracking-widest">
+                        <td className="py-4 px-8 text-center text-sm text-[var(--text-muted)] font-semibold">
                            {((m.marksObtained/m.totalMarks)*100).toFixed(1)}%
                         </td>
                       </motion.tr>
