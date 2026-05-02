@@ -20,33 +20,24 @@ export const GradeSubmissions = ({ user, addToast }) => {
   const [gradingModal, setGradingModal] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [gradeData, setGradeData] = useState({ marks: '', feedback: '' });
-  const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
 
   const myAssignments = assignments.filter(a => a.teacherId === user.id);
 
-  // Load submissions and grading templates on mount
+  // Load grading templates on mount
   useEffect(() => {
     let alive = true;
     (async () => {
       try {
         setLoading(true);
-        const [subsRes, templatesRes] = await Promise.allSettled([
-          assignmentsService.listSubmissions(),
-          teacherApi.getGradingTemplates(),
-        ]);
+        const templatesRes = await teacherApi.getGradingTemplates();
 
         if (!alive) return;
 
-        if (subsRes.status === 'fulfilled') {
-          setSubmissions(Array.isArray(subsRes.value) ? subsRes.value : []);
-        }
-        if (templatesRes.status === 'fulfilled') {
-          const tData = templatesRes.value?.data?.data ?? templatesRes.value?.data ?? [];
-          setTemplates(Array.isArray(tData) ? tData : []);
-        }
+        const tData = templatesRes?.data?.data ?? templatesRes?.data ?? [];
+        setTemplates(Array.isArray(tData) ? tData : []);
       } finally {
         if (alive) setLoading(false);
       }
@@ -57,16 +48,11 @@ export const GradeSubmissions = ({ user, addToast }) => {
   const flatSubmissions = useMemo(() => {
     const list = [];
     const myIds = new Set(myAssignments.map(a => a.id));
-    const byKey = new Map(
-      submissions
-        .filter(s => myIds.has(s.assignmentId))
-        .map(s => [`${s.assignmentId}:${s.studentId}`, s])
-    );
 
     myAssignments.forEach(a => {
       const studentsInClass = users.filter(u => u.role === 'student' && u.class === a.class);
       studentsInClass.forEach(stu => {
-        const s = byKey.get(`${a.id}:${stu.id}`) ?? {
+        const s = {
           assignmentId: a.id,
           studentId: stu.id,
           studentName: stu.name,
@@ -86,7 +72,7 @@ export const GradeSubmissions = ({ user, addToast }) => {
     });
 
     return list;
-  }, [myAssignments, submissions, users]);
+  }, [myAssignments, users]);
 
   const filteredSubmissions = flatSubmissions.filter(s => {
     if (filter === 'all') return true;
@@ -132,10 +118,6 @@ export const GradeSubmissions = ({ user, addToast }) => {
         marks: parseFloat(gradeData.marks),
         feedback: gradeData.feedback,
       });
-
-      // Refresh submissions list
-      const subs = await assignmentsService.listSubmissions();
-      setSubmissions(Array.isArray(subs) ? subs : []);
 
       await notificationsService.emit({
         userId: selectedSubmission.studentId,
