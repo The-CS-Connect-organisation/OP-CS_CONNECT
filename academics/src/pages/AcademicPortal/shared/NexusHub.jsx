@@ -90,7 +90,16 @@ export const NexusHub = ({ user, addToast }) => {
           { method: 'GET' }
         ).then(r => r.json());
         
+<<<<<<< HEAD
+        const chatClient = StreamChat.getInstance(tokenRes.apiKey); 
+=======
         const chatClient = StreamChat.getInstance(tokenRes.apiKey);
+        
+        // Use the same sanitization as backend
+        const sanitizedUserId = sanitizeUserId(user?.id);
+        
+        console.log('Connecting to Stream Chat with user ID:', sanitizedUserId);
+>>>>>>> 4d040bce4a882e9050780ae2da9e9833773e5a79
         
         // Use the same sanitization as backend
         const sanitizedUserId = sanitizeUserId(user?.id);
