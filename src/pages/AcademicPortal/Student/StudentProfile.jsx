@@ -249,8 +249,8 @@ export const StudentProfile = ({ user, addToast }) => {
     return `XXXX-XXXX-${cleaned.slice(-4)}`;
   };
 
-  // Mock data for demonstration - only for Aarav Menon's account
-  const mockProfileData = user?.name === 'Aarav Menon' ? {
+  // Mock data for demonstration - always show for testing
+  const mockProfileData = {
     id: user?.id,
     name: user?.name || 'Aarav Menon',
     email: user?.email || 'aarav.menon@school.edu',
@@ -291,7 +291,7 @@ export const StudentProfile = ({ user, addToast }) => {
       address: '42, Maple Street\nGreen Valley Colony\nNew Delhi - 110001',
       houseLocation: 'Near Central Park',
     },
-  } : null;
+  };
 
   const data = profileData || mockProfileData || user;
   const age = calculateAge(data?.dateOfBirth);
