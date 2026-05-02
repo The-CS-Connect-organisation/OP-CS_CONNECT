@@ -17,12 +17,7 @@ export const getStreamClient = () => {
  * The backend generates production tokens using the Stream API secret.
  */
 export const createUserToken = async (userId) => {
-  const payload = await request('/school/stream-token', {
-    method: 'GET',
-    headers: {
-      'X-User-ID': userId,
-    },
-  });
+  const payload = await request(`/school/stream-token?userId=${encodeURIComponent(userId)}`);
   if (!payload?.token) {
     throw new Error('Failed to get Stream Chat token from backend');
   }
