@@ -84,11 +84,17 @@ export const NexusHub = ({ user, addToast }) => {
   useEffect(() => {
     const initChat = async () => {
       try {
-        const tokenRes = await request('/school/stream-token');
+        // Send user ID to backend so it creates token with same sanitized ID
+        const tokenRes = await request('/school/stream-token', {
+          method: 'POST',
+          body: JSON.stringify({ userId: user?.id })
+        });
         const chatClient = StreamChat.getInstance(tokenRes.apiKey);
         
         // Use the same sanitization as backend
         const sanitizedUserId = sanitizeUserId(user?.id);
+        
+        console.log('Connecting to Stream Chat with user ID:', sanitizedUserId);
         
         await chatClient.connectUser(
           { id: sanitizedUserId, name: user?.name || 'Guest' },
