@@ -477,6 +477,11 @@ function App() {
               <AILab user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
+          <Route path="/teacher/ai" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <AILab user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
 
           {/* 👨‍💼 Admin Portal */}
           <Route path="/admin/dashboard" element={
