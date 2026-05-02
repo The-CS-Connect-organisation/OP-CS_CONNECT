@@ -317,7 +317,7 @@ export const NexusHub = ({ user, addToast }) => {
                 </nav>
               </div>
 
-              {selectedClub?.extensions.length > 0 && (
+              {(selectedClub?.extensions || []).length > 0 && (
                 <div>
                   <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest px-2 mb-2">Nexus Extensions</p>
                   <nav className="space-y-1">
