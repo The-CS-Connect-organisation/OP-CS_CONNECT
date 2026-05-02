@@ -286,7 +286,7 @@ export const NexusHub = ({ user, addToast }) => {
               <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 mb-2">Text Channels</p>
                 <nav className="space-y-1">
-                  {selectedClub?.channels.map(ch => (
+                  {(selectedClub?.channels || []).map(ch => (
                     <button
                       key={ch}
                       onClick={() => { setSelectedChannel(ch); setActiveSubTab('chat'); }}
@@ -410,7 +410,7 @@ export const NexusHub = ({ user, addToast }) => {
                       <p className="text-sm text-slate-400 mb-6">{club.members} active students</p>
 
                       <div className="flex flex-wrap gap-2">
-                        {club.channels.slice(0, 3).map(ch => (
+                        {(club.channels || []).slice(0, 3).map(ch => (
                           <span key={ch} className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg">#{ch}</span>
                         ))}
                       </div>
