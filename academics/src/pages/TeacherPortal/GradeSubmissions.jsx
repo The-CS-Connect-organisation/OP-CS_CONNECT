@@ -48,6 +48,7 @@ export const GradeSubmissions = ({ user, addToast }) => {
 
   // Fetch real submissions for each assignment
   const [submissionsByAssignment, setSubmissionsByAssignment] = useState({});
+  const [submissionsLoading, setSubmissionsLoading] = useState(true);
 
   useEffect(() => {
     let alive = true;
