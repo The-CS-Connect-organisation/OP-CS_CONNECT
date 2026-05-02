@@ -90,7 +90,16 @@ export const NexusHub = ({ user, addToast }) => {
           { method: 'GET' }
         ).then(r => r.json());
         
+<<<<<<< HEAD
         const chatClient = StreamChat.getInstance(tokenRes.apiKey); 
+=======
+        const chatClient = StreamChat.getInstance(tokenRes.apiKey);
+        
+        // Use the same sanitization as backend
+        const sanitizedUserId = sanitizeUserId(user?.id);
+        
+        console.log('Connecting to Stream Chat with user ID:', sanitizedUserId);
+>>>>>>> 4d040bce4a882e9050780ae2da9e9833773e5a79
         
         // Use the same sanitization as backend
         const sanitizedUserId = sanitizeUserId(user?.id);
@@ -303,7 +312,7 @@ export const NexusHub = ({ user, addToast }) => {
               <div>
                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-2 mb-2">Text Channels</p>
                 <nav className="space-y-1">
-                  {selectedClub?.channels.map(ch => (
+                  {(selectedClub?.channels || []).map(ch => (
                     <button
                       key={ch}
                       onClick={() => { setSelectedChannel(ch); setActiveSubTab('chat'); }}
@@ -334,7 +343,7 @@ export const NexusHub = ({ user, addToast }) => {
                 </nav>
               </div>
 
-              {selectedClub?.extensions.length > 0 && (
+              {(selectedClub?.extensions || []).length > 0 && (
                 <div>
                   <p className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest px-2 mb-2">Nexus Extensions</p>
                   <nav className="space-y-1">
@@ -427,7 +436,7 @@ export const NexusHub = ({ user, addToast }) => {
                       <p className="text-sm text-slate-400 mb-6">{club.members} active students</p>
 
                       <div className="flex flex-wrap gap-2">
-                        {club.channels.slice(0, 3).map(ch => (
+                        {(club.channels || []).slice(0, 3).map(ch => (
                           <span key={ch} className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-lg">#{ch}</span>
                         ))}
                       </div>

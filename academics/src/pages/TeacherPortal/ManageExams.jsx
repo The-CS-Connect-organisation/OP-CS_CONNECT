@@ -11,6 +11,7 @@ import { useSound } from '../../hooks/useSound';
 
 export const ManageExams = ({ user, addToast }) => {
   const { data: exams, add, update, remove } = useStore(KEYS.EXAMS, []);
+  const { data: users = [] } = useStore(KEYS.USERS, []);
   const { playClick, playBlip } = useSound();
   
   const [modalOpen, setModalOpen] = useState(false);
