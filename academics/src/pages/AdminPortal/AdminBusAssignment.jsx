@@ -45,15 +45,6 @@ const AdminBusAssignment = ({ user, addToast }) => {
         body: JSON.stringify({ driver_id: driverId }),
       });
 
-      // Update driver profile
-      await request(`/bus/driver-profile/${driverId}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          bus_number: bus?.bus_number,
-          bus_id: busId,
-        }),
-      }).catch(() => {});
-
       // Update local state
       setBuses(prev => prev.map(b => 
         b.id === busId ? { ...b, driver_id: driverId, driver_name: driver?.name } : b
