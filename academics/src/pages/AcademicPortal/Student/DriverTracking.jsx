@@ -85,46 +85,28 @@ export const DriverTracking = ({ user }) => {
 
         // Send to backend
         try {
-          // Find or auto-create a demo bus + route at this location
+          // Find the bus by bus number
           let buses = await busService.listBuses();
           let bus = buses.find(b => b.bus_number === (busNumber || 'DEMO-001').trim());
 
           if (!bus) {
-            // Auto-create a demo route centered on driver's current location
-            const demoRoute = await busService.createRoute({
-              name: 'Demo Route A',
-              description: 'Auto-created demo route',
-              status: 'active',
-              start_time: '07:00',
-              end_time: '09:00',
-              total_distance: 5,
-              estimated_duration: 30,
-              stops: [
-                { name: 'School Gate', latitude: location.latitude, longitude: location.longitude, time: '07:00' },
-                { name: 'Stop 2', latitude: location.latitude + 0.005, longitude: location.longitude + 0.005, time: '07:15' },
-                { name: 'Stop 3', latitude: location.latitude + 0.010, longitude: location.longitude + 0.010, time: '07:30' },
-              ],
-            });
-
-            // Auto-create a demo bus on that route
-            bus = await busService.createBus({
-              bus_number: busNumber || 'DEMO-001',
-              license_plate: 'KA-01-AB-1234',
-              capacity: 40,
-              status: 'active',
-              route_id: demoRoute?.id || demoRoute?.route?.id,
-              current_location: location,
-            });
-            bus = bus?.bus || bus;
-            setSuccess('Demo bus created! Tracking started.');
+            setError('Bus not found in system. Please contact admin to assign a bus.');
+            setIsTracking(false);
+            if (watchIdRef.current) {
+              navigator.geolocation.clearWatch(watchIdRef.current);
+              watchIdRef.current = null;
+            }
+            return;
           }
 
+          // Update bus location in real-time
           if (bus?.id) {
             await busService.updateBusLocation(bus.id, location);
             setUpdateCount(prev => prev + 1);
           }
         } catch (err) {
           console.error('Failed to update location:', err);
+          setError('Failed to update location: ' + err.message);
         }
       },
       (err) => {
