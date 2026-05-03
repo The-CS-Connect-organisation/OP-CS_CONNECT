@@ -535,7 +535,7 @@ function App() {
               <AdminComms user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
-          <Route path="/admin/bus-assignment" element={
+          <Route path="/admin/bus-assignments" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <AdminBusAssignment user={user} addToast={addToast} />
             </ProtectedRoute>
