@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 
 // Hooks
@@ -16,8 +16,6 @@ import { Toast } from './components/ui/Toast';
 import SplashScreen from './components/SplashScreen';
 
 // Pages - Common
-import { Login } from './pages/Common/Login';
-import { Signup } from './pages/Common/Signup';
 import { NotFound } from './pages/Common/NotFound';
 
 // Pages - Portals (Dashboards)
@@ -49,7 +47,6 @@ import { Assignments } from './pages/AcademicPortal/Student/Assignments';
 import { Attendance } from './pages/AcademicPortal/Student/Attendance';
 import { Grades } from './pages/AcademicPortal/Student/Grades';
 import { Notes } from './pages/AcademicPortal/Student/Notes';
-import { Profile } from './pages/AcademicPortal/Student/Profile';
 import { StudentProfile } from './pages/AcademicPortal/Student/StudentProfile';
 import { StudyPlanner } from './pages/AcademicPortal/Student/StudyPlanner';
 import { AssignmentDetails } from './pages/AcademicPortal/Student/AssignmentDetails';
@@ -224,16 +221,16 @@ function App() {
     <>
       <Toast toasts={toasts} removeToast={removeToast} />
       <Routes>
-          {/* 🔐 Auth Gates */}
+          {/* 🔐 Auth Gates - Splash Screen is the only login entry point */}
           <Route path="/login" element={
             user && ALLOWED_ROLES.includes(user.role) 
               ? <Navigate to={`/${user.role}/dashboard`} replace /> 
-              : <Login onLogin={login} onSwitch={() => navigate('/signup')} />
+              : <SplashScreen onComplete={() => {}} onLogin={login} />
           } />
           <Route path="/signup" element={
             user && ALLOWED_ROLES.includes(user.role)
               ? <Navigate to={`/${user.role}/dashboard`} replace /> 
-              : <Signup onSignup={signup} onSwitch={() => navigate('/login')} />
+              : <SplashScreen onComplete={() => {}} onLogin={login} />
           } />
 
           {/* 🎓 Academic Portal - Student */}
@@ -560,7 +557,7 @@ function App() {
           <Route path="/" element={
             user && ALLOWED_ROLES.includes(user.role) 
               ? <Navigate to={`/${user.role}/dashboard`} replace /> 
-              : <Navigate to="/login" replace />
+              : <SplashScreen onComplete={() => {}} onLogin={login} />
           } />
           <Route path="*" element={<NotFound user={user} />} />
         </Routes>
