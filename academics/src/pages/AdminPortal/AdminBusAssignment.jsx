@@ -148,8 +148,8 @@ const AdminBusAssignment = ({ user, addToast }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Bus Management</h1>
-          <p className="text-sm text-gray-500 mt-1">Create routes, add buses, and assign drivers</p>
+          <h1 className="text-3xl font-bold text-gray-900">Bus Assignment Management</h1>
+          <p className="text-sm text-gray-500 mt-1">Create routes, add buses, and assign drivers to buses</p>
         </div>
         <div className="flex gap-3">
           <button onClick={loadAll} className="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors">
