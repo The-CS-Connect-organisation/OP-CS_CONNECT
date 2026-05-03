@@ -59,6 +59,20 @@ const AdminBusAssignment = ({ user, addToast }) => {
     }
   };
 
+  const seedDemoData = async () => {
+    setLoading(true);
+    try {
+      await request('/auth/seed-demo-users', { method: 'POST' });
+      addToast?.('✓ Demo data created successfully!', 'success');
+      await loadData();
+    } catch (err) {
+      console.error(err);
+      addToast?.('Failed to seed demo data', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -124,6 +138,25 @@ const AdminBusAssignment = ({ user, addToast }) => {
           <p className="text-3xl font-bold text-gray-900">{buses.filter(b => b.driver_id).length}</p>
         </div>
       </motion.div>
+
+      {/* Seed Demo Data Button - Show if no buses */}
+      {buses.length === 0 && drivers.length > 0 && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }} 
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-blue-50 rounded-2xl p-6 border border-blue-200"
+        >
+          <h3 className="font-semibold text-blue-900 mb-3">No buses found</h3>
+          <p className="text-sm text-blue-700 mb-4">Click the button below to create demo buses and routes</p>
+          <button
+            onClick={seedDemoData}
+            disabled={loading}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Creating...' : 'Create Demo Buses'}
+          </button>
+        </motion.div>
+      )}
 
       {/* Drivers List */}
       <motion.div 
