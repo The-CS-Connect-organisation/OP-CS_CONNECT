@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, BookOpen, Clock, Calendar, CheckCircle, Banknote, 
   Bell, ChevronLeft, ChevronRight, X, Sparkles, Bot,
   LogOut, Settings, MessageCircle, FileText, BarChart3, ChevronDown,
-  ClipboardList, UserCheck, PencilLine, Megaphone, Heart, Wallet
+  ClipboardList, UserCheck, PencilLine, Megaphone, Heart, Wallet, Bus
 } from 'lucide-react';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
@@ -28,6 +28,7 @@ const ROLE_NAV = {
         { title: 'Timetable', icon: Calendar, route: '/admin/timetable' },
         { title: 'Announcements', icon: Megaphone, route: '/admin/announcements' },
         { title: 'Payroll & HR', icon: Banknote, route: '/admin/payroll-hr' },
+        { title: 'Bus Assignments', icon: Bus, route: '/admin/bus-assignments' },
       ]
     },
     {
