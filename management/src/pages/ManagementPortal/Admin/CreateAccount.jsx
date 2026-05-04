@@ -118,8 +118,21 @@ const CreateAccount = ({ user, addToast, onCancel }) => {
     setIsCreating(true);
     
     try {
+      // Validate required fields
+      if (!formData.fullName || !formData.fullName.trim()) {
+        throw new Error('Full name is required');
+      }
+      if (!formData.email || !formData.email.trim()) {
+        throw new Error('Email is required');
+      }
+      
       // Generate password if not provided
       const finalPassword = formData.password || generatePassword();
+      
+      // Validate password length
+      if (finalPassword.length < 8) {
+        throw new Error('Password must be at least 8 characters');
+      }
       
       // Create user account via API
       const response = await request('/auth/signup', {
