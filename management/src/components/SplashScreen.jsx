@@ -225,15 +225,6 @@ function SplashScreen({ onComplete, onLogin }) {
               className="w-full mt-6"
             >
               <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
-                {/* Demo Account Info */}
-                <div className="mb-5 p-3 rounded-lg bg-green-50 border border-green-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <UserCog size={16} className="text-green-600" />
-                    <p className="text-xs font-semibold text-green-700">Admin Account</p>
-                  </div>
-                  <p className="text-xs text-green-600">admin@schoolsync.edu / admin123</p>
-                </div>
-
                 <form onSubmit={handleLogin} className="space-y-4">
                   {/* Email */}
                   <div className="space-y-1.5">
