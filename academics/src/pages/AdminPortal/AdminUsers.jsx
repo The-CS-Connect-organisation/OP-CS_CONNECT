@@ -1,20 +1,54 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Users, Search, Filter, Plus, Edit2, Trash2, X } from 'lucide-react';
 import { CreateAccount } from './CreateAccount';
+import { apiCall } from '../../services/apiDataLayer';
 
 const AdminUsers = ({ user, addToast }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
   const [showCreateAccount, setShowCreateAccount] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const mockUsers = [
-    { id: 1, name: 'John Doe', email: 'john@school.edu', role: 'student', grade: '10-A', status: 'active' },
-    { id: 2, name: 'Sarah Wilson', email: 'sarah@school.edu', role: 'teacher', subject: 'Mathematics', status: 'active' },
-    { id: 3, name: 'Mike Johnson', email: 'mike@school.edu', role: 'parent', student: 'Emma Johnson', status: 'active' },
-    { id: 4, name: 'Lisa Brown', email: 'lisa@school.edu', role: 'student', grade: '9-B', status: 'inactive' },
-  ];
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
-  const filteredUsers = mockUsers.filter(u => {
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await apiCall('/api/school/users', 'GET');
+      if (response.success) {
+        setUsers(response.data || []);
+      }
+    } catch (error) {
+      addToast?.('Failed to load users', 'error');
+      console.error('Error fetching users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (userId, userName) => {
+    if (!window.confirm(`Are you sure you want to delete ${userName}? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await apiCall(`/api/auth/users/${userId}`, 'DELETE');
+      if (response.success) {
+        addToast?.(`User ${userName} deleted successfully`, 'success');
+        setUsers(users.filter(u => u.id !== userId));
+      } else {
+        addToast?.('Failed to delete user', 'error');
+      }
+    } catch (error) {
+      addToast?.('Error deleting user', 'error');
+      console.error('Error deleting user:', error);
+    }
+  };
+
+  const filteredUsers = users.filter(u => {
     const matchesSearch = u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           u.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = selectedRole === 'all' || u.role === selectedRole;
@@ -27,8 +61,19 @@ const AdminUsers = ({ user, addToast }) => {
         <CreateAccount 
           user={user} 
           addToast={addToast} 
-          onCancel={() => setShowCreateAccount(false)} 
+          onCancel={() => {
+            setShowCreateAccount(false);
+            fetchUsers();
+          }} 
         />
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center">
+        <p style={{ color: 'var(--text-muted)' }}>Loading users...</p>
       </div>
     );
   }
@@ -105,7 +150,10 @@ const AdminUsers = ({ user, addToast }) => {
                     <button className="p-1 rounded-lg hover:bg-gray-100" onClick={() => addToast?.('Edit user', 'info')}>
                       <Edit2 size={16} style={{ color: 'var(--text-muted)' }} />
                     </button>
-                    <button className="p-1 rounded-lg hover:bg-gray-100" onClick={() => addToast?.('Delete user', 'warning')}>
+                    <button 
+                      className="p-1 rounded-lg hover:bg-gray-100" 
+                      onClick={() => handleDeleteUser(u.id, u.name)}
+                    >
                       <Trash2 size={16} style={{ color: 'var(--text-muted)' }} />
                     </button>
                   </div>

@@ -126,6 +126,27 @@ const ROLE_NAV = {
       ]
     },
   ],
+  librarian: [
+    {
+      section: 'Overview',
+      items: [
+        { title: 'Dashboard', icon: LayoutDashboard, route: '/librarian/dashboard' },
+        { title: 'Profile', icon: UserCheck, route: '/librarian/profile' },
+      ]
+    },
+    {
+      section: 'Library',
+      items: [
+        { title: 'Library Management', icon: BookOpen, route: '/librarian/library' },
+      ]
+    },
+    {
+      section: 'Tools',
+      items: [
+        { title: 'Messages', icon: MessageCircle, route: '/librarian/comms' },
+      ]
+    },
+  ],
 };
 
 /* ── Role colors ── */
@@ -134,6 +155,7 @@ const ROLE_COLOR = {
   teacher: { bg: '#a855f7', text: 'white', label: 'Teacher' },
   student: { bg: '#ff6b9d', text: 'white', label: 'Student' },
   parent: { bg: '#6366f1', text: 'white', label: 'Parent' },
+  librarian: { bg: '#8b5cf6', text: 'white', label: 'Librarian' },
 };
 
 export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {

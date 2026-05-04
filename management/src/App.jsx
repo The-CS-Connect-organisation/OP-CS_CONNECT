@@ -25,6 +25,7 @@ import { ExamCenter } from './pages/AcademicPortal/shared/ExamCenter';
 
 // Management Portal - Admin Pages
 import { Profile as AdminProfile } from './pages/ManagementPortal/Admin/Profile';
+import { Profile as LibrarianProfile } from './pages/ManagementPortal/Librarian/Profile';
 import AdminDashboard from './pages/ManagementPortal/Admin/AdminDashboard';
 import AdminAnalytics from './pages/ManagementPortal/Admin/AdminAnalytics';
 import AdminUsers from './pages/ManagementPortal/Admin/AdminUsers';
@@ -243,6 +244,11 @@ function App() {
           <Route path="/librarian/library" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
               <LibraryManagement user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/librarian/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibrarianProfile user={user} />
             </ProtectedRoute>
           } />
 

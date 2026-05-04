@@ -104,7 +104,7 @@ const SplashScreen = ({ onComplete, onLogin }) => {
       transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }
     });
     const t1 = setTimeout(() => setPhase(1), 800);
-    // After tagline animation, show login form instead of auto-completing
+    // Show login form after tagline animation
     const t2 = setTimeout(() => setPhase(2), 2400);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [logoControls]);

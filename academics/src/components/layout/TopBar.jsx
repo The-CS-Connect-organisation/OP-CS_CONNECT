@@ -110,6 +110,18 @@ export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout, user: pr
 
         {/* Right */}
         <div className="flex items-center gap-2 md:gap-2.5" ref={profileRef}>
+          {/* Hamburger Menu - Mobile Only */}
+          {isMobile && (
+            <motion.button 
+              whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+              onClick={() => { playBlip(); setCollapsed(!isCollapsed); }}
+              className="p-2 rounded-xl transition-colors hover:bg-black/05 md:hidden"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              {isCollapsed ? <Menu size={18} /> : <X size={18} />}
+            </motion.button>
+          )}
+
           {/* Bell */}
           <div className="relative">
             <motion.button 
