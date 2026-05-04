@@ -31,11 +31,12 @@ import { ExamCenter } from './pages/AcademicPortal/shared/ExamCenter';
 
 // Management Portal - Admin Pages
 import { Profile as AdminProfile } from './pages/ManagementPortal/Admin/Profile';
-import { ManageUsers } from './pages/ManagementPortal/Admin/ManageUsers';
-import { Announcements } from './pages/ManagementPortal/Admin/Announcements';
-import { Analytics } from './pages/ManagementPortal/Admin/Analytics';
-import { TimetableManager } from './pages/ManagementPortal/Admin/TimetableManager';
-import { PayrollHR } from './pages/ManagementPortal/Admin/PayrollHR';
+import AdminDashboard from './pages/ManagementPortal/Admin/AdminDashboard';
+import AdminAnalytics from './pages/ManagementPortal/Admin/AdminAnalytics';
+import AdminUsers from './pages/ManagementPortal/Admin/AdminUsers';
+import AdminTimetable from './pages/ManagementPortal/Admin/AdminTimetable';
+import AdminAnnouncements from './pages/ManagementPortal/Admin/AdminAnnouncements';
+import AdminPayroll from './pages/ManagementPortal/Admin/AdminPayroll';
 import { CreateAccount } from './pages/ManagementPortal/Admin/CreateAccount';
 import AdminBusAssignment from './pages/ManagementPortal/Admin/BusAssignment';
 
@@ -159,22 +160,22 @@ function App() {
           } />
           <Route path="/admin/users" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
-              <ManageUsers user={user} addToast={addToast} />
+              <AdminUsers user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/admin/announcements" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
-              <Announcements user={user} addToast={addToast} />
+              <AdminAnnouncements user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/admin/analytics" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
-              <Analytics />
+              <AdminAnalytics user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/admin/timetable" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
-              <TimetableManager />
+              <AdminTimetable user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/admin/profile" element={
@@ -209,7 +210,7 @@ function App() {
           } />
           <Route path="/admin/payroll-hr" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
-              <PayrollHR addToast={addToast} />
+              <AdminPayroll user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/admin/create-account" element={
