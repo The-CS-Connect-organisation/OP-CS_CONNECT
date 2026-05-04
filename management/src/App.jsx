@@ -16,12 +16,6 @@ import { Layout } from './components/layout/Layout';
 import { Toast } from './components/ui/Toast';
 import SplashScreen from './components/SplashScreen';
 
-// Pages - Common
-// (Login/Signup removed - using SplashScreen only)
-
-// Pages - Portals (Dashboards)
-import { AdminDashboard } from './pages/ManagementPortal/Dashboard/AdminDashboard';
-
 // Academic Portal - Shared Features
 import { SettingsPanel } from './pages/AcademicPortal/shared/Settings';
 import { FeeManagement } from './pages/AcademicPortal/shared/FeeManagement';
