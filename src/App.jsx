@@ -52,6 +52,8 @@ import { StudyPlanner } from './pages/AcademicPortal/Student/StudyPlanner';
 import { AssignmentDetails } from './pages/AcademicPortal/Student/AssignmentDetails';
 import { BusTracking } from './pages/AcademicPortal/Student/BusTracking';
 import { DriverTracking } from './pages/AcademicPortal/Student/DriverTracking';
+import { BooksIssued as StudentBooksIssued } from './pages/AcademicPortal/Student/BooksIssued';
+import { BooksIssued as ParentBooksIssued } from './pages/AcademicPortal/Parent/BooksIssued';
 
 // Academic Portal - Shared Features
 import { SettingsPanel } from './pages/AcademicPortal/shared/Settings';
@@ -314,6 +316,11 @@ function App() {
               <BusTracking user={user} />
             </ProtectedRoute>
           } />
+          <Route path="/student/books-issued" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <StudentBooksIssued user={user} />
+            </ProtectedRoute>
+          } />
           <Route path="/driver-tracking" element={
             <ProtectedRoute {...layoutProps} user={user}>
               <DriverTracking />
@@ -364,6 +371,11 @@ function App() {
           <Route path="/parent/notifications" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
               <NotificationCenter user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/parent/books-issued" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
+              <ParentBooksIssued user={user} />
             </ProtectedRoute>
           } />
           <Route path="/parent/bus-tracking" element={
