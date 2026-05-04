@@ -127,7 +127,6 @@ const AdminUsers = ({ user, addToast }) => {
             ))}
           </tbody>
         </table>
-      </div>
       )}
     </div>
   );
