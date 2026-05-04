@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, Clock, Calendar, Banknote, 
   ChevronLeft, ChevronRight, X, Bot,
   LogOut, Settings, MessageCircle, BarChart3, ChevronDown,
-  ClipboardList, Megaphone, UserCheck, Bus
+  ClipboardList, Megaphone, UserCheck, Bus, BookOpen
 } from 'lucide-react';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
@@ -46,6 +46,14 @@ const ROLE_NAV = {
       ]
     },
   ],
+  librarian: [
+    {
+      section: 'Library',
+      items: [
+        { title: 'Library Management', icon: BookOpen, route: '/librarian/library' },
+      ]
+    },
+  ],
   teacher: [
     {
       section: 'Overview',
@@ -74,6 +82,7 @@ const ROLE_NAV = {
 
 const ROLE_COLOR = {
   admin: { bg: '#111111', text: 'white', label: 'Admin' },
+  librarian: { bg: '#6366f1', text: 'white', label: 'Librarian' },
   teacher: { bg: '#a855f7', text: 'white', label: 'Teacher' },
 };
 

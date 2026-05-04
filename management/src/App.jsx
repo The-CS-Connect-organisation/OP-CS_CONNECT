@@ -33,6 +33,7 @@ import AdminAnnouncements from './pages/ManagementPortal/Admin/AdminAnnouncement
 import AdminPayroll from './pages/ManagementPortal/Admin/AdminPayroll';
 import CreateAccount from './pages/ManagementPortal/Admin/CreateAccount';
 import AdminBusAssignment from './pages/ManagementPortal/Admin/AdminBusAssignment';
+import LibraryManagement from './pages/ManagementPortal/Librarian/LibraryManagement';
 
 // Loading screen (shown during auth check)
 const LoadingScreen = () => (
@@ -51,7 +52,7 @@ const LoadingScreen = () => (
 );
 
 // Allowed roles for this portal
-const ALLOWED_ROLES = ['admin'];
+const ALLOWED_ROLES = ['admin', 'librarian'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
@@ -239,8 +240,13 @@ function App() {
               <AdminPayroll user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
+          <Route path="/librarian/library" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibraryManagement user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
 
-          {/* 🏁 Terminal Entry/Exit */}
+          {/* Terminal Entry/Exit */}
           <Route path="/" element={
             user && ALLOWED_ROLES.includes(user.role) 
               ? <Navigate to={`/${user.role}/dashboard`} replace /> 

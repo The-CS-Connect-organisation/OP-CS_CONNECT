@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { User, Mail, Phone, Lock, Key, Check, X, Copy, Download, Eye, EyeOff, ArrowLeft, Save, UserPlus, GraduationCap, Users, Shield, Car } from 'lucide-react';
+import { User, Mail, Phone, Lock, Key, Check, X, Copy, Download, Eye, EyeOff, ArrowLeft, Save, UserPlus, GraduationCap, Users, Shield, Car, BookOpen } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
+import { request } from '../../../utils/apiClient';
 
 const CreateAccount = ({ user, addToast, onCancel }) => {
   const [userType, setUserType] = useState('student');
   const [showPassword, setShowPassword] = useState(false);
   const [generatedCredentials, setGeneratedCredentials] = useState(null);
+  const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState({
     // Common Fields
     email: '',
@@ -74,6 +76,12 @@ const CreateAccount = ({ user, addToast, onCancel }) => {
     vehicleNumber: '',
     routeNumber: '',
     
+    // Librarian Specific
+    employeeId: '',
+    librarySection: '',
+    qualification: '',
+    experience: '',
+    
     // Admin Specific
     accessLevel: '',
     department: '',
@@ -84,6 +92,7 @@ const CreateAccount = ({ user, addToast, onCancel }) => {
     { id: 'teacher', label: 'Teacher', icon: GraduationCap, color: 'green' },
     { id: 'parent', label: 'Parent', icon: Users, color: 'purple' },
     { id: 'driver', label: 'Driver', icon: Car, color: 'orange' },
+    { id: 'librarian', label: 'Librarian', icon: BookOpen, color: 'indigo' },
     { id: 'admin', label: 'Admin', icon: Shield, color: 'red' },
   ];
 
@@ -104,21 +113,40 @@ const CreateAccount = ({ user, addToast, onCancel }) => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsCreating(true);
     
-    // Generate password if not provided
-    const finalPassword = formData.password || generatePassword();
-    
-    const credentials = {
-      email: formData.email,
-      password: finalPassword,
-      userType,
-      ...formData,
-    };
-    
-    setGeneratedCredentials(credentials);
-    addToast?.('Account created successfully!', 'success');
+    try {
+      // Generate password if not provided
+      const finalPassword = formData.password || generatePassword();
+      
+      // Create user account via API
+      const response = await request('/auth/signup', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: formData.fullName,
+          email: formData.email,
+          password: finalPassword,
+          role: userType,
+        }),
+      });
+
+      const credentials = {
+        email: formData.email,
+        password: finalPassword,
+        userType,
+        ...formData,
+      };
+      
+      setGeneratedCredentials(credentials);
+      addToast?.('Account created successfully!', 'success');
+    } catch (error) {
+      console.error('Account creation error:', error);
+      addToast?.(error.message || 'Failed to create account', 'error');
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   const copyCredentials = () => {
@@ -577,6 +605,59 @@ For support, contact: admin@schoolsync.edu
     </div>
   );
 
+  const renderLibrarianFields = () => (
+    <div className="space-y-6">
+      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 border-b pb-2">Library Information</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Employee ID *</label>
+          <input
+            type="text"
+            value={formData.employeeId}
+            onChange={(e) => setFormData({...formData, employeeId: e.target.value})}
+            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            placeholder="e.g., LIB2024001"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Library Section *</label>
+          <select
+            value={formData.librarySection}
+            onChange={(e) => setFormData({...formData, librarySection: e.target.value})}
+            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+          >
+            <option value="">Select Section</option>
+            <option value="Main Library">Main Library</option>
+            <option value="Reference Section">Reference Section</option>
+            <option value="Digital Library">Digital Library</option>
+            <option value="Junior Library">Junior Library</option>
+            <option value="Periodicals">Periodicals</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Qualification</label>
+          <input
+            type="text"
+            value={formData.qualification}
+            onChange={(e) => setFormData({...formData, qualification: e.target.value})}
+            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            placeholder="e.g., M.Lib.Sc, B.Lib.Sc"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Experience (Years)</label>
+          <input
+            type="number"
+            value={formData.experience}
+            onChange={(e) => setFormData({...formData, experience: e.target.value})}
+            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+            placeholder="e.g., 5"
+          />
+        </div>
+      </div>
+    </div>
+  );
+
   const renderAdminFields = () => (
     <div className="space-y-6">
       <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 border-b pb-2">Admin Information</h3>
@@ -678,7 +759,8 @@ For support, contact: admin@schoolsync.edu
                   department: '', subjects: '', qualification: '', experience: '',
                   joiningDate: '', guardianName: '', guardianRelation: '',
                   guardianPhone: '', children: '', licenseNumber: '',
-                  vehicleNumber: '', routeNumber: '', accessLevel: '',
+                  vehicleNumber: '', routeNumber: '', librarySection: '',
+                  accessLevel: '',
                 });
               }}
               className="px-4 py-3 bg-slate-200 text-slate-700 rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-slate-300 transition-colors"
@@ -1112,6 +1194,7 @@ For support, contact: admin@schoolsync.edu
           {userType === 'teacher' && renderTeacherFields()}
           {userType === 'parent' && renderParentFields()}
           {userType === 'driver' && renderDriverFields()}
+          {userType === 'librarian' && renderLibrarianFields()}
           {userType === 'admin' && renderAdminFields()}
 
           {/* Submit Button */}
@@ -1127,9 +1210,19 @@ For support, contact: admin@schoolsync.edu
             )}
             <button
               type="submit"
-              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
+              disabled={isCreating}
+              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Save size={18} /> Create Account
+              {isCreating ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Save size={18} /> Create Account
+                </>
+              )}
             </button>
           </div>
         </form>
