@@ -261,42 +261,6 @@ const SplashScreen = ({ onComplete, onLogin }) => {
               className="w-full mt-4"
             >
               <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
-                {/* Quick Login Role Buttons */}
-                <div className="mb-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-3 text-center">Demo Account</p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {DEMO_PROFILES.map(({ role, icon: Icon, color, bg, email: demoEmail, password: demoPass }) => (
-                      <motion.button
-                        key={role}
-                        type="button"
-                        whileHover={{ scale: 1.06 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => { setEmail(demoEmail); setPassword(demoPass); setLoginError(''); }}
-                        className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all"
-                        style={{
-                          background: email === demoEmail ? bg : '#f9fafb',
-                          borderColor: email === demoEmail ? color : '#e5e7eb',
-                        }}
-                        title={`Login as ${role}`}
-                      >
-                        <Icon size={16} style={{ color }} />
-                        <span className="text-[9px] font-bold uppercase tracking-wide" style={{ color: email === demoEmail ? color : '#9ca3af' }}>
-                          {role}
-                        </span>
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="relative mb-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-100" />
-                  </div>
-                  <div className="relative flex justify-center">
-                    <span className="bg-white px-3 text-[10px] text-gray-400 uppercase tracking-widest font-semibold">or create new account</span>
-                  </div>
-                </div>
-
                 <form onSubmit={handleLogin} className="space-y-4">
                   {/* Email */}
                   <div className="space-y-1.5">
