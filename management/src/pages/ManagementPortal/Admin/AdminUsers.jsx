@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { Users, Search, Filter, Plus, Edit2, Trash2, X } from 'lucide-react';
-import { CreateAccount } from './CreateAccount';
 
 const AdminUsers = ({ user, addToast }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
-  const [showCreateAccount, setShowCreateAccount] = useState(false);
 
   const mockUsers = [
     { id: 1, name: 'John Doe', email: 'john@school.edu', role: 'student', grade: '10-A', status: 'active' },
@@ -21,28 +19,10 @@ const AdminUsers = ({ user, addToast }) => {
     return matchesSearch && matchesRole;
   });
 
-  if (showCreateAccount) {
-    return (
-      <div className="p-6">
-        <CreateAccount 
-          user={user} 
-          addToast={addToast} 
-          onCancel={() => setShowCreateAccount(false)} 
-        />
-      </div>
-    );
-  }
-
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>User Management</h1>
-        <button 
-          onClick={() => setShowCreateAccount(true)}
-          className="px-4 py-2 rounded-xl text-white text-sm font-medium flex items-center gap-2 hover:opacity-90 transition-opacity"
-          style={{ background: 'var(--primary)' }}>
-          <Plus size={16} /> Create Account
-        </button>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4">
