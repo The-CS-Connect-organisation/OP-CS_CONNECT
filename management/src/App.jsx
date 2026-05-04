@@ -108,7 +108,7 @@ function App() {
     }
   }, [user, logout, addToast]);
 
-  if (showSplash) return <SplashScreen onComplete={handleSplashComplete} />;
+  if (showSplash) return <SplashScreen onComplete={handleSplashComplete} onLogin={login} />;
   // Using custom loading screen for portal sync feel
   if (authLoading) return <LoadingScreen />;
 
