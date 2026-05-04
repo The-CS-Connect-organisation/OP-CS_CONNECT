@@ -120,6 +120,28 @@ function App() {
     }
   }, [user, showSplash]);
 
+  // Auto-login from URL hash when landing on dashboard
+  useEffect(() => {
+    // Check URL hash for auto-login credentials
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.split('?')[1]);
+    const autologin = params.get('autologin');
+    const pass = params.get('pass');
+    
+    if (autologin && pass && !user) {
+      console.log('Auto-login from URL:', { email: autologin });
+      login(decodeURIComponent(autologin), decodeURIComponent(pass)).then((result) => {
+        console.log('Auto-login result:', result);
+        if (result?.success) {
+          // Clean URL by removing credentials
+          window.location.hash = window.location.hash.split('?')[0];
+        }
+      }).catch(() => {
+        // Auto-login failed, show splash screen
+      });
+    }
+  }, [user, login]);
+
   // Show loading screen while auth is being checked
   if (authLoading) return <LoadingScreen />;
   
