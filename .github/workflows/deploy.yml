@@ -42,28 +42,14 @@ jobs:
         env:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
-      # Build management
-      - name: Install management deps
-        run: npm install
-        working-directory: management
-
-      - name: Build management
-        run: npm run build
-        working-directory: management
-        env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
-
-      # Combine all three builds
+      # Combine builds (academics only - management portal removed)
       - name: Prepare deploy folder
         run: |
           mkdir -p deploy/academics
-          mkdir -p deploy/management
-          # Copy each portal to its subdirectory first
+          # Copy academics portal to its subdirectory
           cp -r academics/dist/* deploy/academics/
-          cp -r management/dist/* deploy/management/
-          # Fix client-side routing — each portal handles its own 404
+          # Fix client-side routing — academics portal handles its own 404
           cp academics/dist/index.html deploy/academics/404.html
-          cp management/dist/index.html deploy/management/404.html
           # Landing goes to root LAST so it doesn't overwrite portal 404s
           cp -r landing/dist/* deploy/
           cp landing/dist/index.html deploy/404.html
