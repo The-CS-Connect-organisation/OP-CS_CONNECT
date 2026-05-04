@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, BookOpen, Clock, Calendar, CheckCircle, Banknote, 
   Bell, ChevronLeft, ChevronRight, X, Sparkles, Bot,
   LogOut, Settings, MessageCircle, FileText, BarChart3, ChevronDown,
-  ClipboardList, UserCheck, PencilLine, Megaphone, Heart
+  ClipboardList, UserCheck, PencilLine, Megaphone, Heart, User
 } from 'lucide-react';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
@@ -18,7 +18,7 @@ const ROLE_NAV = {
       section: 'Overview',
       items: [
         { title: 'Dashboard', icon: LayoutDashboard, route: '/admin/dashboard' },
-        { title: 'Profile', icon: UserCheck, route: '/admin/profile' },
+        { title: 'Profile', icon: User, route: '/admin/profile' },
         { title: 'Analytics', icon: BarChart3, route: '/admin/analytics' },
       ]
     },
@@ -132,7 +132,7 @@ const ROLE_NAV = {
       section: 'Overview',
       items: [
         { title: 'Dashboard', icon: LayoutDashboard, route: '/librarian/dashboard' },
-        { title: 'Profile', icon: UserCheck, route: '/librarian/profile' },
+        { title: 'Profile', icon: User, route: '/librarian/profile' },
       ]
     },
     {
