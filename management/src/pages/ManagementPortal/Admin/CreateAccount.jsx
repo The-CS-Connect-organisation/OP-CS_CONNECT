@@ -9,7 +9,6 @@ export const CreateAccount = ({ user, addToast, onCancel }) => {
   const [generatedCredentials, setGeneratedCredentials] = useState(null);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    // Common Fields
     email: '',
     password: '',
     phone: '',
@@ -22,8 +21,6 @@ export const CreateAccount = ({ user, addToast, onCancel }) => {
     caste: '',
     motherTongue: '',
     aadhaarNumber: '',
-    
-    // Address
     houseNumber: '',
     street: '',
     area: '',
@@ -32,8 +29,6 @@ export const CreateAccount = ({ user, addToast, onCancel }) => {
     district: '',
     state: '',
     pinCode: '',
-    
-    // Student Specific
     admissionNumber: '',
     rollNumber: '',
     class: '',
@@ -54,8 +49,6 @@ export const CreateAccount = ({ user, addToast, onCancel }) => {
     emergencyContactPerson: '',
     previousSchool: '',
     transferCertificateNumber: '',
-    
-    // Teacher Specific
     employeeId: '',
     designation: '',
     department: '',
@@ -63,21 +56,14 @@ export const CreateAccount = ({ user, addToast, onCancel }) => {
     qualification: '',
     experience: '',
     joiningDate: '',
-    
-    // Parent Specific
     guardianName: '',
     guardianRelation: '',
     guardianPhone: '',
     children: '',
-    
-    // Driver Specific
     licenseNumber: '',
     vehicleNumber: '',
     routeNumber: '',
-    
-    // Admin Specific
     accessLevel: '',
-    department: '',
   });
 
   const userTypes = [
@@ -110,20 +96,21 @@ export const CreateAccount = ({ user, addToast, onCancel }) => {
     setLoading(true);
     
     try {
-      // Generate password if not provided
       const finalPassword = formData.password || generatePassword();
       
-      // Create user via API
+      const payload = {
+        email: formData.email,
+        password: finalPassword,
+        name: formData.fullName,
+        phone: formData.phone,
+        role: userType,
+        ...formData,
+      };
+
+      // Create account via API
       const response = await request('/school/users', {
         method: 'POST',
-        body: JSON.stringify({
-          email: formData.email,
-          password: finalPassword,
-          name: formData.fullName,
-          role: userType,
-          phone: formData.phone,
-          ...formData,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const credentials = {
@@ -137,7 +124,7 @@ export const CreateAccount = ({ user, addToast, onCancel }) => {
       addToast?.('Account created successfully!', 'success');
     } catch (err) {
       console.error(err);
-      addToast?.('Failed to create account: ' + (err.message || 'Unknown error'), 'error');
+      addToast?.('Failed to create account: ' + err.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -180,20 +167,6 @@ ${generatedCredentials.area}, ${generatedCredentials.landmark}
 ${generatedCredentials.city}, ${generatedCredentials.district}
 ${generatedCredentials.state} - ${generatedCredentials.pinCode}
 
-${userType === 'student' ? `
-PARENT DETAILS:
-Father: ${generatedCredentials.fatherName}
-Father Phone: ${generatedCredentials.fatherPhone}
-Mother: ${generatedCredentials.motherName}
-Mother Phone: ${generatedCredentials.motherPhone}
-
-ACADEMIC DETAILS:
-Admission No: ${generatedCredentials.admissionNumber}
-Roll No: ${generatedCredentials.rollNumber}
-Class: ${generatedCredentials.class}
-Section: ${generatedCredentials.section}
-` : ''}
-
 INSTRUCTIONS:
 1. Use these credentials to login at the school portal
 2. Change your password after first login
@@ -213,119 +186,6 @@ For support, contact: admin@schoolsync.edu
     addToast?.('Credentials downloaded!', 'success');
   };
 
-  const renderStudentFields = () => (
-    <div className="space-y-6">
-      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 border-b pb-2">Academic Information</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Admission Number *</label>
-          <input
-            type="text"
-            value={formData.admissionNumber}
-            onChange={(e) => setFormData({...formData, admissionNumber: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="e.g., ADM2024001"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Roll Number *</label>
-          <input
-            type="text"
-            value={formData.rollNumber}
-            onChange={(e) => setFormData({...formData, rollNumber: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="e.g., 001"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Class *</label>
-          <select
-            value={formData.class}
-            onChange={(e) => setFormData({...formData, class: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Select Class</option>
-            {[...Array(12)].map((_, i) => (
-              <option key={i+1} value={i+1}>Class {i+1}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Section *</label>
-          <select
-            value={formData.section}
-            onChange={(e) => setFormData({...formData, section: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option value="">Select Section</option>
-            {['A', 'B', 'C', 'D', 'E'].map(section => (
-              <option key={section} value={section}>{section}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderTeacherFields = () => (
-    <div className="space-y-6">
-      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 border-b pb-2">Professional Information</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Employee ID *</label>
-          <input
-            type="text"
-            value={formData.employeeId}
-            onChange={(e) => setFormData({...formData, employeeId: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            placeholder="e.g., TCH2024001"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Designation *</label>
-          <select
-            value={formData.designation}
-            onChange={(e) => setFormData({...formData, designation: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          >
-            <option value="">Select Designation</option>
-            <option value="Teacher">Teacher</option>
-            <option value="Senior Teacher">Senior Teacher</option>
-            <option value="HOD">Head of Department</option>
-          </select>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderDriverFields = () => (
-    <div className="space-y-6">
-      <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 border-b pb-2">Driver Information</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Driving License Number *</label>
-          <input
-            type="text"
-            value={formData.licenseNumber}
-            onChange={(e) => setFormData({...formData, licenseNumber: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            placeholder="License Number"
-          />
-        </div>
-        <div>
-          <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Vehicle Number *</label>
-          <input
-            type="text"
-            value={formData.vehicleNumber}
-            onChange={(e) => setFormData({...formData, vehicleNumber: e.target.value})}
-            className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            placeholder="e.g., MH 01 AB 1234"
-          />
-        </div>
-      </div>
-    </div>
-  );
-
   if (generatedCredentials) {
     return (
       <motion.div
@@ -333,7 +193,7 @@ For support, contact: admin@schoolsync.edu
         animate={{ opacity: 1, scale: 1 }}
         className="max-w-2xl mx-auto p-6"
       >
-        <div className="bg-white rounded-2xl p-8 bg-gradient-to-br from-green-50 to-blue-50 border-2 border-green-200">
+        <div className="p-8 bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl border-2 border-green-200">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
               <Check size={32} className="text-white" />
@@ -394,9 +254,9 @@ For support, contact: admin@schoolsync.edu
                   vehicleNumber: '', routeNumber: '', accessLevel: '',
                 });
               }}
-              className="flex-1 px-4 py-3 bg-slate-200 text-slate-700 rounded-xl font-medium hover:bg-slate-300 transition-colors"
+              className="flex-1 px-4 py-3 bg-gray-600 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-gray-700 transition-colors"
             >
-              Create Another
+              <Plus size={18} /> Create Another
             </button>
           </div>
         </div>
@@ -407,61 +267,60 @@ For support, contact: admin@schoolsync.edu
   return (
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
       <div>
-        <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Create Account</h1>
+        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Create Account</h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Add new users to the system</p>
       </div>
 
       {/* User Type Selection */}
-      <div className="bg-white rounded-2xl p-6 border" style={{ borderColor: 'var(--border-color)' }}>
-        <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>Select User Type</h2>
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-          {userTypes.map(type => {
-            const Icon = type.icon;
-            const isSelected = userType === type.id;
-            return (
-              <button
-                key={type.id}
-                onClick={() => setUserType(type.id)}
-                className={`p-4 rounded-xl border-2 transition-all text-center ${
-                  isSelected 
-                    ? `border-${type.color}-500 bg-${type.color}-50` 
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-              >
-                <Icon size={24} className="mx-auto mb-2" style={{ color: isSelected ? `var(--${type.color})` : 'var(--text-muted)' }} />
-                <span className="text-sm font-medium">{type.label}</span>
-              </button>
-            );
-          })}
-        </div>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {userTypes.map(type => {
+          const Icon = type.icon;
+          const isSelected = userType === type.id;
+          return (
+            <button
+              key={type.id}
+              onClick={() => setUserType(type.id)}
+              className={`p-4 rounded-xl border-2 transition-all text-center ${
+                isSelected 
+                  ? `border-${type.color}-500 bg-${type.color}-50` 
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <Icon size={24} className={`mx-auto mb-2 ${isSelected ? `text-${type.color}-600` : 'text-gray-400'}`} />
+              <span className={`text-xs font-semibold ${isSelected ? `text-${type.color}-700` : 'text-gray-600'}`}>
+                {type.label}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border space-y-6" style={{ borderColor: 'var(--border-color)' }}>
+      <form onSubmit={handleSubmit} className="space-y-6 bg-white rounded-2xl p-6 border" style={{ borderColor: 'var(--border-color)' }}>
         {/* Common Fields */}
         <div>
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 border-b pb-2 mb-4">Personal Information</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 border-b pb-2 mb-4">Basic Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Full Name *</label>
               <input
                 type="text"
-                required
                 value={formData.fullName}
                 onChange={(e) => setFormData({...formData, fullName: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Full Name"
+                required
               />
             </div>
             <div>
               <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Email *</label>
               <input
                 type="email"
-                required
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="user@school.edu"
+                required
               />
             </div>
             <div>
@@ -496,19 +355,16 @@ For support, contact: admin@schoolsync.edu
           </div>
         </div>
 
-        {/* Role-specific fields */}
-        {userType === 'student' && renderStudentFields()}
-        {userType === 'teacher' && renderTeacherFields()}
-        {userType === 'driver' && renderDriverFields()}
-
-        {/* Submit */}
-        <div className="flex gap-3 pt-4">
+        {/* Submit Button */}
+        <div className="flex gap-3">
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-medium flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50"
           >
-            <UserPlus size={18} /> {loading ? 'Creating...' : 'Create Account'}
+            {loading ? 'Creating...' : <>
+              <UserPlus size={18} /> Create Account
+            </>}
           </button>
           {onCancel && (
             <button

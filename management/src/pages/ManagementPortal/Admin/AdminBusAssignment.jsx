@@ -57,9 +57,6 @@ const AdminBusAssignment = ({ addToast }) => {
       addToast?.(`✓ Bus ${bus?.bus_number} assigned to ${driver?.name}`, 'success');
       setShowAssignModal(false);
       setSelectedBus(null);
-      
-      // Reload data to get real-time updates
-      setTimeout(loadData, 500);
     } catch (err) {
       console.error(err);
       addToast?.('Failed to assign bus', 'error');
@@ -85,15 +82,14 @@ const AdminBusAssignment = ({ addToast }) => {
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>Bus Assignment</h1>
-            <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Assign buses to drivers in real-time</p>
+            <h1 className="text-3xl font-bold text-gray-900">Bus Assignment</h1>
+            <p className="text-sm text-gray-500 mt-1">Assign buses to drivers in real-time</p>
           </div>
           <button 
             onClick={loadData}
-            className="p-2 rounded-xl border hover:bg-gray-50 transition-colors"
-            style={{ borderColor: 'var(--border-color)' }}
+            className="p-2 rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors"
           >
-            <RefreshCw size={18} style={{ color: 'var(--text-muted)' }} />
+            <RefreshCw size={18} className="text-gray-600" />
           </button>
         </div>
       </motion.div>
@@ -104,44 +100,44 @@ const AdminBusAssignment = ({ addToast }) => {
         animate={{ opacity: 1, y: 0 }}
         className="grid grid-cols-1 md:grid-cols-4 gap-4"
       >
-        <div className="bg-white rounded-2xl p-6 border" style={{ borderColor: 'var(--border-color)' }}>
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
               <Bus size={20} className="text-blue-600" />
             </div>
-            <span className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Total Buses</span>
+            <span className="text-sm font-semibold text-gray-600">Total Buses</span>
           </div>
-          <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{buses.length}</p>
+          <p className="text-3xl font-bold text-gray-900">{buses.length}</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 border" style={{ borderColor: 'var(--border-color)' }}>
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
               <Users size={20} className="text-green-600" />
             </div>
-            <span className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Available Drivers</span>
+            <span className="text-sm font-semibold text-gray-600">Available Drivers</span>
           </div>
-          <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{drivers.length}</p>
+          <p className="text-3xl font-bold text-gray-900">{drivers.length}</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 border" style={{ borderColor: 'var(--border-color)' }}>
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
               <CheckCircle size={20} className="text-amber-600" />
             </div>
-            <span className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Assigned</span>
+            <span className="text-sm font-semibold text-gray-600">Assigned</span>
           </div>
-          <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{buses.filter(b => b.driver_id).length}</p>
+          <p className="text-3xl font-bold text-gray-900">{buses.filter(b => b.driver_id).length}</p>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 border" style={{ borderColor: 'var(--border-color)' }}>
+        <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center">
               <AlertCircle size={20} className="text-red-600" />
             </div>
-            <span className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Unassigned</span>
+            <span className="text-sm font-semibold text-gray-600">Unassigned</span>
           </div>
-          <p className="text-3xl font-bold" style={{ color: 'var(--text-primary)' }}>{buses.filter(b => !b.driver_id).length}</p>
+          <p className="text-3xl font-bold text-gray-900">{buses.filter(b => !b.driver_id).length}</p>
         </div>
       </motion.div>
 
@@ -165,11 +161,10 @@ const AdminBusAssignment = ({ addToast }) => {
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl p-6 border"
-          style={{ borderColor: 'var(--border-color)' }}
+          className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm"
         >
-          <h2 className="text-lg font-semibold mb-6 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-            <Bus size={20} style={{ color: 'var(--text-secondary)' }} />
+          <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+            <Bus size={20} className="text-gray-600" />
             Buses
           </h2>
 
@@ -181,13 +176,12 @@ const AdminBusAssignment = ({ addToast }) => {
                   key={bus.id}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="p-4 rounded-xl border"
-                  style={{ borderColor: 'var(--border-color)' }}
+                  className="p-4 rounded-xl border border-gray-200 hover:border-gray-300 transition-all"
                 >
                   {/* Bus Info */}
                   <div className="mb-4">
-                    <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{bus.bus_number}</h3>
-                    <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{bus.license_plate}</p>
+                    <h3 className="font-semibold text-gray-900">{bus.bus_number}</h3>
+                    <p className="text-xs text-gray-500 mt-1">{bus.license_plate}</p>
                   </div>
 
                   {/* Current Assignment */}
@@ -198,8 +192,8 @@ const AdminBusAssignment = ({ addToast }) => {
                       <p className="text-xs text-green-600 mt-1">{assignedDriver.email}</p>
                     </div>
                   ) : (
-                    <div className="mb-4 p-3 rounded-lg bg-gray-50 border" style={{ borderColor: 'var(--border-color)' }}>
-                      <p className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>Unassigned</p>
+                    <div className="mb-4 p-3 rounded-lg bg-gray-50 border border-gray-200">
+                      <p className="text-xs text-gray-600 font-semibold">Unassigned</p>
                     </div>
                   )}
 
@@ -236,10 +230,10 @@ const AdminBusAssignment = ({ addToast }) => {
             onClick={(e) => e.stopPropagation()}
             className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl"
           >
-            <h3 className="text-lg font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Assign {selectedBus.bus_number} to Driver</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Assign {selectedBus.bus_number} to Driver</h3>
             
             {drivers.length === 0 ? (
-              <div className="text-center py-8" style={{ color: 'var(--text-muted)' }}>
+              <div className="text-center py-8 text-gray-500">
                 <AlertCircle size={48} className="mx-auto mb-3 opacity-30" />
                 <p className="font-medium">No drivers available</p>
               </div>
@@ -250,13 +244,12 @@ const AdminBusAssignment = ({ addToast }) => {
                     key={driver.id}
                     onClick={() => assignBusToDriver(selectedBus.id, driver.id)}
                     disabled={assigning === selectedBus.id}
-                    className="w-full p-3 rounded-lg border hover:bg-blue-50 transition-all text-left disabled:opacity-50"
-                    style={{ borderColor: 'var(--border-color)' }}
+                    className="w-full p-3 rounded-lg border border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all text-left disabled:opacity-50"
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>{driver.name}</p>
-                        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{driver.email}</p>
+                        <p className="font-semibold text-gray-900">{driver.name}</p>
+                        <p className="text-xs text-gray-500">{driver.email}</p>
                       </div>
                       {assigning === selectedBus.id && (
                         <Loader2 size={16} className="animate-spin text-blue-600" />
@@ -269,8 +262,7 @@ const AdminBusAssignment = ({ addToast }) => {
 
             <button
               onClick={() => setShowAssignModal(false)}
-              className="w-full px-4 py-2 rounded-lg border font-medium hover:bg-gray-50 transition-colors"
-              style={{ borderColor: 'var(--border-color)' }}
+              className="w-full px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
             >
               Cancel
             </button>
@@ -283,11 +275,10 @@ const AdminBusAssignment = ({ addToast }) => {
         <motion.div 
           initial={{ opacity: 0, y: 20 }} 
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl p-6 border"
-          style={{ borderColor: 'var(--border-color)' }}
+          className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm"
         >
-          <h2 className="text-lg font-semibold mb-6 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-            <Users size={20} style={{ color: 'var(--text-secondary)' }} />
+          <h2 className="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+            <Users size={20} className="text-gray-600" />
             Drivers ({drivers.length})
           </h2>
 
@@ -299,13 +290,12 @@ const AdminBusAssignment = ({ addToast }) => {
                   key={driver.id}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="p-4 rounded-xl border"
-                  style={{ borderColor: 'var(--border-color)' }}
+                  className="p-4 rounded-xl border border-gray-200 hover:border-gray-300 transition-all"
                 >
                   {/* Driver Info */}
                   <div className="mb-4">
-                    <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{driver.name}</h3>
-                    <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{driver.email}</p>
+                    <h3 className="font-semibold text-gray-900">{driver.name}</h3>
+                    <p className="text-xs text-gray-500 mt-1">{driver.email}</p>
                   </div>
 
                   {/* Current Assignment */}
