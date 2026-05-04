@@ -18,6 +18,7 @@ const ROLE_NAV = {
       section: 'Overview',
       items: [
         { title: 'Dashboard', icon: LayoutDashboard, route: '/admin/dashboard' },
+        { title: 'Profile', icon: UserCheck, route: '/admin/profile' },
         { title: 'Analytics', icon: BarChart3, route: '/admin/analytics' },
       ]
     },
