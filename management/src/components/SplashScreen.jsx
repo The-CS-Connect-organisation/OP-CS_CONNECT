@@ -309,12 +309,7 @@ function SplashScreen({ onComplete, onLogin }) {
                   </button>
                 </form>
 
-                {/* Skip link */}
-                <p className="text-center mt-4 text-xs text-gray-400">
-                  <button onClick={handleSkip} className="hover:text-gray-600 transition-colors underline underline-offset-2">
-                    Continue to login page
-                  </button>
-                </p>
+                {/* Skip link - REMOVED: no separate login page exists */}
               </div>
             </motion.div>
           )}
