@@ -794,280 +794,318 @@ For support, contact: admin@schoolsync.edu
             </div>
           </div>
 
-          {/* Personal Information */}
-          <div className="mb-8">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4 border-b pb-2">Personal Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Full Name *</label>
-                <input
-                  type="text"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData({...formData, fullName: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="As per Aadhaar"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Email *</label>
-                <div className="relative">
+          {/* Personal Information - Only for students */}
+          {userType === 'student' && (
+            <div className="mb-8">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4 border-b pb-2">Personal Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Full Name *</label>
                   <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
-                    placeholder="email@example.com"
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="As per Aadhaar"
                     required
                   />
-                  <Mail size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Phone *</label>
-                <div className="relative">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Email *</label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => setFormData({...formData, email: e.target.value})}
+                      className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                      placeholder="email@example.com"
+                      required
+                    />
+                    <Mail size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Phone *</label>
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                      placeholder="+91 XXXXX XXXXX"
+                      required
+                    />
+                    <Phone size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Date of Birth *</label>
                   <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
-                    placeholder="+91 XXXXX XXXXX"
+                    type="date"
+                    value={formData.dateOfBirth}
+                    onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     required
                   />
-                  <Phone size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Date of Birth *</label>
-                <input
-                  type="date"
-                  value={formData.dateOfBirth}
-                  onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Gender *</label>
-                <select
-                  value={formData.gender}
-                  onChange={(e) => setFormData({...formData, gender: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Blood Group</label>
-                <select
-                  value={formData.bloodGroup}
-                  onChange={(e) => setFormData({...formData, bloodGroup: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Blood Group</option>
-                  <option value="A+">A+</option>
-                  <option value="A-">A-</option>
-                  <option value="B+">B+</option>
-                  <option value="B-">B-</option>
-                  <option value="O+">O+</option>
-                  <option value="O-">O-</option>
-                  <option value="AB+">AB+</option>
-                  <option value="AB-">AB-</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Aadhaar Number</label>
-                <input
-                  type="text"
-                  value={formData.aadhaarNumber}
-                  onChange={(e) => setFormData({...formData, aadhaarNumber: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="12-digit Aadhaar Number"
-                  maxLength={12}
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Religion</label>
-                <select
-                  value={formData.religion}
-                  onChange={(e) => setFormData({...formData, religion: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Religion</option>
-                  <option value="Hindu">Hindu</option>
-                  <option value="Muslim">Muslim</option>
-                  <option value="Christian">Christian</option>
-                  <option value="Sikh">Sikh</option>
-                  <option value="Buddhist">Buddhist</option>
-                  <option value="Jain">Jain</option>
-                  <option value="Other">Other</option>
-                  <option value="None">None</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Caste/Category</label>
-                <select
-                  value={formData.caste}
-                  onChange={(e) => setFormData({...formData, caste: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Category</option>
-                  <option value="General">General</option>
-                  <option value="OBC">OBC</option>
-                  <option value="SC">SC</option>
-                  <option value="ST">ST</option>
-                  <option value="EWS">EWS</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Mother Tongue</label>
-                <select
-                  value={formData.motherTongue}
-                  onChange={(e) => setFormData({...formData, motherTongue: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select Mother Tongue</option>
-                  <option value="Hindi">Hindi</option>
-                  <option value="English">English</option>
-                  <option value="Tamil">Tamil</option>
-                  <option value="Telugu">Telugu</option>
-                  <option value="Bengali">Bengali</option>
-                  <option value="Marathi">Marathi</option>
-                  <option value="Gujarati">Gujarati</option>
-                  <option value="Kannada">Kannada</option>
-                  <option value="Malayalam">Malayalam</option>
-                  <option value="Punjabi">Punjabi</option>
-                  <option value="Other">Other</option>
-                </select>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Gender *</label>
+                  <select
+                    value={formData.gender}
+                    onChange={(e) => setFormData({...formData, gender: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Blood Group</label>
+                  <select
+                    value={formData.bloodGroup}
+                    onChange={(e) => setFormData({...formData, bloodGroup: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Select Blood Group</option>
+                    <option value="A+">A+</option>
+                    <option value="A-">A-</option>
+                    <option value="B+">B+</option>
+                    <option value="B-">B-</option>
+                    <option value="O+">O+</option>
+                    <option value="O-">O-</option>
+                    <option value="AB+">AB+</option>
+                    <option value="AB-">AB-</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Aadhaar Number</label>
+                  <input
+                    type="text"
+                    value={formData.aadhaarNumber}
+                    onChange={(e) => setFormData({...formData, aadhaarNumber: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="12-digit Aadhaar Number"
+                    maxLength={12}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Religion</label>
+                  <select
+                    value={formData.religion}
+                    onChange={(e) => setFormData({...formData, religion: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Select Religion</option>
+                    <option value="Hindu">Hindu</option>
+                    <option value="Muslim">Muslim</option>
+                    <option value="Christian">Christian</option>
+                    <option value="Sikh">Sikh</option>
+                    <option value="Buddhist">Buddhist</option>
+                    <option value="Jain">Jain</option>
+                    <option value="Other">Other</option>
+                    <option value="None">None</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Caste/Category</label>
+                  <select
+                    value={formData.caste}
+                    onChange={(e) => setFormData({...formData, caste: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Select Category</option>
+                    <option value="General">General</option>
+                    <option value="OBC">OBC</option>
+                    <option value="SC">SC</option>
+                    <option value="ST">ST</option>
+                    <option value="EWS">EWS</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Mother Tongue</label>
+                  <select
+                    value={formData.motherTongue}
+                    onChange={(e) => setFormData({...formData, motherTongue: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Select Mother Tongue</option>
+                    <option value="Hindi">Hindi</option>
+                    <option value="English">English</option>
+                    <option value="Tamil">Tamil</option>
+                    <option value="Telugu">Telugu</option>
+                    <option value="Bengali">Bengali</option>
+                    <option value="Marathi">Marathi</option>
+                    <option value="Gujarati">Gujarati</option>
+                    <option value="Kannada">Kannada</option>
+                    <option value="Malayalam">Malayalam</option>
+                    <option value="Punjabi">Punjabi</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Address Information */}
-          <div className="mb-8">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4 border-b pb-2">Address Information</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">House/Flat Number *</label>
-                <input
-                  type="text"
-                  value={formData.houseNumber}
-                  onChange={(e) => setFormData({...formData, houseNumber: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="House/Flat/Door Number"
-                  required
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Street/Lane/Colony *</label>
-                <input
-                  type="text"
-                  value={formData.street}
-                  onChange={(e) => setFormData({...formData, street: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Street/Lane/Colony"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Area/Locality</label>
-                <input
-                  type="text"
-                  value={formData.area}
-                  onChange={(e) => setFormData({...formData, area: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Area/Locality"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Landmark</label>
-                <input
-                  type="text"
-                  value={formData.landmark}
-                  onChange={(e) => setFormData({...formData, landmark: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Landmark"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">City *</label>
-                <input
-                  type="text"
-                  value={formData.city}
-                  onChange={(e) => setFormData({...formData, city: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="City"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">District *</label>
-                <input
-                  type="text"
-                  value={formData.district}
-                  onChange={(e) => setFormData({...formData, district: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="District"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">State *</label>
-                <select
-                  value={formData.state}
-                  onChange={(e) => setFormData({...formData, state: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                >
-                  <option value="">Select State</option>
-                  <option value="Andhra Pradesh">Andhra Pradesh</option>
-                  <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-                  <option value="Assam">Assam</option>
-                  <option value="Bihar">Bihar</option>
-                  <option value="Chhattisgarh">Chhattisgarh</option>
-                  <option value="Goa">Goa</option>
-                  <option value="Gujarat">Gujarat</option>
-                  <option value="Haryana">Haryana</option>
-                  <option value="Himachal Pradesh">Himachal Pradesh</option>
-                  <option value="Jharkhand">Jharkhand</option>
-                  <option value="Karnataka">Karnataka</option>
-                  <option value="Kerala">Kerala</option>
-                  <option value="Madhya Pradesh">Madhya Pradesh</option>
-                  <option value="Maharashtra">Maharashtra</option>
-                  <option value="Manipur">Manipur</option>
-                  <option value="Meghalaya">Meghalaya</option>
-                  <option value="Mizoram">Mizoram</option>
-                  <option value="Nagaland">Nagaland</option>
-                  <option value="Odisha">Odisha</option>
-                  <option value="Punjab">Punjab</option>
-                  <option value="Rajasthan">Rajasthan</option>
-                  <option value="Sikkim">Sikkim</option>
-                  <option value="Tamil Nadu">Tamil Nadu</option>
-                  <option value="Telangana">Telangana</option>
-                  <option value="Tripura">Tripura</option>
-                  <option value="Uttar Pradesh">Uttar Pradesh</option>
-                  <option value="Uttarakhand">Uttarakhand</option>
-                  <option value="West Bengal">West Bengal</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">PIN Code *</label>
-                <input
-                  type="text"
-                  value={formData.pinCode}
-                  onChange={(e) => setFormData({...formData, pinCode: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="6-digit PIN Code"
-                  maxLength={6}
-                  required
-                />
+          {/* Basic Information for non-student profiles */}
+          {userType !== 'student' && (
+            <div className="mb-8">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4 border-b pb-2">Basic Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Full Name *</label>
+                  <input
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({...formData, fullName: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Full Name"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Phone *</label>
+                  <div className="relative">
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                      className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
+                      placeholder="+91 XXXXX XXXXX"
+                      required
+                    />
+                    <Phone size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Address Information - Only for students */}
+          {userType === 'student' && (
+            <div className="mb-8">
+              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4 border-b pb-2">Address Information</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">House/Flat Number *</label>
+                  <input
+                    type="text"
+                    value={formData.houseNumber}
+                    onChange={(e) => setFormData({...formData, houseNumber: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="House/Flat/Door Number"
+                    required
+                  />
+                </div>
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Street/Lane/Colony *</label>
+                  <input
+                    type="text"
+                    value={formData.street}
+                    onChange={(e) => setFormData({...formData, street: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Street/Lane/Colony"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Area/Locality</label>
+                  <input
+                    type="text"
+                    value={formData.area}
+                    onChange={(e) => setFormData({...formData, area: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Area/Locality"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Landmark</label>
+                  <input
+                    type="text"
+                    value={formData.landmark}
+                    onChange={(e) => setFormData({...formData, landmark: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="Landmark"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">City *</label>
+                  <input
+                    type="text"
+                    value={formData.city}
+                    onChange={(e) => setFormData({...formData, city: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="City"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">District *</label>
+                  <input
+                    type="text"
+                    value={formData.district}
+                    onChange={(e) => setFormData({...formData, district: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="District"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">State *</label>
+                  <select
+                    value={formData.state}
+                    onChange={(e) => setFormData({...formData, state: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  >
+                    <option value="">Select State</option>
+                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                    <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                    <option value="Assam">Assam</option>
+                    <option value="Bihar">Bihar</option>
+                    <option value="Chhattisgarh">Chhattisgarh</option>
+                    <option value="Goa">Goa</option>
+                    <option value="Gujarat">Gujarat</option>
+                    <option value="Haryana">Haryana</option>
+                    <option value="Himachal Pradesh">Himachal Pradesh</option>
+                    <option value="Jharkhand">Jharkhand</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Kerala">Kerala</option>
+                    <option value="Madhya Pradesh">Madhya Pradesh</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Manipur">Manipur</option>
+                    <option value="Meghalaya">Meghalaya</option>
+                    <option value="Mizoram">Mizoram</option>
+                    <option value="Nagaland">Nagaland</option>
+                    <option value="Odisha">Odisha</option>
+                    <option value="Punjab">Punjab</option>
+                    <option value="Rajasthan">Rajasthan</option>
+                    <option value="Sikkim">Sikkim</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Telangana">Telangana</option>
+                    <option value="Tripura">Tripura</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                    <option value="Uttarakhand">Uttarakhand</option>
+                    <option value="West Bengal">West Bengal</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">PIN Code *</label>
+                  <input
+                    type="text"
+                    value={formData.pinCode}
+                    onChange={(e) => setFormData({...formData, pinCode: e.target.value})}
+                    className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="6-digit PIN Code"
+                    maxLength={6}
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Role-specific Fields */}
           {userType === 'student' && renderStudentFields()}
