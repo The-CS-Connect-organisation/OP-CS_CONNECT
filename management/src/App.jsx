@@ -17,8 +17,7 @@ import { Toast } from './components/ui/Toast';
 import SplashScreen from './components/SplashScreen';
 
 // Pages - Common
-import { Login } from './pages/Common/Login';
-import { Signup } from './pages/Common/Signup';
+// (Login/Signup removed - using SplashScreen only)
 
 // Pages - Portals (Dashboards)
 import { AdminDashboard } from './pages/ManagementPortal/Dashboard/AdminDashboard';
@@ -126,16 +125,16 @@ function App() {
       <Toast toasts={toasts} removeToast={removeToast} />
       <AnimatePresence mode="wait">
         <Routes>
-          {/* 🔐 Auth Gates */}
+          {/* 🔐 Auth Gates - Splash Screen is the only login entry point */}
           <Route path="/login" element={
             user && ALLOWED_ROLES.includes(user.role) 
               ? <Navigate to={`/${user.role}/dashboard`} replace /> 
-              : <Login onLogin={login} onSwitch={() => navigate('/signup')} />
+              : <SplashScreen onComplete={() => {}} onLogin={login} />
           } />
           <Route path="/signup" element={
             user && ALLOWED_ROLES.includes(user.role)
               ? <Navigate to={`/${user.role}/dashboard`} replace /> 
-              : <Signup onSignup={signup} onSwitch={() => navigate('/login')} />
+              : <SplashScreen onComplete={() => {}} onLogin={login} />
           } />
 
           {/* 🏢 Management Portal - Admin */}
@@ -204,7 +203,7 @@ function App() {
           <Route path="/" element={
             user && ALLOWED_ROLES.includes(user.role) 
               ? <Navigate to={`/${user.role}/dashboard`} replace /> 
-              : <Navigate to="/login" replace />
+              : <SplashScreen onComplete={() => {}} onLogin={login} />
           } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
