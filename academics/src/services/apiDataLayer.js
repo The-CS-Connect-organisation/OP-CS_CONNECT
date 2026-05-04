@@ -683,6 +683,13 @@ export const authApi = {
 // UTILITY FUNCTIONS
 // ============================================================================
 
+/**
+ * Generic API call function
+ */
+export async function apiCall(endpoint, method = 'GET', data = null, options = {}) {
+  return makeRequest(method, endpoint, data, options);
+}
+
 export const apiUtils = {
   clearCache,
   getCachedData,
