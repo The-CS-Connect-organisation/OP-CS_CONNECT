@@ -146,8 +146,9 @@ function App() {
   const { theme, toggleTheme } = useTheme();
   const { toasts, addToast, removeToast } = useToast();
   const [showSplash, setShowSplash] = useState(() => {
-    // Only show splash if not already seen in this session
-    return !sessionStorage.getItem('hasSeenSplash');
+    // Only show splash if not already seen in this session AND user is not logged in
+    const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
+    return !hasSeenSplash;
   });
   const [autoLoginInProgress, setAutoLoginInProgress] = useState(() => {
     // Check if credentials are in URL hash on initial load
@@ -206,7 +207,7 @@ function App() {
     }
   }, [user, login]);
 
-  if (showSplash) return <SplashScreen onComplete={handleSplashComplete} onLogin={login} />;
+  if (showSplash && !user) return <SplashScreen onComplete={handleSplashComplete} onLogin={login} />;
   // Using custom loading screen for portal sync feel
   if (authLoading) return <LoadingScreen />;
 
