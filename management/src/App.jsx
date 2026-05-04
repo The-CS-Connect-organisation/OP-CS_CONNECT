@@ -82,10 +82,7 @@ function App() {
   const { user, loading: authLoading, login, signup, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { toasts, addToast, removeToast } = useToast();
-  const [showSplash, setShowSplash] = useState(() => {
-    // Only show splash if not already logged in
-    return !user;
-  });
+  const [showSplash, setShowSplash] = useState(true);
   const handleSplashComplete = useCallback(() => setShowSplash(false), []);
   
   const { data: notifications, update: updateNotification } = useStore(KEYS.NOTIFICATIONS, []);
@@ -111,10 +108,10 @@ function App() {
 
   // Hide splash screen once user is logged in
   useEffect(() => {
-    if (user && showSplash) {
+    if (user && ALLOWED_ROLES.includes(user.role)) {
       setShowSplash(false);
     }
-  }, [user, showSplash]);
+  }, [user]);
 
   // Auto-login from URL hash when landing on dashboard
   useEffect(() => {
@@ -141,7 +138,7 @@ function App() {
   // Show loading screen while auth is being checked
   if (authLoading) return <LoadingScreen />;
   
-  // Show splash screen only if not logged in
+  // Show splash screen only if not logged in and splash hasn't been dismissed
   if (showSplash && !user) return <SplashScreen onComplete={handleSplashComplete} onLogin={login} />;
 
   const layoutProps = {
