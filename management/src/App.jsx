@@ -36,6 +36,8 @@ import { Announcements } from './pages/ManagementPortal/Admin/Announcements';
 import { Analytics } from './pages/ManagementPortal/Admin/Analytics';
 import { TimetableManager } from './pages/ManagementPortal/Admin/TimetableManager';
 import { PayrollHR } from './pages/ManagementPortal/Admin/PayrollHR';
+import { CreateAccount } from './pages/ManagementPortal/Admin/CreateAccount';
+import AdminBusAssignment from './pages/ManagementPortal/Admin/BusAssignment';
 
 // Loading screen (shown during auth check)
 const LoadingScreen = () => (
@@ -208,6 +210,16 @@ function App() {
           <Route path="/admin/payroll-hr" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <PayrollHR addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/create-account" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <CreateAccount user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/bus-assignments" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminBusAssignment user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 
