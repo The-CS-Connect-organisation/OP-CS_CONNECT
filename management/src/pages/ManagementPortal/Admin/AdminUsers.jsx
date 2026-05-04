@@ -1,20 +1,37 @@
-import { useState } from 'react';
-import { Users, Search, Filter, Plus, Edit2, Trash2, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Users, Search, Filter, Plus, Edit2, Trash2, X, Loader2, RefreshCw } from 'lucide-react';
+import { request } from '../../../utils/apiClient';
 
 const AdminUsers = ({ user, addToast }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
+  const [allUsers, setAllUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const mockUsers = [
-    { id: 1, name: 'John Doe', email: 'john@school.edu', role: 'student', grade: '10-A', status: 'active' },
-    { id: 2, name: 'Sarah Wilson', email: 'sarah@school.edu', role: 'teacher', subject: 'Mathematics', status: 'active' },
-    { id: 3, name: 'Mike Johnson', email: 'mike@school.edu', role: 'parent', student: 'Emma Johnson', status: 'active' },
-    { id: 4, name: 'Lisa Brown', email: 'lisa@school.edu', role: 'student', grade: '9-B', status: 'inactive' },
-  ];
+  useEffect(() => {
+    loadUsers();
+    // Refresh data every 5 seconds for real-time updates
+    const interval = setInterval(loadUsers, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
-  const filteredUsers = mockUsers.filter(u => {
-    const matchesSearch = u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          u.email.toLowerCase().includes(searchTerm.toLowerCase());
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await request('/school/users');
+      const users = response?.users ?? response?.items ?? [];
+      setAllUsers(users);
+    } catch (err) {
+      console.error(err);
+      addToast?.('Failed to load users', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredUsers = allUsers.filter(u => {
+    const matchesSearch = u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          u.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = selectedRole === 'all' || u.role === selectedRole;
     return matchesSearch && matchesRole;
   });
@@ -23,6 +40,13 @@ const AdminUsers = ({ user, addToast }) => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>User Management</h1>
+        <button 
+          onClick={loadUsers}
+          className="p-2 rounded-xl border hover:bg-gray-50 transition-colors"
+          style={{ borderColor: 'var(--border-color)' }}
+        >
+          <RefreshCw size={18} style={{ color: 'var(--text-muted)' }} />
+        </button>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4">
@@ -47,10 +71,19 @@ const AdminUsers = ({ user, addToast }) => {
           <option value="student">Students</option>
           <option value="teacher">Teachers</option>
           <option value="parent">Parents</option>
+          <option value="driver">Drivers</option>
+          <option value="admin">Admins</option>
         </select>
       </div>
 
-      <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border-color)' }}>
+      {loading ? (
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <Loader2 className="animate-spin mx-auto mb-4 text-gray-400" size={48} />
+            <p className="text-gray-500 font-mono text-sm">Loading users...</p>
+          </div>
+        </div>
+      ) : (
         <table className="w-full">
           <thead className="bg-gray-50">
             <tr>
@@ -95,6 +128,7 @@ const AdminUsers = ({ user, addToast }) => {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 };

@@ -25,6 +25,8 @@ const ROLE_NAV = {
       section: 'Management',
       items: [
         { title: 'Users', icon: Users, route: '/admin/users' },
+        { title: 'Create Account', icon: UserCheck, route: '/admin/create-account' },
+        { title: 'Bus Assignment', icon: FileText, route: '/admin/bus-assignment' },
         { title: 'Timetable', icon: Calendar, route: '/admin/timetable' },
         { title: 'Announcements', icon: Megaphone, route: '/admin/announcements' },
         { title: 'Payroll & HR', icon: Banknote, route: '/admin/payroll-hr' },
