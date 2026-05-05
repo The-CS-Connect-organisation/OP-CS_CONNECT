@@ -54,6 +54,7 @@ import { BusTracking } from './pages/AcademicPortal/Student/BusTracking';
 import { DriverTracking } from './pages/AcademicPortal/Student/DriverTracking';
 import { BooksIssued as StudentBooksIssued } from './pages/AcademicPortal/Student/BooksIssued';
 import { BooksIssued as ParentBooksIssued } from './pages/AcademicPortal/Parent/BooksIssued';
+import { NCERTBooks } from './pages/AcademicPortal/Student/NCERTBooks';
 
 // Academic Portal - Shared Features
 import { SettingsPanel } from './pages/AcademicPortal/shared/Settings';
@@ -325,6 +326,11 @@ function App() {
           <Route path="/student/books-issued" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <StudentBooksIssued user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/ncert-books" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <NCERTBooks user={user} />
             </ProtectedRoute>
           } />
           <Route path="/driver-tracking" element={
