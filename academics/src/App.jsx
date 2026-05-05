@@ -81,6 +81,10 @@ import { PerformanceReports } from './pages/TeacherPortal/PerformanceReports';
 import { ClassNotes } from './pages/TeacherPortal/ClassNotes';
 import { TeacherAILab } from './pages/TeacherPortal/TeacherAILab';
 
+// Librarian Portal Pages
+import { LibrarianDashboard } from './pages/LibrarianPortal/LibrarianDashboard';
+import { LibrarianProfile } from './pages/LibrarianPortal/LibrarianProfile';
+
 // Loading screen (shown during auth check)
 const LoadingScreen = () => (
   <div className="min-h-screen flex items-center justify-center font-nova" style={{ background: '#ffffff' }}>
@@ -98,7 +102,7 @@ const LoadingScreen = () => (
 );
 
 // Allowed roles for this portal
-const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin'];
+const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin', 'librarian'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
@@ -563,6 +567,18 @@ function App() {
           <Route path="/admin/accounts" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <AdminAccounts user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+
+          {/* 📚 Librarian Portal */}
+          <Route path="/librarian/dashboard" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibrarianDashboard user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/librarian/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibrarianProfile user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 
