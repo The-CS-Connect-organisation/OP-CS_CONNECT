@@ -646,8 +646,8 @@ export const authApi = {
       password,
     }, { useCache: false });
 
-    if (response.success && response.data.token) {
-      localStorage.setItem('authToken', response.data.token);
+    if (response.success && response.data?.token) {
+      localStorage.setItem('sms_auth_token', response.data.token);
     }
 
     return response;
@@ -658,15 +658,15 @@ export const authApi = {
       useCache: false,
     });
 
-    if (response.success && response.data.token) {
-      localStorage.setItem('authToken', response.data.token);
+    if (response.success && response.data?.token) {
+      localStorage.setItem('sms_auth_token', response.data.token);
     }
 
     return response;
   },
 
   async logout() {
-    localStorage.removeItem('authToken');
+    localStorage.removeItem('sms_auth_token');
     clearCache();
   },
 

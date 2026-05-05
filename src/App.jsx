@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 
 // Hooks
@@ -49,7 +49,6 @@ import { Assignments } from './pages/AcademicPortal/Student/Assignments';
 import { Attendance } from './pages/AcademicPortal/Student/Attendance';
 import { Grades } from './pages/AcademicPortal/Student/Grades';
 import { Notes } from './pages/AcademicPortal/Student/Notes';
-import { Profile } from './pages/AcademicPortal/Student/Profile';
 import { StudentProfile } from './pages/AcademicPortal/Student/StudentProfile';
 import { StudyPlanner } from './pages/AcademicPortal/Student/StudyPlanner';
 import { AssignmentDetails } from './pages/AcademicPortal/Student/AssignmentDetails';
@@ -103,24 +102,8 @@ const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
-  // Check if auto-login credentials are present in URL hash - if so, show loading instead of redirecting
-  const hasAutoLogin = () => { 
-    try {
-      const hash = window.location.hash;
-      const params = new URLSearchParams(hash.split("?")[1]);
-      return params.has("autologin") && params.has("pass");
-    } catch {
-      return false;
-    }
-  };
-
   if (!user) {
-    if (hasAutoLogin()) {
-      return <LoadingScreen />;
-    }
-    // Use window.location to preserve hash when redirecting to login
-    window.location.href = window.location.origin + window.location.pathname + '#/login' + window.location.hash.replace('#/', '?');
-    return null;
+    return <Navigate to="/login" replace />;
   }
   
   // If user role is not allowed in this portal at all, auto-logout and bounce
@@ -147,14 +130,7 @@ function App() {
   const { theme, toggleTheme } = useTheme();
   const { toasts, addToast, removeToast } = useToast();
   const [showSplash, setShowSplash] = useState(() => {
-    // Only show splash if not already seen in this session
     return !sessionStorage.getItem('hasSeenSplash');
-  });
-  const [autoLoginInProgress, setAutoLoginInProgress] = useState(() => {
-    // Check if credentials are in URL hash on initial load
-    const hash = window.location.hash;
-    const params = new URLSearchParams(hash.split('?')[1]);
-    return params.has('autologin') && params.has('pass');
   });
   
   const handleSplashComplete = useCallback(() => {
@@ -183,27 +159,20 @@ function App() {
     }
   }, [user, logout, addToast]);
 
-  // Auto-login from landing page URL hash when landing on dashboard
+  // Auto-login from landing page URL hash
   useEffect(() => {
-    // Check URL hash for auto-login credentials
     const hash = window.location.hash;
     const params = new URLSearchParams(hash.split('?')[1]);
     const autologin = params.get('autologin');
     const pass = params.get('pass');
     
     if (autologin && pass && !user) {
-      console.log('Auto-login from URL:', { email: autologin });
-      setAutoLoginInProgress(true);
       login(decodeURIComponent(autologin), decodeURIComponent(pass)).then((result) => {
-        console.log('Auto-login result:', result);
-        setAutoLoginInProgress(false);
         if (result?.success) {
           // Clean URL by removing credentials
           window.location.hash = window.location.hash.split('?')[0];
         }
-      }).catch(() => {
-        setAutoLoginInProgress(false);
-      });
+      }).catch(() => {});
     }
   }, [user, login]);
 
