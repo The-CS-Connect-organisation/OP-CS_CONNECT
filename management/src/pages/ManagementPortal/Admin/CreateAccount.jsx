@@ -96,6 +96,18 @@ const CreateAccount = ({ user, addToast, onCancel }) => {
     { id: 'admin', label: 'Admin', icon: Shield, color: 'red' },
   ];
 
+  // Sample data for auto-generation
+  const firstNames = ['Aarav', 'Vivaan', 'Aditya', 'Arjun', 'Rohan', 'Priya', 'Ananya', 'Diya', 'Neha', 'Pooja', 'Rajesh', 'Amit', 'Suresh', 'Vikram', 'Deepak'];
+  const lastNames = ['Sharma', 'Patel', 'Singh', 'Kumar', 'Gupta', 'Verma', 'Rao', 'Nair', 'Iyer', 'Desai', 'Joshi', 'Mishra', 'Pandey', 'Reddy', 'Bhat'];
+  const cities = ['Delhi', 'Mumbai', 'Bangalore', 'Hyderabad', 'Chennai', 'Pune', 'Kolkata', 'Ahmedabad', 'Jaipur', 'Lucknow'];
+  const streets = ['Main Street', 'Park Road', 'Market Lane', 'School Road', 'Temple Street', 'Garden Avenue', 'Riverside Road', 'Central Avenue'];
+  const occupations = ['Engineer', 'Doctor', 'Teacher', 'Business Owner', 'Government Service', 'Accountant', 'Lawyer', 'Homemaker', 'Farmer', 'Technician'];
+  const designations = ['Teacher', 'Senior Teacher', 'HOD', 'Vice Principal', 'Principal'];
+  const departments = ['Science', 'Mathematics', 'English', 'Hindi', 'Social Studies', 'Computer Science', 'Physical Education', 'Arts'];
+  const subjects = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Hindi', 'History', 'Geography', 'Computer Science'];
+  const librarySections = ['Main Library', 'Reference Section', 'Digital Library', 'Junior Library', 'Periodicals'];
+  const accessLevels = ['Super Admin', 'Department Admin', 'System Admin'];
+
   const generatePassword = () => {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
     let password = '';
@@ -105,11 +117,132 @@ const CreateAccount = ({ user, addToast, onCancel }) => {
     return password;
   };
 
-  const handleAutoGenerate = () => {
+  const getRandomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+  const generateIndianPhone = () => {
+    const prefix = ['98', '99', '97', '96', '95', '94', '93', '92', '91', '90'];
+    return '+91 ' + getRandomItem(prefix) + Math.floor(Math.random() * 100000000).toString().padStart(8, '0');
+  };
+
+  const generateAadhaar = () => {
+    return Math.floor(Math.random() * 1000000000000).toString().padStart(12, '0');
+  };
+
+  const generateEmail = (fullName, userType) => {
+    const namePart = fullName.toLowerCase().replace(/\s+/g, '.');
+    const domains = ['schoolsync.edu', 'school.edu', 'academy.edu'];
+    const domain = getRandomItem(domains);
+    const random = Math.floor(Math.random() * 1000);
+    return `${namePart}${random}@${domain}`;
+  };
+
+  const generateTestData = () => {
+    const firstName = getRandomItem(firstNames);
+    const lastName = getRandomItem(lastNames);
+    const fullName = `${firstName} ${lastName}`;
+    const email = generateEmail(fullName, userType);
     const password = generatePassword();
+    const phone = generateIndianPhone();
+    const city = getRandomItem(cities);
+    const street = getRandomItem(streets);
+
+    const baseData = {
+      fullName,
+      email,
+      password,
+      phone,
+      dateOfBirth: `${Math.floor(Math.random() * 28) + 1}/${Math.floor(Math.random() * 12) + 1}/${Math.floor(Math.random() * 30) + 1990}`,
+      gender: getRandomItem(['Male', 'Female', 'Other']),
+      bloodGroup: getRandomItem(['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']),
+      nationality: 'Indian',
+      religion: getRandomItem(['Hindu', 'Muslim', 'Christian', 'Sikh', 'Buddhist', 'Jain']),
+      caste: getRandomItem(['General', 'OBC', 'SC', 'ST']),
+      motherTongue: getRandomItem(['Hindi', 'English', 'Marathi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam']),
+      aadhaarNumber: generateAadhaar(),
+      houseNumber: Math.floor(Math.random() * 500) + 1,
+      street: street,
+      area: 'Area ' + String.fromCharCode(65 + Math.floor(Math.random() * 26)),
+      landmark: 'Near ' + getRandomItem(['Park', 'Temple', 'School', 'Hospital', 'Market']),
+      city: city,
+      district: city + ' District',
+      state: getRandomItem(['Delhi', 'Maharashtra', 'Karnataka', 'Tamil Nadu', 'Telangana', 'Uttar Pradesh', 'Gujarat', 'Rajasthan']),
+      pinCode: Math.floor(Math.random() * 900000) + 100000,
+    };
+
+    if (userType === 'student') {
+      return {
+        ...baseData,
+        admissionNumber: `ADM${new Date().getFullYear()}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+        rollNumber: Math.floor(Math.random() * 50) + 1,
+        class: Math.floor(Math.random() * 12) + 1,
+        section: getRandomItem(['A', 'B', 'C', 'D', 'E']),
+        stream: getRandomItem(['Science', 'Commerce', 'Humanities', 'Vocational']),
+        medium: getRandomItem(['English', 'Hindi', 'Regional']),
+        fatherName: `${getRandomItem(firstNames)} ${lastName}`,
+        fatherPhone: generateIndianPhone(),
+        fatherEmail: generateEmail(`${getRandomItem(firstNames)} ${lastName}`, 'parent'),
+        fatherOccupation: getRandomItem(occupations),
+        fatherAadhaar: generateAadhaar(),
+        motherName: `${getRandomItem(firstNames)} ${lastName}`,
+        motherPhone: generateIndianPhone(),
+        motherEmail: generateEmail(`${getRandomItem(firstNames)} ${lastName}`, 'parent'),
+        motherOccupation: getRandomItem(occupations),
+        motherAadhaar: generateAadhaar(),
+        emergencyContactPerson: `${getRandomItem(firstNames)} ${lastName}`,
+        emergencyContact: generateIndianPhone(),
+        previousSchool: 'Previous School Name',
+        transferCertificateNumber: `TC${Math.floor(Math.random() * 100000)}`,
+      };
+    } else if (userType === 'teacher') {
+      return {
+        ...baseData,
+        employeeId: `TCH${new Date().getFullYear()}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+        designation: getRandomItem(designations),
+        department: getRandomItem(departments),
+        subjects: getRandomItem(subjects) + ', ' + getRandomItem(subjects),
+        qualification: getRandomItem(['B.Sc, B.Ed', 'M.Sc, B.Ed', 'B.A, B.Ed', 'M.A, B.Ed', 'B.Tech, B.Ed']),
+        experience: Math.floor(Math.random() * 20) + 1,
+        joiningDate: new Date(new Date().setFullYear(new Date().getFullYear() - Math.floor(Math.random() * 10))).toISOString().split('T')[0],
+      };
+    } else if (userType === 'parent') {
+      return {
+        ...baseData,
+        guardianName: fullName,
+        guardianRelation: getRandomItem(['Father', 'Mother', 'Guardian']),
+        guardianPhone: phone,
+        children: `${getRandomItem(firstNames)} ${lastName}, ${getRandomItem(firstNames)} ${lastName}`,
+      };
+    } else if (userType === 'driver') {
+      return {
+        ...baseData,
+        licenseNumber: `DL${Math.floor(Math.random() * 1000000000)}`,
+        vehicleNumber: `MH${Math.floor(Math.random() * 99) + 1}AB${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+        routeNumber: `Route ${Math.floor(Math.random() * 20) + 1}`,
+      };
+    } else if (userType === 'librarian') {
+      return {
+        ...baseData,
+        employeeId: `LIB${new Date().getFullYear()}${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`,
+        librarySection: getRandomItem(librarySections),
+        qualification: getRandomItem(['M.Lib.Sc', 'B.Lib.Sc', 'M.Lib.Sc, B.Ed']),
+        experience: Math.floor(Math.random() * 15) + 1,
+      };
+    } else if (userType === 'admin') {
+      return {
+        ...baseData,
+        accessLevel: getRandomItem(accessLevels),
+        department: getRandomItem(['Administration', 'Academics', 'Finance', 'Operations', 'IT']),
+      };
+    }
+
+    return baseData;
+  };
+
+  const handleAutoGenerate = () => {
+    const generatedData = generateTestData();
     setFormData(prev => ({
       ...prev,
-      password,
+      ...generatedData,
     }));
   };
 
