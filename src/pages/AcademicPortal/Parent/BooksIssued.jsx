@@ -12,51 +12,46 @@ export const BooksIssued = ({ user }) => {
     // Fetch issued books for all children
     const fetchChildrenBooks = async () => {
       try {
-        // Mock data structure - would fetch from backend/Firebase
-        const mockChildrenBooks = {
-          child1: {
-            name: 'John Doe',
-            class: '10-A',
-            books: [
-              {
-                id: '1',
-                title: 'The Great Gatsby',
-                author: 'F. Scott Fitzgerald',
-                isbn: '978-0743273565',
-                issueDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-                dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        // Load book assignments from localStorage (assigned by librarian)
+        const storedAssignments = localStorage.getItem('bookAssignments');
+        let childrenBooksData = {};
+        
+        if (storedAssignments) {
+          const allAssignments = JSON.parse(storedAssignments);
+          
+          // Get all students and find those linked to this parent
+          const allUsers = JSON.parse(localStorage.getItem('allUsers') || '[]');
+          const childStudents = allUsers.filter(u => 
+            u.role === 'student' && u.parentEmail === user?.email
+          );
+          
+          // For each child student, get their assigned books
+          childStudents.forEach(student => {
+            const studentBooks = allAssignments
+              .filter(a => (a.assignedTo === student.email || a.assignedTo === student.id) && a.status === 'issued')
+              .map(a => ({
+                id: a.id,
+                title: a.bookTitle,
+                author: a.author,
+                isbn: a.bookId || 'N/A',
+                issueDate: a.issuedDate,
+                dueDate: a.returnDate,
                 status: 'active',
-              },
-              {
-                id: '2',
-                title: 'To Kill a Mockingbird',
-                author: 'Harper Lee',
-                isbn: '978-0061120084',
-                issueDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-                dueDate: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString(),
-                status: 'active',
-              },
-            ],
-          },
-          child2: {
-            name: 'Jane Doe',
-            class: '8-B',
-            books: [
-              {
-                id: '3',
-                title: '1984',
-                author: 'George Orwell',
-                isbn: '978-0451524935',
-                issueDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-                dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-                status: 'overdue',
-              },
-            ],
-          },
-        };
+              }));
+            
+            if (studentBooks.length > 0) {
+              childrenBooksData[student.id] = {
+                name: student.name,
+                class: student.class || 'N/A',
+                books: studentBooks,
+              };
+            }
+          });
+        }
 
-        setChildrenBooks(mockChildrenBooks);
-        setSelectedChild('child1');
+        // No fallback mock data - only show books assigned by librarian
+        setChildrenBooks(childrenBooksData);
+        setSelectedChild(Object.keys(childrenBooksData)[0] || null);
       } catch (error) {
         console.error('Error fetching children books:', error);
       } finally {
@@ -65,7 +60,7 @@ export const BooksIssued = ({ user }) => {
     };
 
     fetchChildrenBooks();
-  }, [user?.id]);
+  }, [user?.id, user?.email]);
 
   const getDaysRemaining = (dueDate) => {
     const today = new Date();
@@ -116,27 +111,35 @@ export const BooksIssued = ({ user }) => {
       </div>
 
       {/* Child Selection */}
-      <div className="flex gap-3 overflow-x-auto pb-2">
-        {Object.entries(childrenBooks).map(([childId, childData]) => (
-          <motion.button
-            key={childId}
-            onClick={() => setSelectedChild(childId)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
-              selectedChild === childId
-                ? 'bg-blue-600 text-white shadow-lg'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <User size={16} />
-              <span>{childData.name}</span>
-              <span className="text-xs opacity-75">({childData.class})</span>
-            </div>
-          </motion.button>
-        ))}
-      </div>
+      {Object.keys(childrenBooks).length === 0 ? (
+        <Card className="p-8 text-center">
+          <BookOpen size={48} className="mx-auto text-gray-300 mb-4" />
+          <p className="text-gray-600 font-medium">No books assigned yet</p>
+          <p className="text-gray-500 text-sm mt-2">Books assigned by the librarian will appear here</p>
+        </Card>
+      ) : (
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {Object.entries(childrenBooks).map(([childId, childData]) => (
+            <motion.button
+              key={childId}
+              onClick={() => setSelectedChild(childId)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${
+                selectedChild === childId
+                  ? 'bg-blue-600 text-white shadow-lg'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <User size={16} />
+                <span>{childData.name}</span>
+                <span className="text-xs opacity-75">({childData.class})</span>
+              </div>
+            </motion.button>
+          ))}
+        </div>
+      )}
 
       {currentChild && (
         <>

@@ -164,7 +164,7 @@ export const TeacherDashboard = ({ user, addToast }) => {
             Welcome, {user.name}
           </h1>
           <div className="flex flex-wrap gap-2 mt-4">
-            {[`Department: ${user.department || 'N/A'}`, `Subjects: ${user.subjects?.join(', ') || 'N/A'}`].map((tag) => (
+            {[`Department: ${user.department || 'N/A'}`, `Subjects: ${Array.isArray(user.subjects) ? user.subjects.join(', ') : (user.subjects || 'N/A')}`].map((tag) => (
               <span key={tag} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">
                 {tag}
               </span>

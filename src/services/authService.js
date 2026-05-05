@@ -53,6 +53,11 @@ export const authService = {
     }
     if (found.isActive === false) return { success: false, error: 'Account is disabled. Please contact admin.' };
     const { password: _pw, ...userWithoutPassword } = found;
+    
+    // Store all users in localStorage for parent-child relationships
+    const allUsers = localUsersRepo.list();
+    setToStorage('allUsers', allUsers);
+    
     // Generate a dummy JWT token for local development (format: header.payload.signature)
     const dummyToken = btoa(JSON.stringify({ alg: 'HS256' })) + '.' + 
                        btoa(JSON.stringify({ sub: found.id, email: cleanEmail, role: found.role })) + 

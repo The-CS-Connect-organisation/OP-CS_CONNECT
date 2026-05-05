@@ -54,6 +54,8 @@ import { BusTracking } from './pages/AcademicPortal/Student/BusTracking';
 import { DriverTracking } from './pages/AcademicPortal/Student/DriverTracking';
 import { BooksIssued as StudentBooksIssued } from './pages/AcademicPortal/Student/BooksIssued';
 import { BooksIssued as ParentBooksIssued } from './pages/AcademicPortal/Parent/BooksIssued';
+import { NCERTBooks } from './pages/AcademicPortal/Student/NCERTBooks';
+import { ReportCard } from './pages/AcademicPortal/Student/ReportCard';
 
 // Academic Portal - Shared Features
 import { SettingsPanel } from './pages/AcademicPortal/shared/Settings';
@@ -80,6 +82,12 @@ import { QuickMessenger } from './pages/TeacherPortal/QuickMessenger';
 import { PerformanceReports } from './pages/TeacherPortal/PerformanceReports';
 import { ClassNotes } from './pages/TeacherPortal/ClassNotes';
 import { TeacherAILab } from './pages/TeacherPortal/TeacherAILab';
+import { ManageReportCards } from './pages/TeacherPortal/ManageReportCards';
+
+// Librarian Portal Pages
+import { LibrarianDashboard } from './pages/LibrarianPortal/LibrarianDashboard';
+import { LibrarianProfile } from './pages/LibrarianPortal/LibrarianProfile';
+import { LibrarianBookAssignment } from './pages/LibrarianPortal/LibrarianBookAssignment';
 
 // Loading screen (shown during auth check)
 const LoadingScreen = () => (
@@ -98,7 +106,7 @@ const LoadingScreen = () => (
 );
 
 // Allowed roles for this portal
-const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin'];
+const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin', 'librarian'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
@@ -322,6 +330,16 @@ function App() {
               <StudentBooksIssued user={user} />
             </ProtectedRoute>
           } />
+          <Route path="/student/ncert-books" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <NCERTBooks user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/report-card" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <ReportCard user={user} />
+            </ProtectedRoute>
+          } />
           <Route path="/driver-tracking" element={
             <ProtectedRoute {...layoutProps} user={user}>
               <DriverTracking />
@@ -382,6 +400,11 @@ function App() {
           <Route path="/parent/bus-tracking" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
               <BusTracking user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/parent/report-card" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
+              <ReportCard user={user} />
             </ProtectedRoute>
           } />
 
@@ -493,6 +516,11 @@ function App() {
               <TeacherAILab user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
+          <Route path="/teacher/manage-report-cards" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <ManageReportCards user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
 
           {/* 👨‍💼 Admin Portal */}
           <Route path="/admin/dashboard" element={
@@ -563,6 +591,23 @@ function App() {
           <Route path="/admin/accounts" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <AdminAccounts user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+
+          {/* 📚 Librarian Portal */}
+          <Route path="/librarian/dashboard" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibrarianDashboard user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/librarian/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibrarianProfile user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/librarian/book-assignment" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibrarianBookAssignment user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 

@@ -19,7 +19,7 @@ const AdminUsers = ({ user, addToast }) => {
       setLoading(true);
       const response = await apiCall('/api/school/users', 'GET');
       if (response.success) {
-        setUsers(response.data || []);
+        setUsers(response.users || response.data || []);
       }
     } catch (error) {
       addToast?.('Failed to load users', 'error');

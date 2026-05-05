@@ -63,6 +63,7 @@ const ROLE_NAV = {
         { title: 'Attendance', icon: UserCheck, route: '/student/attendance' },
         { title: 'Notes', icon: BookOpen, route: '/student/notes' },
         { title: 'Study Planner', icon: Calendar, route: '/student/planner' },
+        { title: 'Report Card', icon: FileText, route: '/student/report-card' },
       ]
     },
     {
@@ -71,6 +72,8 @@ const ROLE_NAV = {
         { title: 'Fees', icon: Banknote, route: '/student/fees' },
         { title: 'Exams', icon: ClipboardList, route: '/student/exams' },
         { title: 'Bus Tracking', icon: Heart, route: '/student/bus-tracking' },
+        { title: 'Books Issued', icon: BookOpen, route: '/student/books-issued' },
+        { title: 'NCERT Books', icon: BookOpen, route: '/student/ncert-books' },
       ]
     },
     {
@@ -98,6 +101,7 @@ const ROLE_NAV = {
         { title: 'Grading', icon: PencilLine, route: '/teacher/submissions' },
         { title: 'Class Notes', icon: BookOpen, route: '/teacher/class-notes' },
         { title: 'Exams', icon: ClipboardList, route: '/teacher/exams' },
+        { title: 'Report Cards', icon: FileText, route: '/teacher/manage-report-cards' },
       ]
     },
     {
@@ -137,6 +141,26 @@ const ROLE_NAV = {
       ]
     },
   ],
+  librarian: [
+    {
+      section: 'Overview',
+      items: [
+        { title: 'Dashboard', icon: LayoutDashboard, route: '/librarian/dashboard' },
+      ]
+    },
+    {
+      section: 'Library Management',
+      items: [
+        { title: 'Book Assignment', icon: BookOpen, route: '/librarian/book-assignment' },
+      ]
+    },
+    {
+      section: 'My Account',
+      items: [
+        { title: 'Profile', icon: Users, route: '/librarian/profile' },
+      ]
+    },
+  ],
   parent: [
     {
       section: 'Overview',
@@ -151,6 +175,7 @@ const ROLE_NAV = {
         { title: 'Grades', icon: CheckCircle, route: '/parent/grades' },
         { title: 'Timetable', icon: Clock, route: '/parent/timetable' },
         { title: 'Fees', icon: Banknote, route: '/parent/fees' },
+        { title: 'Report Card', icon: FileText, route: '/parent/report-card' },
       ]
     },
     {
@@ -158,6 +183,7 @@ const ROLE_NAV = {
       items: [
         { title: 'Bus Tracking', icon: Heart, route: '/parent/bus-tracking' },
         { title: 'Notifications', icon: Bell, route: '/parent/notifications' },
+        { title: 'Books Issued', icon: BookOpen, route: '/parent/books-issued' },
       ]
     },
     {
@@ -175,6 +201,8 @@ const ROLE_COLOR = {
   teacher: { bg: '#a855f7', text: 'white', label: 'Teacher' },
   student: { bg: '#ff6b9d', text: 'white', label: 'Student' },
   parent: { bg: '#6366f1', text: 'white', label: 'Parent' },
+  driver: { bg: '#f97316', text: 'white', label: 'Driver' },
+  librarian: { bg: '#7c3aed', text: 'white', label: 'Librarian' },
 };
 
 export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, onLogout }) => {
@@ -186,7 +214,42 @@ export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, 
   const [collapsedSections, setCollapsedSections] = useState({});
 
   const role = user?.role || 'student';
-  const navGroups = ROLE_NAV[role] || [];
+  
+  // Check NCERT Books eligibility for students
+  const getNCERTStatus = () => {
+    if (role !== 'student') return { eligible: false, disabled: false };
+    if (!user?.class) return { eligible: false, disabled: true };
+    const classNum = parseInt(user.class.toString().split('-')[0]);
+    return {
+      eligible: [8, 9, 10].includes(classNum),
+      disabled: classNum < 8
+    };
+  };
+  
+  const ncertStatus = getNCERTStatus();
+  
+  // Modify nav groups to mark NCERT Books as disabled if needed
+  let navGroups = ROLE_NAV[role] || [];
+  if (role === 'student') {
+    navGroups = navGroups.map(group => {
+      if (group.section === 'Services') {
+        return {
+          ...group,
+          items: group.items.map(item => {
+            if (item.title === 'NCERT Books') {
+              return {
+                ...item,
+                disabled: ncertStatus.disabled
+              };
+            }
+            return item;
+          })
+        };
+      }
+      return group;
+    });
+  }
+  
   const roleColor = ROLE_COLOR[role] || ROLE_COLOR.student;
   
   useEffect(() => {
@@ -277,21 +340,26 @@ export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, 
               <AnimatePresence initial={false}>
                 {!collapsedSections[group.section] && group.items.map((item) => {
                   const isActive = location.pathname === item.route || location.pathname.startsWith(item.route + '/');
+                  const isDisabled = item.disabled;
                   return (
                     <motion.button
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
                       key={item.title}
-                      onClick={() => { playBlip(); navigate(item.route); }}
-                      onMouseEnter={playClick}
+                      onClick={() => { if (!isDisabled) { playBlip(); navigate(item.route); } }}
+                      onMouseEnter={() => { if (!isDisabled) playClick(); }}
+                      disabled={isDisabled}
                       className="relative flex items-center gap-3 py-2 rounded-xl transition-all duration-150 w-full overflow-hidden px-3"
                       style={{ 
                         background: isActive ? 'rgba(0,0,0,0.07)' : 'transparent',
-                        color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
+                        color: isDisabled ? 'var(--text-dim)' : (isActive ? 'var(--text-primary)' : 'var(--text-muted)'),
+                        opacity: isDisabled ? 0.5 : 1,
+                        cursor: isDisabled ? 'not-allowed' : 'pointer',
                       }}
+                      title={isDisabled ? 'Available from Class 8' : ''}
                     >
-                      {isActive && (
+                      {isActive && !isDisabled && (
                         <motion.div 
                           layoutId="sidebarIndicator" 
                           className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full"
