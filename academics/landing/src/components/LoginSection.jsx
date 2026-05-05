@@ -42,8 +42,8 @@ export default function LoginSection({ sectionRef }) {
 
     // Determine role from email
     const roleMap = {
-      'alex@schoolsync.edu': 'student',
-      'james@schoolsync.edu': 'teacher',
+      'student@schoolsync.edu': 'student',
+      'teacher@schoolsync.edu': 'teacher',
       'parent@schoolsync.edu': 'parent',
       'driver@schoolsync.edu': 'driver',
       'admin@schoolsync.edu': 'admin',

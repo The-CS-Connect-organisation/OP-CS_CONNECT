@@ -6,11 +6,11 @@ const PHRASES = ['Learn.', 'Grow.', 'Succeed.'];
 
 // Demo credentials for each role
 const DEMO_PROFILES = [
-  { role: 'Student',  icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'alex@schoolsync.edu',   password: 'student123' },
-  { role: 'Teacher',  icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'james@schoolsync.edu',  password: 'teacher123' },
-  { role: 'Parent',   icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent@schoolsync.edu', password: 'parent123'  },
-  { role: 'Driver',   icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver1@schoolsync.edu',password: 'driver123'  },
-  { role: 'Admin',    icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin@schoolsync.edu',  password: 'admin123'   },
+  { role: 'Student',  icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student@schoolsync.edu', password: 'student123' },
+  { role: 'Teacher',  icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher@schoolsync.edu', password: 'teacher123' },
+  { role: 'Parent',   icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent@schoolsync.edu',  password: 'parent123'  },
+  { role: 'Driver',   icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver@schoolsync.edu',  password: 'driver123'  },
+  { role: 'Admin',    icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin@schoolsync.edu',   password: 'admin123'   },
 ];
 
 const AuroraBlob = ({ color, x, y, size, delay, duration }) => (
