@@ -704,4 +704,10 @@ export default {
   studentApi,
   authApi,
   apiUtils,
+  // Generic methods for direct API calls
+  get: (endpoint, options = {}) => makeRequest('GET', endpoint, null, options),
+  post: (endpoint, data, options = {}) => makeRequest('POST', endpoint, data, options),
+  put: (endpoint, data, options = {}) => makeRequest('PUT', endpoint, data, options),
+  delete: (endpoint, options = {}) => makeRequest('DELETE', endpoint, null, options),
+  patch: (endpoint, data, options = {}) => makeRequest('PATCH', endpoint, data, options),
 };

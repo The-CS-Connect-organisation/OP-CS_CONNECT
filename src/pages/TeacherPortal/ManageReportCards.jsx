@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { apiDataLayer } from '../../services/apiDataLayer';
+import { useAuth } from '../../hooks/useAuth';
+import apiDataLayer from '../../services/apiDataLayer';
 import './ManageReportCards.css';
 
 const ManageReportCards = () => {
