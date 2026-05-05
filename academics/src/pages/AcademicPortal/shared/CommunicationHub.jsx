@@ -53,9 +53,26 @@ export const CommunicationHub = ({ user }) => {
     (async () => {
       try {
         const wantStudents = user.role === 'admin' || user.role === 'teacher' || user.role === 'student';
+        
+        // Fetch contacts using pagination to avoid backend V8 stack overflow on large arrays
+        const fetchAllSafe = async (path) => {
+          let allItems = [];
+          for (let i = 1; i <= 10; i++) {
+            try {
+              const res = await request(`${path}?limit=7&page=${i}`);
+              if (!res.items || res.items.length === 0) break;
+              allItems = [...allItems, ...res.items];
+              if (res.pagination && res.pagination.page >= res.pagination.totalPages) break;
+            } catch (err) {
+              break;
+            }
+          }
+          return { items: allItems };
+        };
+
         const [tRes, sRes] = await Promise.all([
-          request('/school/teachers?limit=200'),
-          wantStudents ? request('/school/students?limit=200') : Promise.resolve({ items: [] }),
+          fetchAllSafe('/school/teachers'),
+          wantStudents ? fetchAllSafe('/school/students') : Promise.resolve({ items: [] }),
         ]);
         if (cancelled) return;
         const teachers = (tRes.items || []).map((p) => mapProfileToContact(p, 'teacher')).filter(Boolean);
