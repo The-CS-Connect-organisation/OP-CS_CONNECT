@@ -1,0 +1,260 @@
+/* Glassmorphism base styles */
+.glass-base {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  will-change: transform;
+}
+
+/* Fallback for browsers without backdrop-filter support */
+@supports not (backdrop-filter: blur(10px)) {
+  .glass-base {
+    background: rgba(255, 255, 255, 0.25);
+  }
+}
+
+.glass-card {
+  @apply glass-base rounded-2xl p-6 transition-all duration-300;
+}
+
+.glass-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.glass-button {
+  @apply glass-base rounded-xl px-6 py-3 transition-all duration-200;
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px rgba(255, 107, 157, 0.4);
+}
+
+.glass-button:active {
+  transform: scale(0.95);
+}
+
+.glass-input {
+  @apply glass-base rounded-xl px-4 py-3 transition-all duration-300;
+  outline: none;
+}
+
+.glass-input:focus {
+  transform: scale(1.02);
+  border-color: rgba(255, 107, 157, 0.5);
+  box-shadow: 0 0 20px rgba(255, 107, 157, 0.2);
+}
+
+.glass-nav {
+  @apply glass-base;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Glass Input Wrapper Styles */
+.glass-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1.25rem;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass-input-wrapper.focused {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.3),
+              0 8px 32px rgba(0, 0, 0, 0.2);
+  transform: scale(1.02);
+}
+
+.glass-input-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.glass-input-wrapper.focused .glass-input-icon {
+  color: rgba(99, 102, 241, 0.9);
+}
+
+.glass-input-wrapper .glass-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: white;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.glass-input-wrapper .glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.glass-input-border {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    rgba(99, 102, 241, 0.8), 
+    rgba(168, 85, 247, 0.8)
+  );
+  transform: translateX(-50%);
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 2px;
+}
+
+.glass-input-wrapper.focused .glass-input-border {
+  width: 100%;
+}
+
+/* Fallback for glass input */
+@supports not (backdrop-filter: blur(12px)) {
+  .glass-input-wrapper {
+    background: rgba(30, 30, 50, 0.85);
+  }
+  
+  .glass-input-wrapper.focused {
+    background: rgba(40, 40, 60, 0.9);
+  }
+}
+
+/* Animated Nav Styles */
+.animated-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 1rem 2rem;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animated-nav.scrolled {
+  padding: 0.75rem 2rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+}
+
+.animated-nav-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.animated-nav-logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+  transition: transform 0.3s ease;
+}
+
+.animated-nav.scrolled .animated-nav-logo {
+  transform: scale(0.9);
+}
+
+.animated-nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.animated-nav-item {
+  position: relative;
+}
+
+.animated-nav-link {
+  position: relative;
+  display: block;
+  padding: 0.5rem 0;
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.animated-nav-link:hover {
+  color: white;
+}
+
+.animated-nav-link.active {
+  color: rgba(99, 102, 241, 1);
+}
+
+.nav-link-underline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, 
+    rgba(99, 102, 241, 0.8), 
+    rgba(168, 85, 247, 0.8)
+  );
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animated-nav-link:hover .nav-link-underline,
+.animated-nav-link.active .nav-link-underline {
+  width: 100%;
+}
+
+.animated-nav-link.active .nav-link-underline {
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.5);
+}
+
+/* Fallback for animated nav */
+@supports not (backdrop-filter: blur(20px)) {
+  .animated-nav {
+    background: rgba(20, 20, 40, 0.85);
+  }
+  
+  .animated-nav.scrolled {
+    background: rgba(20, 20, 40, 0.95);
+  }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .animated-nav {
+    padding: 1rem;
+  }
+  
+  .animated-nav.scrolled {
+    padding: 0.75rem 1rem;
+  }
+  
+  .animated-nav-links {
+    gap: 1rem;
+  }
+  
+  .animated-nav-link {
+    font-size: 0.875rem;
+  }
+}

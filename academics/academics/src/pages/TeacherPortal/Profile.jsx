@@ -6,7 +6,7 @@ import { useSound } from '../../hooks/useSound';
 
 export const Profile = ({ user }) => {
   const { playClick } = useSound();
-  const subjects = Array.isArray(user.subjects) ? user.subjects : (user.subjects ? user.subjects.split(',').map(s => s.trim()) : []);
+  const subjects = Array.isArray(user.subjects) ? user.subjects : (user.subjects ? [user.subjects] : []);
 
   const infoFields = [
     { icon: Mail, label: 'Email Address', value: user.email },

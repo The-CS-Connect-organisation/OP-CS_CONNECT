@@ -16,13 +16,6 @@ import { Layout } from './components/layout/Layout';
 import { Toast } from './components/ui/Toast';
 import SplashScreen from './components/SplashScreen';
 
-// Pages - Common
-import { Login } from './pages/Common/Login';
-import { Signup } from './pages/Common/Signup';
-
-// Pages - Portals (Dashboards)
-import { AdminDashboard } from './pages/ManagementPortal/Dashboard/AdminDashboard';
-
 // Academic Portal - Shared Features
 import { SettingsPanel } from './pages/AcademicPortal/shared/Settings';
 import { FeeManagement } from './pages/AcademicPortal/shared/FeeManagement';
@@ -32,11 +25,16 @@ import { ExamCenter } from './pages/AcademicPortal/shared/ExamCenter';
 
 // Management Portal - Admin Pages
 import { Profile as AdminProfile } from './pages/ManagementPortal/Admin/Profile';
-import { ManageUsers } from './pages/ManagementPortal/Admin/ManageUsers';
-import { Announcements } from './pages/ManagementPortal/Admin/Announcements';
-import { Analytics } from './pages/ManagementPortal/Admin/Analytics';
-import { TimetableManager } from './pages/ManagementPortal/Admin/TimetableManager';
-import { PayrollHR } from './pages/ManagementPortal/Admin/PayrollHR';
+import { Profile as LibrarianProfile } from './pages/ManagementPortal/Librarian/Profile';
+import AdminDashboard from './pages/ManagementPortal/Admin/AdminDashboard';
+import AdminAnalytics from './pages/ManagementPortal/Admin/AdminAnalytics';
+import AdminUsers from './pages/ManagementPortal/Admin/AdminUsers';
+import AdminTimetable from './pages/ManagementPortal/Admin/AdminTimetable';
+import AdminAnnouncements from './pages/ManagementPortal/Admin/AdminAnnouncements';
+import AdminPayroll from './pages/ManagementPortal/Admin/AdminPayroll';
+import CreateAccount from './pages/ManagementPortal/Admin/CreateAccount';
+import AdminBusAssignment from './pages/ManagementPortal/Admin/AdminBusAssignment';
+import LibraryManagement from './pages/ManagementPortal/Librarian/LibraryManagement';
 
 // Loading screen (shown during auth check)
 const LoadingScreen = () => (
@@ -55,7 +53,7 @@ const LoadingScreen = () => (
 );
 
 // Allowed roles for this portal
-const ALLOWED_ROLES = ['admin'];
+const ALLOWED_ROLES = ['admin', 'librarian'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
@@ -108,9 +106,40 @@ function App() {
     }
   }, [user, logout, addToast]);
 
-  if (showSplash) return <SplashScreen onComplete={handleSplashComplete} />;
-  // Using custom loading screen for portal sync feel
+  // Hide splash screen once user is logged in
+  useEffect(() => {
+    if (user && ALLOWED_ROLES.includes(user.role)) {
+      setShowSplash(false);
+    }
+  }, [user]);
+
+  // Auto-login from URL hash when landing on dashboard
+  useEffect(() => {
+    // Check URL hash for auto-login credentials
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.split('?')[1]);
+    const autologin = params.get('autologin');
+    const pass = params.get('pass');
+    
+    if (autologin && pass && !user) {
+      console.log('Auto-login from URL:', { email: autologin });
+      login(decodeURIComponent(autologin), decodeURIComponent(pass)).then((result) => {
+        console.log('Auto-login result:', result);
+        if (result?.success) {
+          // Clean URL by removing credentials
+          window.location.hash = window.location.hash.split('?')[0];
+        }
+      }).catch(() => {
+        // Auto-login failed, show splash screen
+      });
+    }
+  }, [user, login]);
+
+  // Show loading screen while auth is being checked
   if (authLoading) return <LoadingScreen />;
+  
+  // Show splash screen only if not logged in and splash hasn't been dismissed
+  if (showSplash && !user) return <SplashScreen onComplete={handleSplashComplete} onLogin={login} />;
 
   const layoutProps = {
     theme,
@@ -126,16 +155,16 @@ function App() {
       <Toast toasts={toasts} removeToast={removeToast} />
       <AnimatePresence mode="wait">
         <Routes>
-          {/* 🔐 Auth Gates */}
+          {/* 🔐 Auth Gates - Splash Screen is the only login entry point */}
           <Route path="/login" element={
             user && ALLOWED_ROLES.includes(user.role) 
               ? <Navigate to={`/${user.role}/dashboard`} replace /> 
-              : <Login onLogin={login} onSwitch={() => navigate('/signup')} />
+              : <SplashScreen onComplete={() => {}} onLogin={login} />
           } />
           <Route path="/signup" element={
             user && ALLOWED_ROLES.includes(user.role)
               ? <Navigate to={`/${user.role}/dashboard`} replace /> 
-              : <Signup onSignup={signup} onSwitch={() => navigate('/login')} />
+              : <SplashScreen onComplete={() => {}} onLogin={login} />
           } />
 
           {/* 🏢 Management Portal - Admin */}
@@ -146,22 +175,32 @@ function App() {
           } />
           <Route path="/admin/users" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
-              <ManageUsers user={user} addToast={addToast} />
+              <AdminUsers user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/create-account" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <CreateAccount user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/bus-assignment" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AdminBusAssignment user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/admin/announcements" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
-              <Announcements user={user} addToast={addToast} />
+              <AdminAnnouncements user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/admin/analytics" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
-              <Analytics />
+              <AdminAnalytics user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/admin/timetable" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
-              <TimetableManager />
+              <AdminTimetable user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/admin/profile" element={
@@ -196,15 +235,25 @@ function App() {
           } />
           <Route path="/admin/payroll-hr" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
-              <PayrollHR addToast={addToast} />
+              <AdminPayroll user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/librarian/library" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibraryManagement user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/librarian/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibrarianProfile user={user} />
             </ProtectedRoute>
           } />
 
-          {/* 🏁 Terminal Entry/Exit */}
+          {/* Terminal Entry/Exit */}
           <Route path="/" element={
             user && ALLOWED_ROLES.includes(user.role) 
               ? <Navigate to={`/${user.role}/dashboard`} replace /> 
-              : <Navigate to="/login" replace />
+              : <SplashScreen onComplete={() => {}} onLogin={login} />
           } />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

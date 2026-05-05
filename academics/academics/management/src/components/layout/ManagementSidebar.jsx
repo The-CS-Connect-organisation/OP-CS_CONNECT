@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, Clock, Calendar, Banknote, 
   ChevronLeft, ChevronRight, X, Bot,
   LogOut, Settings, MessageCircle, BarChart3, ChevronDown,
-  ClipboardList, Megaphone
+  ClipboardList, Megaphone, UserCheck, Bus, BookOpen
 } from 'lucide-react';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
@@ -24,6 +24,8 @@ const ROLE_NAV = {
       section: 'Management',
       items: [
         { title: 'Users', icon: Users, route: '/admin/users' },
+        { title: 'Create Account', icon: UserCheck, route: '/admin/create-account' },
+        { title: 'Bus Assignment', icon: Bus, route: '/admin/bus-assignment' },
         { title: 'Timetable', icon: Calendar, route: '/admin/timetable' },
         { title: 'Announcements', icon: Megaphone, route: '/admin/announcements' },
         { title: 'Payroll & HR', icon: Banknote, route: '/admin/payroll-hr' },
@@ -41,6 +43,14 @@ const ROLE_NAV = {
       items: [
         { title: 'AI Lab', icon: Bot, route: '/admin/ai-lab' },
         { title: 'Comms Hub', icon: MessageCircle, route: '/admin/comms' },
+      ]
+    },
+  ],
+  librarian: [
+    {
+      section: 'Library',
+      items: [
+        { title: 'Library Management', icon: BookOpen, route: '/librarian/library' },
       ]
     },
   ],
@@ -72,6 +82,7 @@ const ROLE_NAV = {
 
 const ROLE_COLOR = {
   admin: { bg: '#111111', text: 'white', label: 'Admin' },
+  librarian: { bg: '#6366f1', text: 'white', label: 'Librarian' },
   teacher: { bg: '#a855f7', text: 'white', label: 'Teacher' },
 };
 

@@ -26,14 +26,20 @@ export const authService = {
 
     if (getDataMode() === DATA_MODES.REMOTE_API) {
       console.log('🔐 Using REMOTE_API mode');
-      const payload = await apiRequest('/auth/login', {
-        method: 'POST',
-        body: JSON.stringify({ email: cleanEmail, password: cleanPassword }),
-      });
-      if (!payload?.user) return { success: false, error: 'Invalid server response' };
-      setSession({ user: payload.user, token: payload.token });
-      localAuditRepo.append({ actorEmail: cleanEmail, action: 'auth.login', mode: 'REMOTE_API' });
-      return { success: true, user: payload.user };
+      try {
+        const payload = await apiRequest('/auth/login', {
+          method: 'POST',
+          body: JSON.stringify({ email: cleanEmail, password: cleanPassword }),
+        });
+        if (!payload?.user) return { success: false, error: 'Invalid server response' };
+        setSession({ user: payload.user, token: payload.token });
+        localAuditRepo.append({ actorEmail: cleanEmail, action: 'auth.login', mode: 'REMOTE_API' });
+        return { success: true, user: payload.user };
+      } catch (err) {
+        console.error('🔐 Login error:', err.message);
+        // Return the error message from the backend (e.g., "Invalid email or password")
+        return { success: false, error: err.message || 'Login failed. Please try again.' };
+      }
     }
 
     // LOCAL_DEMO
@@ -47,6 +53,11 @@ export const authService = {
     }
     if (found.isActive === false) return { success: false, error: 'Account is disabled. Please contact admin.' };
     const { password: _pw, ...userWithoutPassword } = found;
+    
+    // Store all users in localStorage for parent-child relationships
+    const allUsers = localUsersRepo.list();
+    setToStorage('allUsers', allUsers);
+    
     // Generate a dummy JWT token for local development (format: header.payload.signature)
     const dummyToken = btoa(JSON.stringify({ alg: 'HS256' })) + '.' + 
                        btoa(JSON.stringify({ sub: found.id, email: cleanEmail, role: found.role })) + 
@@ -70,14 +81,19 @@ export const authService = {
     }
 
     if (getDataMode() === DATA_MODES.REMOTE_API) {
-      const payload = await apiRequest('/auth/signup', {
-        method: 'POST',
-        body: JSON.stringify(cleanData),
-      });
-      if (!payload?.user) return { success: false, error: 'Invalid server response' };
-      setSession({ user: payload.user, token: payload.token });
-      localAuditRepo.append({ actorEmail: cleanData.email, action: 'auth.signup', mode: 'REMOTE_API' });
-      return { success: true, user: payload.user };
+      try {
+        const payload = await apiRequest('/auth/signup', {
+          method: 'POST',
+          body: JSON.stringify(cleanData),
+        });
+        if (!payload?.user) return { success: false, error: 'Invalid server response' };
+        setSession({ user: payload.user, token: payload.token });
+        localAuditRepo.append({ actorEmail: cleanData.email, action: 'auth.signup', mode: 'REMOTE_API' });
+        return { success: true, user: payload.user };
+      } catch (err) {
+        console.error('🔐 Signup error:', err.message);
+        return { success: false, error: err.message || 'Signup failed. Please try again.' };
+      }
     }
 
     const users = localUsersRepo.list();

@@ -23,6 +23,7 @@ export const GradeSubmissions = ({ user, addToast }) => {
   const [loading, setLoading] = useState(true);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  const [submissionsLoading, setSubmissionsLoading] = useState(true);
 
   const myAssignments = assignments.filter(a => a.teacherId === user.id);
 

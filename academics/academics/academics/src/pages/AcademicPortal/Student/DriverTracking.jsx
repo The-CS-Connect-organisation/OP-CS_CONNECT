@@ -85,20 +85,28 @@ export const DriverTracking = ({ user }) => {
 
         // Send to backend
         try {
-          // First, try to find the bus by bus number
-          const buses = await busService.listBuses();
-          const bus = buses.find(b => b.bus_number === busNumber.trim());
+          // Find the bus by bus number
+          let buses = await busService.listBuses();
+          let bus = buses.find(b => b.bus_number === (busNumber || 'DEMO-001').trim());
 
-          if (bus) {
+          if (!bus) {
+            setError('Bus not found in system. Please contact admin to assign a bus.');
+            setIsTracking(false);
+            if (watchIdRef.current) {
+              navigator.geolocation.clearWatch(watchIdRef.current);
+              watchIdRef.current = null;
+            }
+            return;
+          }
+
+          // Update bus location in real-time
+          if (bus?.id) {
             await busService.updateBusLocation(bus.id, location);
             setUpdateCount(prev => prev + 1);
-          } else {
-            // If bus doesn't exist, we could create it or show error
-            // For now, we'll just log it
-            console.log('Bus not found:', busNumber);
           }
         } catch (err) {
           console.error('Failed to update location:', err);
+          setError('Failed to update location: ' + err.message);
         }
       },
       (err) => {

@@ -1,0 +1,98 @@
+/* Scroll Progress Styles */
+.scroll-progress {
+  position: fixed;
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.scroll-progress.top {
+  top: 0;
+}
+
+.scroll-progress.bottom {
+  bottom: 0;
+}
+
+.scroll-progress-bar {
+  height: 100%;
+  transition: width 0.1s ease-out;
+  position: relative;
+  will-change: width;
+}
+
+.scroll-progress.glow .scroll-progress-bar {
+  filter: drop-shadow(0 0 10px currentColor);
+}
+
+.scroll-progress-complete {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  animation: completionPulse 0.6s ease-out;
+}
+
+.completion-sparkle {
+  font-size: 1.5rem;
+  animation: sparkleRotate 1s ease-in-out infinite;
+}
+
+@keyframes completionPulse {
+  0% {
+    transform: translateY(-50%) scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-50%) scale(1.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-50%) scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes sparkleRotate {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.2);
+  }
+}
+
+.scroll-percentage {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 0.75rem 1.25rem;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  z-index: 9998;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* Reduced motion fallback */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-progress-bar {
+    transition: none;
+  }
+  
+  .completion-sparkle {
+    animation: none;
+  }
+  
+  .scroll-progress-complete {
+    animation: none;
+  }
+}

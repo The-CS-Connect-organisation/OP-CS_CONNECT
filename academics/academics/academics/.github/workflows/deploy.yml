@@ -53,16 +53,18 @@ jobs:
         env:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
-      # Combine all three builds
+      # Combine builds - academics for students/teachers/parents/drivers, management for admin
       - name: Prepare deploy folder
         run: |
           mkdir -p deploy/academics
           mkdir -p deploy/management
-          # Copy each portal to its subdirectory first
+          # Copy academics portal to academics folder (for student, teacher, parent, driver)
           cp -r academics/dist/* deploy/academics/
-          cp -r management/dist/* deploy/management/
-          # Fix client-side routing — each portal handles its own 404
+          # Fix client-side routing — academics portal handles its own 404
           cp academics/dist/index.html deploy/academics/404.html
+          # Copy management portal to management folder (for admin only)
+          cp -r management/dist/* deploy/management/
+          # Fix client-side routing — management portal handles its own 404
           cp management/dist/index.html deploy/management/404.html
           # Landing goes to root LAST so it doesn't overwrite portal 404s
           cp -r landing/dist/* deploy/
