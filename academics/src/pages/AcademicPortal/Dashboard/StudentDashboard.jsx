@@ -462,7 +462,7 @@ export const StudentDashboard = ({ user }) => {
             Welcome back, {user.name.split(' ')[0]}
           </h1>
           <div className="flex flex-wrap gap-2 mt-4">
-            {[`Class: ${user.class}`, `ID: ${user.admissionNo || user.rollNo}`, today].map((tag, i) => (
+            {[`Class: ${user.class}`, `ID: ${user.admissionNo || user.rollNo || user.id.slice(-6).toUpperCase()}`, today].map((tag, i) => (
               <span 
                 key={tag}
                 className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200"

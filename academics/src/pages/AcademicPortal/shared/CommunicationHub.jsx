@@ -1,259 +1,485 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
-import { Search, Users, MessageCircle, Video, Menu } from 'lucide-react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Search, Users, MessageCircle, Video, Phone, UserPlus,
+  X, Check, Clock, Send, Bell, Settings, ChevronRight,
+  Loader2, UserCheck, UserX, Sparkles, Hash
+} from 'lucide-react';
 import { ChatView } from '../../../components/messaging/ChatView';
 import { CallModal } from '../../../components/messaging/CallModal';
 import { IncomingCallOverlay } from '../../../components/messaging/IncomingCallOverlay';
-import { useStore } from '../../../hooks/useStore';
 import { KEYS, getFromStorage } from '../../../data/schema';
 import { request } from '../../../utils/apiClient';
 import { useStreamChat } from '../../../hooks/useStreamChat';
 
-const mapProfileToContact = (profile, role) => {
-  const u = profile.userId;
-  const id = u?._id != null ? String(u._id) : profile.userId != null ? String(profile.userId) : null;
-  if (!id) return null;
-  const name = u?.name || (role === 'student' ? 'Student' : 'Teacher');
-  const classLabel =
-    role === 'student' && profile.grade != null
-      ? `${profile.grade}-${profile.section || ''}`.replace(/-$/, '')
-      : undefined;
-  return { id, name, role, ...(classLabel ? { class: classLabel } : {}) };
-};
-
+// ── Role colours ──────────────────────────────────────────────────────────────
 const ROLE_COLORS = {
-  teacher: { bg: '#a855f7', light: 'rgba(168, 85, 247, 0.1)' },
-  student: { bg: '#3b82f6', light: 'rgba(59, 130, 246, 0.1)' },
-  parent: { bg: '#10b981', light: 'rgba(16, 185, 129, 0.1)' },
-  admin: { bg: '#f59e0b', light: 'rgba(245, 158, 11, 0.1)' },
+  teacher: '#a855f7',
+  student: '#3b82f6',
+  parent:  '#10b981',
+  admin:   '#f59e0b',
+  driver:  '#ef4444',
 };
+const rc = (role) => ROLE_COLORS[role] || '#6b7280';
 
-const getRoleColor = (role) => ROLE_COLORS[role] || ROLE_COLORS.student;
+// ── Avatar ────────────────────────────────────────────────────────────────────
+const Avatar = ({ name, role, size = 44, online = false }) => (
+  <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
+    <div
+      className="w-full h-full rounded-full flex items-center justify-center text-white font-bold shadow-md"
+      style={{ background: rc(role), fontSize: size * 0.38 }}
+    >
+      {name?.charAt(0) || '?'}
+    </div>
+    {online && (
+      <span
+        className="absolute bottom-0 right-0 rounded-full border-2 border-white"
+        style={{ width: size * 0.28, height: size * 0.28, background: '#22c55e' }}
+      />
+    )}
+  </div>
+);
 
+// ── Glassmorphic panel ────────────────────────────────────────────────────────
+const Glass = ({ children, className = '', style = {} }) => (
+  <div
+    className={className}
+    style={{
+      background: 'rgba(255,255,255,0.55)',
+      backdropFilter: 'blur(24px)',
+      WebkitBackdropFilter: 'blur(24px)',
+      border: '1px solid rgba(255,255,255,0.7)',
+      ...style,
+    }}
+  >
+    {children}
+  </div>
+);
+
+// ── Main component ────────────────────────────────────────────────────────────
 export const CommunicationHub = ({ user }) => {
-  const { data: localUsers } = useStore(KEYS.USERS, []);
-  const [apiContacts, setApiContacts] = useState(null);
-  const [chatUser, setChatUser] = useState(null);
-  const [callState, setCallState] = useState({ isOpen: false, otherUser: null, preferVideo: true, initiator: true });
-  const [incomingCall, setIncomingCall] = useState(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [showSidebarOnMobile, setShowSidebarOnMobile] = useState(true);
-  
-  const [recentChats, setRecentChats] = useState(() => {
+  const [contacts, setContacts]           = useState([]);
+  const [loadingContacts, setLoadingContacts] = useState(true);
+  const [searchQuery, setSearchQuery]     = useState('');
+  const [activeTab, setActiveTab]         = useState('messages'); // 'messages' | 'requests' | 'explore'
+  const [chatUser, setChatUser]           = useState(null);
+  const [callState, setCallState]         = useState({ isOpen: false, otherUser: null, preferVideo: true, initiator: true });
+  const [incomingCall, setIncomingCall]   = useState(null);
+  const [friendRequests, setFriendRequests] = useState([]);
+  const [sentRequests, setSentRequests]   = useState(() => {
+    try { return JSON.parse(localStorage.getItem('cs_sent_requests') || '[]'); } catch { return []; }
+  });
+  const [recentChats, setRecentChats]     = useState(() => {
     try { return JSON.parse(localStorage.getItem('cornerstone_recent_chats') || '[]'); } catch { return []; }
   });
 
   const { client, isConnected } = useStreamChat(user);
-  const token = typeof window !== 'undefined' ? getFromStorage(KEYS.AUTH_TOKEN) : null;
-  const useApi = !!token && !!user?.id;
 
-  useEffect(() => {
-    if (!useApi) { setApiContacts(null); return; }
-    let cancelled = false;
-    (async () => {
-      try {
-        const wantStudents = user.role === 'admin' || user.role === 'teacher' || user.role === 'student';
-        
-        // Fetch contacts using pagination to avoid backend V8 stack overflow on large arrays
-        const fetchAllSafe = async (path) => {
-          let allItems = [];
-          for (let i = 1; i <= 10; i++) {
-            try {
-              const res = await request(`${path}?limit=7&page=${i}`);
-              if (!res.items || res.items.length === 0) break;
-              allItems = [...allItems, ...res.items];
-              if (res.pagination && res.pagination.page >= res.pagination.totalPages) break;
-            } catch (err) {
-              break;
-            }
-          }
-          return { items: allItems };
-        };
-
-        const [tRes, sRes] = await Promise.all([
-          fetchAllSafe('/school/teachers'),
-          wantStudents ? fetchAllSafe('/school/students') : Promise.resolve({ items: [] }),
-        ]);
-        if (cancelled) return;
-        const teachers = (tRes.items || []).map((p) => mapProfileToContact(p, 'teacher')).filter(Boolean);
-        const students = (sRes.items || []).map((p) => mapProfileToContact(p, 'student')).filter(Boolean);
-        setApiContacts([...teachers, ...students]);
-      } catch (e) {
-        if (!cancelled) setApiContacts([]);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [useApi, user?.role]);
-
+  // ── Load contacts ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!user?.id) return;
-    const interval = setInterval(() => {
-      if (callState.isOpen || incomingCall) return;
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('sms_call_signals:')) {
-          try {
-            const signals = JSON.parse(localStorage.getItem(key) || '[]');
-            const offer = signals.slice().reverse().find(s => s.type === 'offer' && s.fromUserId !== user.id);
-            if (offer) {
-              const age = Date.now() - new Date(offer.createdAt).getTime();
-              if (age < 15000) {
-                const caller = contacts.find(c => String(c.id) === String(offer.fromUserId));
-                if (caller) {
-                  setIncomingCall({ ...caller, callerName: caller.name });
-                } else {
-                  setIncomingCall({ id: offer.fromUserId, name: 'User', role: 'student', callerName: 'User' });
-                }
-              }
-            }
-          } catch {}
+    let cancelled = false;
+    setLoadingContacts(true);
+    request('/school/users?limit=500')
+      .then(res => {
+        if (cancelled) return;
+        const list = (res.users || res.items || [])
+          .filter(u => String(u.id) !== String(user.id) && ['teacher','student','parent','admin','driver'].includes(u.role))
+          .map(u => ({ id: u.id, name: u.name, role: u.role, email: u.email, online: Math.random() > 0.4 }));
+        setContacts(list);
+      })
+      .catch(() => { if (!cancelled) setContacts([]); })
+      .finally(() => { if (!cancelled) setLoadingContacts(false); });
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  // ── Incoming call via socket ───────────────────────────────────────────────
+  useEffect(() => {
+    if (!user?.id) return;
+    import('../../../utils/socketClient').then(({ getSocket }) => {
+      const socket = getSocket();
+      if (!socket) return;
+      const handler = (data) => {
+        if (data?.type === 'call:ring' && String(data?.fromUserId) !== String(user.id)) {
+          if (callState.isOpen || incomingCall) return;
+          setIncomingCall({
+            id: data.fromUserId,
+            name: data.callerName || 'Unknown',
+            role: data.callerRole || 'student',
+            callerName: data.callerName || 'Unknown',
+            preferVideo: data.preferVideo ?? true,
+          });
         }
-      }
-    }, 2000);
-    return () => clearInterval(interval);
+      };
+      socket.on('call:signal', handler);
+      return () => socket.off('call:signal', handler);
+    });
   }, [user?.id, callState.isOpen, incomingCall]);
 
-  const handleChatOpen = (contact) => {
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  const openChat = useCallback((contact) => {
     setRecentChats(prev => {
       const filtered = prev.filter(c => c.id !== contact.id);
-      const updated = [{ id: contact.id, name: contact.name, role: contact.role, class: contact.class, lastChatAt: Date.now() }, ...filtered].slice(0, 20);
+      const updated = [{ ...contact, lastChatAt: Date.now() }, ...filtered].slice(0, 30);
       localStorage.setItem('cornerstone_recent_chats', JSON.stringify(updated));
       return updated;
     });
     setChatUser(contact);
-    setShowSidebarOnMobile(false);
+  }, []);
+
+  const sendFriendRequest = (contact) => {
+    const updated = [...sentRequests, contact.id];
+    setSentRequests(updated);
+    localStorage.setItem('cs_sent_requests', JSON.stringify(updated));
   };
 
-  const contacts = useMemo(() => {
-    const selfId = String(user.id);
-    let list = useApi && apiContacts 
-      ? apiContacts.filter((c) => String(c.id) !== selfId)
-      : localUsers.filter((u) => String(u.id) !== selfId);
+  const acceptRequest = (req) => {
+    setFriendRequests(prev => prev.filter(r => r.id !== req.id));
+    openChat(req);
+  };
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(c => c.name.toLowerCase().includes(q) || c.role.includes(q));
-    }
+  const declineRequest = (req) => {
+    setFriendRequests(prev => prev.filter(r => r.id !== req.id));
+  };
 
-    const recentIds = new Set(recentChats.map(r => r.id));
-    const recent = [];
-    const others = [];
-    list.forEach(c => {
-      if (recentIds.has(c.id)) recent.push(c);
-      else others.push(c);
-    });
-    recent.sort((a, b) => {
-      const aTime = recentChats.find(r => r.id === a.id)?.lastChatAt || 0;
-      const bTime = recentChats.find(r => r.id === b.id)?.lastChatAt || 0;
-      return bTime - aTime;
-    });
+  // ── Filtered lists ─────────────────────────────────────────────────────────
+  const recentContactIds = new Set(recentChats.map(r => r.id));
 
-    return [...recent, ...others];
-  }, [useApi, apiContacts, localUsers, user.id, searchQuery, recentChats]);
+  const filteredContacts = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    return contacts.filter(c =>
+      (!q || c.name?.toLowerCase().includes(q) || c.role?.includes(q)) &&
+      String(c.id) !== String(user?.id)
+    );
+  }, [contacts, searchQuery, user?.id]);
 
+  const recentList = useMemo(() =>
+    recentChats
+      .map(rc => contacts.find(c => c.id === rc.id) || rc)
+      .filter(Boolean),
+    [recentChats, contacts]
+  );
+
+  const exploreList = useMemo(() =>
+    filteredContacts.filter(c => !recentContactIds.has(c.id)),
+    [filteredContacts, recentContactIds]
+  );
+
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="w-full h-[calc(100vh-100px)] max-h-[800px] mx-auto p-4 md:p-6 lg:p-8 flex justify-center">
-      
-      <div 
-        className="w-full max-w-[1200px] h-full rounded-3xl overflow-hidden flex relative shadow-2xl"
+    <>
+      {/* Full-viewport overlay — covers sidebar + topbar */}
+      <div
+        className="fixed inset-0 z-[60] overflow-hidden"
         style={{
-          background: 'rgba(255, 255, 255, 0.25)',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,0.4)',
-          boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1)'
+          background: 'linear-gradient(135deg, #667eea22 0%, #764ba222 25%, #f093fb22 50%, #4facfe22 75%, #43e97b22 100%)',
+          backdropFilter: 'blur(2px)',
         }}
       >
-        <div className={`w-full md:w-[360px] flex-shrink-0 flex flex-col transition-all duration-300 ${!showSidebarOnMobile && chatUser ? 'hidden md:flex' : 'flex'}`}>
-          <div className="px-6 py-5 border-b border-white/20 bg-white/10 backdrop-blur-md">
-            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Messages</h1>
-            <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-              {isConnected ? <span className="text-emerald-500 font-medium tracking-wide">● Connected</span> : 'Connecting...'}
-            </div>
-            
-            <div className="mt-4 relative">
-              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-50" />
-              <input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-2xl text-sm outline-none transition-all duration-200"
-                style={{ 
-                  background: 'rgba(255,255,255,0.4)', 
-                  color: 'var(--text-primary)', 
-                  border: '1px solid rgba(255,255,255,0.5)',
-                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="flex-1 overflow-y-auto no-scrollbar pb-6 p-2">
-            {contacts.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center opacity-50">
-                <Users size={32} className="mb-2" />
-                <p className="text-sm font-medium">No contacts found</p>
-              </div>
-            ) : (
-              contacts.map((contact) => {
-                const isActive = chatUser?.id === contact.id;
-                const colors = getRoleColor(contact.role);
-                return (
-                  <motion.div
-                    key={contact.id}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => handleChatOpen(contact)}
-                    className={`flex items-center gap-4 p-3 rounded-2xl cursor-pointer transition-all duration-200 mb-1 border ${
-                      isActive 
-                        ? 'bg-white/60 border-white/60 shadow-sm' 
-                        : 'bg-transparent border-transparent hover:bg-white/30'
-                    }`}
-                  >
-                    <div className="relative">
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
-                        style={{ background: colors.bg }}>
-                        {contact.name.charAt(0)}
-                      </div>
-                      <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-white/80 shadow-sm" />
-                    </div>
-                    
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[15px] font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{contact.name}</p>
-                      <p className="text-xs truncate opacity-70 capitalize flex items-center gap-1.5 mt-0.5">
-                        <span className="px-1.5 rounded-md font-medium" style={{ background: colors.light, color: colors.bg }}>
-                          {contact.role}
-                        </span>
-                        {contact.class && <span>· {contact.class}</span>}
-                      </p>
-                    </div>
-                  </motion.div>
-                );
-              })
-            )}
-          </div>
+        {/* Animated background blobs */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <motion.div className="absolute w-[600px] h-[600px] rounded-full blur-3xl opacity-30"
+            style={{ background: 'radial-gradient(circle, #a855f7, transparent)', top: '-10%', left: '-5%' }}
+            animate={{ scale: [1, 1.2, 1], x: [0, 40, 0] }}
+            transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }} />
+          <motion.div className="absolute w-[500px] h-[500px] rounded-full blur-3xl opacity-25"
+            style={{ background: 'radial-gradient(circle, #3b82f6, transparent)', bottom: '-10%', right: '-5%' }}
+            animate={{ scale: [1, 1.15, 1], x: [0, -30, 0] }}
+            transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 3 }} />
+          <motion.div className="absolute w-[400px] h-[400px] rounded-full blur-3xl opacity-20"
+            style={{ background: 'radial-gradient(circle, #10b981, transparent)', top: '40%', left: '40%' }}
+            animate={{ scale: [1, 1.3, 1] }}
+            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 6 }} />
         </div>
 
-        <div className={`flex-1 flex flex-col bg-white/40 ${showSidebarOnMobile && chatUser ? 'hidden md:flex' : 'flex'} relative`}>
-          {chatUser ? (
-            <ChatView
-              isOpen={true}
-              onClose={() => setShowSidebarOnMobile(true)}
-              currentUser={user}
-              otherUser={chatUser}
-              onStartCall={({ otherUser, preferVideo }) => setCallState({ isOpen: true, otherUser, preferVideo, initiator: true })}
-            />
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center">
-              <div className="w-24 h-24 rounded-full border-2 border-white/50 flex items-center justify-center mb-4 bg-white/20 shadow-inner">
-                <MessageCircle size={32} className="opacity-50" />
+        {/* Main layout */}
+        <div className="relative z-10 h-full flex items-center justify-center p-4 md:p-6">
+          <div className="w-full max-w-[1300px] h-full max-h-[900px] flex gap-3 md:gap-4">
+
+            {/* ── LEFT PANEL ── */}
+            <Glass
+              className="w-[320px] md:w-[360px] flex-shrink-0 rounded-3xl flex flex-col overflow-hidden shadow-2xl"
+              style={{ boxShadow: '0 32px 80px rgba(0,0,0,0.15)' }}
+            >
+              {/* Header */}
+              <div className="px-5 pt-5 pb-3 flex-shrink-0">
+                <div className="flex items-center justify-between mb-1">
+                  <h1 className="text-2xl font-black tracking-tight text-gray-900">Messages</h1>
+                  <div className="flex items-center gap-1.5">
+                    <motion.button
+                      whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                      onClick={() => setActiveTab('requests')}
+                      className="relative p-2 rounded-xl hover:bg-white/60 transition-colors"
+                    >
+                      <Bell size={18} className="text-gray-600" />
+                      {friendRequests.length > 0 && (
+                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+                      )}
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                      onClick={() => setActiveTab('explore')}
+                      className="p-2 rounded-xl hover:bg-white/60 transition-colors"
+                    >
+                      <UserPlus size={18} className="text-gray-600" />
+                    </motion.button>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 mb-4">
+                  <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                  <span className="text-xs font-medium text-gray-500">
+                    {isConnected ? `Connected · ${contacts.length} people` : 'Connecting...'}
+                  </span>
+                </div>
+
+                {/* Search */}
+                <div className="relative">
+                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <input
+                    value={searchQuery}
+                    onChange={e => { setSearchQuery(e.target.value); setActiveTab('messages'); }}
+                    placeholder="Search people..."
+                    className="w-full pl-9 pr-4 py-2.5 rounded-2xl text-sm font-medium outline-none transition-all"
+                    style={{
+                      background: 'rgba(255,255,255,0.6)',
+                      border: '1px solid rgba(255,255,255,0.8)',
+                      color: '#1f2937',
+                    }}
+                  />
+                </div>
+
+                {/* Tabs */}
+                <div className="flex gap-1 mt-3">
+                  {[
+                    { id: 'messages', label: 'Chats' },
+                    { id: 'requests', label: `Requests${friendRequests.length ? ` (${friendRequests.length})` : ''}` },
+                    { id: 'explore', label: 'Explore' },
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className="flex-1 py-1.5 rounded-xl text-xs font-bold transition-all"
+                      style={{
+                        background: activeTab === tab.id ? 'rgba(59,130,246,0.15)' : 'transparent',
+                        color: activeTab === tab.id ? '#3b82f6' : '#9ca3af',
+                        border: activeTab === tab.id ? '1px solid rgba(59,130,246,0.3)' : '1px solid transparent',
+                      }}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <h2 className="text-xl font-semibold tracking-tight">Your Messages</h2>
-              <p className="text-sm opacity-60 mt-1">Select a contact to start chatting</p>
-            </div>
-          )}
+
+              {/* List */}
+              <div className="flex-1 overflow-y-auto no-scrollbar px-3 pb-4">
+                <AnimatePresence mode="wait">
+
+                  {/* MESSAGES TAB */}
+                  {activeTab === 'messages' && (
+                    <motion.div key="messages" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                      {loadingContacts ? (
+                        <div className="flex items-center justify-center py-16">
+                          <Loader2 size={24} className="animate-spin text-gray-400" />
+                        </div>
+                      ) : (
+                        <>
+                          {/* Recent chats */}
+                          {recentList.length > 0 && !searchQuery && (
+                            <div className="mb-3">
+                              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-2 mb-2">Recent</p>
+                              {recentList.map(contact => (
+                                <ContactRow
+                                  key={contact.id}
+                                  contact={contact}
+                                  isActive={chatUser?.id === contact.id}
+                                  onClick={() => openChat(contact)}
+                                  onCall={(video) => setCallState({ isOpen: true, otherUser: contact, preferVideo: video, initiator: true })}
+                                />
+                              ))}
+                            </div>
+                          )}
+
+                          {/* All / search results */}
+                          {searchQuery ? (
+                            filteredContacts.length === 0 ? (
+                              <EmptyState icon={<Search size={28} />} text="No results" sub={`No one named "${searchQuery}"`} />
+                            ) : (
+                              filteredContacts.map(contact => (
+                                <ContactRow key={contact.id} contact={contact} isActive={chatUser?.id === contact.id}
+                                  onClick={() => openChat(contact)}
+                                  onCall={(video) => setCallState({ isOpen: true, otherUser: contact, preferVideo: video, initiator: true })} />
+                              ))
+                            )
+                          ) : (
+                            <>
+                              {exploreList.length > 0 && (
+                                <div>
+                                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-2 mb-2">All People</p>
+                                  {exploreList.slice(0, 20).map(contact => (
+                                    <ContactRow key={contact.id} contact={contact} isActive={chatUser?.id === contact.id}
+                                      onClick={() => openChat(contact)}
+                                      onCall={(video) => setCallState({ isOpen: true, otherUser: contact, preferVideo: video, initiator: true })} />
+                                  ))}
+                                </div>
+                              )}
+                              {recentList.length === 0 && exploreList.length === 0 && (
+                                <EmptyState icon={<Users size={28} />} text="No contacts yet" sub="People in your school will appear here" />
+                              )}
+                            </>
+                          )}
+                        </>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {/* REQUESTS TAB */}
+                  {activeTab === 'requests' && (
+                    <motion.div key="requests" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-2 mb-3 mt-1">Friend Requests</p>
+                      {friendRequests.length === 0 ? (
+                        <EmptyState icon={<UserCheck size={28} />} text="No pending requests" sub="When someone adds you, they'll appear here" />
+                      ) : (
+                        friendRequests.map(req => (
+                          <motion.div key={req.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                            className="flex items-center gap-3 p-3 rounded-2xl mb-1.5"
+                            style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.7)' }}>
+                            <Avatar name={req.name} role={req.role} size={42} />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-bold text-gray-800 truncate">{req.name}</p>
+                              <p className="text-xs text-gray-500 capitalize">{req.role}</p>
+                            </div>
+                            <div className="flex gap-1.5">
+                              <button onClick={() => acceptRequest(req)}
+                                className="p-2 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition-colors">
+                                <Check size={14} />
+                              </button>
+                              <button onClick={() => declineRequest(req)}
+                                className="p-2 rounded-xl bg-red-100 text-red-500 hover:bg-red-200 transition-colors">
+                                <X size={14} />
+                              </button>
+                            </div>
+                          </motion.div>
+                        ))
+                      )}
+                    </motion.div>
+                  )}
+
+                  {/* EXPLORE TAB */}
+                  {activeTab === 'explore' && (
+                    <motion.div key="explore" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-2 mb-3 mt-1">Add People</p>
+                      {contacts.filter(c => !recentContactIds.has(c.id)).map(contact => (
+                        <motion.div key={contact.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                          className="flex items-center gap-3 p-3 rounded-2xl mb-1.5 transition-all"
+                          style={{ background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.6)' }}>
+                          <Avatar name={contact.name} role={contact.role} size={42} online={contact.online} />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-gray-800 truncate">{contact.name}</p>
+                            <p className="text-xs capitalize" style={{ color: rc(contact.role) }}>{contact.role}</p>
+                          </div>
+                          <div className="flex gap-1.5">
+                            <button onClick={() => openChat(contact)}
+                              className="p-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-colors">
+                              <MessageCircle size={14} />
+                            </button>
+                            {!sentRequests.includes(contact.id) ? (
+                              <button onClick={() => sendFriendRequest(contact)}
+                                className="p-2 rounded-xl bg-white/70 text-gray-600 hover:bg-white transition-colors border border-white/80">
+                                <UserPlus size={14} />
+                              </button>
+                            ) : (
+                              <button disabled className="p-2 rounded-xl bg-gray-100 text-gray-400 cursor-default">
+                                <Clock size={14} />
+                              </button>
+                            )}
+                          </div>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  )}
+
+                </AnimatePresence>
+              </div>
+            </Glass>
+
+            {/* ── RIGHT PANEL ── */}
+            <Glass
+              className="flex-1 rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+              style={{ boxShadow: '0 32px 80px rgba(0,0,0,0.12)', minWidth: 0 }}
+            >
+              <AnimatePresence mode="wait">
+                {chatUser ? (
+                  <motion.div key={chatUser.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full">
+                    <ChatView
+                      isOpen={true}
+                      onClose={() => setChatUser(null)}
+                      currentUser={user}
+                      otherUser={chatUser}
+                      onStartCall={({ otherUser, preferVideo }) =>
+                        setCallState({ isOpen: true, otherUser, preferVideo, initiator: true })
+                      }
+                      isInline={true}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    className="h-full flex flex-col items-center justify-center gap-4 px-8 text-center">
+                    {/* Animated icon */}
+                    <motion.div
+                      animate={{ y: [0, -12, 0], rotate: [0, 5, -5, 0] }}
+                      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                      className="w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl"
+                      style={{ background: 'linear-gradient(135deg, #667eea, #764ba2)' }}
+                    >
+                      <MessageCircle size={40} className="text-white" />
+                    </motion.div>
+                    <div>
+                      <h2 className="text-2xl font-black text-gray-800 tracking-tight">Your Messages</h2>
+                      <p className="text-gray-500 text-sm mt-1 max-w-xs">
+                        Select a conversation from the left, or explore people to start a new chat.
+                      </p>
+                    </div>
+                    <div className="flex gap-3 mt-2">
+                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                        onClick={() => setActiveTab('explore')}
+                        className="px-5 py-2.5 rounded-2xl text-sm font-bold text-white shadow-lg"
+                        style={{ background: 'linear-gradient(135deg, #667eea, #764ba2)' }}>
+                        <span className="flex items-center gap-2"><UserPlus size={15} /> Add People</span>
+                      </motion.button>
+                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
+                        onClick={() => setActiveTab('messages')}
+                        className="px-5 py-2.5 rounded-2xl text-sm font-bold text-gray-700 bg-white/60 border border-white/80 shadow-sm">
+                        <span className="flex items-center gap-2"><Hash size={15} /> Browse Chats</span>
+                      </motion.button>
+                    </div>
+
+                    {/* Online people strip */}
+                    {contacts.filter(c => c.online).length > 0 && (
+                      <div className="mt-4 w-full max-w-md">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Active Now</p>
+                        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 justify-center flex-wrap">
+                          {contacts.filter(c => c.online).slice(0, 8).map(c => (
+                            <motion.button key={c.id} whileHover={{ scale: 1.08, y: -4 }} whileTap={{ scale: 0.95 }}
+                              onClick={() => openChat(c)}
+                              className="flex flex-col items-center gap-1.5 cursor-pointer">
+                              <Avatar name={c.name} role={c.role} size={48} online />
+                              <span className="text-[10px] font-semibold text-gray-600 max-w-[52px] truncate">{c.name.split(' ')[0]}</span>
+                            </motion.button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Glass>
+
+          </div>
         </div>
       </div>
 
+      {/* Modals */}
       <CallModal
         isOpen={callState.isOpen}
         onClose={() => setCallState({ isOpen: false, otherUser: null, preferVideo: true, initiator: true })}
@@ -262,18 +488,59 @@ export const CommunicationHub = ({ user }) => {
         preferVideo={callState.preferVideo}
         initiator={callState.initiator}
       />
-      
       <IncomingCallOverlay
         isOpen={!!incomingCall}
         callData={incomingCall}
         onAccept={() => {
-          setCallState({ isOpen: true, otherUser: incomingCall, preferVideo: true, initiator: false });
+          setCallState({ isOpen: true, otherUser: incomingCall, preferVideo: incomingCall?.preferVideo ?? true, initiator: false });
           setIncomingCall(null);
         }}
-        onDecline={() => {
-          setIncomingCall(null);
-        }}
+        onDecline={() => setIncomingCall(null)}
       />
-    </div>
+    </>
   );
 };
+
+// ── Contact row ───────────────────────────────────────────────────────────────
+const ContactRow = ({ contact, isActive, onClick, onCall }) => (
+  <motion.div
+    whileTap={{ scale: 0.98 }}
+    onClick={onClick}
+    className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-150 mb-1 group"
+    style={{
+      background: isActive ? 'rgba(59,130,246,0.12)' : 'transparent',
+      border: isActive ? '1px solid rgba(59,130,246,0.25)' : '1px solid transparent',
+    }}
+    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.5)'; }}
+    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
+  >
+    <Avatar name={contact.name} role={contact.role} size={44} online={contact.online} />
+    <div className="flex-1 min-w-0">
+      <p className="text-[14px] font-semibold text-gray-800 truncate">{contact.name}</p>
+      <p className="text-[11px] font-medium capitalize" style={{ color: rc(contact.role) }}>{contact.role}</p>
+    </div>
+    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <button onClick={e => { e.stopPropagation(); onCall(false); }}
+        className="p-1.5 rounded-xl hover:bg-white/70 transition-colors text-gray-500">
+        <Phone size={14} />
+      </button>
+      <button onClick={e => { e.stopPropagation(); onCall(true); }}
+        className="p-1.5 rounded-xl hover:bg-white/70 transition-colors text-emerald-500">
+        <Video size={14} />
+      </button>
+    </div>
+  </motion.div>
+);
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+const EmptyState = ({ icon, text, sub }) => (
+  <div className="flex flex-col items-center justify-center py-12 gap-3 opacity-60">
+    <div className="w-14 h-14 rounded-2xl bg-white/50 flex items-center justify-center text-gray-400 shadow-inner">
+      {icon}
+    </div>
+    <div className="text-center">
+      <p className="text-sm font-semibold text-gray-600">{text}</p>
+      {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+    </div>
+  </div>
+);
