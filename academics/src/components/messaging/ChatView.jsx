@@ -23,9 +23,9 @@ export const ChatView = ({
   const fileInputRef = useRef(null);
   const inputRef = useRef(null);
 
-  // Init channel — no ensureUserExists (it conflicts with the connected client)
+  // Init channel — connect to GetStream inline, don't wait for isConnected hook
   useEffect(() => {
-    if (!isOpen || !isConnected || !otherUser?.id || !client) return;
+    if (!isOpen || !otherUser?.id || !client) return;
     let cancelled = false;
     const otherId = sanitizeId(otherUser.id);
     const myId = sanitizeId(currentUser.id);
@@ -34,8 +34,17 @@ export const ChatView = ({
       setLoading(true);
       setChannelError(null);
       try {
-        // Hash the IDs to keep channel ID under 64 chars
-        // Use a simple deterministic hash: take first 20 chars of each sanitized ID
+        // Ensure client is connected — connect inline if not already
+        if (!client.userID) {
+          const { createUserToken } = await import('../../lib/streamClient');
+          const token = await createUserToken(myId);
+          await client.connectUser(
+            { id: myId, name: currentUser.name, role: currentUser.role || 'user' },
+            token
+          );
+        }
+
+        // Deterministic channel ID — sorted, max 64 chars
         const shortMyId = myId.substring(0, 20);
         const shortOtherId = otherId.substring(0, 20);
         const sortedIds = [shortMyId, shortOtherId].sort();
@@ -60,7 +69,7 @@ export const ChatView = ({
 
     initChannel();
     return () => { cancelled = true; };
-  }, [isOpen, isConnected, otherUser?.id, currentUser?.id, client]);
+  }, [isOpen, otherUser?.id, currentUser?.id, client]);
 
   // Real-time message + typing listeners
   useEffect(() => {

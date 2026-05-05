@@ -193,12 +193,13 @@ export const CommunicationHub = ({ user }) => {
         </div>
 
         {/* Main layout */}
-        <div className="relative z-10 h-full flex items-center justify-center p-4 md:p-6">
-          <div className="w-full max-w-[1300px] h-full max-h-[900px] flex gap-3 md:gap-4">
+        <div className="relative z-10 h-full flex items-stretch justify-center p-2 md:p-4 lg:p-6">
+          <div className="w-full max-w-[1300px] h-full flex gap-2 md:gap-3 lg:gap-4">
 
-            {/* ── LEFT PANEL ── */}
+            {/* ── LEFT PANEL — hidden on mobile when chat is open ── */}
             <Glass
-              className="w-[320px] md:w-[360px] flex-shrink-0 rounded-3xl flex flex-col overflow-hidden shadow-2xl"
+              className={`flex-shrink-0 rounded-2xl md:rounded-3xl flex flex-col overflow-hidden shadow-2xl transition-all duration-300
+                ${chatUser ? 'hidden md:flex md:w-[280px] lg:w-[340px]' : 'flex w-full md:w-[280px] lg:w-[340px]'}`}
               style={{ boxShadow: '0 32px 80px rgba(0,0,0,0.15)' }}
             >
               {/* Header */}
@@ -406,10 +407,11 @@ export const CommunicationHub = ({ user }) => {
               </div>
             </Glass>
 
-            {/* ── RIGHT PANEL ── */}
+            {/* ── RIGHT PANEL — full width on mobile when chat open ── */}
             <Glass
-              className="flex-1 rounded-3xl overflow-hidden shadow-2xl flex flex-col"
-              style={{ boxShadow: '0 32px 80px rgba(0,0,0,0.12)', minWidth: 0 }}
+              className={`rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl flex flex-col transition-all duration-300
+                ${chatUser ? 'flex flex-1 min-w-0' : 'hidden md:flex flex-1 min-w-0'}`}
+              style={{ boxShadow: '0 32px 80px rgba(0,0,0,0.12)' }}
             >
               <AnimatePresence mode="wait">
                 {chatUser ? (
