@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useState, useMemo, useCallback, useEffect } from 'react';
 
 // Hooks
@@ -16,8 +16,6 @@ import { Toast } from './components/ui/Toast';
 import SplashScreen from './components/SplashScreen';
 
 // Pages - Common
-import { Login } from './pages/Common/Login';
-import { Signup } from './pages/Common/Signup';
 import { NotFound } from './pages/Common/NotFound';
 
 // Pages - Portals (Dashboards)
@@ -49,12 +47,15 @@ import { Assignments } from './pages/AcademicPortal/Student/Assignments';
 import { Attendance } from './pages/AcademicPortal/Student/Attendance';
 import { Grades } from './pages/AcademicPortal/Student/Grades';
 import { Notes } from './pages/AcademicPortal/Student/Notes';
-import { Profile } from './pages/AcademicPortal/Student/Profile';
 import { StudentProfile } from './pages/AcademicPortal/Student/StudentProfile';
 import { StudyPlanner } from './pages/AcademicPortal/Student/StudyPlanner';
 import { AssignmentDetails } from './pages/AcademicPortal/Student/AssignmentDetails';
 import { BusTracking } from './pages/AcademicPortal/Student/BusTracking';
 import { DriverTracking } from './pages/AcademicPortal/Student/DriverTracking';
+import { BooksIssued as StudentBooksIssued } from './pages/AcademicPortal/Student/BooksIssued';
+import { BooksIssued as ParentBooksIssued } from './pages/AcademicPortal/Parent/BooksIssued';
+import { NCERTBooks } from './pages/AcademicPortal/Student/NCERTBooks';
+import { ReportCard } from './pages/AcademicPortal/Student/ReportCard';
 
 // Academic Portal - Shared Features
 import { SettingsPanel } from './pages/AcademicPortal/shared/Settings';
@@ -81,6 +82,12 @@ import { QuickMessenger } from './pages/TeacherPortal/QuickMessenger';
 import { PerformanceReports } from './pages/TeacherPortal/PerformanceReports';
 import { ClassNotes } from './pages/TeacherPortal/ClassNotes';
 import { TeacherAILab } from './pages/TeacherPortal/TeacherAILab';
+import ManageReportCards from './pages/TeacherPortal/ManageReportCards';
+
+// Librarian Portal Pages
+import { LibrarianDashboard } from './pages/LibrarianPortal/LibrarianDashboard';
+import { LibrarianProfile } from './pages/LibrarianPortal/LibrarianProfile';
+import { LibrarianBookAssignment } from './pages/LibrarianPortal/LibrarianBookAssignment';
 
 // Loading screen (shown during auth check)
 const LoadingScreen = () => (
@@ -99,7 +106,7 @@ const LoadingScreen = () => (
 );
 
 // Allowed roles for this portal
-const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin'];
+const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin', 'librarian'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
@@ -147,8 +154,9 @@ function App() {
   const { theme, toggleTheme } = useTheme();
   const { toasts, addToast, removeToast } = useToast();
   const [showSplash, setShowSplash] = useState(() => {
-    // Only show splash if not already seen in this session
-    return !sessionStorage.getItem('hasSeenSplash');
+    // Only show splash if not already seen in this session AND user is not logged in
+    const hasSeenSplash = sessionStorage.getItem('hasSeenSplash');
+    return !hasSeenSplash;
   });
   const [autoLoginInProgress, setAutoLoginInProgress] = useState(() => {
     // Check if credentials are in URL hash on initial load
@@ -207,7 +215,7 @@ function App() {
     }
   }, [user, login]);
 
-  if (showSplash) return <SplashScreen onComplete={handleSplashComplete} onLogin={login} />;
+  if (showSplash && !user) return <SplashScreen onComplete={handleSplashComplete} onLogin={login} />;
   // Using custom loading screen for portal sync feel
   if (authLoading) return <LoadingScreen />;
 
@@ -224,16 +232,16 @@ function App() {
     <>
       <Toast toasts={toasts} removeToast={removeToast} />
       <Routes>
-          {/* 🔐 Auth Gates */}
+          {/* 🔐 Auth Gates - Splash Screen is the only login entry point */}
           <Route path="/login" element={
             user && ALLOWED_ROLES.includes(user.role) 
               ? <Navigate to={`/${user.role}/dashboard`} replace /> 
-              : <Login onLogin={login} onSwitch={() => navigate('/signup')} />
+              : <SplashScreen onComplete={() => {}} onLogin={login} />
           } />
           <Route path="/signup" element={
             user && ALLOWED_ROLES.includes(user.role)
               ? <Navigate to={`/${user.role}/dashboard`} replace /> 
-              : <Signup onSignup={signup} onSwitch={() => navigate('/login')} />
+              : <SplashScreen onComplete={() => {}} onLogin={login} />
           } />
 
           {/* 🎓 Academic Portal - Student */}
@@ -317,6 +325,21 @@ function App() {
               <BusTracking user={user} />
             </ProtectedRoute>
           } />
+          <Route path="/student/books-issued" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <StudentBooksIssued user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/ncert-books" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <NCERTBooks user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/report-card" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <ReportCard user={user} />
+            </ProtectedRoute>
+          } />
           <Route path="/driver-tracking" element={
             <ProtectedRoute {...layoutProps} user={user}>
               <DriverTracking />
@@ -369,9 +392,19 @@ function App() {
               <NotificationCenter user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
+          <Route path="/parent/books-issued" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
+              <ParentBooksIssued user={user} />
+            </ProtectedRoute>
+          } />
           <Route path="/parent/bus-tracking" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
               <BusTracking user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/parent/report-card" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
+              <ReportCard user={user} />
             </ProtectedRoute>
           } />
 
@@ -483,6 +516,11 @@ function App() {
               <TeacherAILab user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
+          <Route path="/teacher/manage-report-cards" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <ManageReportCards user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
 
           {/* 👨‍💼 Admin Portal */}
           <Route path="/admin/dashboard" element={
@@ -535,7 +573,7 @@ function App() {
               <AdminComms user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
-          <Route path="/admin/bus-assignment" element={
+          <Route path="/admin/bus-assignments" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <AdminBusAssignment user={user} addToast={addToast} />
             </ProtectedRoute>
@@ -556,11 +594,28 @@ function App() {
             </ProtectedRoute>
           } />
 
+          {/* 📚 Librarian Portal */}
+          <Route path="/librarian/dashboard" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibrarianDashboard user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/librarian/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibrarianProfile user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/librarian/book-assignment" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibrarianBookAssignment user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+
           {/* 🏁 Terminal Entry/Exit */}
           <Route path="/" element={
             user && ALLOWED_ROLES.includes(user.role) 
               ? <Navigate to={`/${user.role}/dashboard`} replace /> 
-              : <Navigate to="/login" replace />
+              : <SplashScreen onComplete={() => {}} onLogin={login} />
           } />
           <Route path="*" element={<NotFound user={user} />} />
         </Routes>

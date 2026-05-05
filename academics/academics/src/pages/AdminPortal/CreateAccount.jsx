@@ -9,9 +9,8 @@ export const CreateAccount = ({ user, addToast, onCancel }) => {
   const [generatedCredentials, setGeneratedCredentials] = useState(null);
   const [formData, setFormData] = useState({
     // Common Fields
-    username: '',
-    password: '',
     email: '',
+    password: '',
     phone: '',
     fullName: '',
     dateOfBirth: '',
@@ -97,19 +96,10 @@ export const CreateAccount = ({ user, addToast, onCancel }) => {
     return password;
   };
 
-  const generateUsername = (name, role) => {
-    const baseName = name.toLowerCase().replace(/\s+/g, '');
-    const timestamp = Date.now().toString().slice(-4);
-    const rolePrefix = role === 'student' ? 'stu' : role === 'teacher' ? 'tch' : role === 'parent' ? 'prt' : role === 'driver' ? 'drv' : 'adm';
-    return `${rolePrefix}${baseName}${timestamp}`;
-  };
-
   const handleAutoGenerate = () => {
-    const username = generateUsername(formData.fullName, userType);
     const password = generatePassword();
     setFormData(prev => ({
       ...prev,
-      username,
       password,
     }));
   };
@@ -117,12 +107,11 @@ export const CreateAccount = ({ user, addToast, onCancel }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Generate credentials if not provided
-    const finalUsername = formData.username || generateUsername(formData.fullName, userType);
+    // Generate password if not provided
     const finalPassword = formData.password || generatePassword();
     
     const credentials = {
-      username: finalUsername,
+      email: formData.email,
       password: finalPassword,
       userType,
       ...formData,
@@ -135,10 +124,9 @@ export const CreateAccount = ({ user, addToast, onCancel }) => {
   const copyCredentials = () => {
     const text = `
 Login Credentials for ${userType.toUpperCase()}:
-Username: ${generatedCredentials.username}
+Email: ${generatedCredentials.email}
 Password: ${generatedCredentials.password}
 Name: ${generatedCredentials.fullName}
-Email: ${generatedCredentials.email}
 Phone: ${generatedCredentials.phone}
     `.trim();
     
@@ -154,12 +142,11 @@ User Type: ${userType.toUpperCase()}
 Generated on: ${new Date().toLocaleString()}
 
 LOGIN INFORMATION:
-Username: ${generatedCredentials.username}
+Email: ${generatedCredentials.email}
 Password: ${generatedCredentials.password}
 
 PERSONAL INFORMATION:
 Name: ${generatedCredentials.fullName}
-Email: ${generatedCredentials.email}
 Phone: ${generatedCredentials.phone}
 Date of Birth: ${generatedCredentials.dateOfBirth}
 Gender: ${generatedCredentials.gender}
@@ -198,7 +185,7 @@ For support, contact: admin@schoolsync.edu
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${generatedCredentials.username}_credentials.txt`;
+    a.download = `${generatedCredentials.email}_credentials.txt`;
     a.click();
     URL.revokeObjectURL(url);
     addToast?.('Credentials downloaded!', 'success');
@@ -646,8 +633,8 @@ For support, contact: admin@schoolsync.edu
             <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">Login Credentials</h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                <span className="text-sm font-medium text-slate-600">Username</span>
-                <span className="text-sm font-bold text-slate-900">{generatedCredentials.username}</span>
+                <span className="text-sm font-medium text-slate-600">Email</span>
+                <span className="text-sm font-bold text-slate-900">{generatedCredentials.email}</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                 <span className="text-sm font-medium text-slate-600">Password</span>
@@ -677,7 +664,7 @@ For support, contact: admin@schoolsync.edu
               onClick={() => {
                 setGeneratedCredentials(null);
                 setFormData({
-                  username: '', password: '', email: '', phone: '', fullName: '',
+                  email: '', password: '', phone: '', fullName: '',
                   dateOfBirth: '', gender: '', bloodGroup: '', nationality: 'Indian',
                   religion: '', caste: '', motherTongue: '', aadhaarNumber: '',
                   houseNumber: '', street: '', area: '', landmark: '', city: '',
@@ -771,17 +758,17 @@ For support, contact: admin@schoolsync.edu
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Username *</label>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Email Address *</label>
                 <div className="relative">
                   <input
-                    type="text"
-                    value={formData.username}
-                    onChange={(e) => setFormData({...formData, username: e.target.value})}
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
                     className="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-10"
-                    placeholder="Username will be auto-generated"
+                    placeholder="user@school.edu"
                     required
                   />
-                  <User size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Mail size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 </div>
               </div>
               <div>

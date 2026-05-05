@@ -59,7 +59,6 @@ import { DriverTracking } from './pages/AcademicPortal/Student/DriverTracking';
 // Academic Portal - Shared Features
 import { SettingsPanel } from './pages/AcademicPortal/shared/Settings';
 import { FeeManagement } from './pages/AcademicPortal/shared/FeeManagement';
-import { AILab } from './pages/AcademicPortal/shared/AILab';
 import { CommunicationHub } from './pages/AcademicPortal/shared/CommunicationHub';
 import { ExamCenter } from './pages/AcademicPortal/shared/ExamCenter';
 import { NexusHub } from './pages/AcademicPortal/shared/NexusHub';
@@ -80,6 +79,7 @@ import { NotificationCenter } from './pages/TeacherPortal/NotificationCenter';
 import { QuickMessenger } from './pages/TeacherPortal/QuickMessenger';
 import { PerformanceReports } from './pages/TeacherPortal/PerformanceReports';
 import { ClassNotes } from './pages/TeacherPortal/ClassNotes';
+import { TeacherAILab } from './pages/TeacherPortal/TeacherAILab';
 
 // Loading screen (shown during auth check)
 const LoadingScreen = () => (
@@ -469,17 +469,17 @@ function App() {
           } />
           <Route path="/teacher/insights" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <AILab user={user} addToast={addToast} />
+              <TeacherAILab user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/teacher/ai-lab" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <AILab user={user} addToast={addToast} />
+              <TeacherAILab user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/teacher/ai" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <AILab user={user} addToast={addToast} />
+              <TeacherAILab user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 
