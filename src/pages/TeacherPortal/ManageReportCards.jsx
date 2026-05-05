@@ -33,11 +33,11 @@ const ManageReportCards = () => {
       try {
         setLoading(true);
         // Fetch students from the class
-        const studentsData = await apiDataLayer.get('/api/school/students');
+        const studentsData = await apiDataLayer.get('/school/students');
         setStudents(studentsData.data || []);
 
         // Fetch report cards
-        const cardsData = await apiDataLayer.get('/api/report-cards');
+        const cardsData = await apiDataLayer.get('/report-cards');
         const cardsByStudent = {};
         cardsData.data?.forEach(card => {
           if (!cardsByStudent[card.student_id]) {
@@ -133,7 +133,7 @@ const ManageReportCards = () => {
         teacherRemarks: formData.teacherRemarks
       };
 
-      const response = await apiDataLayer.post('/api/report-cards', payload);
+      const response = await apiDataLayer.post('/report-cards', payload);
 
       setSuccessMessage(`Report card created successfully for ${selectedStudent.name}`);
       setShowForm(false);
@@ -144,7 +144,7 @@ const ManageReportCards = () => {
       });
 
       // Refresh report cards
-      const cardsData = await apiDataLayer.get('/api/report-cards');
+      const cardsData = await apiDataLayer.get('/report-cards');
       const cardsByStudent = {};
       cardsData.data?.forEach(card => {
         if (!cardsByStudent[card.student_id]) {
