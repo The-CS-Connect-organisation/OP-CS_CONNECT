@@ -1,438 +1,423 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
-import { PhoneOff, Mic, MicOff, Video, VideoOff } from 'lucide-react';
-import { Modal } from '../ui/Modal';
+import { useEffect, useRef, useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { PhoneOff, Mic, MicOff, Video, VideoOff, Volume2, VolumeX, Maximize2 } from 'lucide-react';
 import { getSocket } from '../../utils/socketClient';
 
-const SIGNAL_KEY_PREFIX = 'sms_call_signals:';
+// ── WebRTC helpers ────────────────────────────────────────────────────────────
+const ICE_SERVERS = [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' },
+];
 
-const getCallRoomId = (teacherId, studentId) => `call:${teacherId}:${studentId}`;
+const sanitize = (id) => String(id || 'anon').replace(/[^a-zA-Z0-9_-]/g, '_').substring(0, 64);
 
-const readSignals = (key) => {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-};
+// ── Animated background particles ────────────────────────────────────────────
+const Particle = ({ delay, duration, x, y, size }) => (
+  <motion.div
+    className="absolute rounded-full pointer-events-none"
+    style={{ left: `${x}%`, top: `${y}%`, width: size, height: size, background: 'rgba(255,255,255,0.15)' }}
+    animate={{ y: [0, -80, 0], opacity: [0, 0.8, 0], scale: [0.5, 1.5, 0.5] }}
+    transition={{ duration, repeat: Infinity, delay, ease: 'easeInOut' }}
+  />
+);
 
-const writeSignals = (key, signals) => {
-  localStorage.setItem(key, JSON.stringify(signals));
-};
+const PARTICLES = Array.from({ length: 20 }, (_, i) => ({
+  delay: i * 0.4,
+  duration: 4 + (i % 5),
+  x: (i * 17) % 100,
+  y: (i * 23) % 100,
+  size: 4 + (i % 8),
+}));
 
-const nextSigId = () => `sig-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+// ── Ringing animation ─────────────────────────────────────────────────────────
+const RingingPulse = ({ color = '#3b82f6' }) => (
+  <div className="relative flex items-center justify-center">
+    {[1, 2, 3].map(i => (
+      <motion.div
+        key={i}
+        className="absolute rounded-full"
+        style={{ background: color, opacity: 0.2 }}
+        animate={{ scale: [1, 2.5 + i * 0.5], opacity: [0.3, 0] }}
+        transition={{ duration: 2, repeat: Infinity, delay: i * 0.4, ease: 'easeOut' }}
+        initial={{ width: 120, height: 120 }}
+      />
+    ))}
+  </div>
+);
 
+// ── Main CallModal ────────────────────────────────────────────────────────────
 export const CallModal = ({
   isOpen,
   onClose,
   currentUser,
   otherUser,
   preferVideo = true,
-  initiator = undefined,
+  initiator = true,
 }) => {
-  const [status, setStatus] = useState('idle');
+  const [status, setStatus] = useState('idle'); // idle | ringing | connecting | connected | media-error | ended
   const [micEnabled, setMicEnabled] = useState(true);
-  const [videoEnabled, setVideoEnabled] = useState(true);
+  const [videoEnabled, setVideoEnabled] = useState(preferVideo);
+  const [speakerEnabled, setSpeakerEnabled] = useState(true);
   const [remoteAvailable, setRemoteAvailable] = useState(false);
-  const [signallingMode, setSignallingMode] = useState('local');
+  const [callDuration, setCallDuration] = useState(0);
 
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
-
   const pcRef = useRef(null);
   const localStreamRef = useRef(null);
+  const timerRef = useRef(null);
+  const offerSentRef = useRef(false);
 
-  const handledSignalIdsRef = useRef(new Set());
-  const offerMakerIdRef = useRef(null);
-
-  const callRoomId = useMemo(() => {
-    if (!currentUser || !otherUser) return '';
-    const teacherId = currentUser.role === 'teacher' ? currentUser.id : otherUser.id;
-    const studentId = currentUser.role === 'student' ? currentUser.id : otherUser.id;
-    return getCallRoomId(teacherId, studentId);
-  }, [currentUser, otherUser]);
-
-  const signalKey = useMemo(() => {
-    if (!callRoomId) return '';
-    return `${SIGNAL_KEY_PREFIX}${callRoomId}`;
-  }, [callRoomId]);
-
-  const isInitiatorProp = useMemo(() => {
-    if (typeof initiator === 'boolean') return initiator;
-    return currentUser?.role === 'teacher';
-  }, [currentUser, initiator]);
-
+  // ── Call duration timer ──────────────────────────────────────────────────
   useEffect(() => {
-    if (!isOpen) return;
+    if (status === 'connected') {
+      timerRef.current = setInterval(() => setCallDuration(d => d + 1), 1000);
+    } else {
+      clearInterval(timerRef.current);
+      if (status !== 'connected') setCallDuration(0);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [status]);
 
-    if (!currentUser || !otherUser || !signalKey) return;
+  const formatDuration = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 
+  // ── WebRTC setup ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isOpen || !currentUser || !otherUser) return;
     let cancelled = false;
-    handledSignalIdsRef.current.clear();
-    offerMakerIdRef.current = null;
 
     const socket = getSocket();
-    const useSocket = !!socket; // Force socket use for reliable signaling
-    setSignallingMode(useSocket ? 'server' : 'local');
-
-    const joinRoom = () => {
-      if (socket && useSocket) {
-        socket.emit('call:join', { peerId: otherUser.id });
-      }
-    };
+    const myId = sanitize(currentUser.id);
+    const otherId = sanitize(otherUser.id);
 
     const sendSignal = (type, payload) => {
-      if (useSocket && socket) {
-        socket.emit('call:signal', { peerId: otherUser.id, type, payload });
-        return;
-      }
-      const msg = {
-        id: nextSigId(),
-        fromUserId: currentUser.id,
-        type,
-        createdAt: new Date().toISOString(),
-        payload,
-      };
-      const prev = readSignals(signalKey);
-      writeSignals(signalKey, [...prev, msg]);
+      if (socket) socket.emit('call:signal', { peerId: otherUser.id, type, payload, fromUserId: currentUser.id });
     };
 
     const processSignal = async (sig) => {
-      if (!sig || handledSignalIdsRef.current.has(sig.id)) return;
-      handledSignalIdsRef.current.add(sig.id);
-
-      if (String(sig.fromUserId) === String(currentUser.id)) return;
+      if (!sig || String(sig.fromUserId) === String(currentUser.id)) return;
+      const pc = pcRef.current;
+      if (!pc) return;
 
       if (sig.type === 'offer') {
-        try {
-          const pc = pcRef.current;
-          if (!pc) return;
-          await pc.setRemoteDescription(sig.payload);
-          const answer = await pc.createAnswer();
-          await pc.setLocalDescription(answer);
-          sendSignal('answer', answer);
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.error('offer->answer failed', e);
-        }
-      }
-
-      if (sig.type === 'answer' && offerMakerIdRef.current === currentUser.id) {
-        try {
-          const pc = pcRef.current;
-          if (!pc) return;
-          await pc.setRemoteDescription(sig.payload);
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.error('answer apply failed', e);
-        }
-      }
-
-      if (sig.type === 'candidate') {
-        try {
-          const pc = pcRef.current;
-          if (!pc) return;
-          await pc.addIceCandidate(sig.payload);
-        } catch (e) {
-          // eslint-disable-next-line no-console
-          console.debug('candidate add failed (may be early)', e);
-        }
+        await pc.setRemoteDescription(new RTCSessionDescription(sig.payload));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        sendSignal('answer', answer);
+        setStatus('connecting');
+      } else if (sig.type === 'answer') {
+        await pc.setRemoteDescription(new RTCSessionDescription(sig.payload));
+      } else if (sig.type === 'candidate' && sig.payload) {
+        try { await pc.addIceCandidate(new RTCIceCandidate(sig.payload)); } catch {}
+      } else if (sig.type === 'call:end') {
+        setStatus('ended');
+        setTimeout(onClose, 1500);
       }
     };
 
-    let cleanupSocketFn = () => {};
-
     const bootstrap = async () => {
       try {
-        setStatus('requesting-media');
-        const media = {
-          audio: true,
-          video: preferVideo,
-        };
+        setStatus('ringing');
 
-        const stream = await navigator.mediaDevices.getUserMedia(media);
-        if (cancelled) {
-          stream.getTracks().forEach(t => t.stop());
-          return;
-        }
-
+        // Get media
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: preferVideo });
+        if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
         localStreamRef.current = stream;
-        setMicEnabled(true);
-        setVideoEnabled(preferVideo);
+        if (localVideoRef.current) localVideoRef.current.srcObject = stream;
 
-        if (localVideoRef.current) {
-          localVideoRef.current.srcObject = stream;
-        }
-
-        const pc = new RTCPeerConnection({
-          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }],
-        });
+        // Create peer connection
+        const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
         pcRef.current = pc;
+        stream.getTracks().forEach(t => pc.addTrack(t, stream));
 
-        stream.getTracks().forEach(track => {
-          pc.addTrack(track, stream);
-        });
-
-        pc.ontrack = (event) => {
-          const [remoteStream] = event.streams;
+        pc.ontrack = (e) => {
+          const [remoteStream] = e.streams;
           if (remoteVideoRef.current && remoteStream) {
             remoteVideoRef.current.srcObject = remoteStream;
             setRemoteAvailable(true);
+            setStatus('connected');
           }
         };
 
-        pc.onicecandidate = (event) => {
-          if (!event.candidate) return;
-          sendSignal('candidate', event.candidate);
+        pc.onicecandidate = (e) => {
+          if (e.candidate) sendSignal('candidate', e.candidate);
         };
 
         pc.onconnectionstatechange = () => {
           if (cancelled) return;
-          setStatus(pc.connectionState);
+          if (pc.connectionState === 'connected') setStatus('connected');
+          if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
+            setStatus('ended');
+            setTimeout(onClose, 2000);
+          }
         };
 
-        if (useSocket && socket) {
-          if (socket.connected) joinRoom();
-          else socket.once('connect', joinRoom);
+        // Notify other side we're ringing
+        if (socket) {
+          socket.emit('call:join', { peerId: otherUser.id });
+          sendSignal('call:ring', {
+            type: 'call:ring',
+            callerName: currentUser.name,
+            callerRole: currentUser.role,
+            preferVideo,
+            fromUserId: currentUser.id,
+          });
+        }
 
-          const startOffer = async () => {
-            if (offerMakerIdRef.current === currentUser.id) return; // already started
+        // If initiator, create offer after a short delay (let other side set up)
+        if (initiator && !offerSentRef.current) {
+          setTimeout(async () => {
+            if (cancelled || !pcRef.current) return;
             try {
-              setStatus('creating-offer');
-              offerMakerIdRef.current = currentUser.id;
+              offerSentRef.current = true;
               const offer = await pc.createOffer();
               await pc.setLocalDescription(offer);
               sendSignal('offer', offer);
-              setStatus('listening');
-            } catch (e) {
-              console.error('Failed to create offer', e);
-            }
-          };
-
-          const onSocketSignal = (data) => {
-            if (!data || String(data.fromUserId) !== String(otherUser.id)) return;
-            
-            if (data.type === 'peer-presence' && isInitiatorProp) {
-              startOffer();
-              return;
-            }
-
-            const sig = {
-              id: nextSigId(),
-              fromUserId: data.fromUserId,
-              type: data.type,
-              payload: data.payload,
-            };
-            processSignal(sig);
-          };
-
-          const onPeerJoined = (data) => {
-            if (!data || String(data.peerId) !== String(otherUser.id)) return;
-            if (isInitiatorProp) {
-              startOffer();
-            } else {
-              // If we are already here, tell the joiner so they can start the offer if they are the initiator
-              socket.emit('call:signal', { peerId: otherUser.id, type: 'peer-presence', payload: {} });
-            }
-          };
-
-          socket.on('call:signal', onSocketSignal);
-          socket.on('call:peer-joined', onPeerJoined);
-
-          cleanupSocketFn = () => {
-            socket.off('call:signal', onSocketSignal);
-            socket.off('call:peer-joined', onPeerJoined);
-          };
-
-          if (isInitiatorProp) {
-            setStatus('waiting-peer');
-            offerMakerIdRef.current = null;
-          } else {
-            offerMakerIdRef.current = null;
-            setStatus('waiting-offer');
-          }
-          return;
+              setStatus('connecting');
+            } catch (e) { console.error('Offer failed', e); }
+          }, 1500);
         }
 
-        const existingSignals = readSignals(signalKey);
-        const existingOffer = existingSignals
-          .slice()
-          .reverse()
-          .find(s => s.type === 'offer' && s.fromUserId);
-
-        if (existingOffer) {
-          offerMakerIdRef.current = existingOffer.fromUserId;
-          setStatus(existingOffer.fromUserId === currentUser.id ? 'listening' : 'waiting-offer');
-        } else if (isInitiatorProp) {
-          setStatus('creating-offer');
-          offerMakerIdRef.current = currentUser.id;
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          sendSignal('offer', offer);
-        } else {
-          offerMakerIdRef.current = null;
-          setStatus('waiting-offer');
+        // Listen for signals
+        if (socket) {
+          const onSignal = (data) => {
+            if (String(data?.fromUserId) === String(otherUser.id)) processSignal(data);
+          };
+          socket.on('call:signal', onSignal);
+          return () => socket.off('call:signal', onSignal);
         }
-
-        setStatus('listening');
       } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error(e);
-        setStatus('media-error');
+        console.error('Call setup failed:', e);
+        if (!cancelled) setStatus('media-error');
       }
     };
 
-    const poll = async () => {
-      if (useSocket) return;
-      if (!signalKey || !isOpen || !currentUser || !otherUser) return;
-      const signals = readSignals(signalKey);
-      for (const sig of signals) {
-        await processSignal(sig);
-      }
-    };
-
-    bootstrap();
-    if (!useSocket) void poll();
-    const interval = useSocket ? null : setInterval(poll, 650);
+    const cleanup = bootstrap();
 
     return () => {
       cancelled = true;
-      cleanupSocketFn();
-      if (interval) clearInterval(interval);
-
-      try {
-        pcRef.current?.close();
-      } catch {}
+      cleanup?.then?.(fn => fn?.());
+      pcRef.current?.close();
       pcRef.current = null;
-
-      try {
-        localStreamRef.current?.getTracks().forEach(t => t.stop());
-      } catch {}
+      localStreamRef.current?.getTracks().forEach(t => t.stop());
       localStreamRef.current = null;
+      offerSentRef.current = false;
       setRemoteAvailable(false);
       setStatus('idle');
     };
-  }, [isOpen, signalKey, currentUser, otherUser, preferVideo, isInitiatorProp]);
+  }, [isOpen, currentUser?.id, otherUser?.id, preferVideo, initiator]);
 
   const toggleMic = () => {
-    const stream = localStreamRef.current;
-    if (!stream) return;
-    stream.getAudioTracks().forEach(track => {
-      track.enabled = !micEnabled;
-    });
+    localStreamRef.current?.getAudioTracks().forEach(t => { t.enabled = !micEnabled; });
     setMicEnabled(v => !v);
   };
-
   const toggleVideo = () => {
-    const stream = localStreamRef.current;
-    if (!stream) return;
-    stream.getVideoTracks().forEach(track => {
-      track.enabled = !videoEnabled;
-    });
+    localStreamRef.current?.getVideoTracks().forEach(t => { t.enabled = !videoEnabled; });
     setVideoEnabled(v => !v);
+  };
+  const endCall = () => {
+    const socket = getSocket();
+    if (socket) socket.emit('call:signal', { peerId: otherUser?.id, type: 'call:end', fromUserId: currentUser?.id });
+    onClose();
   };
 
   if (!currentUser || !otherUser) return null;
 
-  const tip =
-    signallingMode === 'server'
-      ? 'Signalling runs through your logged-in session so two different browsers/devices on the same accounts can connect (both sides need camera/mic permission).'
-      : 'Offline mode: signalling uses this browser only (works well across two tabs here). Log in against the API for multi-device calls.';
+  const roleColor = otherUser.role === 'teacher' ? '#a855f7' : otherUser.role === 'student' ? '#3b82f6' : '#10b981';
+
+  const statusLabel = {
+    ringing: 'Ringing...',
+    connecting: 'Connecting...',
+    connected: formatDuration(callDuration),
+    'media-error': 'Camera/mic access denied',
+    ended: 'Call ended',
+    idle: '',
+  }[status] || '';
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="">
-      <div className="flex flex-col h-full bg-white relative rounded-3xl overflow-hidden shadow-2xl -mt-6 -mx-6 -mb-6" style={{ minHeight: '550px' }}>
-        
-        {/* Header Overlay */}
-        <div className="absolute top-0 w-full z-10 px-6 py-4 flex items-center justify-between" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.5), transparent)' }}>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm bg-blue-500 border-2 border-white shadow-md">
-              {otherUser.name.charAt(0)}
-            </div>
-            <div className="text-white drop-shadow-md">
-              <h3 className="font-semibold text-base leading-tight">{otherUser.name}</h3>
-              <p className="text-xs opacity-90 capitalize font-medium">{status}</p>
-            </div>
-          </div>
-          <div className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-xs font-medium border border-white/30">
-            {callRoomId.split(':')[2]}
-          </div>
-        </div>
-
-        {/* Video Grid */}
-        <div className="flex-1 bg-gray-100 relative">
-          {/* Remote Video (Full Screen) */}
-          <div className="absolute inset-0 bg-[#f8f9fa]">
-            <video 
-              ref={remoteVideoRef} 
-              className="w-full h-full object-cover" 
-              autoPlay 
-              playsInline 
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[200] flex items-center justify-center overflow-hidden"
+        >
+          {/* ── Full-screen background ── */}
+          <div className="absolute inset-0">
+            {/* Remote video fills entire screen */}
+            <video
+              ref={remoteVideoRef}
+              className="w-full h-full object-cover"
+              autoPlay playsInline
+              style={{ filter: remoteAvailable ? 'none' : 'blur(0px)' }}
             />
+
+            {/* Gradient overlay when no remote video */}
             {!remoteAvailable && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                <div className="w-24 h-24 rounded-full bg-black/5 flex items-center justify-center animate-pulse">
-                  <div className="w-16 h-16 rounded-full bg-black/10 flex items-center justify-center">
-                    <VideoOff size={28} className="text-gray-400" />
+              <motion.div
+                className="absolute inset-0"
+                style={{
+                  background: `linear-gradient(135deg, 
+                    ${roleColor}dd 0%, 
+                    #1a1a2edd 40%, 
+                    #0f0f1edd 100%)`,
+                }}
+                animate={{ backgroundPosition: ['0% 0%', '100% 100%', '0% 0%'] }}
+                transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+              />
+            )}
+
+            {/* Dark overlay on top of remote video */}
+            {remoteAvailable && (
+              <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 30%, transparent 70%, rgba(0,0,0,0.6) 100%)' }} />
+            )}
+
+            {/* Particles */}
+            {!remoteAvailable && PARTICLES.map((p, i) => <Particle key={i} {...p} />)}
+
+            {/* Animated mesh gradient */}
+            {!remoteAvailable && (
+              <>
+                <motion.div className="absolute w-[800px] h-[800px] rounded-full blur-3xl opacity-30 pointer-events-none"
+                  style={{ background: roleColor, top: '-20%', left: '-20%' }}
+                  animate={{ scale: [1, 1.3, 1], x: [0, 60, 0], y: [0, 40, 0] }}
+                  transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }} />
+                <motion.div className="absolute w-[600px] h-[600px] rounded-full blur-3xl opacity-20 pointer-events-none"
+                  style={{ background: '#3b82f6', bottom: '-15%', right: '-15%' }}
+                  animate={{ scale: [1, 1.4, 1], x: [0, -40, 0] }}
+                  transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 2 }} />
+              </>
+            )}
+          </div>
+
+          {/* ── Content ── */}
+          <div className="relative z-10 w-full h-full flex flex-col">
+
+            {/* Top bar */}
+            <div className="flex items-center justify-between px-8 pt-8">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-red-500 animate-pulse" />
+                <span className="text-white/80 text-sm font-semibold uppercase tracking-widest">
+                  {preferVideo ? 'Video Call' : 'Voice Call'}
+                </span>
+              </div>
+              <div className="px-4 py-1.5 rounded-full text-white/70 text-xs font-bold uppercase tracking-widest"
+                style={{ background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                Cornerstone SchoolSync
+              </div>
+            </div>
+
+            {/* Center — caller info when no remote video */}
+            {!remoteAvailable && (
+              <div className="flex-1 flex flex-col items-center justify-center gap-6">
+                {/* Ringing pulses */}
+                <div className="relative flex items-center justify-center">
+                  <RingingPulse color={roleColor} />
+                  <div className="relative z-10 w-32 h-32 rounded-full flex items-center justify-center text-white font-black text-5xl shadow-2xl"
+                    style={{ background: `linear-gradient(135deg, ${roleColor}, ${roleColor}88)`, boxShadow: `0 0 60px ${roleColor}66` }}>
+                    {otherUser.name?.charAt(0) || '?'}
                   </div>
                 </div>
-                <p className="text-sm font-medium text-gray-500">Waiting for {otherUser.name.split(' ')[0]} to join...</p>
+
+                <div className="text-center">
+                  <h2 className="text-4xl font-black text-white tracking-tight drop-shadow-lg">{otherUser.name}</h2>
+                  <p className="text-white/60 text-lg font-medium mt-1 capitalize">{otherUser.role}</p>
+                  <motion.p
+                    className="text-white/80 text-base font-semibold mt-3"
+                    animate={{ opacity: [0.5, 1, 0.5] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    {statusLabel}
+                  </motion.p>
+                </div>
+
+                {status === 'media-error' && (
+                  <div className="px-6 py-3 rounded-2xl text-white text-sm font-medium"
+                    style={{ background: 'rgba(239,68,68,0.3)', border: '1px solid rgba(239,68,68,0.5)' }}>
+                    Please allow camera and microphone access
+                  </div>
+                )}
               </div>
             )}
+
+            {/* Remote video active — show name overlay */}
+            {remoteAvailable && (
+              <div className="flex-1 flex flex-col justify-end pb-4 px-8">
+                <div className="flex items-end justify-between">
+                  <div>
+                    <h3 className="text-white text-2xl font-black drop-shadow-lg">{otherUser.name}</h3>
+                    <p className="text-white/70 text-sm font-semibold">{statusLabel}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Local video PiP */}
+            {preferVideo && (
+              <motion.div
+                drag
+                dragMomentum={false}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="absolute top-20 right-6 w-36 h-52 rounded-3xl overflow-hidden shadow-2xl cursor-grab active:cursor-grabbing"
+                style={{ border: '3px solid rgba(255,255,255,0.3)', zIndex: 20 }}
+              >
+                <video ref={localVideoRef} className="w-full h-full object-cover scale-x-[-1]" autoPlay playsInline muted />
+                {!videoEnabled && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-gray-900/90">
+                    <VideoOff size={28} className="text-white/60" />
+                  </div>
+                )}
+                <div className="absolute bottom-2 left-0 right-0 text-center">
+                  <span className="text-white text-[10px] font-bold bg-black/40 px-2 py-0.5 rounded-full">You</span>
+                </div>
+              </motion.div>
+            )}
+
+            {/* ── Controls ── */}
+            <div className="flex items-center justify-center gap-4 pb-12 px-8">
+              <div className="flex items-center gap-4 px-8 py-4 rounded-3xl"
+                style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.15)' }}>
+
+                {/* Mic */}
+                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleMic}
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all"
+                  style={{ background: micEnabled ? 'rgba(255,255,255,0.15)' : 'rgba(239,68,68,0.8)' }}>
+                  {micEnabled ? <Mic size={22} className="text-white" /> : <MicOff size={22} className="text-white" />}
+                </motion.button>
+
+                {/* Video toggle */}
+                {preferVideo && (
+                  <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={toggleVideo}
+                    className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all"
+                    style={{ background: videoEnabled ? 'rgba(255,255,255,0.15)' : 'rgba(239,68,68,0.8)' }}>
+                    {videoEnabled ? <Video size={22} className="text-white" /> : <VideoOff size={22} className="text-white" />}
+                  </motion.button>
+                )}
+
+                {/* Speaker */}
+                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => setSpeakerEnabled(v => !v)}
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center transition-all"
+                  style={{ background: 'rgba(255,255,255,0.15)' }}>
+                  {speakerEnabled ? <Volume2 size={22} className="text-white" /> : <VolumeX size={22} className="text-white" />}
+                </motion.button>
+
+                {/* End call */}
+                <motion.button
+                  whileHover={{ scale: 1.1, boxShadow: '0 0 30px rgba(239,68,68,0.6)' }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={endCall}
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center shadow-xl"
+                  style={{ background: 'linear-gradient(135deg, #ef4444, #dc2626)', boxShadow: '0 8px 24px rgba(239,68,68,0.4)' }}
+                >
+                  <PhoneOff size={26} className="text-white" />
+                </motion.button>
+              </div>
+            </div>
           </div>
-
-          {/* Local Video (Floating Picture-in-Picture) */}
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.8, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="absolute bottom-6 right-6 w-32 h-48 bg-black rounded-2xl overflow-hidden shadow-xl border-4 border-white z-20"
-          >
-            <video 
-              ref={localVideoRef} 
-              className="w-full h-full object-cover transform scale-x-[-1]" 
-              autoPlay 
-              playsInline 
-              muted 
-            />
-            {!videoEnabled && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-                <VideoOff size={24} className="text-white" />
-              </div>
-            )}
-          </motion.div>
-        </div>
-
-        {/* Call Controls */}
-        <div className="bg-white px-8 py-5 border-t border-gray-100 flex items-center justify-center gap-6">
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={toggleMic}
-            className={`p-4 rounded-full transition-all ${micEnabled ? 'bg-gray-100 hover:bg-gray-200 text-gray-800' : 'bg-red-100 text-red-500'}`}
-          >
-            {micEnabled ? <Mic size={24} /> : <MicOff size={24} />}
-          </motion.button>
-
-          {preferVideo && (
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={toggleVideo}
-              className={`p-4 rounded-full transition-all ${videoEnabled ? 'bg-gray-100 hover:bg-gray-200 text-gray-800' : 'bg-red-100 text-red-500'}`}
-            >
-              {videoEnabled ? <Video size={24} /> : <VideoOff size={24} />}
-            </motion.button>
-          )}
-
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={onClose}
-            className="p-4 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-lg shadow-red-500/30 transition-all"
-          >
-            <PhoneOff size={24} />
-          </motion.button>
-        </div>
-      </div>
-    </Modal>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
-

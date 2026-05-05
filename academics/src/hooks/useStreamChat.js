@@ -29,19 +29,25 @@ export const useStreamChat = (user) => {
     const userId = sanitizeId(user.id);
 
     try {
-      // Generate JWT signed with the app secret (browser Web Crypto)
       const token = await createUserToken(userId);
-
-      // Re-fetch client in case the API key was dynamically updated by the backend
       const currentClient = getStreamClient();
       setActiveClient(currentClient);
 
+      // If already connected as this user, skip connectUser
+      if (currentClient.userID === userId) {
+        connectedRef.current = true;
+        setIsConnected(true);
+        setError(null);
+        return;
+      }
+
+      // Disconnect any previous user first
+      if (currentClient.userID && currentClient.userID !== userId) {
+        try { await currentClient.disconnectUser(); } catch {}
+      }
+
       await currentClient.connectUser(
-        {
-          id: userId,
-          name: user.name,
-          role: user.role || 'user',
-        },
+        { id: userId, name: user.name, role: user.role || 'user' },
         token
       );
 
@@ -50,6 +56,13 @@ export const useStreamChat = (user) => {
       setError(null);
       console.log('[GetStream] Connected as', userId);
     } catch (err) {
+      // "Already connected" is not a real error — treat as success
+      if (err?.message?.includes('already') || err?.code === 4) {
+        connectedRef.current = true;
+        setIsConnected(true);
+        setError(null);
+        return;
+      }
       console.error('[GetStream] Connect failed:', err);
       setError(err?.message || 'Failed to connect to chat');
       setIsConnected(false);

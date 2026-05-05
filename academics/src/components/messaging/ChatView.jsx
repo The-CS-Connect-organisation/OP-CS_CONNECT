@@ -160,7 +160,7 @@ export const ChatView = ({
   const myId = sanitizeId(currentUser.id);
   const roleColor = otherUser.role === 'teacher' ? '#a855f7' : otherUser.role === 'student' ? '#3b82f6' : otherUser.role === 'admin' ? '#f59e0b' : '#10b981';
 
-  // Can send if channel is ready — don't block on isConnected since channel.watch() already confirmed connection
+  // Can send if channel is ready — don't block on isConnected
   const canSend = !!channel && !sending;
 
   return (
