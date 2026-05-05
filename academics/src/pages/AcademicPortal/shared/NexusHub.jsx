@@ -1,5 +1,4 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { StreamChat } from 'stream-chat';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users,
@@ -84,22 +83,14 @@ export const NexusHub = ({ user, addToast }) => {
   useEffect(() => {
     const initChat = async () => {
       try {
-        // Use GET request with query param (endpoint is public)
-        const tokenRes = await fetch(
-          `https://op-cs-connect-backend-vym7.onrender.com/api/school/stream-token?userId=${encodeURIComponent(user?.id)}`,
-          { method: 'GET' }
-        ).then(r => r.json());
-        
-        const chatClient = StreamChat.getInstance(tokenRes.apiKey);
-        
-        // Use the same sanitization as backend
+        const { getStreamClient, createUserToken } = await import('../../../lib/streamClient');
         const sanitizedUserId = sanitizeUserId(user?.id);
-        
-        console.log('Connecting to Stream Chat with user ID:', sanitizedUserId);
-        
+        const token = await createUserToken(sanitizedUserId);
+        const chatClient = getStreamClient();
+
         await chatClient.connectUser(
           { id: sanitizedUserId, name: user?.name || 'Guest' },
-          tokenRes.token
+          token
         );
 
         setClient(chatClient);
@@ -112,9 +103,9 @@ export const NexusHub = ({ user, addToast }) => {
       initChat();
     }
     return () => {
-      if (client) client.disconnectUser();
+      if (client) client.disconnectUser().catch(() => {});
     };
-  }, [user]);
+  }, [user?.id]);
 
   // Handle Channel Switching
   useEffect(() => {

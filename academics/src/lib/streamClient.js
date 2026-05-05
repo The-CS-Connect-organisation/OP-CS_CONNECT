@@ -1,7 +1,7 @@
 import { StreamChat } from 'stream-chat';
 import { request } from '../utils/apiClient';
 
-const FALLBACK_API_KEY = 'h8334x6zj8ze';
+const FALLBACK_API_KEY = 'n9v8bfwy45pn';
 
 let clientInstance = null;
 let resolvedApiKey = FALLBACK_API_KEY;

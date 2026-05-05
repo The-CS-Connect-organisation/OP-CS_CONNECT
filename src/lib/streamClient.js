@@ -3,7 +3,7 @@ import { request } from '../utils/apiClient';
 
 // API key is fetched from the backend token endpoint to stay in sync.
 // Fallback matches the backend default so dev works without a token call.
-const FALLBACK_API_KEY = 'h8334x6zj8ze';
+const FALLBACK_API_KEY = 'n9v8bfwy45pn';
 
 let clientInstance = null;
 let resolvedApiKey = FALLBACK_API_KEY;

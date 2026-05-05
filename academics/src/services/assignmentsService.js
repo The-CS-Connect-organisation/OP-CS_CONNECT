@@ -77,8 +77,14 @@ export const assignmentsService = {
 
   async grade({ assignmentId, studentId, grader, marks, feedback }) {
     if (getDataMode() === DATA_MODES.REMOTE_API) {
-      const payload = await apiRequest(`/school/assignments/${assignmentId}/submissions/${studentId}/grade`, {
-        method: 'POST',
+      // Backend route: PATCH /school/submissions/:submissionId/grade
+      // We need to find the submission ID first
+      const subsPayload = await apiRequest(`/school/assignments/${assignmentId}/submissions`, { method: 'GET' });
+      const submissions = subsPayload?.submissions ?? subsPayload ?? [];
+      const submission = submissions.find(s => s.student_id === studentId || s.studentId === studentId);
+      if (!submission?.id) throw new Error('Submission not found');
+      const payload = await apiRequest(`/school/submissions/${submission.id}/grade`, {
+        method: 'PATCH',
         body: JSON.stringify({ marks, feedback }),
       });
       localAuditRepo.append({ actorId: grader?.id, actorEmail: grader?.email, action: 'assignments.grade', targetId: assignmentId, mode: 'REMOTE_API' });

@@ -46,29 +46,28 @@ export const CommunicationHub = ({ user }) => {
   const { client, isConnected } = useStreamChat(user);
 
   const token = typeof window !== 'undefined' ? getFromStorage(KEYS.AUTH_TOKEN) : null;
-  const useApi = !!token && isMongoId(user?.id);
+  // Use API if we have a token — Firebase IDs are not UUIDs so we don't check format
+  const useApi = !!token && !!user?.id;
 
   useEffect(() => {
-    if (!useApi) { setApiContacts(null); return; }
+    if (!user?.id) { setApiContacts(null); return; }
     let cancelled = false;
     (async () => {
       try {
         setContactsError(null);
-        const wantStudents = user.role === 'admin' || user.role === 'teacher';
-        const [tRes, sRes] = await Promise.all([
-          request('/school/teachers?limit=200'),
-          wantStudents ? request('/school/students?limit=200') : Promise.resolve({ items: [] }),
-        ]);
+        // Fetch all users and filter out self
+        const res = await request('/school/users?limit=500');
         if (cancelled) return;
-        const teachers = (tRes.items || []).map((p) => mapProfileToContact(p, 'teacher')).filter(Boolean);
-        const students = (sRes.items || []).map((p) => mapProfileToContact(p, 'student')).filter(Boolean);
-        setApiContacts([...teachers, ...students]);
+        const users = (res.users || res.items || res || [])
+          .filter(u => u.id !== user.id && ['teacher', 'student', 'parent', 'admin'].includes(u.role))
+          .map(u => ({ id: u.id, name: u.name, role: u.role, email: u.email }));
+        setApiContacts(users);
       } catch (e) {
         if (!cancelled) { setContactsError(e?.message || 'Could not load contacts'); setApiContacts([]); }
       }
     })();
     return () => { cancelled = true; };
-  }, [useApi, user?.role]);
+  }, [user?.id, user?.role]);
 
   // Track recent chats
   const recordRecentChat = useCallback((contact) => {
@@ -87,20 +86,13 @@ export const CommunicationHub = ({ user }) => {
 
   const contacts = useMemo(() => {
     const selfId = user.id;
-    let list;
-    if (useApi && apiContacts) {
-      list = apiContacts.filter((c) => c.id !== selfId);
-    } else {
-      list = localUsers.filter((u) => u.id !== selfId && (u.role === 'teacher' || u.role === 'student' || u.role === 'parent'));
-    }
+    let list = (apiContacts || []).filter((c) => c.id !== selfId);
 
-    // Search filter
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      list = list.filter(c => c.name.toLowerCase().includes(q) || c.role.includes(q));
+      list = list.filter(c => c.name?.toLowerCase().includes(q) || c.role?.includes(q));
     }
 
-    // Sort: recent chats first
     const recentIds = new Set(recentChats.map(r => r.id));
     const recent = [];
     const others = [];
@@ -108,7 +100,6 @@ export const CommunicationHub = ({ user }) => {
       if (recentIds.has(c.id)) recent.push(c);
       else others.push(c);
     });
-    // Sort recent by lastChatAt
     recent.sort((a, b) => {
       const aTime = recentChats.find(r => r.id === a.id)?.lastChatAt || 0;
       const bTime = recentChats.find(r => r.id === b.id)?.lastChatAt || 0;
@@ -116,7 +107,7 @@ export const CommunicationHub = ({ user }) => {
     });
 
     return [...recent, ...others];
-  }, [useApi, apiContacts, localUsers, user.id, searchQuery, recentChats]);
+  }, [apiContacts, user.id, searchQuery, recentChats]);
 
   const recentContactIds = new Set(recentChats.map(r => r.id));
 

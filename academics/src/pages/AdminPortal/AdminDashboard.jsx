@@ -1,38 +1,63 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Users,
-  BookOpen,
-  GraduationCap,
-  DollarSign,
-  TrendingUp,
-  Calendar,
-  Bell,
-  Activity,
-  School,
-  FileText,
-  Settings,
-  UserPlus,
+  Users, BookOpen, GraduationCap, DollarSign, TrendingUp,
+  Calendar, Bell, Activity, School, FileText, Settings, UserPlus, Loader2,
 } from 'lucide-react';
+import { request } from '../../utils/apiClient';
 
-/**
- * @component AdminDashboard
- * @description Main admin dashboard with school-wide analytics and management tools
- */
 const AdminDashboard = ({ user, addToast }) => {
-  // Empty states - data would come from backend API
-  const [stats] = useState({
-    totalStudents: 0,
-    totalTeachers: 0,
-    totalParents: 0,
-    totalClasses: 0,
-    attendanceToday: 0,
-    feesCollected: 0,
-    upcomingExams: 0,
-    pendingNotices: 0,
+  const [stats, setStats] = useState({
+    totalStudents: 0, totalTeachers: 0, totalParents: 0, totalClasses: 0,
+    attendanceToday: 0, feesCollected: 0, upcomingExams: 0, pendingNotices: 0,
   });
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [recentActivities] = useState([]);
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        setLoading(true);
+        const [usersRes, feesRes, announcementsRes] = await Promise.allSettled([
+          request('/school/users?limit=500'),
+          request('/fees?limit=500'),
+          request('/school/announcements?limit=10'),
+        ]);
+
+        const users = usersRes.status === 'fulfilled'
+          ? (usersRes.value.users || usersRes.value.items || []) : [];
+        const fees = feesRes.status === 'fulfilled'
+          ? (feesRes.value.fees || feesRes.value.items || []) : [];
+        const announcements = announcementsRes.status === 'fulfilled'
+          ? (announcementsRes.value.announcements || announcementsRes.value.items || []) : [];
+
+        setStats({
+          totalStudents: users.filter(u => u.role === 'student').length,
+          totalTeachers: users.filter(u => u.role === 'teacher').length,
+          totalParents: users.filter(u => u.role === 'parent').length,
+          totalClasses: 0,
+          attendanceToday: 0,
+          feesCollected: fees.filter(f => f.status === 'paid').reduce((s, f) => s + (f.amount || 0), 0),
+          upcomingExams: 0,
+          pendingNotices: announcements.length,
+        });
+
+        setRecentActivities(
+          announcements.slice(0, 5).map(a => ({
+            id: a.id,
+            type: 'announcement',
+            message: a.title || a.message || 'New announcement',
+            time: a.created_at,
+          }))
+        );
+      } catch (err) {
+        console.error('Dashboard fetch error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStats();
+  }, []);
 
   const quickActions = [
     { icon: UserPlus, label: 'Add User', color: 'bg-blue-500', action: () => addToast?.('Opening user creation form...', 'info') },
