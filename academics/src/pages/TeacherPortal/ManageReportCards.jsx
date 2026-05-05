@@ -203,7 +203,7 @@ const ManageReportCards = () => {
               </tr>
             </thead>
             <tbody>
-              {students.map(student => (
+              {Array.isArray(students) && students.map(student => (
                 <tr key={student.user_id}>
                   <td>{student.name}</td>
                   <td>{student.admission_number}</td>
