@@ -12,6 +12,7 @@ import { Badge } from '../../../components/ui/Badge';
 export const NCERTBooks = ({ user }) => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedClass, setSelectedClass] = useState('10');
   const [selectedSubject, setSelectedSubject] = useState('all');
@@ -71,10 +72,11 @@ export const NCERTBooks = ({ user }) => {
 
   useEffect(() => {
     loadBooks();
-  }, [selectedClass, selectedSubject]);
+  }, [selectedClass, selectedSubject, searchTerm]);
 
   const loadBooks = () => {
     setLoading(true);
+    setError(null);
     try {
       const classBooks = ncertBooksDatabase[selectedClass] || {};
       let booksList = Object.values(classBooks);
@@ -90,8 +92,9 @@ export const NCERTBooks = ({ user }) => {
       }
 
       setBooks(booksList);
-    } catch (error) {
-      console.error('Error loading books:', error);
+    } catch (err) {
+      console.error('Error loading books:', err);
+      setError('Failed to load books. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -112,6 +115,16 @@ export const NCERTBooks = ({ user }) => {
         <div className="text-center">
           <Loader className="animate-spin mx-auto mb-4 text-gray-300" size={48} />
           <p className="text-sm text-gray-500 font-mono">Loading NCERT books...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <p className="text-sm text-red-600 font-mono">{error}</p>
         </div>
       </div>
     );
