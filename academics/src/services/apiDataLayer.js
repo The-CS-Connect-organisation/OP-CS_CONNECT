@@ -692,7 +692,20 @@ export const apiUtils = {
   removeAuthToken: () => localStorage.removeItem('sms_auth_token'),
 };
 
+// ============================================================================
+// GENERIC HTTP METHODS (for direct API calls)
+// ============================================================================
+
+const httpMethods = {
+  get: (endpoint, options = {}) => makeRequest('GET', endpoint, null, options),
+  post: (endpoint, data, options = {}) => makeRequest('POST', endpoint, data, options),
+  put: (endpoint, data, options = {}) => makeRequest('PUT', endpoint, data, options),
+  patch: (endpoint, data, options = {}) => makeRequest('PATCH', endpoint, data, options),
+  delete: (endpoint, options = {}) => makeRequest('DELETE', endpoint, null, options),
+};
+
 export default {
+  ...httpMethods,
   teacherApi,
   studentApi,
   authApi,
