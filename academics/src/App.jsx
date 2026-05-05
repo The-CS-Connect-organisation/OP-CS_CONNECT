@@ -55,6 +55,7 @@ import { DriverTracking } from './pages/AcademicPortal/Student/DriverTracking';
 import { BooksIssued as StudentBooksIssued } from './pages/AcademicPortal/Student/BooksIssued';
 import { BooksIssued as ParentBooksIssued } from './pages/AcademicPortal/Parent/BooksIssued';
 import { NCERTBooks } from './pages/AcademicPortal/Student/NCERTBooks';
+import { ReportCard } from './pages/AcademicPortal/Student/ReportCard';
 
 // Academic Portal - Shared Features
 import { SettingsPanel } from './pages/AcademicPortal/shared/Settings';
@@ -81,6 +82,7 @@ import { QuickMessenger } from './pages/TeacherPortal/QuickMessenger';
 import { PerformanceReports } from './pages/TeacherPortal/PerformanceReports';
 import { ClassNotes } from './pages/TeacherPortal/ClassNotes';
 import { TeacherAILab } from './pages/TeacherPortal/TeacherAILab';
+import { ManageReportCards } from './pages/TeacherPortal/ManageReportCards';
 
 // Librarian Portal Pages
 import { LibrarianDashboard } from './pages/LibrarianPortal/LibrarianDashboard';
@@ -333,6 +335,11 @@ function App() {
               <NCERTBooks user={user} />
             </ProtectedRoute>
           } />
+          <Route path="/student/report-card" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <ReportCard user={user} />
+            </ProtectedRoute>
+          } />
           <Route path="/driver-tracking" element={
             <ProtectedRoute {...layoutProps} user={user}>
               <DriverTracking />
@@ -393,6 +400,11 @@ function App() {
           <Route path="/parent/bus-tracking" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
               <BusTracking user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/parent/report-card" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
+              <ReportCard user={user} />
             </ProtectedRoute>
           } />
 
@@ -502,6 +514,11 @@ function App() {
           <Route path="/teacher/ai" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
               <TeacherAILab user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/manage-report-cards" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <ManageReportCards user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 

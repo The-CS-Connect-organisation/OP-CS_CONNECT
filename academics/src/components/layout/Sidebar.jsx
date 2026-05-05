@@ -63,6 +63,7 @@ const ROLE_NAV = {
         { title: 'Attendance', icon: UserCheck, route: '/student/attendance' },
         { title: 'Notes', icon: BookOpen, route: '/student/notes' },
         { title: 'Study Planner', icon: Calendar, route: '/student/planner' },
+        { title: 'Report Card', icon: FileText, route: '/student/report-card' },
       ]
     },
     {
@@ -100,6 +101,7 @@ const ROLE_NAV = {
         { title: 'Grading', icon: PencilLine, route: '/teacher/submissions' },
         { title: 'Class Notes', icon: BookOpen, route: '/teacher/class-notes' },
         { title: 'Exams', icon: ClipboardList, route: '/teacher/exams' },
+        { title: 'Report Cards', icon: FileText, route: '/teacher/manage-report-cards' },
       ]
     },
     {
@@ -173,6 +175,7 @@ const ROLE_NAV = {
         { title: 'Grades', icon: CheckCircle, route: '/parent/grades' },
         { title: 'Timetable', icon: Clock, route: '/parent/timetable' },
         { title: 'Fees', icon: Banknote, route: '/parent/fees' },
+        { title: 'Report Card', icon: FileText, route: '/parent/report-card' },
       ]
     },
     {
