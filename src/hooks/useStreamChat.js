@@ -17,9 +17,9 @@ const sanitizeId = (id) =>
 export const useStreamChat = (user) => {
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState(null);
+  const [activeClient, setActiveClient] = useState(() => getStreamClient());
   const connectedRef = useRef(false);
   const connectingRef = useRef(false);
-  const client = getStreamClient();
 
   const connect = useCallback(async () => {
     if (!user?.id || !user?.name) return;
@@ -32,7 +32,11 @@ export const useStreamChat = (user) => {
       // Generate JWT signed with the app secret (browser Web Crypto)
       const token = await createUserToken(userId);
 
-      await client.connectUser(
+      // Re-fetch client in case the API key was dynamically updated by the backend
+      const currentClient = getStreamClient();
+      setActiveClient(currentClient);
+
+      await currentClient.connectUser(
         {
           id: userId,
           name: user.name,
@@ -52,19 +56,20 @@ export const useStreamChat = (user) => {
     } finally {
       connectingRef.current = false;
     }
-  }, [user?.id, user?.name, user?.role, client]);
+  }, [user?.id, user?.name, user?.role]);
 
   const disconnect = useCallback(async () => {
     if (!connectedRef.current) return;
     try {
-      await client.disconnectUser();
+      const currentClient = getStreamClient();
+      await currentClient.disconnectUser();
     } catch {
       // ignore
     }
     connectedRef.current = false;
     connectingRef.current = false;
     setIsConnected(false);
-  }, [client]);
+  }, []);
 
   useEffect(() => {
     connect();
@@ -73,7 +78,7 @@ export const useStreamChat = (user) => {
     };
   }, [connect, disconnect]);
 
-  return { client, isConnected, error, disconnect };
+  return { client: activeClient, isConnected, error, disconnect };
 };
 
 export { sanitizeId };
