@@ -206,11 +206,14 @@ const ManageReportCards = () => {
     return currentCard?.status || 'Not Started';
   };
 
-  const filteredStudents = students.filter(student =>
-    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.admission_number?.includes(searchTerm) ||
-    student.roll_number?.toString().includes(searchTerm)
-  );
+  const filteredStudents = students.filter(student => {
+    if (!student || !student.name) return false;
+    return (
+      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (student.admission_number && student.admission_number.includes(searchTerm)) ||
+      (student.roll_number && student.roll_number.toString().includes(searchTerm))
+    );
+  });
 
   if (loading) {
     return <div className="manage-report-cards loading">Loading...</div>;
@@ -263,13 +266,13 @@ const ManageReportCards = () => {
                     onClick={() => setSelectedStudent(student)}
                   >
                     <div className="student-info">
-                      <h3>{student.name}</h3>
-                      <p className="admission">Admission: {student.admission_number}</p>
-                      <p className="roll">Roll No: {student.roll_number}</p>
+                      <h3>{student.name || 'Unknown'}</h3>
+                      <p className="admission">Admission: {student.admission_number || 'N/A'}</p>
+                      <p className="roll">Roll No: {student.roll_number || 'N/A'}</p>
                     </div>
                     <div className="status-badge">
-                      <span className={`status ${getReportCardStatus(student.user_id).toLowerCase().replace(/\s+/g, '-')}`}>
-                        {getReportCardStatus(student.user_id)}
+                      <span className={`status ${(getReportCardStatus(student.user_id) || 'not-started').toLowerCase().replace(/\s+/g, '-')}`}>
+                        {getReportCardStatus(student.user_id) || 'Not Started'}
                       </span>
                     </div>
                   </div>
