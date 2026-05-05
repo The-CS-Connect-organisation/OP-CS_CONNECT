@@ -349,15 +349,15 @@ export const ChatModal = ({
                               style={
                                 isMe
                                   ? {
-                                      background: '#3b82f6',
-                                      color: '#ffffff',
-                                      borderRadius: '20px 20px 4px 20px',
-                                    }
+                                    background: '#3b82f6',
+                                    color: '#ffffff',
+                                    borderRadius: '20px 20px 4px 20px',
+                                  }
                                   : {
-                                      background: '#f0f0f0',
-                                      color: '#262626',
-                                      borderRadius: '20px 20px 20px 4px',
-                                    }
+                                    background: '#f0f0f0',
+                                    color: '#262626',
+                                    borderRadius: '20px 20px 20px 4px',
+                                  }
                               }
                             >
                               <p className="break-words whitespace-pre-wrap">{msg.text}</p>

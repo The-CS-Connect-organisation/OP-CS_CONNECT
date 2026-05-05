@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { PhoneCall, MessagesSquare, Users, Search, MessageCircle, Video, X } from 'lucide-react';
-import { ChatModal } from '../../../components/messaging/ChatModal';
+import { motion } from 'framer-motion';
+import { Search, Users, MessageCircle, Video, Menu } from 'lucide-react';
+import { ChatView } from '../../../components/messaging/ChatView';
 import { CallModal } from '../../../components/messaging/CallModal';
+import { IncomingCallOverlay } from '../../../components/messaging/IncomingCallOverlay';
 import { useStore } from '../../../hooks/useStore';
 import { KEYS, getFromStorage } from '../../../data/schema';
 import { request } from '../../../utils/apiClient';
-import { isMongoId } from '../../../utils/socketClient';
-import { useStreamChat, sanitizeId } from '../../../hooks/useStreamChat';
+import { useStreamChat } from '../../../hooks/useStreamChat';
 
 const mapProfileToContact = (profile, role) => {
   const u = profile.userId;
@@ -16,17 +16,16 @@ const mapProfileToContact = (profile, role) => {
   const name = u?.name || (role === 'student' ? 'Student' : 'Teacher');
   const classLabel =
     role === 'student' && profile.grade != null
-      ? `${profile.grade}-${profile.section || ''}`.replace(/-$/, '')
+      ? `-`.replace(/-$/, '')
       : undefined;
   return { id, name, role, ...(classLabel ? { class: classLabel } : {}) };
 };
 
-// Subject color mapping for avatars
 const ROLE_COLORS = {
-  teacher: { bg: '#a855f7', light: 'rgba(168, 85, 247, 0.1)', border: 'rgba(168, 85, 247, 0.3)' },
-  student: { bg: '#3b82f6', light: 'rgba(59, 130, 246, 0.1)', border: 'rgba(59, 130, 246, 0.3)' },
-  parent: { bg: '#10b981', light: 'rgba(16, 185, 129, 0.1)', border: 'rgba(16, 185, 129, 0.3)' },
-  admin: { bg: '#f59e0b', light: 'rgba(245, 158, 11, 0.1)', border: 'rgba(245, 158, 11, 0.3)' },
+  teacher: { bg: '#a855f7', light: 'rgba(168, 85, 247, 0.1)' },
+  student: { bg: '#3b82f6', light: 'rgba(59, 130, 246, 0.1)' },
+  parent: { bg: '#10b981', light: 'rgba(16, 185, 129, 0.1)' },
+  admin: { bg: '#f59e0b', light: 'rgba(245, 158, 11, 0.1)' },
 };
 
 const getRoleColor = (role) => ROLE_COLORS[role] || ROLE_COLORS.student;
@@ -34,63 +33,94 @@ const getRoleColor = (role) => ROLE_COLORS[role] || ROLE_COLORS.student;
 export const CommunicationHub = ({ user }) => {
   const { data: localUsers } = useStore(KEYS.USERS, []);
   const [apiContacts, setApiContacts] = useState(null);
-  const [contactsError, setContactsError] = useState(null);
   const [chatUser, setChatUser] = useState(null);
-  const [callState, setCallState] = useState({ isOpen: false, otherUser: null, preferVideo: true });
+  const [callState, setCallState] = useState({ isOpen: false, otherUser: null, preferVideo: true, initiator: true });
+  const [incomingCall, setIncomingCall] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSidebarOnMobile, setShowSidebarOnMobile] = useState(true);
+  
   const [recentChats, setRecentChats] = useState(() => {
     try { return JSON.parse(localStorage.getItem('cornerstone_recent_chats') || '[]'); } catch { return []; }
   });
 
-  // Connect to GetStream
   const { client, isConnected } = useStreamChat(user);
-
   const token = typeof window !== 'undefined' ? getFromStorage(KEYS.AUTH_TOKEN) : null;
-  // Use API if we have a token — Firebase IDs are not UUIDs so we don't check format
-  const useApi = !!token && !!user?.id;
+  const useApi = !!token && !!user?.id; // Removed broken isMongoId check
 
+  // Load Contacts
   useEffect(() => {
-    if (!user?.id) { setApiContacts(null); return; }
+    if (!useApi) { setApiContacts(null); return; }
     let cancelled = false;
     (async () => {
       try {
-        setContactsError(null);
-        // Fetch all users and filter out self
-        const res = await request('/school/users?limit=500');
+        const wantStudents = user.role === 'admin' || user.role === 'teacher' || user.role === 'student';
+        const [tRes, sRes] = await Promise.all([
+          request('/school/teachers?limit=200'),
+          wantStudents ? request('/school/students?limit=200') : Promise.resolve({ items: [] }),
+        ]);
         if (cancelled) return;
-        const users = (res.users || res.items || res || [])
-          .filter(u => u.id !== user.id && ['teacher', 'student', 'parent', 'admin'].includes(u.role))
-          .map(u => ({ id: u.id, name: u.name, role: u.role, email: u.email }));
-        setApiContacts(users);
+        const teachers = (tRes.items || []).map((p) => mapProfileToContact(p, 'teacher')).filter(Boolean);
+        const students = (sRes.items || []).map((p) => mapProfileToContact(p, 'student')).filter(Boolean);
+        setApiContacts([...teachers, ...students]);
       } catch (e) {
-        if (!cancelled) { setContactsError(e?.message || 'Could not load contacts'); setApiContacts([]); }
+        if (!cancelled) setApiContacts([]);
       }
     })();
     return () => { cancelled = true; };
-  }, [user?.id, user?.role]);
+  }, [useApi, user?.role]);
 
-  // Track recent chats
-  const recordRecentChat = useCallback((contact) => {
+  // Poll for Incoming Calls
+  useEffect(() => {
+    if (!user?.id) return;
+    const interval = setInterval(() => {
+      if (callState.isOpen || incomingCall) return;
+      // Search all keys for an offer directed at us
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('sms_call_signals:')) {
+          try {
+            const signals = JSON.parse(localStorage.getItem(key) || '[]');
+            const offer = signals.slice().reverse().find(s => s.type === 'offer' && s.fromUserId !== user.id);
+            if (offer) {
+              // check if it's within the last 15 seconds
+              const age = Date.now() - new Date(offer.createdAt).getTime();
+              if (age < 15000) {
+                // Find caller info
+                const caller = contacts.find(c => String(c.id) === String(offer.fromUserId));
+                if (caller) {
+                  setIncomingCall({ ...caller, callerName: caller.name });
+                } else {
+                  setIncomingCall({ id: offer.fromUserId, name: 'User', role: 'student', callerName: 'User' });
+                }
+              }
+            }
+          } catch {}
+        }
+      }
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [user?.id, callState.isOpen, incomingCall]);
+
+  const handleChatOpen = (contact) => {
     setRecentChats(prev => {
       const filtered = prev.filter(c => c.id !== contact.id);
       const updated = [{ id: contact.id, name: contact.name, role: contact.role, class: contact.class, lastChatAt: Date.now() }, ...filtered].slice(0, 20);
       localStorage.setItem('cornerstone_recent_chats', JSON.stringify(updated));
       return updated;
     });
-  }, []);
-
-  const handleChatOpen = (contact) => {
-    recordRecentChat(contact);
     setChatUser(contact);
+    setShowSidebarOnMobile(false);
   };
 
   const contacts = useMemo(() => {
-    const selfId = user.id;
-    let list = (apiContacts || []).filter((c) => c.id !== selfId);
+    const selfId = String(user.id);
+    let list = useApi && apiContacts 
+      ? apiContacts.filter((c) => String(c.id) !== selfId)
+      : localUsers.filter((u) => String(u.id) !== selfId);
 
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      list = list.filter(c => c.name?.toLowerCase().includes(q) || c.role?.includes(q));
+      list = list.filter(c => c.name.toLowerCase().includes(q) || c.role.includes(q));
     }
 
     const recentIds = new Set(recentChats.map(r => r.id));
@@ -107,243 +137,133 @@ export const CommunicationHub = ({ user }) => {
     });
 
     return [...recent, ...others];
-  }, [apiContacts, user.id, searchQuery, recentChats]);
-
-  const recentContactIds = new Set(recentChats.map(r => r.id));
+  }, [useApi, apiContacts, localUsers, user.id, searchQuery, recentChats]);
 
   return (
-    <div className="space-y-6 max-w-[1000px] mx-auto w-full pt-2 pb-12">
-      {/* ── Header ── */}
-      <motion.div 
-        initial={{ opacity: 0, y: -12 }} 
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between"
+    <div className="w-full h-[calc(100vh-100px)] max-h-[800px] mx-auto p-4 md:p-6 lg:p-8 flex justify-center">
+      
+      {/* Container with Glassmorphism */}
+      <div 
+        className="w-full max-w-[1200px] h-full rounded-3xl overflow-hidden flex relative shadow-2xl"
+        style={{
+          background: 'rgba(255, 255, 255, 0.25)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255,255,255,0.4)',
+          boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1)'
+        }}
       >
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold"
-              style={{ background: 'rgba(255, 107, 157, 0.08)', color: '#ff6b9d', border: '1px solid rgba(255, 107, 157, 0.20)' }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Live
-            </span>
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3" style={{ color: 'var(--text-primary)' }}>
-            <span className="w-1 h-10 rounded-full bg-black" />
-            Messages
-          </h1>
-          <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>
-            {isConnected ? (
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                Connected · {contacts.length} contacts
-              </span>
-            ) : (
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-400" />
-                Connecting...
-              </span>
-            )}
-          </p>
-        </div>
-        
-        {/* Quick stats */}
-        <div className="flex gap-3">
-          <div className="nova-card p-3 min-w-[100px]">
-            <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Teachers</p>
-            <p className="text-xl font-bold mt-0.5" style={{ color: 'var(--text-primary)' }}>
-              {contacts.filter(c => c.role === 'teacher').length}
-            </p>
-          </div>
-          <div className="nova-card p-3 min-w-[100px]">
-            <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Students</p>
-            <p className="text-xl font-bold mt-0.5" style={{ color: 'var(--text-primary)' }}>
-              {contacts.filter(c => c.role === 'student').length}
-            </p>
-          </div>
-        </div>
-      </motion.div>
-
-      {/* ── Search ── */}
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-        <div className="relative">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-dim)' }} />
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search contacts..."
-            className="w-full pl-10 pr-4 py-3 rounded-xl text-sm border outline-none transition-all duration-200 focus:border-black/20 focus:shadow-sm"
-            style={{ 
-              background: 'var(--bg-surface)', 
-              color: 'var(--text-primary)', 
-              borderColor: 'var(--border-default)',
-              boxShadow: 'var(--shadow-glow)'
-            }}
-          />
-        </div>
-      </motion.div>
-
-      {/* ── Recent Chats Section ── */}
-      {recentChats.length > 0 && !searchQuery && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-          <p className="text-xs font-semibold uppercase tracking-wider mb-3 px-1" style={{ color: 'var(--text-muted)' }}>
-            Recent Conversations
-          </p>
-          <div className="flex gap-4 overflow-x-auto pb-3 no-scrollbar">
-            {recentChats.slice(0, 8).map((rc, idx) => {
-              const contact = contacts.find(c => c.id === rc.id) || rc;
-              const colors = getRoleColor(rc.role);
-              return (
-                <motion.button
-                  key={rc.id}
-                  initial={{ opacity: 0, y: 12, scale: 0.9 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: idx * 0.03 }}
-                  whileHover={{ scale: 1.05, y: -4 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleChatOpen(contact)}
-                  className="flex flex-col items-center gap-2 min-w-[70px] cursor-pointer group"
-                >
-                  <div className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-lg relative transition-all duration-300 group-hover:shadow-lg"
-                    style={{ 
-                      background: colors.bg,
-                      boxShadow: `0 4px 15px ${colors.bg}40`
-                    }}
-                  >
-                    {rc.name?.charAt(0)}
-                    <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-emerald-400 rounded-full border-2 border-white" />
-                  </div>
-                  <span className="text-[11px] font-medium truncate w-20 text-center" style={{ color: 'var(--text-secondary)' }}>
-                    {rc.name?.split(' ')[0]}
-                  </span>
-                </motion.button>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
-
-      {/* ── Contact List ── */}
-      <motion.div 
-        initial={{ opacity: 0, y: 12 }} 
-        animate={{ opacity: 1, y: 0 }} 
-        transition={{ delay: 0.15 }}
-        className="nova-card rounded-2xl overflow-hidden"
-      >
-        <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: '1px solid var(--border-default)' }}>
-          <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-            All Contacts
-          </span>
-          <span className="text-xs px-2.5 py-1 rounded-full font-medium" 
-            style={{ background: 'var(--bg-elevated)', color: 'var(--text-muted)' }}>
-            {contacts.length}
-          </span>
-        </div>
-
-        {contacts.length === 0 ? (
-          <div className="py-20 flex flex-col items-center justify-center" style={{ background: 'var(--bg-surface)' }}>
-            <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
-              style={{ background: 'var(--bg-elevated)' }}>
-              <Users size={28} className="text-[var(--text-dim)]" />
+        {/* Sidebar */}
+        <div className={w-full md:w-[360px] flex-shrink-0 flex flex-col transition-all duration-300 }>
+          {/* Sidebar Header */}
+          <div className="px-6 py-5 border-b border-white/20 bg-white/10 backdrop-blur-md">
+            <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Messages</h1>
+            <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
+              {isConnected ? <span className="text-emerald-500 font-medium tracking-wide">? Connected</span> : 'Connecting...'}
             </div>
-            <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-              {searchQuery ? 'No contacts found.' : 'No contacts available.'}
-            </p>
+            
+            <div className="mt-4 relative">
+              <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-50" />
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search..."
+                className="w-full pl-10 pr-4 py-2.5 rounded-2xl text-sm outline-none transition-all duration-200"
+                style={{ 
+                  background: 'rgba(255,255,255,0.4)', 
+                  color: 'var(--text-primary)', 
+                  border: '1px solid rgba(255,255,255,0.5)',
+                  boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)'
+                }}
+              />
+            </div>
           </div>
-        ) : (
-          <div style={{ background: 'var(--bg-surface)' }}>
-            {contacts.map((contact, i) => {
-              const isRecent = recentContactIds.has(contact.id);
-              const colors = getRoleColor(contact.role);
-              return (
-                <motion.div
-                  key={contact.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: Math.min(i * 0.02, 0.2) }}
-                  whileHover={{ background: 'var(--bg-elevated)' }}
-                  className="flex items-center justify-between px-5 py-3.5 transition-all duration-200 cursor-pointer group border-b last:border-0"
-                  style={{ borderColor: 'var(--border-default)' }}
-                  onClick={() => handleChatOpen(contact)}
-                >
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 relative transition-all duration-300 group-hover:shadow-md"
-                      style={{ 
-                        background: colors.bg,
-                        boxShadow: `0 2px 10px ${colors.bg}30`
-                      }}
-                    >
-                      {contact.name.charAt(0)}
-                      {isRecent && (
-                        <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-white" />
-                      )}
+
+          {/* Contact List */}
+          <div className="flex-1 overflow-y-auto no-scrollbar pb-6 p-2">
+            {contacts.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center opacity-50">
+                <Users size={32} className="mb-2" />
+                <p className="text-sm font-medium">No contacts found</p>
+              </div>
+            ) : (
+              contacts.map((contact) => {
+                const isActive = chatUser?.id === contact.id;
+                const colors = getRoleColor(contact.role);
+                return (
+                  <motion.div
+                    key={contact.id}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => handleChatOpen(contact)}
+                    className={lex items-center gap-4 p-3 rounded-2xl cursor-pointer transition-all duration-200 mb-1 border }
+                  >
+                    <div className="relative">
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
+                        style={{ background: colors.bg }}>
+                        {contact.name.charAt(0)}
+                      </div>
+                      {/* Active indicator */}
+                      <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-white/80 shadow-sm" />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{contact.name}</p>
-                      <p className="text-[11px] capitalize flex items-center gap-1.5" style={{ color: 'var(--text-muted)' }}>
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium"
-                          style={{ background: colors.light, color: colors.bg }}>
+                    
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[15px] font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{contact.name}</p>
+                      <p className="text-xs truncate opacity-70 capitalize flex items-center gap-1.5 mt-0.5">
+                        <span className="px-1.5 rounded-md font-medium" style={{ background: colors.light, color: colors.bg }}>
                           {contact.role}
                         </span>
-                        {contact.class && <span>· {contact.class}</span>}
+                        {contact.class && <span>� {contact.class}</span>}
                       </p>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={(e) => { e.stopPropagation(); handleChatOpen(contact); }}
-                      className="p-2.5 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md"
-                      style={{ 
-                        borderColor: 'var(--border-default)',
-                        background: 'var(--bg-surface)',
-                        color: '#3b82f6'
-                      }}>
-                      <MessageCircle size={16} />
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={(e) => { e.stopPropagation(); setCallState({ isOpen: true, otherUser: contact, preferVideo: true }); }}
-                      className="p-2.5 rounded-xl border transition-all duration-200 cursor-pointer hover:shadow-md"
-                      style={{ 
-                        borderColor: 'var(--border-default)',
-                        background: 'var(--bg-surface)',
-                        color: '#10b981'
-                      }}>
-                      <Video size={16} />
-                    </motion.button>
-                  </div>
-                </motion.div>
-              );
-            })}
+                  </motion.div>
+                );
+              })
+            )}
           </div>
-        )}
-      </motion.div>
+        </div>
 
-      {contactsError && (
-        <motion.div 
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="nova-card p-4 text-center border-red-200"
-        >
-          <p className="text-sm text-red-500">{contactsError}</p>
-        </motion.div>
-      )}
+        {/* Chat Area */}
+        <div className={lex-1 flex flex-col bg-white/40  relative}>
+          {chatUser ? (
+            <ChatView
+              isOpen={true}
+              onClose={() => setShowSidebarOnMobile(true)}
+              currentUser={user}
+              otherUser={chatUser}
+              onStartCall={({ otherUser, preferVideo }) => setCallState({ isOpen: true, otherUser, preferVideo, initiator: true })}
+            />
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center">
+              <div className="w-24 h-24 rounded-full border-2 border-white/50 flex items-center justify-center mb-4 bg-white/20 shadow-inner">
+                <MessageCircle size={32} className="opacity-50" />
+              </div>
+              <h2 className="text-xl font-semibold tracking-tight">Your Messages</h2>
+              <p className="text-sm opacity-60 mt-1">Select a contact to start chatting</p>
+            </div>
+          )}
+        </div>
+      </div>
 
-      <ChatModal
-        isOpen={!!chatUser}
-        onClose={() => setChatUser(null)}
-        currentUser={user}
-        otherUser={chatUser}
-        onStartCall={({ otherUser, preferVideo }) => setCallState({ isOpen: true, otherUser, preferVideo: preferVideo ?? true })}
-      />
+      {/* Modals */}
       <CallModal
         isOpen={callState.isOpen}
-        onClose={() => setCallState({ isOpen: false, otherUser: null, preferVideo: true })}
+        onClose={() => setCallState({ isOpen: false, otherUser: null, preferVideo: true, initiator: true })}
         currentUser={user}
         otherUser={callState.otherUser}
         preferVideo={callState.preferVideo}
+        initiator={callState.initiator}
+      />
+      
+      <IncomingCallOverlay
+        isOpen={!!incomingCall}
+        callData={incomingCall}
+        onAccept={() => {
+          setCallState({ isOpen: true, otherUser: incomingCall, preferVideo: true, initiator: false });
+          setIncomingCall(null);
+        }}
+        onDecline={() => {
+          setIncomingCall(null);
+        }}
       />
     </div>
   );
