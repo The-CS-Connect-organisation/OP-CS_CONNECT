@@ -82,7 +82,7 @@ import { QuickMessenger } from './pages/TeacherPortal/QuickMessenger';
 import { PerformanceReports } from './pages/TeacherPortal/PerformanceReports';
 import { ClassNotes } from './pages/TeacherPortal/ClassNotes';
 import { TeacherAILab } from './pages/TeacherPortal/TeacherAILab';
-import { ManageReportCards } from './pages/TeacherPortal/ManageReportCards';
+import ManageReportCards from './pages/TeacherPortal/ManageReportCards';
 
 // Librarian Portal Pages
 import { LibrarianDashboard } from './pages/LibrarianPortal/LibrarianDashboard';
