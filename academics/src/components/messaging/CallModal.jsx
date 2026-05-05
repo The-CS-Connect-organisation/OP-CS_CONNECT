@@ -67,15 +67,59 @@ export const CallModal = ({
   const localStreamRef = useRef(null);
   const timerRef = useRef(null);
   const offerSentRef = useRef(false);
+  const audioCtxRef = useRef(null);
+  const ringIntervalRef = useRef(null);
+
+  // ── Ringtone (outgoing) ──────────────────────────────────────────────────
+  const startRingtone = () => {
+    try {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContext) return;
+      const ctx = new AudioContext();
+      audioCtxRef.current = ctx;
+
+      const playRing = () => {
+        if (!audioCtxRef.current || audioCtxRef.current.state === 'closed') return;
+        const freqs = [480, 440, 480, 440];
+        freqs.forEach((freq, i) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.value = freq;
+          gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.15);
+          gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + i * 0.15 + 0.05);
+          gain.gain.linearRampToValueAtTime(0, ctx.currentTime + i * 0.15 + 0.12);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(ctx.currentTime + i * 0.15);
+          osc.stop(ctx.currentTime + i * 0.15 + 0.15);
+        });
+      };
+
+      playRing();
+      ringIntervalRef.current = setInterval(playRing, 3000);
+    } catch {}
+  };
+
+  const stopRingtone = () => {
+    clearInterval(ringIntervalRef.current);
+    if (audioCtxRef.current && audioCtxRef.current.state !== 'closed') {
+      audioCtxRef.current.close().catch(() => {});
+    }
+    audioCtxRef.current = null;
+  };
 
   // ── Call duration timer ──────────────────────────────────────────────────
   useEffect(() => {
     if (status === 'connected') {
+      stopRingtone();
       timerRef.current = setInterval(() => setCallDuration(d => d + 1), 1000);
     } else {
       clearInterval(timerRef.current);
       if (status !== 'connected') setCallDuration(0);
     }
+    if (status === 'ringing') startRingtone();
+    if (status === 'ended' || status === 'media-error') stopRingtone();
     return () => clearInterval(timerRef.current);
   }, [status]);
 
@@ -197,6 +241,7 @@ export const CallModal = ({
     return () => {
       cancelled = true;
       cleanup?.then?.(fn => fn?.());
+      stopRingtone();
       pcRef.current?.close();
       pcRef.current = null;
       localStreamRef.current?.getTracks().forEach(t => t.stop());

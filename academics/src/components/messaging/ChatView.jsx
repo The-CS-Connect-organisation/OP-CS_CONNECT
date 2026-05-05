@@ -34,8 +34,12 @@ export const ChatView = ({
       setLoading(true);
       setChannelError(null);
       try {
-        const sortedIds = [myId, otherId].sort();
-        const channelId = `dm-${sortedIds[0]}-${sortedIds[1]}`;
+        // Hash the IDs to keep channel ID under 64 chars
+        // Use a simple deterministic hash: take first 20 chars of each sanitized ID
+        const shortMyId = myId.substring(0, 20);
+        const shortOtherId = otherId.substring(0, 20);
+        const sortedIds = [shortMyId, shortOtherId].sort();
+        const channelId = `dm${sortedIds[0]}${sortedIds[1]}`.substring(0, 64);
 
         const ch = client.channel('messaging', channelId, {
           members: [myId, otherId],

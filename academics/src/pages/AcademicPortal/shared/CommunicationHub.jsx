@@ -170,7 +170,7 @@ export const CommunicationHub = ({ user }) => {
     <>
       {/* Full-viewport overlay — covers sidebar + topbar */}
       <div
-        className="fixed inset-0 z-[60] overflow-hidden"
+        className="fixed inset-0 z-[200] overflow-hidden"
         style={{
           background: 'linear-gradient(135deg, #667eea22 0%, #764ba222 25%, #f093fb22 50%, #4facfe22 75%, #43e97b22 100%)',
           backdropFilter: 'blur(2px)',
@@ -248,24 +248,27 @@ export const CommunicationHub = ({ user }) => {
                   />
                 </div>
 
-                {/* Tabs */}
-                <div className="flex gap-1 mt-3">
+        {/* Tabs */}
+                <div className="flex gap-1 mt-3 bg-black/5 p-1 rounded-2xl">
                   {[
                     { id: 'messages', label: 'Chats' },
-                    { id: 'requests', label: `Requests${friendRequests.length ? ` (${friendRequests.length})` : ''}` },
-                    { id: 'explore', label: 'Explore' },
+                    { id: 'requests', label: friendRequests.length > 0 ? `Requests ${friendRequests.length}` : 'Requests' },
+                    { id: 'explore', label: 'People' },
                   ].map(tab => (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className="flex-1 py-1.5 rounded-xl text-xs font-bold transition-all"
+                      className="flex-1 py-2 rounded-xl text-xs font-bold transition-all relative"
                       style={{
-                        background: activeTab === tab.id ? 'rgba(59,130,246,0.15)' : 'transparent',
-                        color: activeTab === tab.id ? '#3b82f6' : '#9ca3af',
-                        border: activeTab === tab.id ? '1px solid rgba(59,130,246,0.3)' : '1px solid transparent',
+                        background: activeTab === tab.id ? 'white' : 'transparent',
+                        color: activeTab === tab.id ? '#1f2937' : '#9ca3af',
+                        boxShadow: activeTab === tab.id ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
                       }}
                     >
                       {tab.label}
+                      {tab.id === 'requests' && friendRequests.length > 0 && (
+                        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
+                      )}
                     </button>
                   ))}
                 </div>
