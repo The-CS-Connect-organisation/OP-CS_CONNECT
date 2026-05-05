@@ -38,11 +38,24 @@ const ManageReportCards = () => {
         let studentsData = [];
         try {
           const response = await apiDataLayer.get('/school/students');
-          studentsData = response.data?.items || response.data || [];
-          if (!Array.isArray(studentsData)) {
-            console.warn('Students data is not an array:', studentsData);
-            studentsData = [];
+          let rawStudents = response.data?.items || response.data || [];
+          if (!Array.isArray(rawStudents)) {
+            console.warn('Students data is not an array:', rawStudents);
+            rawStudents = [];
           }
+          
+          // Transform the data to match expected format
+          studentsData = rawStudents.map(student => ({
+            user_id: student.user_id || student.id,
+            name: student.userId?.name || student.name || 'Unknown',
+            admission_number: student.admission_number || 'N/A',
+            roll_number: student.roll_number || 'N/A',
+            class_id: student.class_id || student.grade,
+            email: student.userId?.email || student.email,
+            ...student // Include all original fields
+          }));
+          
+          console.log('Transformed students:', studentsData);
         } catch (err) {
           console.error('Error fetching students:', err);
           setError('Failed to load students. Please try again.');
