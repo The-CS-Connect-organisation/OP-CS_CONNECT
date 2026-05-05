@@ -32,27 +32,48 @@ const ManageReportCards = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
+        setError(null);
+
         // Fetch students from the class
-        const studentsData = await apiDataLayer.get('/school/students');
-        setStudents(studentsData.data?.items || studentsData.data || []);
+        let studentsData = [];
+        try {
+          const response = await apiDataLayer.get('/school/students');
+          studentsData = response.data?.items || response.data || [];
+          if (!Array.isArray(studentsData)) {
+            console.warn('Students data is not an array:', studentsData);
+            studentsData = [];
+          }
+        } catch (err) {
+          console.error('Error fetching students:', err);
+          setError('Failed to load students. Please try again.');
+          studentsData = [];
+        }
+        setStudents(studentsData);
 
         // Fetch report cards
-        const cardsData = await apiDataLayer.get('/report-cards');
-        const cardsByStudent = {};
-        const cardsList = cardsData.data?.items || cardsData.data || [];
-        
-        // Ensure cardsList is an array before calling forEach
-        if (Array.isArray(cardsList)) {
-          cardsList.forEach(card => {
-            if (!cardsByStudent[card.student_id]) {
-              cardsByStudent[card.student_id] = [];
-            }
-            cardsByStudent[card.student_id].push(card);
-          });
+        let cardsByStudent = {};
+        try {
+          const cardsResponse = await apiDataLayer.get('/report-cards');
+          const cardsList = cardsResponse.data?.items || cardsResponse.data || [];
+          
+          // Ensure cardsList is an array before calling forEach
+          if (Array.isArray(cardsList)) {
+            cardsList.forEach(card => {
+              if (!cardsByStudent[card.student_id]) {
+                cardsByStudent[card.student_id] = [];
+              }
+              cardsByStudent[card.student_id].push(card);
+            });
+          }
+        } catch (err) {
+          console.error('Error fetching report cards:', err);
+          // Don't set error here - report cards are optional
+          cardsByStudent = {};
         }
         setReportCards(cardsByStudent);
       } catch (err) {
-        setError(err.message || 'Failed to load data');
+        console.error('Unexpected error in fetchData:', err);
+        setError('An unexpected error occurred. Please refresh the page.');
       } finally {
         setLoading(false);
       }
@@ -140,6 +161,10 @@ const ManageReportCards = () => {
 
       const response = await apiDataLayer.post('/report-cards', payload);
 
+      if (!response.success) {
+        throw new Error(response.message || 'Failed to save report card');
+      }
+
       setSuccessMessage(`Report card created successfully for ${selectedStudent.name}`);
       setSelectedStudent(null);
       setFormData({
@@ -148,23 +173,29 @@ const ManageReportCards = () => {
       });
 
       // Refresh report cards
-      const cardsData = await apiDataLayer.get('/report-cards');
-      const cardsByStudent = {};
-      const cardsList = cardsData.data?.items || cardsData.data || [];
-      
-      // Ensure cardsList is an array before calling forEach
-      if (Array.isArray(cardsList)) {
-        cardsList.forEach(card => {
-          if (!cardsByStudent[card.student_id]) {
-            cardsByStudent[card.student_id] = [];
-          }
-          cardsByStudent[card.student_id].push(card);
-        });
+      try {
+        const cardsResponse = await apiDataLayer.get('/report-cards');
+        const cardsByStudent = {};
+        const cardsList = cardsResponse.data?.items || cardsResponse.data || [];
+        
+        // Ensure cardsList is an array before calling forEach
+        if (Array.isArray(cardsList)) {
+          cardsList.forEach(card => {
+            if (!cardsByStudent[card.student_id]) {
+              cardsByStudent[card.student_id] = [];
+            }
+            cardsByStudent[card.student_id].push(card);
+          });
+        }
+        setReportCards(cardsByStudent);
+      } catch (refreshErr) {
+        console.error('Error refreshing report cards:', refreshErr);
+        // Don't fail the whole operation if refresh fails
       }
-      setReportCards(cardsByStudent);
 
       setTimeout(() => setSuccessMessage(''), 3000);
     } catch (err) {
+      console.error('Error in handleSubmit:', err);
       setError(err.message || 'Failed to create report card');
     }
   };
@@ -207,44 +238,50 @@ const ManageReportCards = () => {
         {error && <div className="error-message">{error}</div>}
         {successMessage && <div className="success-message">{successMessage}</div>}
 
-        <div className="student-selection">
-          <div className="search-box">
-            <input
-              type="text"
-              placeholder="Search by name, admission number, or roll number..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="search-input"
-            />
+        {students.length === 0 ? (
+          <div className="no-data-message">
+            <p>No students found. Please ensure students are enrolled in your class.</p>
           </div>
+        ) : (
+          <div className="student-selection">
+            <div className="search-box">
+              <input
+                type="text"
+                placeholder="Search by name, admission number, or roll number..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="search-input"
+              />
+            </div>
 
-          <div className="students-grid">
-            {filteredStudents.length > 0 ? (
-              filteredStudents.map(student => (
-                <div
-                  key={student.user_id}
-                  className="student-card"
-                  onClick={() => setSelectedStudent(student)}
-                >
-                  <div className="student-info">
-                    <h3>{student.name}</h3>
-                    <p className="admission">Admission: {student.admission_number}</p>
-                    <p className="roll">Roll No: {student.roll_number}</p>
+            <div className="students-grid">
+              {filteredStudents.length > 0 ? (
+                filteredStudents.map(student => (
+                  <div
+                    key={student.user_id}
+                    className="student-card"
+                    onClick={() => setSelectedStudent(student)}
+                  >
+                    <div className="student-info">
+                      <h3>{student.name}</h3>
+                      <p className="admission">Admission: {student.admission_number}</p>
+                      <p className="roll">Roll No: {student.roll_number}</p>
+                    </div>
+                    <div className="status-badge">
+                      <span className={`status ${getReportCardStatus(student.user_id).toLowerCase().replace(/\s+/g, '-')}`}>
+                        {getReportCardStatus(student.user_id)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="status-badge">
-                    <span className={`status ${getReportCardStatus(student.user_id).toLowerCase().replace(/\s+/g, '-')}`}>
-                      {getReportCardStatus(student.user_id)}
-                    </span>
-                  </div>
+                ))
+              ) : (
+                <div className="no-students">
+                  {searchTerm ? 'No students found matching your search' : 'No students available'}
                 </div>
-              ))
-            ) : (
-              <div className="no-students">
-                {searchTerm ? 'No students found matching your search' : 'No students available'}
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     );
   }
