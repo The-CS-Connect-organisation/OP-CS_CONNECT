@@ -10,7 +10,6 @@ const ManageReportCards = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [showForm, setShowForm] = useState(false);
   const [term, setTerm] = useState('Term 1');
   const [year, setYear] = useState(new Date().getFullYear());
   const [formData, setFormData] = useState({
@@ -18,6 +17,7 @@ const ManageReportCards = () => {
     teacherRemarks: ''
   });
   const [successMessage, setSuccessMessage] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const GRADING_SCALE = {
     'A': { min: 90, max: 100 },
@@ -141,7 +141,6 @@ const ManageReportCards = () => {
       const response = await apiDataLayer.post('/report-cards', payload);
 
       setSuccessMessage(`Report card created successfully for ${selectedStudent.name}`);
-      setShowForm(false);
       setSelectedStudent(null);
       setFormData({
         subjects: [{ name: '', marksObtained: '', maxMarks: 100, remarks: '' }],
@@ -176,160 +175,172 @@ const ManageReportCards = () => {
     return currentCard?.status || 'Not Started';
   };
 
+  const filteredStudents = students.filter(student =>
+    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    student.admission_number?.includes(searchTerm) ||
+    student.roll_number?.toString().includes(searchTerm)
+  );
+
   if (loading) {
     return <div className="manage-report-cards loading">Loading...</div>;
   }
 
-  return (
-    <div className="manage-report-cards">
-      <div className="header">
-        <h1>Manage Report Cards</h1>
-        <div className="filters">
-          <select value={term} onChange={(e) => setTerm(e.target.value)}>
-            <option>Term 1</option>
-            <option>Term 2</option>
-          </select>
-          <select value={year} onChange={(e) => setYear(e.target.value)}>
-            {[2024, 2025, 2026].map(y => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {error && <div className="error-message">{error}</div>}
-      {successMessage && <div className="success-message">{successMessage}</div>}
-
-      {!showForm ? (
-        <div className="students-list">
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Admission No.</th>
-                <th>Roll No.</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.isArray(students) && students.map(student => (
-                <tr key={student.user_id}>
-                  <td>{student.name}</td>
-                  <td>{student.admission_number}</td>
-                  <td>{student.roll_number}</td>
-                  <td>
-                    <span className={`status ${getReportCardStatus(student.user_id).toLowerCase()}`}>
-                      {getReportCardStatus(student.user_id)}
-                    </span>
-                  </td>
-                  <td>
-                    <button
-                      className="btn-edit"
-                      onClick={() => {
-                        setSelectedStudent(student);
-                        setShowForm(true);
-                      }}
-                    >
-                      Edit
-                    </button>
-                  </td>
-                </tr>
+  // Student Selection View
+  if (!selectedStudent) {
+    return (
+      <div className="manage-report-cards">
+        <div className="header">
+          <h1>Manage Report Cards</h1>
+          <div className="filters">
+            <select value={term} onChange={(e) => setTerm(e.target.value)}>
+              <option>Term 1</option>
+              <option>Term 2</option>
+            </select>
+            <select value={year} onChange={(e) => setYear(e.target.value)}>
+              {[2024, 2025, 2026].map(y => (
+                <option key={y} value={y}>{y}</option>
               ))}
-            </tbody>
-          </table>
+            </select>
+          </div>
         </div>
-      ) : (
-        <div className="form-container">
-          <div className="form-header">
-            <h2>Report Card for {selectedStudent?.name}</h2>
-            <button className="btn-close" onClick={() => setShowForm(false)}>×</button>
+
+        {error && <div className="error-message">{error}</div>}
+        {successMessage && <div className="success-message">{successMessage}</div>}
+
+        <div className="student-selection">
+          <div className="search-box">
+            <input
+              type="text"
+              placeholder="Search by name, admission number, or roll number..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <div className="form-section">
-              <h3>Subjects</h3>
-              <div className="grading-scale">
-                <p><strong>Grading Scale:</strong> 90-100: A | 80-89: B | 70-79: C | 60-69: D | 0-59: F</p>
-              </div>
-
-              {formData.subjects.map((subject, index) => (
-                <div key={index} className="subject-row">
-                  <input
-                    type="text"
-                    placeholder="Subject Name"
-                    value={subject.name}
-                    onChange={(e) => handleSubjectChange(index, 'name', e.target.value)}
-                    required
-                  />
-                  <input
-                    type="number"
-                    placeholder="Marks"
-                    value={subject.marksObtained}
-                    onChange={(e) => handleSubjectChange(index, 'marksObtained', e.target.value)}
-                    min="0"
-                    required
-                  />
-                  <input
-                    type="number"
-                    placeholder="Max Marks"
-                    value={subject.maxMarks}
-                    onChange={(e) => handleSubjectChange(index, 'maxMarks', e.target.value)}
-                    min="1"
-                    required
-                  />
-                  <div className="calculated-fields">
-                    <span className="percentage">
-                      {subject.marksObtained && subject.maxMarks
-                        ? `${calculatePercentage(subject.marksObtained, subject.maxMarks)}%`
-                        : '-'}
-                    </span>
-                    <span className="grade">
-                      {subject.marksObtained && subject.maxMarks
-                        ? assignGrade(calculatePercentage(subject.marksObtained, subject.maxMarks))
-                        : '-'}
+          <div className="students-grid">
+            {filteredStudents.length > 0 ? (
+              filteredStudents.map(student => (
+                <div
+                  key={student.user_id}
+                  className="student-card"
+                  onClick={() => setSelectedStudent(student)}
+                >
+                  <div className="student-info">
+                    <h3>{student.name}</h3>
+                    <p className="admission">Admission: {student.admission_number}</p>
+                    <p className="roll">Roll No: {student.roll_number}</p>
+                  </div>
+                  <div className="status-badge">
+                    <span className={`status ${getReportCardStatus(student.user_id).toLowerCase().replace(/\s+/g, '-')}`}>
+                      {getReportCardStatus(student.user_id)}
                     </span>
                   </div>
-                  <textarea
-                    placeholder="Remarks"
-                    value={subject.remarks}
-                    onChange={(e) => handleSubjectChange(index, 'remarks', e.target.value)}
-                    maxLength="500"
-                  />
-                  {formData.subjects.length > 1 && (
-                    <button
-                      type="button"
-                      className="btn-remove"
-                      onClick={() => removeSubject(index)}
-                    >
-                      Remove
-                    </button>
-                  )}
                 </div>
-              ))}
-
-              <button type="button" className="btn-add-subject" onClick={addSubject}>
-                + Add Subject
-              </button>
-            </div>
-
-            <div className="form-section">
-              <label>Teacher Remarks</label>
-              <textarea
-                value={formData.teacherRemarks}
-                onChange={(e) => setFormData({ ...formData, teacherRemarks: e.target.value })}
-                placeholder="Overall remarks about the student's performance"
-                maxLength="1000"
-              />
-            </div>
-
-            <div className="form-actions">
-              <button type="submit" className="btn-submit">Save Report Card</button>
-              <button type="button" className="btn-cancel" onClick={() => setShowForm(false)}>Cancel</button>
-            </div>
-          </form>
+              ))
+            ) : (
+              <div className="no-students">
+                {searchTerm ? 'No students found matching your search' : 'No students available'}
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </div>
+    );
+  }
+
+  // Report Card Form View
+  return (
+    <div className="manage-report-cards">
+      <div className="form-container">
+        <div className="form-header">
+          <h2>Report Card for {selectedStudent?.name}</h2>
+          <button className="btn-close" onClick={() => setSelectedStudent(null)}>×</button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="form-section">
+            <h3>Subjects</h3>
+            <div className="grading-scale">
+              <p><strong>Grading Scale:</strong> 90-100: A | 80-89: B | 70-79: C | 60-69: D | 0-59: F</p>
+            </div>
+
+            {formData.subjects.map((subject, index) => (
+              <div key={index} className="subject-row">
+                <input
+                  type="text"
+                  placeholder="Subject Name"
+                  value={subject.name}
+                  onChange={(e) => handleSubjectChange(index, 'name', e.target.value)}
+                  required
+                />
+                <input
+                  type="number"
+                  placeholder="Marks"
+                  value={subject.marksObtained}
+                  onChange={(e) => handleSubjectChange(index, 'marksObtained', e.target.value)}
+                  min="0"
+                  required
+                />
+                <input
+                  type="number"
+                  placeholder="Max Marks"
+                  value={subject.maxMarks}
+                  onChange={(e) => handleSubjectChange(index, 'maxMarks', e.target.value)}
+                  min="1"
+                  required
+                />
+                <div className="calculated-fields">
+                  <span className="percentage">
+                    {subject.marksObtained && subject.maxMarks
+                      ? `${calculatePercentage(subject.marksObtained, subject.maxMarks)}%`
+                      : '-'}
+                  </span>
+                  <span className="grade">
+                    {subject.marksObtained && subject.maxMarks
+                      ? assignGrade(calculatePercentage(subject.marksObtained, subject.maxMarks))
+                      : '-'}
+                  </span>
+                </div>
+                <textarea
+                  placeholder="Remarks"
+                  value={subject.remarks}
+                  onChange={(e) => handleSubjectChange(index, 'remarks', e.target.value)}
+                  maxLength="500"
+                />
+                {formData.subjects.length > 1 && (
+                  <button
+                    type="button"
+                    className="btn-remove"
+                    onClick={() => removeSubject(index)}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))}
+
+            <button type="button" className="btn-add-subject" onClick={addSubject}>
+              + Add Subject
+            </button>
+          </div>
+
+          <div className="form-section">
+            <label>Teacher Remarks</label>
+            <textarea
+              value={formData.teacherRemarks}
+              onChange={(e) => setFormData({ ...formData, teacherRemarks: e.target.value })}
+              placeholder="Overall remarks about the student's performance"
+              maxLength="1000"
+            />
+          </div>
+
+          <div className="form-actions">
+            <button type="submit" className="btn-submit">Save Report Card</button>
+            <button type="button" className="btn-cancel" onClick={() => setSelectedStudent(null)}>Back to Students</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };
