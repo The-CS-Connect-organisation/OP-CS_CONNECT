@@ -34,17 +34,22 @@ const ManageReportCards = () => {
         setLoading(true);
         // Fetch students from the class
         const studentsData = await apiDataLayer.get('/school/students');
-        setStudents(studentsData.data || []);
+        setStudents(studentsData.data?.items || studentsData.data || []);
 
         // Fetch report cards
         const cardsData = await apiDataLayer.get('/report-cards');
         const cardsByStudent = {};
-        cardsData.data?.forEach(card => {
-          if (!cardsByStudent[card.student_id]) {
-            cardsByStudent[card.student_id] = [];
-          }
-          cardsByStudent[card.student_id].push(card);
-        });
+        const cardsList = cardsData.data?.items || cardsData.data || [];
+        
+        // Ensure cardsList is an array before calling forEach
+        if (Array.isArray(cardsList)) {
+          cardsList.forEach(card => {
+            if (!cardsByStudent[card.student_id]) {
+              cardsByStudent[card.student_id] = [];
+            }
+            cardsByStudent[card.student_id].push(card);
+          });
+        }
         setReportCards(cardsByStudent);
       } catch (err) {
         setError(err.message || 'Failed to load data');
@@ -146,12 +151,17 @@ const ManageReportCards = () => {
       // Refresh report cards
       const cardsData = await apiDataLayer.get('/report-cards');
       const cardsByStudent = {};
-      cardsData.data?.forEach(card => {
-        if (!cardsByStudent[card.student_id]) {
-          cardsByStudent[card.student_id] = [];
-        }
-        cardsByStudent[card.student_id].push(card);
-      });
+      const cardsList = cardsData.data?.items || cardsData.data || [];
+      
+      // Ensure cardsList is an array before calling forEach
+      if (Array.isArray(cardsList)) {
+        cardsList.forEach(card => {
+          if (!cardsByStudent[card.student_id]) {
+            cardsByStudent[card.student_id] = [];
+          }
+          cardsByStudent[card.student_id].push(card);
+        });
+      }
       setReportCards(cardsByStudent);
 
       setTimeout(() => setSuccessMessage(''), 3000);
