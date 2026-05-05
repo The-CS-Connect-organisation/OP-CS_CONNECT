@@ -21,7 +21,7 @@ const ReportCard = () => {
     const fetchReportCards = async () => {
       try {
         setLoading(true);
-        const response = await apiDataLayer.get(`/api/report-cards?studentId=${user.id}`);
+        const response = await apiDataLayer.get(`/report-cards?studentId=${user.id}`);
         setReportCards(response.data || []);
 
         // Select the most recent report card
@@ -47,7 +47,7 @@ const ReportCard = () => {
       if (!selectedCard?.id) return;
 
       try {
-        const response = await apiDataLayer.get(`/api/ai-analysis/${selectedCard.id}`);
+        const response = await apiDataLayer.get(`/ai-analysis/${selectedCard.id}`);
         setAnalysis(response.data);
       } catch (err) {
         console.warn('Failed to load analysis:', err.message);

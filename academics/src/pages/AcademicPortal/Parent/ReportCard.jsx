@@ -47,7 +47,7 @@ const ReportCard = () => {
       if (!selectedChild?.user_id) return;
 
       try {
-        const response = await apiDataLayer.get(`/api/report-cards?studentId=${selectedChild.user_id}`);
+        const response = await apiDataLayer.get(`/report-cards?studentId=${selectedChild.user_id}`);
         setReportCards(response.data || []);
 
         if (response.data && response.data.length > 0) {
@@ -68,7 +68,7 @@ const ReportCard = () => {
       if (!selectedCard?.id) return;
 
       try {
-        const response = await apiDataLayer.get(`/api/ai-analysis/${selectedCard.id}`);
+        const response = await apiDataLayer.get(`/ai-analysis/${selectedCard.id}`);
         setAnalysis(response.data);
       } catch (err) {
         console.warn('Failed to load analysis:', err.message);
