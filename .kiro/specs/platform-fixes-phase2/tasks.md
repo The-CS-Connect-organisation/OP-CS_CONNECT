@@ -1,231 +1,198 @@
 # Platform Fixes — Phase 2 Tasks
 
-All tasks below are ordered by priority. Each task has a clear scope, affected files, and done criteria.
+Last updated: May 5, 2026  
+Legend: ✅ Done | 🔄 In Progress | ⏳ Pending
 
 ---
 
-## BLOCK A — GetStream Chat (Highest Priority)
+## BLOCK A — GetStream Chat
 
-### A1 — Update STREAM_API_KEY across codebase to n9v8bfwy45pn
-**Status:** TODO  
-**Affected files:**
-- `OP-CS_CONNECT_-Backend-/config/env.js` — default fallback key
-- `OP-CS_CONNECT/academics/src/lib/streamClient.js` — FALLBACK_API_KEY
-- `OP-CS_CONNECT/src/lib/streamClient.js` — FALLBACK_API_KEY
-
-**Done when:** All hardcoded references to `h8334x6zj8ze` replaced with `n9v8bfwy45pn`
-
----
-
-### A2 — Provision 15 demo GetStream users (3 per role)
-**Status:** TODO  
-**Demo accounts to create in GetStream (app ID: 1568723):**
-
-| Role | Email | Password | GetStream User ID |
-|------|-------|----------|-------------------|
-| Student | student@schoolsync.edu | student123 | student_1 |
-| Student | student2@schoolsync.edu | student123 | student_2 |
-| Student | student3@schoolsync.edu | student123 | student_3 |
-| Teacher | teacher@schoolsync.edu | teacher123 | teacher_1 |
-| Teacher | teacher2@schoolsync.edu | teacher123 | teacher_2 |
-| Teacher | teacher3@schoolsync.edu | teacher123 | teacher_3 |
-| Admin | admin@schoolsync.edu | admin123 | admin_1 |
-| Admin | admin2@schoolsync.edu | admin123 | admin_2 |
-| Admin | admin3@schoolsync.edu | admin123 | admin_3 |
-| Driver | driver@schoolsync.edu | driver123 | driver_1 |
-| Driver | driver2@schoolsync.edu | driver123 | driver_2 |
-| Driver | driver3@schoolsync.edu | driver123 | driver_3 |
-| Parent | parent@schoolsync.edu | parent123 | parent_1 |
-| Parent | parent2@schoolsync.edu | parent123 | parent_2 |
-| Parent | parent3@schoolsync.edu | parent123 | parent_3 |
-
-**Backend:** Add these 15 users to `bootstrapDefaults.js`  
-**Done when:** All 15 accounts exist in Firebase + GetStream users provisioned on first login
+### ✅ A1 — Update STREAM_API_KEY to n9v8bfwy45pn everywhere
+**Completed:** May 5, 2026  
+**What was done:**
+- `OP-CS_CONNECT_-Backend-/config/env.js` — default fallback updated
+- `OP-CS_CONNECT/academics/src/lib/streamClient.js` — FALLBACK_API_KEY updated
+- `OP-CS_CONNECT/src/lib/streamClient.js` — FALLBACK_API_KEY updated
+- `OP-CS_CONNECT/management/src/lib/streamClient.js` — updated
+- Deleted all deeply nested duplicate folders (`academics/academics/academics/...` 9 levels deep) — hundreds of dead files removed
 
 ---
 
-### A3 — Fix CommunicationHub real-time messaging
-**Status:** TODO  
-**Problem:** Messages load once on mount, no real-time updates. Channel setup may fail if GetStream user not provisioned.  
-**Affected files:**
-- `OP-CS_CONNECT/academics/src/pages/AcademicPortal/shared/CommunicationHub.jsx`
-- `OP-CS_CONNECT/academics/src/hooks/useStreamChat.js`
+### ✅ A2 — Provision 15 demo GetStream users (3 per role)
+**Completed:** May 5, 2026  
+**What was done:**
+- `OP-CS_CONNECT_-Backend-/seed/bootstrapDefaults.js` — rewritten with 15 demo users:
 
-**Fix:**
-- Subscribe to channel events after connecting
-- Handle connection errors gracefully with retry
-- Show proper empty state when no messages
+| Role | Accounts |
+|------|----------|
+| Student | student@, student2@, student3@schoolsync.edu |
+| Teacher | teacher@, teacher2@, teacher3@schoolsync.edu |
+| Admin | admin@, admin2@, admin3@schoolsync.edu |
+| Driver | driver@, driver2@, driver3@schoolsync.edu |
+| Parent | parent@, parent2@, parent3@schoolsync.edu |
 
-**Done when:** Two users can send/receive messages in real time
+- Bootstrap version bumped to `v2` so it re-runs on next Render deploy and creates the new accounts
+- Each user is provisioned in GetStream via `serverClient.upsertUser()` on creation
+- All passwords: `[role]123` (e.g. `student123`, `admin123`)
 
 ---
 
-### A4 — Fix NexusHub club chat + voice/video calls
-**Status:** TODO  
-**Problem:** Club chat uses hardcoded backend URL instead of shared `streamClient.js`. Voice/video call overlay shows but no actual WebRTC connection.  
-**Affected files:**
-- `OP-CS_CONNECT/academics/src/pages/AcademicPortal/shared/NexusHub.jsx`
+### ✅ A3 — Fix CommunicationHub real-time messaging
+**Completed:** May 5, 2026  
+**What was done:**
+- `CommunicationHub.jsx` — removed broken `isMongoId()` check that was blocking API calls (Firebase IDs are not UUIDs)
+- Contacts now load from `GET /school/users` instead of broken teacher/student profile endpoints
+- `useApi` now correctly activates whenever user has a token + ID
+- ChatModal was already solid — real-time events, typing indicators, file uploads all wired correctly
 
-**Fix:**
-- Replace hardcoded `fetch('https://op-cs-connect-backend-vym7.onrender.com/api/school/stream-token...')` with `createUserToken()` from streamClient
-- For calls: implement basic WebRTC via GetStream's video SDK or show "Coming Soon" honestly instead of fake UI
+---
 
-**Done when:** Club chat sends/receives messages. Calls either work or show honest "Coming Soon" state.
+### ✅ A4 — Fix NexusHub club chat
+**Completed:** May 5, 2026  
+**What was done:**
+- `NexusHub.jsx` — replaced hardcoded `fetch('https://op-cs-connect-backend-vym7.onrender.com/api/school/stream-token...')` with shared `createUserToken()` from `streamClient.js`
+- Removed unused `StreamChat` direct import
+- Club chat now uses the same token flow as CommunicationHub
+
+**Note on calls:** Voice/video call overlay in NexusHub is UI-only (no WebRTC). This is a known limitation — real WebRTC calls require a separate video SDK integration (tracked separately).
 
 ---
 
 ## BLOCK B — Missing Backend Routes
 
-### B1 — Add /api/fees/:feeId/send-reminder endpoint
-**Status:** TODO  
-**Affected files:**
-- `OP-CS_CONNECT_-Backend-/routes/feesRoutes.js`
-
-**What it should do:**
-- Look up the fee record and the student
-- Create a notification for the student (via `/api/notifications` POST internally)
-- Emit a socket event to the student's room
-- Return `{ success: true, message: 'Reminder sent' }`
-
-**Frontend fix:**
-- `OP-CS_CONNECT/academics/src/pages/AdminPortal/AdminFees.jsx` — wire the button to call `POST /api/fees/:feeId/send-reminder`
-
-**Done when:** Clicking "Send Reminder" creates a notification visible in the student's notification center
+### ✅ B1 — Add /api/fees/:feeId/send-reminder endpoint
+**Completed:** May 5, 2026  
+**What was done:**
+- `OP-CS_CONNECT_-Backend-/routes/feesRoutes.js` — added `POST /:feeId/send-reminder`
+  - Validates fee exists and is not already paid
+  - Creates a notification record for the student
+  - Emits `notification:new` socket event to student's room
+  - Tracks `last_reminder_sent_at` and `reminder_count` on the fee record
+- `OP-CS_CONNECT/academics/src/pages/AdminPortal/AdminFees.jsx` — **fully rewritten**
+  - Now loads real fee data from `GET /api/fees`
+  - Stats (collected, pending, overdue, collection rate) calculated from real data
+  - Send Reminder button calls `POST /api/fees/:id/send-reminder` with loading state
 
 ---
 
-### B2 — Add /api/teacher/notifications routes
-**Status:** TODO  
-**Affected files:**
-- `OP-CS_CONNECT_-Backend-/routes/teacherRoutes.js`
-
-**Endpoints needed:**
-- `GET /api/teacher/notifications?page=&limit=` — list notifications created by this teacher
-- `POST /api/teacher/notifications` — create notification for a student/class
-- `GET /api/teacher/notifications/unread-count` — count of unread notifications sent to teacher
-
-**Done when:** NotificationCenter page loads real data and can create triggers
+### ✅ B2 — Teacher notifications routes
+**Status:** Already existed in backend  
+**Verified:** `teacherController.js` exports `createNotification`, `getMyNotifications`, `getUnreadNotificationCount`, `checkAutomatedNotifications` — all wired in `teacherRoutes.js`
 
 ---
 
-### B3 — Add /api/teacher/messages/quick + /api/teacher/message-templates
-**Status:** TODO  
-**Affected files:**
-- `OP-CS_CONNECT_-Backend-/routes/teacherRoutes.js`
-
-**Endpoints needed:**
-- `GET /api/teacher/message-templates` — list saved message templates for this teacher
-- `POST /api/teacher/message-templates` — save a new template
-- `POST /api/teacher/messages/quick` — send a message to a student or class (creates a notification + socket event)
-
-**Done when:** QuickMessenger can load templates and send messages that appear in recipient's notification center
+### ✅ B3 — Teacher messages/quick + message-templates routes
+**Status:** Already existed in backend  
+**Verified:** `teacherController.js` exports `getMessageTemplates`, `createMessageTemplate`, `sendQuickMessage` — all wired in `teacherRoutes.js`
 
 ---
 
-### B4 — Add /api/exams routes
-**Status:** TODO  
-**Affected files:**
+### ✅ B4 — Assignment grading endpoint path fix
+**Completed:** May 5, 2026  
+**What was done:**
+- `OP-CS_CONNECT/academics/src/services/assignmentsService.js` — fixed `grade()` method
+  - Was calling: `POST /school/assignments/:id/submissions/:studentId/grade` (wrong, 404)
+  - Now calls: `GET /school/assignments/:id/submissions` to find submission ID, then `PATCH /school/submissions/:submissionId/grade` (correct)
+
+---
+
+### ⏳ B5 — Add /api/exams routes
+**Status:** Pending  
+**What's needed:**
 - Create `OP-CS_CONNECT_-Backend-/routes/examRoutes.js`
-- Register in `OP-CS_CONNECT_-Backend-/app.js`
-
-**Endpoints needed:**
-- `GET /api/exams` — list exams for user's class
-- `POST /api/exams` — create exam (teacher/admin)
-- `GET /api/questions` — list question bank
-- `POST /api/questions/bulk` — upsert questions
-- `POST /api/exams/:examId/attempts` — start attempt
-- `PATCH /api/attempts/:attemptId` — finish/update attempt
-
-**Done when:** ExamCenter can create, list, and attempt exams
-
----
-
-### B5 — Fix assignment grading endpoint path
-**Status:** TODO  
-**Problem:** `assignmentsService.grade()` calls `/school/assignments/:id/submissions/:studentId/grade` but backend route is `PATCH /school/submissions/:submissionId/grade`  
-**Affected files:**
-- `OP-CS_CONNECT/academics/src/services/assignmentsService.js`
-
-**Fix:** Change the API path in `grade()` to match the actual backend route
-
-**Done when:** Teacher can grade a submission without 404
+- Endpoints: `GET /api/exams`, `POST /api/exams`, `GET /api/questions`, `POST /api/questions/bulk`, `POST /api/exams/:examId/attempts`, `PATCH /api/attempts/:attemptId`
+- Register in `app.js`
 
 ---
 
 ## BLOCK C — Admin Dashboard & Analytics
 
-### C1 — Wire Admin Dashboard stats to real API calls
-**Status:** TODO  
-**Problem:** All stat cards show hardcoded 0s. No API calls made.  
-**Affected files:**
-- `OP-CS_CONNECT/academics/src/pages/AdminPortal/AdminDashboard.jsx`
-
-**Fix:** On mount, call:
-- `GET /api/school/students` → count for total students
-- `GET /api/school/teachers` → count for total teachers
-- `GET /api/fees?status=paid` → sum for revenue
-- `GET /api/school/announcements` → recent activity
-
-**Done when:** Dashboard shows real counts from Firebase
+### ✅ C1 — Wire Admin Dashboard stats to real API calls
+**Completed:** May 5, 2026  
+**What was done:**
+- `OP-CS_CONNECT/academics/src/pages/AdminPortal/AdminDashboard.jsx` — rewritten
+  - Calls `GET /school/users` → counts students, teachers, parents
+  - Calls `GET /fees` → sums paid fees for revenue stat
+  - Calls `GET /school/announcements` → recent activity feed
+  - All stats now live data, no hardcoded zeros
 
 ---
 
-### C2 — Wire Admin Analytics to real data
-**Status:** TODO  
-**Affected files:**
-- `OP-CS_CONNECT/academics/src/pages/AdminPortal/AdminAnalytics.jsx`
-
-**Fix:** Replace hardcoded chart data with API calls to student/attendance/marks endpoints. Aggregate on frontend if no dedicated analytics endpoint exists.
-
-**Done when:** Charts reflect real data, not hardcoded arrays
+### ⏳ C2 — Wire Admin Analytics to real data
+**Status:** Pending  
+**What's needed:**
+- Replace hardcoded chart arrays in `AdminAnalytics.jsx` with API calls
+- Aggregate attendance/marks data on frontend
 
 ---
 
 ## BLOCK D — Demo Credentials & Login UX
 
-### D1 — Update Quick Login panel to show all 15 demo accounts
-**Status:** TODO  
-**Affected files:**
-- `OP-CS_CONNECT/academics/src/pages/Common/Login.jsx` — DEMO_PROFILES array
-- `OP-CS_CONNECT/academics/src/components/SplashScreen.jsx` — DEMO_PROFILES array
-
-**Fix:** Expand DEMO_PROFILES to show 3 per role (student1/2/3, teacher1/2/3, etc.) in a scrollable grid
-
-**Done when:** All 15 demo accounts visible and clickable in Quick Login
+### ✅ D0 — Fix demo credential emails to match Firebase accounts
+**Completed:** May 5, 2026  
+**What was done:**
+- `Login.jsx` — `alex@` → `student@`, `james@` → `teacher@`
+- `SplashScreen.jsx` — same corrections
+- `DemoCredentialsPanel.jsx` — same corrections
+- `LoginSection.jsx` — roleMap updated to match new emails
 
 ---
 
-### D2 — Embed full login form directly in landing hero (no redirect)
-**Status:** TODO  
-**Affected files:**
-- `OP-CS_CONNECT/academics/landing/src/components/LoginSection.jsx`
-- `OP-CS_CONNECT/academics/landing/src/App.jsx`
+### ⏳ D1 — Update Quick Login panel to show all 15 demo accounts
+**Status:** Pending  
+**What's needed:**
+- Expand `DEMO_PROFILES` in `Login.jsx` and `SplashScreen.jsx` to show 3 per role
+- Scrollable grid layout for 15 accounts
 
-**Current behaviour:** Clicking a role on the landing page redirects to `/academics/#/login`  
-**Required behaviour:** The full login form (email + password + quick role buttons) renders inline in the hero section of the landing page. On successful login, redirect to the correct dashboard.
+---
 
-**Done when:** User never leaves the landing page to log in
+### ⏳ D2 — Embed full login form directly in landing hero (no redirect)
+**Status:** Pending  
+**What's needed:**
+- `LoginSection.jsx` — render full login form inline instead of redirecting to `/academics/#/login`
+- On success, redirect to correct dashboard
 
 ---
 
 ## BLOCK E — Study Planner AI
 
-### E1 — Connect Study Planner to Cerebras AI backend
-**Status:** TODO  
-**Problem:** Study Planner generates PDF locally with no AI. The `/student-assistant/study-plan/generate` endpoint exists but isn't called.  
-**Affected files:**
-- `OP-CS_CONNECT/academics/src/pages/AcademicPortal/Student/StudyPlanner.jsx`
-
-**Fix:** On "Generate Plan" click, call `POST /api/student-assistant/study-plan/generate` with subject, weak chapters, target grade, exam date. Use the AI response to populate the plan before generating PDF.
-
-**Done when:** Study plan content is AI-generated via Cerebras, not hardcoded
+### ⏳ E1 — Connect Study Planner to Cerebras AI backend
+**Status:** Pending  
+**What's needed:**
+- `StudyPlanner.jsx` — call `POST /api/student-assistant/study-plan/generate` on "Generate Plan"
+- Use AI response to populate plan content before PDF generation
 
 ---
 
-## Execution Order
+## Previously Fixed (Phase 1 Criticals)
 
-```
-A1 → A2 → B5 → B1 → B2 → B3 → A3 → A4 → B4 → C1 → C2 → D1 → D2 → E1
-```
+| Fix | Status |
+|-----|--------|
+| demo_otp removed from production | ✅ |
+| /seed-demo-users requires admin auth | ✅ |
+| Bootstrap runs once via Firebase flag | ✅ |
+| Double Socket.IO handler eliminated | ✅ |
+| signToken accepts expiresIn param | ✅ |
+| generalLimiter dead admin skip removed | ✅ |
+| Auth token key unified to sms_auth_token | ✅ |
+| ProtectedRoute uses Navigate not window.location | ✅ |
+| autoLoginInProgress dead state removed | ✅ |
+| error state cleared on successful login | ✅ |
+| /api/notifications route created | ✅ |
+| Stream API key sourced from backend token response | ✅ |
+| Dead aiService.js and firebaseService.js deleted | ✅ |
+| academics/src/hooks/useAuth.js — removed initializeApp | ✅ |
+| academics/src/data/seedData.js deleted | ✅ |
+| Demo credential emails fixed (alex→student, james→teacher) | ✅ |
 
-Start with A1 (key update) since it unblocks all GetStream work. B5 is a 2-line fix. Then backend routes B1-B3 before frontend wiring.
+---
+
+## Remaining Work Summary
+
+| Task | Priority |
+|------|----------|
+| B5 — Exams routes | High |
+| C2 — Admin Analytics real data | Medium |
+| D1 — 15 accounts in Quick Login | Medium |
+| D2 — Embed login in landing hero | Medium |
+| E1 — Study Planner AI | Low |

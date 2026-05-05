@@ -4,14 +4,26 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, GraduationCap, BookOpen, Users, Bu
 
 const PHRASES = ['Learn.', 'Grow.', 'Succeed.'];
 
-// Demo credentials for each role
+// Demo credentials for each role — 3 per role
 const DEMO_PROFILES = [
-  { role: 'Student',  icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student@schoolsync.edu', password: 'student123' },
-  { role: 'Teacher',  icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher@schoolsync.edu', password: 'teacher123' },
-  { role: 'Parent',   icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent@schoolsync.edu',  password: 'parent123'  },
-  { role: 'Driver',   icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver@schoolsync.edu',  password: 'driver123'  },
-  { role: 'Admin',    icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin@schoolsync.edu',   password: 'admin123'   },
+  { role: 'Student', num: 1, icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student@schoolsync.edu',  password: 'student123' },
+  { role: 'Student', num: 2, icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student2@schoolsync.edu', password: 'student123' },
+  { role: 'Student', num: 3, icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student3@schoolsync.edu', password: 'student123' },
+  { role: 'Teacher', num: 1, icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher@schoolsync.edu',  password: 'teacher123' },
+  { role: 'Teacher', num: 2, icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher2@schoolsync.edu', password: 'teacher123' },
+  { role: 'Teacher', num: 3, icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher3@schoolsync.edu', password: 'teacher123' },
+  { role: 'Parent',  num: 1, icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent@schoolsync.edu',   password: 'parent123'  },
+  { role: 'Parent',  num: 2, icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent2@schoolsync.edu',  password: 'parent123'  },
+  { role: 'Parent',  num: 3, icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent3@schoolsync.edu',  password: 'parent123'  },
+  { role: 'Driver',  num: 1, icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver@schoolsync.edu',   password: 'driver123'  },
+  { role: 'Driver',  num: 2, icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver2@schoolsync.edu',  password: 'driver123'  },
+  { role: 'Driver',  num: 3, icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver3@schoolsync.edu',  password: 'driver123'  },
+  { role: 'Admin',   num: 1, icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin@schoolsync.edu',    password: 'admin123'   },
+  { role: 'Admin',   num: 2, icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin2@schoolsync.edu',   password: 'admin123'   },
+  { role: 'Admin',   num: 3, icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin3@schoolsync.edu',   password: 'admin123'   },
 ];
+
+const ROLE_GROUPS = ['Student', 'Teacher', 'Parent', 'Driver', 'Admin'];
 
 const AuroraBlob = ({ color, x, y, size, delay, duration }) => (
   <motion.div
@@ -69,6 +81,7 @@ const SplashScreen = ({ onComplete, onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [activeRoleTab, setActiveRoleTab] = useState('Student');
   const [loginError, setLoginError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
 
@@ -264,30 +277,61 @@ const SplashScreen = ({ onComplete, onLogin }) => {
               className="w-full mt-4"
             >
               <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
-                {/* Quick Login Role Buttons */}
+                {/* Quick Login — tabbed by role, 3 accounts each */}
                 <div className="mb-5">
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-3 text-center">Quick Login</p>
-                  <div className="grid grid-cols-5 gap-2">
-                    {DEMO_PROFILES.map(({ role, icon: Icon, color, bg, email: demoEmail, password: demoPass }) => (
+
+                  {/* Role tabs */}
+                  <div className="grid grid-cols-5 gap-1.5 mb-3">
+                    {DEMO_PROFILES.filter((p, i, arr) => arr.findIndex(x => x.role === p.role) === i).map(({ role, icon: Icon, color }) => (
                       <motion.button
                         key={role}
                         type="button"
-                        whileHover={{ scale: 1.06 }}
+                        whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => { setEmail(demoEmail); setPassword(demoPass); setLoginError(''); }}
-                        className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all"
+                        onClick={() => setActiveRoleTab(role)}
+                        className="flex flex-col items-center gap-1 p-2 rounded-xl border transition-all"
                         style={{
-                          background: email === demoEmail ? bg : '#f9fafb',
-                          borderColor: email === demoEmail ? color : '#e5e7eb',
+                          background: activeRoleTab === role ? `${color}15` : '#f9fafb',
+                          borderColor: activeRoleTab === role ? color : '#e5e7eb',
                         }}
-                        title={`Login as ${role}`}
                       >
-                        <Icon size={16} style={{ color }} />
-                        <span className="text-[9px] font-bold uppercase tracking-wide" style={{ color: email === demoEmail ? color : '#9ca3af' }}>
+                        <Icon size={14} style={{ color: activeRoleTab === role ? color : '#9ca3af' }} />
+                        <span className="text-[8px] font-bold uppercase tracking-wide" style={{ color: activeRoleTab === role ? color : '#9ca3af' }}>
                           {role}
                         </span>
                       </motion.button>
                     ))}
+                  </div>
+
+                  {/* 3 accounts for selected role */}
+                  <div className="space-y-1.5">
+                    {DEMO_PROFILES.filter(p => p.role === activeRoleTab).map((profile) => {
+                      const isSelected = email === profile.email;
+                      return (
+                        <motion.button
+                          key={profile.email}
+                          type="button"
+                          whileHover={{ scale: 1.01 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => { setEmail(profile.email); setPassword(profile.password); setLoginError(''); }}
+                          className="w-full flex items-center justify-between px-3 py-2 rounded-xl border transition-all text-left"
+                          style={{
+                            background: isSelected ? `${profile.color}10` : '#f9fafb',
+                            borderColor: isSelected ? profile.color + '50' : '#e5e7eb',
+                          }}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-black flex-shrink-0"
+                              style={{ background: profile.color }}>
+                              {profile.num}
+                            </div>
+                            <span className="text-[10px] font-mono text-gray-600 truncate max-w-[130px]">{profile.email}</span>
+                          </div>
+                          <span className="text-[9px] font-mono text-gray-400 flex-shrink-0">{profile.password}</span>
+                        </motion.button>
+                      );
+                    })}
                   </div>
                 </div>
 
