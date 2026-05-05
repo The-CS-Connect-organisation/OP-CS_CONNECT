@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { KEYS, getFromStorage } from '../data/schema';
-import { initializeApp } from '../data/seedData';
 import { disconnectSocket } from '../utils/socketClient';
 import { authService } from '../services/authService';
 
@@ -13,11 +12,8 @@ export const useAuth = () => {
 
   useEffect(() => {
     try {
-      initializeApp();
-
       const currentUser = getFromStorage(KEYS.CURRENT_USER);
       if (currentUser) {
-        // Validate that the user object has required fields
         if (!currentUser.id || !currentUser.role || !currentUser.email) {
           console.warn('Invalid user object in storage, clearing:', currentUser);
           setUser(null);
@@ -41,6 +37,7 @@ export const useAuth = () => {
       const res = await authService.login(email, password);
       if (res?.success) {
         setUser(res.user);
+        setError(null);
         navigate(`/${res.user.role}/dashboard`);
       }
       return res;
@@ -58,6 +55,7 @@ export const useAuth = () => {
       const res = await authService.signup(data);
       if (res?.success) {
         setUser(res.user);
+        setError(null);
         navigate(`/${res.user.role}/dashboard`);
       }
       return res;

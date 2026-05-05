@@ -1,35 +1,33 @@
 import { StreamChat } from 'stream-chat';
 import { request } from '../utils/apiClient';
 
-const API_KEY = 'h8334x6zj8ze';
+const FALLBACK_API_KEY = 'h8334x6zj8ze';
 
 let clientInstance = null;
+let resolvedApiKey = FALLBACK_API_KEY;
 
 export const getStreamClient = () => {
   if (!clientInstance) {
-    clientInstance = StreamChat.getInstance(API_KEY);
+    clientInstance = StreamChat.getInstance(resolvedApiKey);
   }
   return clientInstance;
 };
 
-/**
- * Fetch a signed Stream token from the backend.
- * The backend generates production tokens using the Stream API secret.
- */
 export const createUserToken = async (userId) => {
   const payload = await request(`/school/stream-token?userId=${encodeURIComponent(userId)}`);
   if (!payload?.token) {
     throw new Error('Failed to get Stream Chat token from backend');
   }
+  if (payload.apiKey && payload.apiKey !== resolvedApiKey) {
+    resolvedApiKey = payload.apiKey;
+    clientInstance = null;
+  }
   return payload.token;
 };
 
-/**
- * Pre-provision a user in GetStream before attempting to create a channel with them.
- */
 export const ensureUserExists = async (userId, name, role) => {
-  const tempClient = new StreamChat(API_KEY);
   const token = await createUserToken(userId);
+  const tempClient = new StreamChat(resolvedApiKey);
   try {
     await tempClient.connectUser(
       { id: userId, name: name || 'User', role: role || 'user' },
@@ -38,17 +36,10 @@ export const ensureUserExists = async (userId, name, role) => {
   } catch (err) {
     console.error(`[GetStream] Failed to provision user ${userId}:`, err);
   } finally {
-    try {
-      await tempClient.disconnectUser();
-    } catch {
-      // ignore
-    }
+    try { await tempClient.disconnectUser(); } catch { /* ignore */ }
   }
 };
 
-export const getDevToken = (userId) => {
-  const client = getStreamClient();
-  return client.devToken(userId);
-};
+export const getDevToken = (userId) => getStreamClient().devToken(userId);
 
-export { API_KEY };
+export { resolvedApiKey as API_KEY };
