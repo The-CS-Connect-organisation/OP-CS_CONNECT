@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, BookOpen, Clock, Calendar, CheckCircle, Banknote, 
   Bell, ChevronLeft, ChevronRight, X, Sparkles, Bot,
   LogOut, Settings, MessageCircle, FileText, BarChart3, ChevronDown,
-  ClipboardList, UserCheck, PencilLine, Megaphone, Heart
+  ClipboardList, UserCheck, PencilLine, Megaphone, Heart, User
 } from 'lucide-react';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
@@ -18,6 +18,7 @@ const ROLE_NAV = {
       section: 'Overview',
       items: [
         { title: 'Dashboard', icon: LayoutDashboard, route: '/admin/dashboard' },
+        { title: 'Profile', icon: User, route: '/admin/profile' },
         { title: 'Analytics', icon: BarChart3, route: '/admin/analytics' },
       ]
     },
@@ -25,6 +26,8 @@ const ROLE_NAV = {
       section: 'Management',
       items: [
         { title: 'Users', icon: Users, route: '/admin/users' },
+        { title: 'Create Account', icon: UserCheck, route: '/admin/create-account' },
+        { title: 'Bus Assignment', icon: FileText, route: '/admin/bus-assignment' },
         { title: 'Timetable', icon: Calendar, route: '/admin/timetable' },
         { title: 'Announcements', icon: Megaphone, route: '/admin/announcements' },
         { title: 'Payroll & HR', icon: Banknote, route: '/admin/payroll-hr' },
@@ -124,6 +127,27 @@ const ROLE_NAV = {
       ]
     },
   ],
+  librarian: [
+    {
+      section: 'Overview',
+      items: [
+        { title: 'Dashboard', icon: LayoutDashboard, route: '/librarian/dashboard' },
+        { title: 'Profile', icon: User, route: '/librarian/profile' },
+      ]
+    },
+    {
+      section: 'Library',
+      items: [
+        { title: 'Library Management', icon: BookOpen, route: '/librarian/library' },
+      ]
+    },
+    {
+      section: 'Tools',
+      items: [
+        { title: 'Messages', icon: MessageCircle, route: '/librarian/comms' },
+      ]
+    },
+  ],
 };
 
 /* ── Role colors ── */
@@ -132,6 +156,7 @@ const ROLE_COLOR = {
   teacher: { bg: '#a855f7', text: 'white', label: 'Teacher' },
   student: { bg: '#ff6b9d', text: 'white', label: 'Student' },
   parent: { bg: '#6366f1', text: 'white', label: 'Parent' },
+  librarian: { bg: '#8b5cf6', text: 'white', label: 'Librarian' },
 };
 
 export const Sidebar = ({ isMobile, isCollapsed, setCollapsed, onLogout }) => {

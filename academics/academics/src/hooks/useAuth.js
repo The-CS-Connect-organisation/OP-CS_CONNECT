@@ -16,7 +16,15 @@ export const useAuth = () => {
       initializeApp();
 
       const currentUser = getFromStorage(KEYS.CURRENT_USER);
-      if (currentUser) setUser(currentUser);
+      if (currentUser) {
+        // Validate that the user object has required fields
+        if (!currentUser.id || !currentUser.role || !currentUser.email) {
+          console.warn('Invalid user object in storage, clearing:', currentUser);
+          setUser(null);
+        } else {
+          setUser(currentUser);
+        }
+      }
     } catch (err) {
       console.error('Error initializing auth:', err);
       setError(err.message);

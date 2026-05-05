@@ -4,12 +4,9 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, GraduationCap, BookOpen, Users, Bu
 
 const PHRASES = ['Learn.', 'Grow.', 'Succeed.'];
 
-// Demo credentials for each role
+// Demo credentials - only Alicia Morgan (Admin)
+// New accounts can be created via the Create Account feature
 const DEMO_PROFILES = [
-  { role: 'Student',  icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'alex@schoolsync.edu',   password: 'student123' },
-  { role: 'Teacher',  icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'james@schoolsync.edu',  password: 'teacher123' },
-  { role: 'Parent',   icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent@schoolsync.edu', password: 'parent123'  },
-  { role: 'Driver',   icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver1@schoolsync.edu',password: 'driver123'  },
   { role: 'Admin',    icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin@schoolsync.edu',  password: 'admin123'   },
 ];
 
@@ -107,7 +104,7 @@ const SplashScreen = ({ onComplete, onLogin }) => {
       transition: { duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }
     });
     const t1 = setTimeout(() => setPhase(1), 800);
-    // After tagline animation, show login form instead of auto-completing
+    // Show login form after tagline animation
     const t2 = setTimeout(() => setPhase(2), 2400);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, [logoControls]);
@@ -264,42 +261,6 @@ const SplashScreen = ({ onComplete, onLogin }) => {
               className="w-full mt-4"
             >
               <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
-                {/* Quick Login Role Buttons */}
-                <div className="mb-5">
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 mb-3 text-center">Quick Login</p>
-                  <div className="grid grid-cols-5 gap-2">
-                    {DEMO_PROFILES.map(({ role, icon: Icon, color, bg, email: demoEmail, password: demoPass }) => (
-                      <motion.button
-                        key={role}
-                        type="button"
-                        whileHover={{ scale: 1.06 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => { setEmail(demoEmail); setPassword(demoPass); setLoginError(''); }}
-                        className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all"
-                        style={{
-                          background: email === demoEmail ? bg : '#f9fafb',
-                          borderColor: email === demoEmail ? color : '#e5e7eb',
-                        }}
-                        title={`Login as ${role}`}
-                      >
-                        <Icon size={16} style={{ color }} />
-                        <span className="text-[9px] font-bold uppercase tracking-wide" style={{ color: email === demoEmail ? color : '#9ca3af' }}>
-                          {role}
-                        </span>
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="relative mb-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-100" />
-                  </div>
-                  <div className="relative flex justify-center">
-                    <span className="bg-white px-3 text-[10px] text-gray-400 uppercase tracking-widest font-semibold">or enter manually</span>
-                  </div>
-                </div>
-
                 <form onSubmit={handleLogin} className="space-y-4">
                   {/* Email */}
                   <div className="space-y-1.5">
@@ -377,12 +338,7 @@ const SplashScreen = ({ onComplete, onLogin }) => {
                 </form>
               </div>
 
-              {/* Skip link */}
-              <p className="text-center mt-4 text-xs text-gray-400">
-                <button onClick={handleSkip} className="hover:text-gray-600 transition-colors underline underline-offset-2">
-                  Continue to login page
-                </button>
-              </p>
+              {/* Skip link - REMOVED: no separate login page exists */}
             </motion.div>
           )}
         </AnimatePresence>

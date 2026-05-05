@@ -1,19 +1,61 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, UserCog } from 'lucide-react';
 
-function SplashScreen({ onComplete }) {
+function SplashScreen({ onComplete, onLogin }) {
   const [phase, setPhase] = useState('logo');
+  const [email, setEmail] = useState('admin@schoolsync.edu');
+  const [password, setPassword] = useState('admin123');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginError, setLoginError] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false);
 
   useEffect(() => {
-    const timer1 = setTimeout(() => setPhase('text'), 800);
-    const timer2 = setTimeout(() => setPhase('complete'), 1500);
-    const timer3 = setTimeout(() => onComplete(), 1600);
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-      clearTimeout(timer3);
-    };
-  }, [onComplete]);
+    // Only auto-complete if no onLogin handler (simple splash mode)
+    if (!onLogin) {
+      const timer1 = setTimeout(() => setPhase('text'), 800);
+      const timer2 = setTimeout(() => setPhase('complete'), 1500);
+      const timer3 = setTimeout(() => onComplete(), 1600);
+      return () => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+        clearTimeout(timer3);
+      };
+    } else {
+      // If onLogin is provided, show login form after animation
+      const timer1 = setTimeout(() => setPhase('text'), 800);
+      const timer2 = setTimeout(() => setPhase('login'), 1500);
+      return () => {
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+      };
+    }
+  }, [onComplete, onLogin]);
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!onLogin) {
+      onComplete();
+      return;
+    }
+    
+    setLoginError('');
+    setLoginLoading(true);
+    try {
+      const result = await onLogin(email.trim().toLowerCase(), password.trim());
+      if (result?.success) {
+        onComplete();
+      } else {
+        setLoginError(result?.error || 'Invalid email or password');
+        setLoginLoading(false);
+      }
+    } catch (err) {
+      setLoginError('Login failed. Please try again.');
+      setLoginLoading(false);
+    }
+  };
+
+  const handleSkip = () => onComplete();
 
   return (
     <motion.div
@@ -64,12 +106,12 @@ function SplashScreen({ onComplete }) {
         />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center">
+      <div className="relative z-10 flex flex-col items-center w-full max-w-md px-4">
         {/* School Logo - Professional Design */}
         <motion.div
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ 
-            scale: phase === 'logo' ? 1 : 1, 
+            scale: phase === 'logo' || phase === 'text' || phase === 'login' ? 1 : 1, 
             opacity: 1 
           }}
           transition={{ 
@@ -129,7 +171,7 @@ function SplashScreen({ onComplete }) {
         {/* School Name */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: phase === 'text' || phase === 'complete' ? 1 : 0, y: 0 }}
+          animate={{ opacity: phase === 'text' || phase === 'login' ? 1 : 0, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
           className="text-center mb-4"
         >
@@ -137,46 +179,132 @@ function SplashScreen({ onComplete }) {
             Cornerstone School
           </h1>
           <p className="text-sm text-gray-500 mt-1 tracking-wide">
-            Excellence in Education Since 1995
+            Management Portal
           </p>
         </motion.div>
 
-        {/* Tagline */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: phase === 'complete' ? 1 : 0 }}
-          transition={{ duration: 0.4 }}
-          className="text-xs text-gray-400 mb-6"
-        >
-          Management Portal
-        </motion.p>
+        {/* Loading indicator - shown during initial animation */}
+        <AnimatePresence>
+          {phase === 'logo' || phase === 'text' ? (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, delay: 0.5 }}
+              className="flex items-center gap-2"
+            >
+              <div className="flex gap-1.5">
+                {[0, 1, 2].map((i) => (
+                  <motion.div
+                    key={i}
+                    animate={{
+                      scale: [1, 1.3, 1],
+                      opacity: [0.5, 1, 0.5],
+                    }}
+                    transition={{
+                      duration: 0.8,
+                      repeat: Infinity,
+                      delay: i * 0.15,
+                    }}
+                    className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-green-500"
+                  />
+                ))}
+              </div>
+              <span className="text-xs text-gray-400 ml-2">Loading...</span>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
 
-        {/* Loading indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: phase === 'logo' || phase === 'text' ? 1 : 0 }}
-          transition={{ duration: 0.3, delay: 0.5 }}
-          className="flex items-center gap-2"
-        >
-          <div className="flex gap-1.5">
-            {[0, 1, 2].map((i) => (
-              <motion.div
-                key={i}
-                animate={{
-                  scale: [1, 1.3, 1],
-                  opacity: [0.5, 1, 0.5],
-                }}
-                transition={{
-                  duration: 0.8,
-                  repeat: Infinity,
-                  delay: i * 0.15,
-                }}
-                className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-green-500"
-              />
-            ))}
-          </div>
-          <span className="text-xs text-gray-400 ml-2">Loading...</span>
-        </motion.div>
+        {/* Login Form - shown when onLogin is provided */}
+        <AnimatePresence>
+          {phase === 'login' && onLogin && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.97 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full mt-6"
+            >
+              <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+                <form onSubmit={handleLogin} className="space-y-4">
+                  {/* Email */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-600 ml-1">Email Address</label>
+                    <div className="relative">
+                      <input
+                        type="email"
+                        value={email}
+                        onChange={e => setEmail(e.target.value)}
+                        placeholder="admin@schoolsync.edu"
+                        required
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 pl-10 pr-4 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all"
+                      />
+                      <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                    </div>
+                  </div>
+
+                  {/* Password */}
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-gray-600 ml-1">Password</label>
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={e => setPassword(e.target.value)}
+                        placeholder="Enter password"
+                        required
+                        className="w-full bg-gray-50 border border-gray-200 rounded-xl py-2.5 pl-10 pr-10 text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all"
+                      />
+                      <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Error */}
+                  <AnimatePresence>
+                    {loginError && (
+                      <motion.p
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="text-xs font-medium text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2"
+                      >
+                        {loginError}
+                      </motion.p>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Submit */}
+                  <button
+                    type="submit"
+                    disabled={loginLoading}
+                    className={`w-full h-11 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-xl flex items-center justify-center gap-2 font-semibold text-sm transition-all ${loginLoading ? 'opacity-70 cursor-wait' : 'hover:shadow-lg active:scale-[0.98]'}`}
+                  >
+                    {loginLoading ? (
+                      <div className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+                        <div className="w-1.5 h-1.5 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                        <div className="w-1.5 h-1.5 bg-white/50 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                      </div>
+                    ) : (
+                      <>
+                        <span>Sign In</span>
+                        <ArrowRight size={15} />
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* Skip link - REMOVED: no separate login page exists */}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );

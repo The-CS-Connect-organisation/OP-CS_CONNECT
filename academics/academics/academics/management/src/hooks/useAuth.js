@@ -47,17 +47,25 @@ export const useAuth = () => {
       });
       const userFromApi = payload?.user;
       const token = payload?.token;
-      if (userFromApi) {
-        if (token) {
-          setAuthToken(token);
-          setToStorage(KEYS.AUTH_TOKEN, token);
-        }
+      if (userFromApi && token) {
+        setAuthToken(token);
+        setToStorage(KEYS.AUTH_TOKEN, token);
         setUser(userFromApi);
         setToStorage(KEYS.CURRENT_USER, userFromApi);
         return { success: true, user: userFromApi };
       }
-      return { success: false, error: 'Invalid server response' };
+      // Login failed - clear any stale user data
+      setUser(null);
+      removeFromStorage(KEYS.CURRENT_USER);
+      removeFromStorage(KEYS.AUTH_TOKEN);
+      setAuthToken(null);
+      return { success: false, error: 'Invalid email or password' };
     } catch (err) {
+      // Login failed - clear any stale user data
+      setUser(null);
+      removeFromStorage(KEYS.CURRENT_USER);
+      removeFromStorage(KEYS.AUTH_TOKEN);
+      setAuthToken(null);
       return { success: false, error: err.message || 'Invalid email or password' };
     }
   }, []);
