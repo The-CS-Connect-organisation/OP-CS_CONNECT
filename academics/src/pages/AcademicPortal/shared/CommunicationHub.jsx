@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
+﻿import { useEffect, useMemo, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Users, MessageCircle, Video, Menu } from 'lucide-react';
 import { ChatView } from '../../../components/messaging/ChatView';
@@ -212,7 +212,7 @@ export const CommunicationHub = ({ user }) => {
                         <span className="px-1.5 rounded-md font-medium" style={{ background: colors.light, color: colors.bg }}>
                           {contact.role}
                         </span>
-                        {contact.class && <span>� {contact.class}</span>}
+                        {contact.class && <span>· {contact.class}</span>}
                       </p>
                     </div>
                   </motion.div>
