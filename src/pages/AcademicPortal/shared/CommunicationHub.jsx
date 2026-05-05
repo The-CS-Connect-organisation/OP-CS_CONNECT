@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Users, MessageCircle, Video, Menu } from 'lucide-react';
 import { ChatView } from '../../../components/messaging/ChatView';
@@ -16,7 +16,7 @@ const mapProfileToContact = (profile, role) => {
   const name = u?.name || (role === 'student' ? 'Student' : 'Teacher');
   const classLabel =
     role === 'student' && profile.grade != null
-      ? `-`.replace(/-$/, '')
+      ? `${profile.grade}-${profile.section || ''}`.replace(/-$/, '')
       : undefined;
   return { id, name, role, ...(classLabel ? { class: classLabel } : {}) };
 };
@@ -45,9 +45,8 @@ export const CommunicationHub = ({ user }) => {
 
   const { client, isConnected } = useStreamChat(user);
   const token = typeof window !== 'undefined' ? getFromStorage(KEYS.AUTH_TOKEN) : null;
-  const useApi = !!token && !!user?.id; // Removed broken isMongoId check
+  const useApi = !!token && !!user?.id;
 
-  // Load Contacts
   useEffect(() => {
     if (!useApi) { setApiContacts(null); return; }
     let cancelled = false;
@@ -69,12 +68,10 @@ export const CommunicationHub = ({ user }) => {
     return () => { cancelled = true; };
   }, [useApi, user?.role]);
 
-  // Poll for Incoming Calls
   useEffect(() => {
     if (!user?.id) return;
     const interval = setInterval(() => {
       if (callState.isOpen || incomingCall) return;
-      // Search all keys for an offer directed at us
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
         if (key && key.startsWith('sms_call_signals:')) {
@@ -82,10 +79,8 @@ export const CommunicationHub = ({ user }) => {
             const signals = JSON.parse(localStorage.getItem(key) || '[]');
             const offer = signals.slice().reverse().find(s => s.type === 'offer' && s.fromUserId !== user.id);
             if (offer) {
-              // check if it's within the last 15 seconds
               const age = Date.now() - new Date(offer.createdAt).getTime();
               if (age < 15000) {
-                // Find caller info
                 const caller = contacts.find(c => String(c.id) === String(offer.fromUserId));
                 if (caller) {
                   setIncomingCall({ ...caller, callerName: caller.name });
@@ -142,7 +137,6 @@ export const CommunicationHub = ({ user }) => {
   return (
     <div className="w-full h-[calc(100vh-100px)] max-h-[800px] mx-auto p-4 md:p-6 lg:p-8 flex justify-center">
       
-      {/* Container with Glassmorphism */}
       <div 
         className="w-full max-w-[1200px] h-full rounded-3xl overflow-hidden flex relative shadow-2xl"
         style={{
@@ -153,13 +147,11 @@ export const CommunicationHub = ({ user }) => {
           boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1)'
         }}
       >
-        {/* Sidebar */}
-        <div className={w-full md:w-[360px] flex-shrink-0 flex flex-col transition-all duration-300 }>
-          {/* Sidebar Header */}
+        <div className={`w-full md:w-[360px] flex-shrink-0 flex flex-col transition-all duration-300 ${!showSidebarOnMobile && chatUser ? 'hidden md:flex' : 'flex'}`}>
           <div className="px-6 py-5 border-b border-white/20 bg-white/10 backdrop-blur-md">
             <h1 className="text-2xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>Messages</h1>
             <div className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
-              {isConnected ? <span className="text-emerald-500 font-medium tracking-wide">? Connected</span> : 'Connecting...'}
+              {isConnected ? <span className="text-emerald-500 font-medium tracking-wide">● Connected</span> : 'Connecting...'}
             </div>
             
             <div className="mt-4 relative">
@@ -179,7 +171,6 @@ export const CommunicationHub = ({ user }) => {
             </div>
           </div>
 
-          {/* Contact List */}
           <div className="flex-1 overflow-y-auto no-scrollbar pb-6 p-2">
             {contacts.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center opacity-50">
@@ -195,14 +186,17 @@ export const CommunicationHub = ({ user }) => {
                     key={contact.id}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleChatOpen(contact)}
-                    className={lex items-center gap-4 p-3 rounded-2xl cursor-pointer transition-all duration-200 mb-1 border }
+                    className={`flex items-center gap-4 p-3 rounded-2xl cursor-pointer transition-all duration-200 mb-1 border ${
+                      isActive 
+                        ? 'bg-white/60 border-white/60 shadow-sm' 
+                        : 'bg-transparent border-transparent hover:bg-white/30'
+                    }`}
                   >
                     <div className="relative">
                       <div className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-md"
                         style={{ background: colors.bg }}>
                         {contact.name.charAt(0)}
                       </div>
-                      {/* Active indicator */}
                       <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-emerald-400 rounded-full border-2 border-white/80 shadow-sm" />
                     </div>
                     
@@ -222,8 +216,7 @@ export const CommunicationHub = ({ user }) => {
           </div>
         </div>
 
-        {/* Chat Area */}
-        <div className={lex-1 flex flex-col bg-white/40  relative}>
+        <div className={`flex-1 flex flex-col bg-white/40 ${showSidebarOnMobile && chatUser ? 'hidden md:flex' : 'flex'} relative`}>
           {chatUser ? (
             <ChatView
               isOpen={true}
@@ -244,7 +237,6 @@ export const CommunicationHub = ({ user }) => {
         </div>
       </div>
 
-      {/* Modals */}
       <CallModal
         isOpen={callState.isOpen}
         onClose={() => setCallState({ isOpen: false, otherUser: null, preferVideo: true, initiator: true })}

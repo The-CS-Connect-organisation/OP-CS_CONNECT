@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Phone, Video, Send, Smile, Loader2, ArrowLeft, Image, Paperclip, CheckCheck } from 'lucide-react';
 import { useStreamChat, sanitizeId } from '../../hooks/useStreamChat';
@@ -34,10 +34,10 @@ export const ChatView = ({
       try {
         await ensureUserExists(otherId, otherUser.name, otherUser.role);
         const sortedIds = [myId, otherId].sort();
-        const channelId = "dm-${sortedIds[0]}-${sortedIds[1]}";
+        const channelId = `dm-${sortedIds[0]}-${sortedIds[1]}`;
         const ch = client.channel('messaging', channelId, {
           members: [myId, otherId],
-          name: ` & `,
+          name: `${currentUser.name} & ${otherUser.name}`,
         });
         await ch.watch();
         if (cancelled) return;
@@ -136,9 +136,8 @@ export const ChatView = ({
   const roleColor = otherUser.role === 'teacher' ? '#a855f7' : otherUser.role === 'student' ? '#3b82f6' : '#10b981';
 
   return (
-    <div className={"flex flex-col h-full w-full ${isInline ? '' : 'rounded-3xl overflow-hidden shadow-2xl bg-white/70 backdrop-blur-xl'}"}
+    <div className={`flex flex-col h-full w-full ${isInline ? '' : 'rounded-3xl overflow-hidden shadow-2xl bg-white/70 backdrop-blur-xl'}`}
          style={{ background: isInline ? 'transparent' : 'rgba(255,255,255,0.7)', backdropFilter: 'blur(20px)' }}>
-      {/* Header */}
       <div className="flex items-center gap-3 px-6 py-4 border-b border-white/30 bg-white/20 backdrop-blur-md z-10 shadow-sm">
         <button onClick={onClose} className="md:hidden p-2 -ml-2 rounded-full hover:bg-white/40 transition-colors">
           <ArrowLeft size={20} className="text-gray-700" />
@@ -167,7 +166,6 @@ export const ChatView = ({
         </div>
       </div>
 
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-4 space-y-2 no-scrollbar bg-gradient-to-b from-white/10 to-white/5">
         {loading ? (
           <div className="h-full flex items-center justify-center"><Loader2 size={24} className="animate-spin text-gray-400" /></div>
@@ -183,7 +181,7 @@ export const ChatView = ({
           <div className="space-y-3 pb-4">
             {groupedMessages.map((item, idx) => {
               if (item.type === 'date') return (
-                <div key={date-} className="flex justify-center py-2">
+                <div key={`date-${idx}`} className="flex justify-center py-2">
                   <span className="text-[10px] font-semibold px-3 py-1 rounded-full bg-black/5 text-gray-500 uppercase tracking-wide">{item.date}</span>
                 </div>
               );
@@ -191,8 +189,8 @@ export const ChatView = ({
               const isMe = msg.user?.id === myId;
               const hasAttachments = msg.attachments?.length > 0;
               return (
-                <motion.div key={msg.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={"flex ${isMe ? 'justify-end' : 'justify-start'}"}>
-                  <div className={"max-w-[75%] ${isMe ? 'items-end' : 'items-start'} flex flex-col"}>
+                <motion.div key={msg.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[75%] ${isMe ? 'items-end' : 'items-start'} flex flex-col`}>
                     {hasAttachments && msg.attachments.map((att, ai) => (
                       <div key={ai} className="mb-1.5 shadow-sm rounded-2xl overflow-hidden">
                         {att.type === 'image' ? (
@@ -205,11 +203,11 @@ export const ChatView = ({
                       </div>
                     ))}
                     {msg.text && (
-                      <div className={"px-4 py-2.5 text-[15px] leading-relaxed shadow-sm ${isMe ? 'bg-blue-500 text-white rounded-2xl rounded-tr-sm' : 'bg-white/80 backdrop-blur-md text-gray-800 border border-white/50 rounded-2xl rounded-tl-sm'}"}>
+                      <div className={`px-4 py-2.5 text-[15px] leading-relaxed shadow-sm ${isMe ? 'bg-blue-500 text-white rounded-2xl rounded-tr-sm' : 'bg-white/80 backdrop-blur-md text-gray-800 border border-white/50 rounded-2xl rounded-tl-sm'}`}>
                         <p className="break-words whitespace-pre-wrap">{msg.text}</p>
                       </div>
                     )}
-                    <div className={"flex items-center gap-1 mt-1 px-1 ${isMe ? 'justify-end' : ''}"}>
+                    <div className={`flex items-center gap-1 mt-1 px-1 ${isMe ? 'justify-end' : ''}`}>
                       <span className="text-[10px] font-medium text-gray-400">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                       {isMe && <CheckCheck size={12} className="text-blue-400" />}
                     </div>
@@ -231,7 +229,6 @@ export const ChatView = ({
         )}
       </div>
 
-      {/* Input */}
       <div className="px-4 py-3 border-t border-white/40 bg-white/40 backdrop-blur-md z-10 flex items-center gap-2">
         <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} />
         <button onClick={() => fileInputRef.current?.click()} className="p-2.5 rounded-full hover:bg-white/60 transition-colors shadow-sm bg-white/40 text-blue-500 flex-shrink-0" disabled={!isConnected || loading}>
