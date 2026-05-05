@@ -84,6 +84,7 @@ import { TeacherAILab } from './pages/TeacherPortal/TeacherAILab';
 // Librarian Portal Pages
 import { LibrarianDashboard } from './pages/LibrarianPortal/LibrarianDashboard';
 import { LibrarianProfile } from './pages/LibrarianPortal/LibrarianProfile';
+import { LibrarianBookAssignment } from './pages/LibrarianPortal/LibrarianBookAssignment';
 
 // Loading screen (shown during auth check)
 const LoadingScreen = () => (
@@ -579,6 +580,11 @@ function App() {
           <Route path="/librarian/profile" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
               <LibrarianProfile user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/librarian/book-assignment" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibrarianBookAssignment user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 

@@ -71,6 +71,7 @@ const ROLE_NAV = {
         { title: 'Fees', icon: Banknote, route: '/student/fees' },
         { title: 'Exams', icon: ClipboardList, route: '/student/exams' },
         { title: 'Bus Tracking', icon: Heart, route: '/student/bus-tracking' },
+        { title: 'Books Issued', icon: BookOpen, route: '/student/books-issued' },
       ]
     },
     {
@@ -145,6 +146,12 @@ const ROLE_NAV = {
       ]
     },
     {
+      section: 'Library Management',
+      items: [
+        { title: 'Book Assignment', icon: BookOpen, route: '/librarian/book-assignment' },
+      ]
+    },
+    {
       section: 'My Account',
       items: [
         { title: 'Profile', icon: Users, route: '/librarian/profile' },
@@ -172,6 +179,7 @@ const ROLE_NAV = {
       items: [
         { title: 'Bus Tracking', icon: Heart, route: '/parent/bus-tracking' },
         { title: 'Notifications', icon: Bell, route: '/parent/notifications' },
+        { title: 'Books Issued', icon: BookOpen, route: '/parent/books-issued' },
       ]
     },
     {

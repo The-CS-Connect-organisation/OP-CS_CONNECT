@@ -12,51 +12,59 @@ export const BooksIssued = ({ user }) => {
     // Fetch issued books for all children
     const fetchChildrenBooks = async () => {
       try {
-        // Mock data structure - would fetch from backend/Firebase
-        const mockChildrenBooks = {
-          child1: {
-            name: 'John Doe',
-            class: '10-A',
-            books: [
-              {
-                id: '1',
-                title: 'The Great Gatsby',
-                author: 'F. Scott Fitzgerald',
-                isbn: '978-0743273565',
-                issueDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-                dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+        // Load book assignments from localStorage (assigned by librarian)
+        const storedAssignments = localStorage.getItem('bookAssignments');
+        let childrenBooksData = {};
+        
+        if (storedAssignments) {
+          const allAssignments = JSON.parse(storedAssignments);
+          // Group assignments by child (assuming parent has children info)
+          // For now, we'll create a generic structure
+          allAssignments
+            .filter(a => a.assignedToRole === 'parent' && a.status === 'issued')
+            .forEach(a => {
+              if (!childrenBooksData[a.assignedTo]) {
+                childrenBooksData[a.assignedTo] = {
+                  name: a.assignedToName,
+                  class: 'N/A',
+                  books: [],
+                };
+              }
+              childrenBooksData[a.assignedTo].books.push({
+                id: a.id,
+                title: a.bookTitle,
+                author: a.author,
+                isbn: a.bookId || 'N/A',
+                issueDate: a.issuedDate,
+                dueDate: a.returnDate,
                 status: 'active',
-              },
-              {
-                id: '2',
-                title: 'To Kill a Mockingbird',
-                author: 'Harper Lee',
-                isbn: '978-0061120084',
-                issueDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-                dueDate: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString(),
-                status: 'active',
-              },
-            ],
-          },
-          child2: {
-            name: 'Jane Doe',
-            class: '8-B',
-            books: [
-              {
-                id: '3',
-                title: '1984',
-                author: 'George Orwell',
-                isbn: '978-0451524935',
-                issueDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-                dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-                status: 'overdue',
-              },
-            ],
-          },
-        };
+              });
+            });
+        }
 
-        setChildrenBooks(mockChildrenBooks);
-        setSelectedChild('child1');
+        // Fallback mock data if no assignments
+        if (Object.keys(childrenBooksData).length === 0) {
+          childrenBooksData = {
+            child1: {
+              name: 'John Doe',
+              class: '10-A',
+              books: [
+                {
+                  id: '1',
+                  title: 'The Great Gatsby',
+                  author: 'F. Scott Fitzgerald',
+                  isbn: '978-0743273565',
+                  issueDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+                  dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+                  status: 'active',
+                },
+              ],
+            },
+          };
+        }
+
+        setChildrenBooks(childrenBooksData);
+        setSelectedChild(Object.keys(childrenBooksData)[0]);
       } catch (error) {
         console.error('Error fetching children books:', error);
       } finally {

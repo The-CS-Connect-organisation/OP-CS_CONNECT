@@ -11,38 +11,52 @@ export const BooksIssued = ({ user }) => {
     // Fetch issued books for the current user
     const fetchIssuedBooks = async () => {
       try {
-        // This would fetch from your backend/Firebase
-        // For now, using mock data structure
-        const mockBooks = [
-          {
-            id: '1',
-            title: 'The Great Gatsby',
-            author: 'F. Scott Fitzgerald',
-            isbn: '978-0743273565',
-            issueDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-            dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-            status: 'active',
-          },
-          {
-            id: '2',
-            title: 'To Kill a Mockingbird',
-            author: 'Harper Lee',
-            isbn: '978-0061120084',
-            issueDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-            dueDate: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString(),
-            status: 'active',
-          },
-          {
-            id: '3',
-            title: '1984',
-            author: 'George Orwell',
-            isbn: '978-0451524935',
-            issueDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-            dueDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-            status: 'overdue',
-          },
-        ];
-        setIssuedBooks(mockBooks);
+        // Load book assignments from localStorage (assigned by librarian)
+        const storedAssignments = localStorage.getItem('bookAssignments');
+        let libraryBooks = [];
+        
+        if (storedAssignments) {
+          const allAssignments = JSON.parse(storedAssignments);
+          // Filter assignments for current user
+          libraryBooks = allAssignments
+            .filter(a => (a.assignedTo === user?.email || a.assignedTo === user?.id) && a.status === 'issued')
+            .map(a => ({
+              id: a.id,
+              title: a.bookTitle,
+              author: a.author,
+              isbn: a.bookId || 'N/A',
+              issueDate: a.issuedDate,
+              dueDate: a.returnDate,
+              status: 'active',
+              assignedBy: a.assignedBy,
+            }));
+        }
+
+        // Fallback mock data if no assignments
+        if (libraryBooks.length === 0) {
+          libraryBooks = [
+            {
+              id: '1',
+              title: 'The Great Gatsby',
+              author: 'F. Scott Fitzgerald',
+              isbn: '978-0743273565',
+              issueDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+              dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+              status: 'active',
+            },
+            {
+              id: '2',
+              title: 'To Kill a Mockingbird',
+              author: 'Harper Lee',
+              isbn: '978-0061120084',
+              issueDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+              dueDate: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString(),
+              status: 'active',
+            },
+          ];
+        }
+
+        setIssuedBooks(libraryBooks);
       } catch (error) {
         console.error('Error fetching issued books:', error);
       } finally {
@@ -51,7 +65,7 @@ export const BooksIssued = ({ user }) => {
     };
 
     fetchIssuedBooks();
-  }, [user?.id]);
+  }, [user?.id, user?.email]);
 
   const getDaysRemaining = (dueDate) => {
     const today = new Date();
