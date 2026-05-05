@@ -81,6 +81,7 @@ import { QuickMessenger } from './pages/TeacherPortal/QuickMessenger';
 import { PerformanceReports } from './pages/TeacherPortal/PerformanceReports';
 import { ClassNotes } from './pages/TeacherPortal/ClassNotes';
 import { TeacherAILab } from './pages/TeacherPortal/TeacherAILab';
+import ManageReportCards from './pages/TeacherPortal/ManageReportCards';
 
 // Loading screen (shown during auth check)
 const LoadingScreen = () => (
@@ -421,6 +422,11 @@ function App() {
           <Route path="/teacher/exams" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
               <ManageExams user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/teacher/report-cards" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+              <ManageReportCards user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/teacher/profile" element={
