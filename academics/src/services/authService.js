@@ -7,11 +7,25 @@ import { localUsersRepo, localAuditRepo } from './localRepo';
 const clean = (v) => String(v ?? '').trim();
 
 const setSession = ({ user, token }) => {
+  // Validate user object before storing
+  if (!user || !user.id || !user.role) {
+    console.error('Invalid user object, not storing:', user);
+    return;
+  }
   if (token) {
     setAuthToken(token);
     setToStorage(KEYS.AUTH_TOKEN, token);
   }
-  setToStorage(KEYS.CURRENT_USER, user);
+  // Store a clean copy of the user object
+  const cleanUser = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    avatar: user.avatar,
+    ...user // Include all other properties
+  };
+  setToStorage(KEYS.CURRENT_USER, cleanUser);
 };
 
 export const authService = {
