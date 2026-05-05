@@ -17,7 +17,7 @@ export const BooksIssued = ({ user }) => {
         
         if (storedAssignments) {
           const allAssignments = JSON.parse(storedAssignments);
-          // Filter assignments for current user
+          // Filter assignments for current user - only show books assigned by librarian
           libraryBooks = allAssignments
             .filter(a => (a.assignedTo === user?.email || a.assignedTo === user?.id) && a.status === 'issued')
             .map(a => ({
@@ -32,30 +32,7 @@ export const BooksIssued = ({ user }) => {
             }));
         }
 
-        // Fallback mock data if no assignments
-        if (libraryBooks.length === 0) {
-          libraryBooks = [
-            {
-              id: '1',
-              title: 'The Great Gatsby',
-              author: 'F. Scott Fitzgerald',
-              isbn: '978-0743273565',
-              issueDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-              dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
-              status: 'active',
-            },
-            {
-              id: '2',
-              title: 'To Kill a Mockingbird',
-              author: 'Harper Lee',
-              isbn: '978-0061120084',
-              issueDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-              dueDate: new Date(Date.now() + 18 * 24 * 60 * 60 * 1000).toISOString(),
-              status: 'active',
-            },
-          ];
-        }
-
+        // No fallback mock data - only show books assigned by librarian
         setIssuedBooks(libraryBooks);
       } catch (error) {
         console.error('Error fetching issued books:', error);
