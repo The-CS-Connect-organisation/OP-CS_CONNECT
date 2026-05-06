@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BookOpen, Users, Clock, CheckCircle, AlertCircle, Search, Plus, Edit, Trash2, Calendar, Filter } from 'lucide-react';
-import { Card } from '../../../components/ui/Card';
+import { Card } from '../../components/ui/Card';
 
 const LibraryManagement = ({ addToast }) => {
   const [books, setBooks] = useState([]);
@@ -423,3 +423,4 @@ const LibraryManagement = ({ addToast }) => {
 };
 
 export default LibraryManagement;
+

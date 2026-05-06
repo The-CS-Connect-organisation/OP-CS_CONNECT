@@ -142,6 +142,20 @@ const ROLE_NAV = {
       ]
     },
   ],
+  librarian: [
+    {
+      section: 'Overview',
+      items: [
+        { title: 'Library', icon: BookOpen, route: '/librarian/library' },
+      ]
+    },
+    {
+      section: 'My Account',
+      items: [
+        { title: 'Profile', icon: Users, route: '/librarian/profile' },
+      ]
+    },
+  ],
   parent: [
     {
       section: 'Overview',
@@ -176,10 +190,11 @@ const ROLE_NAV = {
 };
 
 const ROLE_COLOR = {
-  admin: { bg: '#111111', text: 'white', label: 'Admin' },
-  teacher: { bg: '#a855f7', text: 'white', label: 'Teacher' },
-  student: { bg: '#ff6b9d', text: 'white', label: 'Student' },
-  parent: { bg: '#6366f1', text: 'white', label: 'Parent' },
+  admin:     { bg: '#111111', text: 'white', label: 'Admin' },
+  teacher:   { bg: '#a855f7', text: 'white', label: 'Teacher' },
+  student:   { bg: '#ff6b9d', text: 'white', label: 'Student' },
+  parent:    { bg: '#6366f1', text: 'white', label: 'Parent' },
+  librarian: { bg: '#0ea5e9', text: 'white', label: 'Librarian' },
 };
 
 export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, onLogout }) => {

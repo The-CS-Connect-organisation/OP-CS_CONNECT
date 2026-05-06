@@ -17,17 +17,11 @@ export default function Footer() {
 
         {/* Links */}
         <div className="flex items-center gap-6 text-xs text-white/25 font-medium">
-          <a
-            href="/OP-CS_CONNECT/academics/"
-            className="hover:text-white/50 transition-colors"
-          >
-            Academic Portal
+          <a href="/OP-CS_CONNECT/" className="hover:text-white/50 transition-colors">
+            Portal
           </a>
-          <a
-            href="/OP-CS_CONNECT/management/"
-            className="hover:text-white/50 transition-colors"
-          >
-            Management Portal
+          <a href="#login" className="hover:text-white/50 transition-colors">
+            Sign In
           </a>
         </div>
 

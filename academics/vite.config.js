@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: '/OP-CS_CONNECT/academics/',
+  base: '/OP-CS_CONNECT/',
   server: {
     port: 5173
   },

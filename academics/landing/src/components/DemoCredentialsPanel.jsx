@@ -4,31 +4,28 @@ import { GraduationCap, BookOpen, Users, ShieldCheck, Bus, UserCog } from 'lucid
 
 const ALL_CREDENTIALS = [
   // Students
-  { role: 'student', label: 'Student', num: 1, icon: GraduationCap, email: 'student@schoolsync.edu',  password: 'student123', portal: 'academics',   accent: '#f59e0b' },
-  { role: 'student', label: 'Student', num: 2, icon: GraduationCap, email: 'student2@schoolsync.edu', password: 'student123', portal: 'academics',   accent: '#f59e0b' },
-  { role: 'student', label: 'Student', num: 3, icon: GraduationCap, email: 'student3@schoolsync.edu', password: 'student123', portal: 'academics',   accent: '#f59e0b' },
+  { role: 'student', label: 'Student', num: 1, icon: GraduationCap, email: 'student@schoolsync.edu',  password: 'student123', accent: '#f59e0b' },
+  { role: 'student', label: 'Student', num: 2, icon: GraduationCap, email: 'student2@schoolsync.edu', password: 'student123', accent: '#f59e0b' },
+  { role: 'student', label: 'Student', num: 3, icon: GraduationCap, email: 'student3@schoolsync.edu', password: 'student123', accent: '#f59e0b' },
   // Teachers
-  { role: 'teacher', label: 'Teacher', num: 1, icon: BookOpen,      email: 'teacher@schoolsync.edu',  password: 'teacher123', portal: 'academics',   accent: '#f97316' },
-  { role: 'teacher', label: 'Teacher', num: 2, icon: BookOpen,      email: 'teacher2@schoolsync.edu', password: 'teacher123', portal: 'academics',   accent: '#f97316' },
-  { role: 'teacher', label: 'Teacher', num: 3, icon: BookOpen,      email: 'teacher3@schoolsync.edu', password: 'teacher123', portal: 'academics',   accent: '#f97316' },
+  { role: 'teacher', label: 'Teacher', num: 1, icon: BookOpen,      email: 'teacher@schoolsync.edu',  password: 'teacher123', accent: '#f97316' },
+  { role: 'teacher', label: 'Teacher', num: 2, icon: BookOpen,      email: 'teacher2@schoolsync.edu', password: 'teacher123', accent: '#f97316' },
+  { role: 'teacher', label: 'Teacher', num: 3, icon: BookOpen,      email: 'teacher3@schoolsync.edu', password: 'teacher123', accent: '#f97316' },
   // Parents
-  { role: 'parent',  label: 'Parent',  num: 1, icon: Users,         email: 'parent@schoolsync.edu',   password: 'parent123',  portal: 'academics',   accent: '#ea580c' },
-  { role: 'parent',  label: 'Parent',  num: 2, icon: Users,         email: 'parent2@schoolsync.edu',  password: 'parent123',  portal: 'academics',   accent: '#ea580c' },
-  { role: 'parent',  label: 'Parent',  num: 3, icon: Users,         email: 'parent3@schoolsync.edu',  password: 'parent123',  portal: 'academics',   accent: '#ea580c' },
+  { role: 'parent',  label: 'Parent',  num: 1, icon: Users,         email: 'parent@schoolsync.edu',   password: 'parent123',  accent: '#ea580c' },
+  { role: 'parent',  label: 'Parent',  num: 2, icon: Users,         email: 'parent2@schoolsync.edu',  password: 'parent123',  accent: '#ea580c' },
+  { role: 'parent',  label: 'Parent',  num: 3, icon: Users,         email: 'parent3@schoolsync.edu',  password: 'parent123',  accent: '#ea580c' },
   // Drivers
-  { role: 'driver',  label: 'Driver',  num: 1, icon: Bus,           email: 'driver@schoolsync.edu',   password: 'driver123',  portal: 'academics',   accent: '#10b981' },
-  { role: 'driver',  label: 'Driver',  num: 2, icon: Bus,           email: 'driver2@schoolsync.edu',  password: 'driver123',  portal: 'academics',   accent: '#10b981' },
-  { role: 'driver',  label: 'Driver',  num: 3, icon: Bus,           email: 'driver3@schoolsync.edu',  password: 'driver123',  portal: 'academics',   accent: '#10b981' },
+  { role: 'driver',  label: 'Driver',  num: 1, icon: Bus,           email: 'driver@schoolsync.edu',   password: 'driver123',  accent: '#10b981' },
+  { role: 'driver',  label: 'Driver',  num: 2, icon: Bus,           email: 'driver2@schoolsync.edu',  password: 'driver123',  accent: '#10b981' },
+  { role: 'driver',  label: 'Driver',  num: 3, icon: Bus,           email: 'driver3@schoolsync.edu',  password: 'driver123',  accent: '#10b981' },
   // Admins
-  { role: 'admin',   label: 'Admin',   num: 1, icon: UserCog,       email: 'admin@schoolsync.edu',    password: 'admin123',   portal: 'management',  accent: '#ffffff' },
-  { role: 'admin',   label: 'Admin',   num: 2, icon: UserCog,       email: 'admin2@schoolsync.edu',   password: 'admin123',   portal: 'management',  accent: '#ffffff' },
-  { role: 'admin',   label: 'Admin',   num: 3, icon: UserCog,       email: 'admin3@schoolsync.edu',   password: 'admin123',   portal: 'management',  accent: '#ffffff' },
+  { role: 'admin',   label: 'Admin',   num: 1, icon: UserCog,       email: 'admin@schoolsync.edu',    password: 'admin123',   accent: '#ffffff' },
+  { role: 'admin',   label: 'Admin',   num: 2, icon: UserCog,       email: 'admin2@schoolsync.edu',   password: 'admin123',   accent: '#ffffff' },
+  { role: 'admin',   label: 'Admin',   num: 3, icon: UserCog,       email: 'admin3@schoolsync.edu',   password: 'admin123',   accent: '#ffffff' },
 ];
 
-const ROLE_TABS = {
-  academics:   ['student', 'teacher', 'parent', 'driver'],
-  management:  ['admin'],
-};
+const ROLE_TABS = ['student', 'teacher', 'parent', 'driver', 'admin'];
 
 const ROLE_META = {
   student: { icon: GraduationCap, accent: '#f59e0b' },
@@ -40,11 +37,11 @@ const ROLE_META = {
 
 export const DEMO_CREDENTIALS = ALL_CREDENTIALS;
 
-export default function DemoCredentialsPanel({ portal, onSelect }) {
-  const tabs = ROLE_TABS[portal] || ['student'];
+export default function DemoCredentialsPanel({ onSelect }) {
+  const tabs = ROLE_TABS;
   const [activeRole, setActiveRole] = useState(tabs[0]);
 
-  const filtered = ALL_CREDENTIALS.filter(c => c.portal === portal && c.role === activeRole);
+  const filtered = ALL_CREDENTIALS.filter(c => c.role === activeRole);
 
   return (
     <div className="mt-6">

@@ -62,7 +62,7 @@ const InlineLoginPanel = () => {
     const role = ROLE_MAP[email.trim().toLowerCase()] || 'student';
     const encodedEmail = encodeURIComponent(email.trim().toLowerCase());
     const encodedPassword = encodeURIComponent(password.trim());
-    window.location.href = `/OP-CS_CONNECT/academics/#/${role}/dashboard?autologin=${encodedEmail}&pass=${encodedPassword}`;
+    window.location.href = `/OP-CS_CONNECT/#/${role}/dashboard?autologin=${encodedEmail}&pass=${encodedPassword}`;
   };
 
   const activeGroup = ROLE_GROUPS.find(g => g.role === activeRole);

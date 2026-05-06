@@ -43,6 +43,10 @@ import { Profile as AdminProfile } from './pages/AdminPortal/Profile';
 import { CreateAccount } from './pages/AdminPortal/CreateAccount';
 import AdminAccounts from './pages/AdminPortal/AdminAccounts';
 
+// Librarian Portal
+import LibraryManagement from './pages/LibrarianPortal/LibraryManagement';
+import { Profile as LibrarianProfile } from './pages/LibrarianPortal/Profile';
+
 // Academic Portal - Student Pages
 import { Timetable } from './pages/AcademicPortal/Student/Timetable';
 import { Assignments } from './pages/AcademicPortal/Student/Assignments';
@@ -99,7 +103,7 @@ const LoadingScreen = () => (
 );
 
 // Allowed roles for this portal
-const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin'];
+const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin', 'librarian'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
@@ -525,6 +529,23 @@ function App() {
           <Route path="/admin/accounts" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <AdminAccounts user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+
+          {/* 📚 Librarian Portal */}
+          <Route path="/librarian/library" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibraryManagement user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/librarian/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibrarianProfile user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/librarian/dashboard" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="librarian">
+              <LibraryManagement user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 

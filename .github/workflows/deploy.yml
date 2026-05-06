@@ -22,51 +22,37 @@ jobs:
         with:
           node-version: 20
 
-      # Build landing (unified entry point)
+      # Build landing
       - name: Install landing deps
         run: npm install
-        working-directory: landing
+        working-directory: academics/landing
 
       - name: Build landing
         run: npm run build
-        working-directory: landing
+        working-directory: academics/landing
 
-      # Build academics
-      - name: Install academics deps
+      # Build main app (academics — now the single unified portal)
+      - name: Install app deps
         run: npm install
         working-directory: academics
 
-      - name: Build academics
+      - name: Build app
         run: npm run build
         working-directory: academics
         env:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
-      # Build management
-      - name: Install management deps
-        run: npm install
-        working-directory: management
-
-      - name: Build management
-        run: npm run build
-        working-directory: management
-        env:
-          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
-
-      # Combine all three builds
+      # Combine: landing at root, app at /OP-CS_CONNECT/
       - name: Prepare deploy folder
         run: |
-          mkdir -p deploy/academics
-          mkdir -p deploy/management
-          # Copy each portal to its subdirectory first
-          cp -r academics/dist/* deploy/academics/
-          cp -r management/dist/* deploy/management/
-          # Fix client-side routing — each portal handles its own 404
-          cp academics/dist/index.html deploy/academics/404.html
-          cp management/dist/index.html deploy/management/404.html
-          # Landing goes to root LAST so it doesn't overwrite portal 404s
-          cp -r landing/dist/* deploy/
-          cp landing/dist/index.html deploy/404.html
+          mkdir -p deploy/OP-CS_CONNECT
+          # Copy app build to /OP-CS_CONNECT/
+          cp -r academics/dist/* deploy/OP-CS_CONNECT/
+          # Fix client-side routing
+          cp academics/dist/index.html deploy/OP-CS_CONNECT/404.html
+          # Landing goes to root
+          cp -r academics/landing/dist/* deploy/
+          cp academics/landing/dist/index.html deploy/404.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
