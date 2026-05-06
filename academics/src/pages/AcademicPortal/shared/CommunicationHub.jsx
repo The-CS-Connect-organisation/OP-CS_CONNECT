@@ -234,10 +234,9 @@ const Sidebar = ({
 
   const getPeopleStatus = (userId) => {
     if (contacts.some(c => c.id === userId)) return 'accepted'
-    if (requests.some(r => r.from === userId)) return 'pending'
-    // Check if we sent them a request
-    const allReqs = lsGet(LS_REQUESTS_KEY, [])
-    if (allReqs.some(r => r.from === currentUser?.id && r.to === userId)) return 'pending'
+    // Check if we sent them a request (tracked via _pendingRequest flag on user object)
+    const u = allUsers.find(u => u.id === userId)
+    if (u?._pendingRequest) return 'pending'
     return 'none'
   }
 
@@ -550,18 +549,62 @@ export const CommunicationHub = ({ isOpen, onClose, currentUser }) => {
   useEffect(() => { lsSet(LS_UNREAD_KEY, unread) }, [unread])
   useEffect(() => { lsSet(LS_STARS_KEY, stars) }, [stars])
 
-  // ── Load all users ─────────────────────────────────────────────────────────
+  // ── Load all users + friends + requests from API ──────────────────────────
   useEffect(() => {
     if (!isOpen || !currentUser) return
-    setLoadingUsers(true)
-    request('/school/users?limit=500')
-      .then(res => {
-        // Handle multiple response shapes
-        const list = res.users || res.items || (Array.isArray(res) ? res : [])
-        setAllUsers(list.filter(u => String(u.id) !== String(currentUser.id)))
-      })
-      .catch(err => console.error('[CommunicationHub] Load users failed:', err))
-      .finally(() => setLoadingUsers(false))
+    let cancelled = false
+
+    const loadAll = async () => {
+      setLoadingUsers(true)
+      try {
+        const [usersRes, friendsRes, requestsRes] = await Promise.allSettled([
+          request('/school/users?limit=500'),
+          request('/api/friends'),
+          request('/api/friends/requests'),
+        ])
+
+        if (cancelled) return
+
+        // All users
+        if (usersRes.status === 'fulfilled') {
+          const list = usersRes.value.users || usersRes.value.items || (Array.isArray(usersRes.value) ? usersRes.value : [])
+          setAllUsers(list.filter(u => String(u.id) !== String(currentUser.id)))
+        }
+
+        // Accepted friends → contacts
+        if (friendsRes.status === 'fulfilled') {
+          const friends = friendsRes.value.friends || []
+          // Enrich with user data
+          const allU = usersRes.status === 'fulfilled'
+            ? (usersRes.value.users || usersRes.value.items || [])
+            : []
+          const enriched = friends.map(f => {
+            const userData = allU.find(u => u.id === f.id)
+            return {
+              id: f.id,
+              name: f.name || userData?.name || 'Unknown',
+              role: f.role || userData?.role || 'student',
+              lastMsg: '',
+              lastMsgTs: null,
+              accepted: true,
+            }
+          }).filter(f => f.name !== 'Unknown' || f.id)
+          setContacts(enriched)
+        }
+
+        // Incoming requests
+        if (requestsRes.status === 'fulfilled') {
+          setRequests(requestsRes.value.requests || [])
+        }
+      } catch (err) {
+        console.error('[CommunicationHub] Load failed:', err)
+      } finally {
+        if (!cancelled) setLoadingUsers(false)
+      }
+    }
+
+    loadAll()
+    return () => { cancelled = true }
   }, [isOpen, currentUser])
 
   // ── Socket.IO: online presence ─────────────────────────────────────────────
@@ -641,7 +684,41 @@ export const CommunicationHub = ({ isOpen, onClose, currentUser }) => {
     return () => socket.off('message:new', handleNewMessage)
   }, [isOpen, currentUser, selectedContact])
 
-  // ── Socket.IO: incoming call ───────────────────────────────────────────────
+  // ── Socket.IO: incoming friend requests + accepted notifications ──────────
+  useEffect(() => {
+    if (!isOpen || !currentUser) return
+    const socket = getSocket()
+    if (!socket) return
+
+    const handleFriendRequest = (req) => {
+      // Someone sent us a request
+      if (req.to === currentUser.id) {
+        setRequests(prev => {
+          if (prev.some(r => r.id === req.id)) return prev
+          return [req, ...prev]
+        })
+        playPing()
+      }
+    }
+
+    const handleFriendAccepted = (data) => {
+      // Our request was accepted — add them to contacts
+      const { by } = data
+      if (by) {
+        setContacts(prev => {
+          if (prev.some(c => c.id === by.id)) return prev
+          return [...prev, { id: by.id, name: by.name, role: by.role, lastMsg: '', lastMsgTs: null, accepted: true }]
+        })
+      }
+    }
+
+    socket.on('friend:request', handleFriendRequest)
+    socket.on('friend:accepted', handleFriendAccepted)
+    return () => {
+      socket.off('friend:request', handleFriendRequest)
+      socket.off('friend:accepted', handleFriendAccepted)
+    }
+  }, [isOpen, currentUser])
   useEffect(() => {
     if (!isOpen || !currentUser) return
     const socket = getSocket()
@@ -657,49 +734,38 @@ export const CommunicationHub = ({ isOpen, onClose, currentUser }) => {
     return () => socket.off('call:signal', handleCallRing)
   }, [isOpen, currentUser])
 
-  // ── Friend request handlers ────────────────────────────────────────────────
-  const handleAddFriend = useCallback((user) => {
-    const allReqs = lsGet(LS_REQUESTS_KEY, [])
-    const newReq = {
-      id: `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      from: currentUser.id,
-      to: user.id,
-      fromName: currentUser.name,
-      fromRole: currentUser.role,
-      ts: Date.now(),
+  // ── Friend request handlers (API-backed, cross-device) ────────────────────
+  const handleAddFriend = useCallback(async (user) => {
+    try {
+      await request('/api/friends/request', {
+        method: 'POST',
+        body: JSON.stringify({ toUserId: user.id }),
+      })
+      // Mark as pending in UI immediately
+      setAllUsers(prev => prev.map(u => u.id === user.id ? { ...u, _pendingRequest: true } : u))
+    } catch (err) {
+      console.error('[CommunicationHub] Send request failed:', err)
     }
-    lsSet(LS_REQUESTS_KEY, [...allReqs, newReq])
-    // Notify via socket (optional)
-    const socket = getSocket()
-    if (socket) socket.emit('friend:request', newReq)
-  }, [currentUser])
-
-  const handleAcceptRequest = useCallback((req) => {
-    // Add to contacts
-    const newContact = {
-      id: req.from,
-      name: req.fromName,
-      role: req.fromRole,
-      accepted: true,
-      lastMsg: '',
-      lastMsgTs: null,
-    }
-    setContacts(prev => [...prev, newContact])
-
-    // Remove from requests
-    const allReqs = lsGet(LS_REQUESTS_KEY, [])
-    lsSet(LS_REQUESTS_KEY, allReqs.filter(r => r.id !== req.id))
-    setRequests(prev => prev.filter(r => r.id !== req.id))
-
-    // Notify via socket (optional)
-    const socket = getSocket()
-    if (socket) socket.emit('friend:accept', { requestId: req.id, userId: req.from })
   }, [])
 
-  const handleDeclineRequest = useCallback((reqId) => {
-    const allReqs = lsGet(LS_REQUESTS_KEY, [])
-    lsSet(LS_REQUESTS_KEY, allReqs.filter(r => r.id !== reqId))
-    setRequests(prev => prev.filter(r => r.id !== reqId))
+  const handleAcceptRequest = useCallback(async (req) => {
+    try {
+      const res = await request(`/api/friends/accept/${req.id}`, { method: 'POST' })
+      const contact = res.contact || { id: req.from, name: req.fromName, role: req.fromRole }
+      setContacts(prev => [...prev, { ...contact, lastMsg: '', lastMsgTs: null, accepted: true }])
+      setRequests(prev => prev.filter(r => r.id !== req.id))
+    } catch (err) {
+      console.error('[CommunicationHub] Accept request failed:', err)
+    }
+  }, [])
+
+  const handleDeclineRequest = useCallback(async (reqId) => {
+    try {
+      await request(`/api/friends/request/${reqId}`, { method: 'DELETE' })
+      setRequests(prev => prev.filter(r => r.id !== reqId))
+    } catch (err) {
+      console.error('[CommunicationHub] Decline request failed:', err)
+    }
   }, [])
 
   // ── Contact selection ──────────────────────────────────────────────────────
