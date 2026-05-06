@@ -4,34 +4,26 @@ import { CheckSquare, TrendingUp, Calendar, Activity, Terminal, Hash, Layers, Za
 import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { AttendanceChart } from '../../../components/charts/AttendanceChart';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
 import { useSound } from '../../../hooks/useSound';
-import { studentApi } from '../../../services/apiDataLayer';
-import { getDataMode, DATA_MODES } from '../../../config/dataMode';
+import { request } from '../../../utils/apiClient';
 
 export const Attendance = ({ user }) => {
-  const { data: localAttendance } = useStore(KEYS.ATTENDANCE, []);
   const { playClick } = useSound();
   const [apiAttendance, setApiAttendance] = useState([]);
 
   useEffect(() => {
-    if (getDataMode() !== DATA_MODES.REMOTE_API) return;
+    if (!user?.id) return;
     let alive = true;
-    (async () => {
-      try {
-        const res = await studentApi.getAttendance();
-        if (alive && res?.records) setApiAttendance(res.records);
-      } catch (e) {
-        console.error('Failed to load attendance:', e);
-      }
-    })();
+    request('/student/attendance')
+      .then(res => {
+        if (alive) setApiAttendance(res?.records || res?.data?.records || []);
+      })
+      .catch(e => console.error('Failed to load attendance:', e));
     return () => { alive = false; };
   }, [user?.id]);
 
-  const rawAttendance = getDataMode() === DATA_MODES.REMOTE_API ? apiAttendance : localAttendance;
-  const myAttendance = rawAttendance
-    .filter(a => a.studentId === user.id || a.student_id === user.id)
+  const myAttendance = apiAttendance
+    .filter(a => !a.student_id || a.student_id === user.id || a.studentId === user.id)
     .map(a => ({
       ...a,
       studentId: a.studentId ?? a.student_id,

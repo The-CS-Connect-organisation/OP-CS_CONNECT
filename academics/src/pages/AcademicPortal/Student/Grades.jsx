@@ -8,10 +8,7 @@ import { MarksChart, SubjectWiseChart } from '../../../components/charts/MarksCh
 import { useSound } from '../../../hooks/useSound';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { studentApi } from '../../../services/apiDataLayer';
-import { getDataMode, DATA_MODES } from '../../../config/dataMode';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
+import { request } from '../../../utils/apiClient';
 
 export const Grades = ({ user }) => {
   const { playClick, playBlip } = useSound();
@@ -19,29 +16,21 @@ export const Grades = ({ user }) => {
   const [apiMarks, setApiMarks] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Local store fallback
-  const { data: localMarks } = useStore(KEYS.MARKS, []);
-
   useEffect(() => {
-    if (getDataMode() !== DATA_MODES.REMOTE_API) return;
+    if (!user?.id) return;
     let alive = true;
-    (async () => {
-      try {
-        setLoading(true);
-        const res = await studentApi.getGrades();
-        if (alive && res?.marks) setApiMarks(res.marks);
-      } catch (e) {
-        console.error('Failed to load grades:', e);
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
+    setLoading(true);
+    request('/student/grades')
+      .then(res => {
+        if (alive) setApiMarks(res?.marks || res?.data?.marks || res?.items || []);
+      })
+      .catch(e => console.error('Failed to load grades:', e))
+      .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [user?.id]);
 
-  // Use API data if available, fall back to local store
-  const rawMarks = getDataMode() === DATA_MODES.REMOTE_API ? apiMarks : localMarks;
-  const myMarks = rawMarks.filter(m => m.studentId === user.id || m.student_id === user.id).map(m => ({
+  const rawMarks = apiMarks;
+  const myMarks = rawMarks.filter(m => !m.student_id || m.student_id === user.id || m.studentId === user.id).map(m => ({
     ...m,
     marksObtained: m.marksObtained ?? m.score ?? 0,
     totalMarks: m.totalMarks ?? m.max_marks ?? 100,

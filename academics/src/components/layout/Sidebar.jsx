@@ -66,6 +66,7 @@ const ROLE_NAV = {
         { title: 'Timetable', icon: Clock, route: '/student/timetable' },
         { title: 'Attendance', icon: UserCheck, route: '/student/attendance' },
         { title: 'Notes', icon: BookOpen, route: '/student/notes' },
+        { title: 'Announcements', icon: Megaphone, route: '/student/announcements' },
         { title: 'Study Planner', icon: Calendar, route: '/student/planner' },
       ]
     },

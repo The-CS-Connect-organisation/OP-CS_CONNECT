@@ -54,6 +54,7 @@ import { Attendance } from './pages/AcademicPortal/Student/Attendance';
 import { Grades } from './pages/AcademicPortal/Student/Grades';
 import { Notes } from './pages/AcademicPortal/Student/Notes';
 import { StudentProfile } from './pages/AcademicPortal/Student/StudentProfile';
+import { Announcements } from './pages/AcademicPortal/Student/Announcements';
 import { StudyPlanner } from './pages/AcademicPortal/Student/StudyPlanner';
 import { AssignmentDetails } from './pages/AcademicPortal/Student/AssignmentDetails';
 import { BusTracking } from './pages/AcademicPortal/Student/BusTracking';
@@ -265,6 +266,11 @@ function App() {
           <Route path="/student/notes" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <Notes user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/announcements" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <Announcements user={user} />
             </ProtectedRoute>
           } />
           <Route path="/student/fees" element={
