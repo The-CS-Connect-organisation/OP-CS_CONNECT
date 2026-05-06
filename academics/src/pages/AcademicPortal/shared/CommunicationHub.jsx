@@ -432,68 +432,78 @@ const Sidebar = ({
   )
 }
 
-// ─── RightEdgePeek ────────────────────────────────────────────────────────────
-const RightEdgePeek = ({ contacts, onlineUsers, unread, stars, onOpen }) => {
+// ─── LeftEdgePeek — hover left edge to see app nav sidebar slide in ──────────
+const LeftEdgePeek = ({ currentUser, onNavigate }) => {
   const [hovered, setHovered] = useState(false)
 
-  const topContacts = useMemo(() => {
-    const starred = contacts.filter(c => stars.includes(c.id))
-    const rest = contacts.filter(c => !stars.includes(c.id))
-    return [...starred, ...rest].slice(0, 6)
-  }, [contacts, stars])
+  const navItems = [
+    { label: 'Dashboard', path: `/${currentUser?.role}/dashboard` },
+    { label: 'Assignments', path: `/${currentUser?.role}/assignments` },
+    { label: 'Grades', path: `/${currentUser?.role}/grades` },
+    { label: 'Timetable', path: `/${currentUser?.role}/timetable` },
+    { label: 'Attendance', path: `/${currentUser?.role}/attendance` },
+    { label: 'AI Assistant', path: `/${currentUser?.role}/ai-lab` },
+    { label: 'Nexus Hub', path: `/${currentUser?.role}/nexus` },
+  ]
 
   return (
     <div
-      className="fixed right-0 top-0 h-full z-[9998] flex items-center"
+      className="fixed left-0 top-0 h-full z-[9998] flex items-stretch"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      {/* Invisible hover strip */}
-      <div className="w-4 h-full absolute right-0 top-0" />
+      {/* Invisible 16px hover strip on the left edge */}
+      <div className="w-4 h-full" />
 
-      {/* Mini preview panel */}
+      {/* Sliding nav panel */}
       <AnimatePresence>
         {hovered && (
           <motion.div
-            initial={{ x: 220, opacity: 0 }}
+            initial={{ x: -260, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
-            exit={{ x: 220, opacity: 0 }}
+            exit={{ x: -260, opacity: 0 }}
             transition={{ type: 'spring', stiffness: 400, damping: 35 }}
-            className="w-[200px] rounded-l-2xl overflow-hidden shadow-xl"
-            style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRight: 'none' }}
+            className="w-[240px] h-full flex flex-col shadow-2xl"
+            style={{ background: '#ffffff', borderRight: '1px solid #e5e7eb' }}
           >
-            <div className="px-3 py-3 border-b border-gray-100 flex items-center justify-between">
-              <span className="text-[13px] font-bold text-gray-800">Messages</span>
-              <button
-                onClick={onOpen}
-                className="text-[11px] font-semibold text-blue-500 hover:text-blue-600 flex items-center gap-0.5"
-              >
-                Open <ChevronRight size={12} />
-              </button>
+            {/* Header */}
+            <div className="px-4 py-4 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-xl bg-black flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">C</span>
+                </div>
+                <div>
+                  <p className="text-[13px] font-bold text-gray-900">Cornerstone</p>
+                  <p className="text-[10px] text-gray-400 capitalize">{currentUser?.role}</p>
+                </div>
+              </div>
             </div>
-            <div className="py-1">
-              {topContacts.length === 0 ? (
-                <p className="text-[11px] text-gray-400 text-center py-4">No contacts yet</p>
-              ) : (
-                topContacts.map(c => (
-                  <div
-                    key={c.id}
-                    onClick={onOpen}
-                    className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                  >
-                    <Avatar user={c} size={32} showOnline online={onlineUsers.has(c.id)} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-semibold text-gray-800 truncate">{c.name}</p>
-                    </div>
-                    {(unread[c.id] || 0) > 0 && (
-                      <span className="min-w-[16px] h-4 px-1 rounded-full bg-blue-500 text-white text-[10px] font-bold flex items-center justify-center">
-                        {unread[c.id]}
-                      </span>
-                    )}
-                    {stars.includes(c.id) && <Star size={10} className="fill-amber-400 text-amber-400 flex-shrink-0" />}
-                  </div>
-                ))
-              )}
+
+            {/* Nav items */}
+            <div className="flex-1 overflow-y-auto py-2 px-2">
+              {navItems.map(item => (
+                <button
+                  key={item.path}
+                  onClick={() => onNavigate(item.path)}
+                  className="w-full text-left px-3 py-2.5 rounded-xl text-[13px] font-medium text-gray-700 hover:bg-gray-100 transition-colors"
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            {/* User footer */}
+            <div className="px-3 py-3 border-t border-gray-100">
+              <div className="flex items-center gap-3 p-2 rounded-xl bg-gray-50">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
+                  style={{ background: ROLE_COLOR[currentUser?.role] || '#6b7280' }}>
+                  {currentUser?.name?.charAt(0)}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[12px] font-semibold text-gray-800 truncate">{currentUser?.name}</p>
+                  <p className="text-[10px] text-gray-400 capitalize">{currentUser?.role}</p>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
@@ -544,8 +554,12 @@ export const CommunicationHub = ({ isOpen, onClose, currentUser }) => {
   useEffect(() => {
     if (!isOpen || !currentUser) return
     setLoadingUsers(true)
-    request('/school/users')
-      .then(res => setAllUsers(res.users || []))
+    request('/school/users?limit=500')
+      .then(res => {
+        // Handle multiple response shapes
+        const list = res.users || res.items || (Array.isArray(res) ? res : [])
+        setAllUsers(list.filter(u => String(u.id) !== String(currentUser.id)))
+      })
       .catch(err => console.error('[CommunicationHub] Load users failed:', err))
       .finally(() => setLoadingUsers(false))
   }, [isOpen, currentUser])
@@ -754,14 +768,15 @@ export const CommunicationHub = ({ isOpen, onClose, currentUser }) => {
 
   return (
     <>
-      {/* Right-edge peek (always visible when messenger closed) */}
-      {!isOpen && (
-        <RightEdgePeek
-          contacts={contacts}
-          onlineUsers={onlineUsers}
-          unread={unread}
-          stars={stars}
-          onOpen={() => onClose()} // Toggle open
+      {/* Left-edge peek — always visible, hover left border to see app nav */}
+      {isOpen && (
+        <LeftEdgePeek
+          currentUser={currentUser}
+          onNavigate={(path) => {
+            handleClose()
+            // Use hash navigation since app uses HashRouter
+            window.location.hash = path
+          }}
         />
       )}
 

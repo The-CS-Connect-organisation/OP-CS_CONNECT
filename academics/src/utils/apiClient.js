@@ -1,6 +1,13 @@
 // Hardcoded for GitHub Pages deployment - .env files don't work on static hosting
 const API_BASE_URL = 'https://op-cs-connect-backend-vym7.onrender.com/api';
 
+// Keep-alive ping every 10 minutes to prevent Render free tier cold starts
+if (typeof window !== 'undefined') {
+  const ping = () => fetch(`${API_BASE_URL}/health`, { method: 'GET' }).catch(() => {});
+  ping(); // ping on load
+  setInterval(ping, 10 * 60 * 1000); // ping every 10 min
+}
+
 // Initialize authToken from localStorage if available
 let authToken = null;
 if (typeof window !== 'undefined') {
