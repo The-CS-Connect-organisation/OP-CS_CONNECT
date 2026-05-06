@@ -3,10 +3,12 @@ import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import { MessageNotificationToast } from '../messaging/MessageNotificationToast';
 
 export const Layout = ({ children, user, logout, notifications = [], onMarkRead, theme, toggleTheme, portalLogout }) => {
   const [isCollapsed, setCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [allUsers, setAllUsers] = useState([]);
   const location = useLocation();
 
   useEffect(() => {
@@ -19,6 +21,16 @@ export const Layout = ({ children, user, logout, notifications = [], onMarkRead,
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  // Load users once for notification display
+  useEffect(() => {
+    if (!user?.id) return;
+    import('../../utils/apiClient').then(({ request }) => {
+      request('/school/users?limit=500')
+        .then(res => setAllUsers(res.users || res.items || []))
+        .catch(() => {});
+    });
+  }, [user?.id]);
+
   const SidebarComponent = Sidebar;
   const handleLogout = logout || portalLogout;
 
@@ -28,6 +40,9 @@ export const Layout = ({ children, user, logout, notifications = [], onMarkRead,
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-blue-50/30 via-white to-purple-50/30" />
       </div>
+
+      {/* Global message notification toasts + incoming call overlay */}
+      <MessageNotificationToast currentUser={user} allUsers={allUsers} />
 
       <SidebarComponent 
         user={user}

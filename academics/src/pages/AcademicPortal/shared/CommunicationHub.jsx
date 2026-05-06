@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { ChatView } from '../../../components/messaging/ChatView';
 import { CallModal } from '../../../components/messaging/CallModal';
-import { IncomingCallOverlay } from '../../../components/messaging/IncomingCallOverlay';
 import { request } from '../../../utils/apiClient';
 import { getSocket } from '../../../utils/socketClient';
 
@@ -231,7 +230,6 @@ export const CommunicationHub = ({ isOpen, onClose, currentUser }) => {
 
   const [callOpen, setCallOpen]         = useState(false);
   const [callData, setCallData]         = useState(null);
-  const [incomingCall, setIncomingCall] = useState(null);
 
   const seenMsgIds = useRef(new Set());
 
@@ -316,15 +314,16 @@ export const CommunicationHub = ({ isOpen, onClose, currentUser }) => {
     return () => socket.off('message:new', onMsg);
   }, [currentUser?.id]);
 
-  // ── Socket: incoming call ─────────────────────────────────────────────────
+  // ── Socket: incoming call — handled by MessageNotificationToast globally ──
+  // Only handle call:end to close any open call modal
   useEffect(() => {
     if (!currentUser?.id) return;
     const socket = getSocket();
     if (!socket) return;
-
     const onSignal = (data) => {
-      if (data?.type === 'call:ring' && String(data?.fromUserId) !== String(currentUser.id)) {
-        setIncomingCall(data);
+      if (data?.type === 'call:end') {
+        setCallOpen(false);
+        setCallData(null);
       }
     };
     socket.on('call:signal', onSignal);
@@ -501,28 +500,6 @@ export const CommunicationHub = ({ isOpen, onClose, currentUser }) => {
             )}
           </div>
         </div>,
-        document.body
-      )}
-
-      {/* Incoming call */}
-      {incomingCall && createPortal(
-        <IncomingCallOverlay
-          isOpen
-          callData={incomingCall}
-          onAccept={() => {
-            const caller = allUsers.find(u => String(u.id) === String(incomingCall.fromUserId));
-            if (caller) {
-              setCallData({ currentUser, otherUser: caller, preferVideo: incomingCall.preferVideo ?? true, initiator: false });
-              setCallOpen(true);
-            }
-            setIncomingCall(null);
-          }}
-          onDecline={() => {
-            const socket = getSocket();
-            if (socket) socket.emit('call:signal', { peerId: incomingCall.fromUserId, type: 'call:end', fromUserId: currentUser.id });
-            setIncomingCall(null);
-          }}
-        />,
         document.body
       )}
 
