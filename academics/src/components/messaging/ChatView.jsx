@@ -204,7 +204,7 @@ export const ChatView = ({
         <div className="flex-1 min-w-0">
           <p className="text-[15px] font-bold truncate text-gray-800">{otherUser.name}</p>
           <p className="text-[11px] font-medium" style={{ color: otherTyping ? '#10b981' : '#9ca3af' }}>
-            {otherTyping ? 'typing...' : 'Active now'}
+            {otherTyping ? 'typing...' : onlineUsers?.has?.(otherUser?.id) ? 'Active now' : 'Last seen recently'}
           </p>
         </div>
         <div className="flex items-center gap-1">
@@ -275,8 +275,13 @@ export const ChatView = ({
                       <span className="text-[10px] font-medium text-gray-400">
                         {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                      {isMe && !msg._pending && <CheckCheck size={11} className="text-blue-400" />}
-                      {isMe && msg._pending && <Loader2 size={10} className="text-gray-400 animate-spin" />}
+                      {isMe && (
+                        msg._pending
+                          ? <Loader2 size={10} className="text-gray-300 animate-spin" />
+                          : msg.read
+                            ? <CheckCheck size={12} className="text-blue-500" />
+                            : <CheckCheck size={12} className="text-gray-400" />
+                      )}
                     </div>
                   </div>
                 </motion.div>

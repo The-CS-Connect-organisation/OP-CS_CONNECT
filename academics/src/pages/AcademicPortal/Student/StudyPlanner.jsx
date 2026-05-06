@@ -138,13 +138,14 @@ export const StudyPlanner = ({ user, addToast }) => {
         doc.text('Stratified Study Schedule', 25, y);
         
         const today = new Date();
-        const examDate = formData.testDate ? new Date(formData.testDate) : new Date();
-        if (isNaN(examDate.getTime())) examDate.setDate(today.getDate() + 7);
+        // Always default to 14 days if no test date or test date is in the past
+        const examDate = formData.testDate ? new Date(formData.testDate) : new Date(today.getTime() + 14 * 24 * 60 * 60 * 1000);
+        if (isNaN(examDate.getTime())) examDate.setDate(today.getDate() + 14);
         
         const daysLeft = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
         
         const schedule = [];
-        const iterations = daysLeft > 0 ? Math.min(daysLeft, 14) : 7;
+        const iterations = Math.max(7, Math.min(daysLeft > 0 ? daysLeft : 14, 21));
         
         for (let i = 1; i <= iterations; i++) {
           const date = new Date();

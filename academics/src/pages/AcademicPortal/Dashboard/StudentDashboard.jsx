@@ -248,39 +248,85 @@ const CalendarDay = ({ day, events }) => {
 };
 
 export const StudentDashboard = ({ user }) => {
-  const { data: assignments } = useStore(KEYS.ASSIGNMENTS, []);
-  const { data: submissions } = useStore('sms_submissions', []);
-  const { data: marks } = useStore(KEYS.MARKS, []);
-  const { data: attendance } = useStore(KEYS.ATTENDANCE, []);
-  const { data: timetable } = useStore(KEYS.TIMETABLE, {});
-  const { data: announcements, update: updateAnnouncement } = useStore(KEYS.ANNOUNCEMENTS, []);
-  const { data: exams } = useStore(KEYS.EXAMS, []);
-  const { data: attempts } = useStore('sms_exam_attempts', []);
-  
-  // Ensure data is arrays to prevent crashes
-  const safeAssignments = Array.isArray(assignments) ? assignments : [];
-  const safeSubmissions = Array.isArray(submissions) ? submissions : [];
-  const safeMarks = Array.isArray(marks) ? marks : [];
-  const safeAttendance = Array.isArray(attendance) ? attendance : [];
-  const safeTimetable = timetable && typeof timetable === 'object' ? timetable : {};
-  const safeAnnouncements = Array.isArray(announcements) ? announcements : [];
-  const safeExams = Array.isArray(exams) ? exams : [];
-  const safeAttempts = Array.isArray(attempts) ? attempts : [];
+  // API-fetched data
+  const [apiAssignments, setApiAssignments] = useState([]);
+  const [apiMarks, setApiMarks] = useState([]);
+  const [apiAttendance, setApiAttendance] = useState([]);
+  const [apiAnnouncements, setApiAnnouncements] = useState([]);
+  const [apiTimetable, setApiTimetable] = useState({});
+  const [loadingDash, setLoadingDash] = useState(true);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+    setLoadingDash(true);
+
+    const { request } = require('../../../utils/apiClient');
+
+    Promise.allSettled([
+      request('/school/assignments'),
+      request(`/student/grades`),
+      request(`/school/attendance/${user.id}/report`),
+      request('/school/announcements?limit=50'),
+      request('/school/timetables'),
+    ]).then(([assignRes, marksRes, attRes, annRes, ttRes]) => {
+      if (cancelled) return;
+      if (assignRes.status === 'fulfilled') {
+        const list = assignRes.value.assignments || assignRes.value.items || [];
+        setApiAssignments(list);
+      }
+      if (marksRes.status === 'fulfilled') {
+        const list = marksRes.value.marks || marksRes.value.items || [];
+        setApiMarks(list);
+      }
+      if (attRes.status === 'fulfilled') {
+        const list = attRes.value.records || attRes.value.items || [];
+        setApiAttendance(list);
+      }
+      if (annRes.status === 'fulfilled') {
+        const list = annRes.value.announcements || annRes.value.items || [];
+        setApiAnnouncements(list);
+      }
+      if (ttRes.status === 'fulfilled') {
+        setApiTimetable(ttRes.value.timetable || ttRes.value || {});
+      }
+    }).finally(() => { if (!cancelled) setLoadingDash(false); });
+
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  // Use API data
+  const safeAssignments = apiAssignments;
+  const safeSubmissions = [];
+  const safeMarks = apiMarks;
+  const safeAttendance = apiAttendance;
+  const safeTimetable = apiTimetable;
+  const safeAnnouncements = apiAnnouncements;
+  const safeExams = [];
+  const safeAttempts = [];
   
   const [focusMode, setFocusMode] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
-  const myAssignments = safeAssignments.filter(a => a.class === user.class);
+  const myAssignments = safeAssignments.filter(a => !a.class_id || a.class_id === user.classroomId || a.class === user.class);
   const pendingAssignments = myAssignments.filter(a => {
     const sub = safeSubmissions.find((s) => s.assignmentId === a.id && s.studentId === user.id);
     return !sub || (sub.status !== 'submitted' && sub.status !== 'graded');
   });
 
-  const myMarks = safeMarks.filter(m => m.studentId === user.id);
-  const avgMarks = myMarks.length > 0 ? Math.round(myMarks.reduce((a, b) => a + b.marksObtained, 0) / myMarks.length) : 0;
+  // Normalize marks — API returns score/maxMarks, local uses marksObtained/maxMarks
+  const normalizedMarks = safeMarks.map(m => ({
+    ...m,
+    marksObtained: m.marksObtained ?? m.score ?? 0,
+    maxMarks: m.maxMarks ?? m.max_marks ?? 100,
+    subject: m.subject || 'General',
+  }));
 
-  const myAttendance = safeAttendance.filter(a => a.studentId === user.id);
-  const presentCount = myAttendance.filter(a => a.status === 'present').length;
+  const myMarks = normalizedMarks.filter(m => !m.student_id || m.student_id === user.id || m.studentId === user.id);
+  const avgMarks = myMarks.length > 0 ? Math.round(myMarks.reduce((a, b) => a + (b.marksObtained / b.maxMarks) * 100, 0) / myMarks.length) : 0;
+
+  const myAttendance = safeAttendance.filter(a => !a.student_id || a.student_id === user.id || a.studentId === user.id);
+  const presentCount = myAttendance.filter(a => a.status === 'present' || a.status === 'late').length;
   const attendanceRate = myAttendance.length > 0 ? Math.round((presentCount / myAttendance.length) * 100) : 0;
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
@@ -296,7 +342,7 @@ export const StudentDashboard = ({ user }) => {
   // Calculate real XP and level
   const baseXP = myMarks.reduce((sum, m) => sum + (m.marksObtained * 2), 0) + 
                  myAttendance.filter(a => a.status === 'present').length * 5;
-  const xp = xpData.xp + baseXP;
+  const xp = baseXP;
   const level = Math.floor(xp / 1000) + 1;
   const nextLevelXP = 1000;
 
@@ -304,7 +350,7 @@ export const StudentDashboard = ({ user }) => {
   const subjectMarks = {};
   myMarks.forEach(m => {
     if (!subjectMarks[m.subject]) subjectMarks[m.subject] = [];
-    subjectMarks[m.subject].push(m.marksObtained);
+    subjectMarks[m.subject].push((m.marksObtained / m.maxMarks) * 100);
   });
 
   const subjectAttendance = {};
