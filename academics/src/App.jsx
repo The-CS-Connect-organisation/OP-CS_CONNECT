@@ -64,6 +64,18 @@ import { SettingsPanel } from './pages/AcademicPortal/shared/Settings';
 import { FeeManagement } from './pages/AcademicPortal/shared/FeeManagement';
 import { AILab } from './pages/AcademicPortal/shared/AILab';
 import { CommunicationHub } from './pages/AcademicPortal/shared/CommunicationHub';
+
+// Wrapper that auto-opens the hub when the /comms route is visited
+const CommsPage = ({ user }) => {
+  const navigate = useNavigate();
+  return (
+    <CommunicationHub
+      isOpen={true}
+      onClose={() => navigate(`/${user?.role}/dashboard`)}
+      currentUser={user}
+    />
+  );
+};
 import { ExamCenter } from './pages/AcademicPortal/shared/ExamCenter';
 import { NexusHub } from './pages/AcademicPortal/shared/NexusHub';
 
@@ -282,7 +294,7 @@ function App() {
           } />
           <Route path="/student/comms" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
-              <CommunicationHub user={user} />
+              <CommsPage user={user} />
             </ProtectedRoute>
           } />
           <Route path="/student/exams" element={
@@ -334,7 +346,7 @@ function App() {
           } />
           <Route path="/parent/comms" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
-              <CommunicationHub user={user} />
+              <CommsPage user={user} />
             </ProtectedRoute>
           } />
           <Route path="/parent/timetable" element={
@@ -418,7 +430,7 @@ function App() {
           } />
           <Route path="/teacher/comms" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <CommunicationHub user={user} />
+              <CommsPage user={user} />
             </ProtectedRoute>
           } />
           <Route path="/teacher/settings" element={

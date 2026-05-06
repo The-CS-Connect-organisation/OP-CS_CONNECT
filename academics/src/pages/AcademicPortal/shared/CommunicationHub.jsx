@@ -1,553 +1,841 @@
-import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
-import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+﻿import { useEffect, useMemo, useState, useCallback, useRef } from 'react'
+import { createPortal } from 'react-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
-  Search, Users, MessageCircle, Video, Phone, UserPlus,
-  X, Check, Clock, Send, Bell, Settings, ChevronRight,
-  Loader2, UserCheck, UserX, Sparkles, Hash
-} from 'lucide-react';
-import { ChatView } from '../../../components/messaging/ChatView';
-import { CallModal } from '../../../components/messaging/CallModal';
-import { IncomingCallOverlay } from '../../../components/messaging/IncomingCallOverlay';
-import { KEYS, getFromStorage } from '../../../data/schema';
-import { request } from '../../../utils/apiClient';
-import { useStreamChat } from '../../../hooks/useStreamChat';
+  Search, Users, MessageCircle, Video, Phone, UserPlus, X, Check,
+  Clock, Bell, Star, ChevronRight, Loader2, ArrowLeft
+} from 'lucide-react'
+import { ChatView } from '../../../components/messaging/ChatView'
+import { CallModal } from '../../../components/messaging/CallModal'
+import { IncomingCallOverlay } from '../../../components/messaging/IncomingCallOverlay'
+import { request } from '../../../utils/apiClient'
+import { getSocket } from '../../../utils/socketClient'
+import { getFromStorage, KEYS } from '../../../data/schema'
 
-// ── Role colours ──────────────────────────────────────────────────────────────
-const ROLE_COLORS = {
+// ─── Constants ────────────────────────────────────────────────────────────────
+const ROLE_COLOR = {
   teacher: '#a855f7',
   student: '#3b82f6',
   parent:  '#10b981',
   admin:   '#f59e0b',
   driver:  '#ef4444',
-};
-const rc = (role) => ROLE_COLORS[role] || '#6b7280';
+}
 
-// ── Avatar ────────────────────────────────────────────────────────────────────
-const Avatar = ({ name, role, size = 44, online = false }) => (
-  <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
-    <div
-      className="w-full h-full rounded-full flex items-center justify-center text-white font-bold shadow-md"
-      style={{ background: rc(role), fontSize: size * 0.38 }}
-    >
-      {name?.charAt(0) || '?'}
-    </div>
-    {online && (
-      <span
-        className="absolute bottom-0 right-0 rounded-full border-2 border-white"
-        style={{ width: size * 0.28, height: size * 0.28, background: '#22c55e' }}
-      />
-    )}
-  </div>
-);
+const LS_REQUESTS_KEY  = 'comm_hub_friend_requests'   // [{id,from,to,fromName,fromRole,ts}]
+const LS_CONTACTS_KEY  = 'comm_hub_contacts'           // [{id,name,role,accepted}]
+const LS_STARS_KEY     = 'comm_hub_stars'              // [userId, ...]
+const LS_UNREAD_KEY    = 'comm_hub_unread'             // {userId: count}
 
-// ── Glassmorphic panel ────────────────────────────────────────────────────────
-const Glass = ({ children, className = '', style = {} }) => (
-  <div
-    className={className}
-    style={{
-      background: 'rgba(255,255,255,0.55)',
-      backdropFilter: 'blur(24px)',
-      WebkitBackdropFilter: 'blur(24px)',
-      border: '1px solid rgba(255,255,255,0.7)',
-      ...style,
-    }}
-  >
-    {children}
-  </div>
-);
+// ─── localStorage helpers ─────────────────────────────────────────────────────
+const lsGet = (key, fallback) => {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback } catch { return fallback }
+}
+const lsSet = (key, val) => {
+  try { localStorage.setItem(key, JSON.stringify(val)) } catch {}
+}
 
-// ── Main component ────────────────────────────────────────────────────────────
-export const CommunicationHub = ({ user }) => {
-  const [contacts, setContacts]           = useState([]);
-  const [loadingContacts, setLoadingContacts] = useState(true);
-  const [searchQuery, setSearchQuery]     = useState('');
-  const [activeTab, setActiveTab]         = useState('messages'); // 'messages' | 'requests' | 'explore'
-  const [chatUser, setChatUser]           = useState(null);
-  const [callState, setCallState]         = useState({ isOpen: false, otherUser: null, preferVideo: true, initiator: true });
-  const [incomingCall, setIncomingCall]   = useState(null);
-  const [friendRequests, setFriendRequests] = useState([]);
-  const [sentRequests, setSentRequests]   = useState(() => {
-    try { return JSON.parse(localStorage.getItem('cs_sent_requests') || '[]'); } catch { return []; }
-  });
-  const [recentChats, setRecentChats]     = useState(() => {
-    try { return JSON.parse(localStorage.getItem('cornerstone_recent_chats') || '[]'); } catch { return []; }
-  });
+// ─── Web Audio ping ───────────────────────────────────────────────────────────
+const playPing = () => {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext
+    if (!AudioContext) return
+    const ctx = new AudioContext()
+    const osc = ctx.createOscillator()
+    const gain = ctx.createGain()
+    osc.type = 'sine'
+    osc.frequency.setValueAtTime(880, ctx.currentTime)
+    osc.frequency.exponentialRampToValueAtTime(440, ctx.currentTime + 0.15)
+    gain.gain.setValueAtTime(0.25, ctx.currentTime)
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3)
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.start()
+    osc.stop(ctx.currentTime + 0.3)
+    setTimeout(() => ctx.close(), 500)
+  } catch {}
+}
 
-  const { client, isConnected } = useStreamChat(user);
-
-  // ── Load contacts ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!user?.id) return;
-    let cancelled = false;
-    setLoadingContacts(true);
-    request('/school/users?limit=500')
-      .then(res => {
-        if (cancelled) return;
-        const list = (res.users || res.items || [])
-          .filter(u => String(u.id) !== String(user.id) && ['teacher','student','parent','admin','driver'].includes(u.role))
-          .map(u => ({ id: u.id, name: u.name, role: u.role, email: u.email, online: Math.random() > 0.4 }));
-        setContacts(list);
-      })
-      .catch(() => { if (!cancelled) setContacts([]); })
-      .finally(() => { if (!cancelled) setLoadingContacts(false); });
-    return () => { cancelled = true; };
-  }, [user?.id]);
-
-  // ── Incoming call via socket ───────────────────────────────────────────────
-  useEffect(() => {
-    if (!user?.id) return;
-    import('../../../utils/socketClient').then(({ getSocket }) => {
-      const socket = getSocket();
-      if (!socket) return;
-      const handler = (data) => {
-        if (data?.type === 'call:ring' && String(data?.fromUserId) !== String(user.id)) {
-          if (callState.isOpen || incomingCall) return;
-          setIncomingCall({
-            id: data.fromUserId,
-            name: data.callerName || 'Unknown',
-            role: data.callerRole || 'student',
-            callerName: data.callerName || 'Unknown',
-            preferVideo: data.preferVideo ?? true,
-          });
-        }
-      };
-      socket.on('call:signal', handler);
-      return () => socket.off('call:signal', handler);
-    });
-  }, [user?.id, callState.isOpen, incomingCall]);
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  const openChat = useCallback((contact) => {
-    setRecentChats(prev => {
-      const filtered = prev.filter(c => c.id !== contact.id);
-      const updated = [{ ...contact, lastChatAt: Date.now() }, ...filtered].slice(0, 30);
-      localStorage.setItem('cornerstone_recent_chats', JSON.stringify(updated));
-      return updated;
-    });
-    setChatUser(contact);
-  }, []);
-
-  const sendFriendRequest = (contact) => {
-    const updated = [...sentRequests, contact.id];
-    setSentRequests(updated);
-    localStorage.setItem('cs_sent_requests', JSON.stringify(updated));
-  };
-
-  const acceptRequest = (req) => {
-    setFriendRequests(prev => prev.filter(r => r.id !== req.id));
-    openChat(req);
-  };
-
-  const declineRequest = (req) => {
-    setFriendRequests(prev => prev.filter(r => r.id !== req.id));
-  };
-
-  // ── Filtered lists ─────────────────────────────────────────────────────────
-  const recentContactIds = new Set(recentChats.map(r => r.id));
-
-  const filteredContacts = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
-    return contacts.filter(c =>
-      (!q || c.name?.toLowerCase().includes(q) || c.role?.includes(q)) &&
-      String(c.id) !== String(user?.id)
-    );
-  }, [contacts, searchQuery, user?.id]);
-
-  const recentList = useMemo(() =>
-    recentChats
-      .map(rc => contacts.find(c => c.id === rc.id) || rc)
-      .filter(Boolean),
-    [recentChats, contacts]
-  );
-
-  const exploreList = useMemo(() =>
-    filteredContacts.filter(c => !recentContactIds.has(c.id)),
-    [filteredContacts, recentContactIds]
-  );
-
-  // ── Render ─────────────────────────────────────────────────────────────────
-  return createPortal(
-    <>
-      {/* Full-viewport overlay — rendered via portal to cover sidebar + topbar */}
+// ─── Avatar ───────────────────────────────────────────────────────────────────
+const Avatar = ({ user, size = 40, showOnline = false, online = false }) => {
+  const color = ROLE_COLOR[user?.role] || '#6b7280'
+  return (
+    <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
       <div
-        className="fixed inset-0 z-[9999] overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, #667eea22 0%, #764ba222 25%, #f093fb22 50%, #4facfe22 75%, #43e97b22 100%)',
-          backdropFilter: 'blur(2px)',
-        }}
+        className="w-full h-full rounded-full flex items-center justify-center text-white font-bold select-none"
+        style={{ background: color, fontSize: size * 0.38 }}
       >
-        {/* Animated background blobs */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <motion.div className="absolute w-[600px] h-[600px] rounded-full blur-3xl opacity-30"
-            style={{ background: 'radial-gradient(circle, #a855f7, transparent)', top: '-10%', left: '-5%' }}
-            animate={{ scale: [1, 1.2, 1], x: [0, 40, 0] }}
-            transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }} />
-          <motion.div className="absolute w-[500px] h-[500px] rounded-full blur-3xl opacity-25"
-            style={{ background: 'radial-gradient(circle, #3b82f6, transparent)', bottom: '-10%', right: '-5%' }}
-            animate={{ scale: [1, 1.15, 1], x: [0, -30, 0] }}
-            transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 3 }} />
-          <motion.div className="absolute w-[400px] h-[400px] rounded-full blur-3xl opacity-20"
-            style={{ background: 'radial-gradient(circle, #10b981, transparent)', top: '40%', left: '40%' }}
-            animate={{ scale: [1, 1.3, 1] }}
-            transition={{ duration: 10, repeat: Infinity, ease: 'easeInOut', delay: 6 }} />
-        </div>
+        {user?.name?.charAt(0)?.toUpperCase() || '?'}
+      </div>
+      {showOnline && (
+        <span
+          className={`absolute bottom-0 right-0 rounded-full border-2 border-white ${online ? 'bg-emerald-400' : 'bg-gray-300'}`}
+          style={{ width: size * 0.28, height: size * 0.28 }}
+        />
+      )}
+    </div>
+  )
+}
 
-        {/* Main layout */}
-        <div className="relative z-10 h-full flex items-stretch justify-center p-2 md:p-4 lg:p-6">
-          <div className="w-full max-w-[1300px] h-full flex gap-2 md:gap-3 lg:gap-4">
+// ─── Role badge ───────────────────────────────────────────────────────────────
+const RoleBadge = ({ role }) => (
+  <span
+    className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full capitalize"
+    style={{ background: `${ROLE_COLOR[role] || '#6b7280'}18`, color: ROLE_COLOR[role] || '#6b7280' }}
+  >
+    {role}
+  </span>
+)
 
-            {/* ── LEFT PANEL — hidden on mobile when chat is open ── */}
-            <Glass
-              className={`flex-shrink-0 rounded-2xl md:rounded-3xl flex flex-col overflow-hidden shadow-2xl transition-all duration-300
-                ${chatUser ? 'hidden md:flex md:w-[280px] lg:w-[340px]' : 'flex w-full md:w-[280px] lg:w-[340px]'}`}
-              style={{ boxShadow: '0 32px 80px rgba(0,0,0,0.15)' }}
-            >
-              {/* Header */}
-              <div className="px-5 pt-5 pb-3 flex-shrink-0">
-                <div className="flex items-center justify-between mb-1">
-                  <h1 className="text-2xl font-black tracking-tight text-gray-900">Messages</h1>
-                  <div className="flex items-center gap-1.5">
-                    <motion.button
-                      whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                      onClick={() => setActiveTab('requests')}
-                      className="relative p-2 rounded-xl hover:bg-white/60 transition-colors"
-                    >
-                      <Bell size={18} className="text-gray-600" />
-                      {friendRequests.length > 0 && (
-                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-                      )}
-                    </motion.button>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
-                      onClick={() => setActiveTab('explore')}
-                      className="p-2 rounded-xl hover:bg-white/60 transition-colors"
-                    >
-                      <UserPlus size={18} className="text-gray-600" />
-                    </motion.button>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 mb-4">
-                  <span className={`w-2 h-2 rounded-full ${isConnected ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                  <span className="text-xs font-medium text-gray-500">
-                    {isConnected ? `Connected · ${contacts.length} people` : 'Connecting...'}
-                  </span>
-                </div>
-
-                {/* Search */}
-                <div className="relative">
-                  <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                  <input
-                    value={searchQuery}
-                    onChange={e => { setSearchQuery(e.target.value); setActiveTab('messages'); }}
-                    placeholder="Search people..."
-                    className="w-full pl-9 pr-4 py-2.5 rounded-2xl text-sm font-medium outline-none transition-all"
-                    style={{
-                      background: 'rgba(255,255,255,0.6)',
-                      border: '1px solid rgba(255,255,255,0.8)',
-                      color: '#1f2937',
-                    }}
-                  />
-                </div>
-
-        {/* Tabs */}
-                <div className="flex gap-1 mt-3 bg-black/5 p-1 rounded-2xl">
-                  {[
-                    { id: 'messages', label: 'Chats' },
-                    { id: 'requests', label: friendRequests.length > 0 ? `Requests ${friendRequests.length}` : 'Requests' },
-                    { id: 'explore', label: 'People' },
-                  ].map(tab => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className="flex-1 py-2 rounded-xl text-xs font-bold transition-all relative"
-                      style={{
-                        background: activeTab === tab.id ? 'white' : 'transparent',
-                        color: activeTab === tab.id ? '#1f2937' : '#9ca3af',
-                        boxShadow: activeTab === tab.id ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
-                      }}
-                    >
-                      {tab.label}
-                      {tab.id === 'requests' && friendRequests.length > 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-red-500 rounded-full" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* List */}
-              <div className="flex-1 overflow-y-auto no-scrollbar px-3 pb-4">
-                <AnimatePresence mode="wait">
-
-                  {/* MESSAGES TAB */}
-                  {activeTab === 'messages' && (
-                    <motion.div key="messages" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                      {loadingContacts ? (
-                        <div className="flex items-center justify-center py-16">
-                          <Loader2 size={24} className="animate-spin text-gray-400" />
-                        </div>
-                      ) : (
-                        <>
-                          {/* Recent chats */}
-                          {recentList.length > 0 && !searchQuery && (
-                            <div className="mb-3">
-                              <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-2 mb-2">Recent</p>
-                              {recentList.map(contact => (
-                                <ContactRow
-                                  key={contact.id}
-                                  contact={contact}
-                                  isActive={chatUser?.id === contact.id}
-                                  onClick={() => openChat(contact)}
-                                  onCall={(video) => setCallState({ isOpen: true, otherUser: contact, preferVideo: video, initiator: true })}
-                                />
-                              ))}
-                            </div>
-                          )}
-
-                          {/* All / search results */}
-                          {searchQuery ? (
-                            filteredContacts.length === 0 ? (
-                              <EmptyState icon={<Search size={28} />} text="No results" sub={`No one named "${searchQuery}"`} />
-                            ) : (
-                              filteredContacts.map(contact => (
-                                <ContactRow key={contact.id} contact={contact} isActive={chatUser?.id === contact.id}
-                                  onClick={() => openChat(contact)}
-                                  onCall={(video) => setCallState({ isOpen: true, otherUser: contact, preferVideo: video, initiator: true })} />
-                              ))
-                            )
-                          ) : (
-                            <>
-                              {exploreList.length > 0 && (
-                                <div>
-                                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-2 mb-2">All People</p>
-                                  {exploreList.slice(0, 20).map(contact => (
-                                    <ContactRow key={contact.id} contact={contact} isActive={chatUser?.id === contact.id}
-                                      onClick={() => openChat(contact)}
-                                      onCall={(video) => setCallState({ isOpen: true, otherUser: contact, preferVideo: video, initiator: true })} />
-                                  ))}
-                                </div>
-                              )}
-                              {recentList.length === 0 && exploreList.length === 0 && (
-                                <EmptyState icon={<Users size={28} />} text="No contacts yet" sub="People in your school will appear here" />
-                              )}
-                            </>
-                          )}
-                        </>
-                      )}
-                    </motion.div>
-                  )}
-
-                  {/* REQUESTS TAB */}
-                  {activeTab === 'requests' && (
-                    <motion.div key="requests" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-2 mb-3 mt-1">Friend Requests</p>
-                      {friendRequests.length === 0 ? (
-                        <EmptyState icon={<UserCheck size={28} />} text="No pending requests" sub="When someone adds you, they'll appear here" />
-                      ) : (
-                        friendRequests.map(req => (
-                          <motion.div key={req.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
-                            className="flex items-center gap-3 p-3 rounded-2xl mb-1.5"
-                            style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.7)' }}>
-                            <Avatar name={req.name} role={req.role} size={42} />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-bold text-gray-800 truncate">{req.name}</p>
-                              <p className="text-xs text-gray-500 capitalize">{req.role}</p>
-                            </div>
-                            <div className="flex gap-1.5">
-                              <button onClick={() => acceptRequest(req)}
-                                className="p-2 rounded-xl bg-emerald-500 text-white hover:bg-emerald-600 transition-colors">
-                                <Check size={14} />
-                              </button>
-                              <button onClick={() => declineRequest(req)}
-                                className="p-2 rounded-xl bg-red-100 text-red-500 hover:bg-red-200 transition-colors">
-                                <X size={14} />
-                              </button>
-                            </div>
-                          </motion.div>
-                        ))
-                      )}
-                    </motion.div>
-                  )}
-
-                  {/* EXPLORE TAB */}
-                  {activeTab === 'explore' && (
-                    <motion.div key="explore" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 px-2 mb-3 mt-1">Add People</p>
-                      {contacts.filter(c => !recentContactIds.has(c.id)).map(contact => (
-                        <motion.div key={contact.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                          className="flex items-center gap-3 p-3 rounded-2xl mb-1.5 transition-all"
-                          style={{ background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(255,255,255,0.6)' }}>
-                          <Avatar name={contact.name} role={contact.role} size={42} online={contact.online} />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-gray-800 truncate">{contact.name}</p>
-                            <p className="text-xs capitalize" style={{ color: rc(contact.role) }}>{contact.role}</p>
-                          </div>
-                          <div className="flex gap-1.5">
-                            <button onClick={() => openChat(contact)}
-                              className="p-2 rounded-xl bg-blue-500 text-white hover:bg-blue-600 transition-colors">
-                              <MessageCircle size={14} />
-                            </button>
-                            {!sentRequests.includes(contact.id) ? (
-                              <button onClick={() => sendFriendRequest(contact)}
-                                className="p-2 rounded-xl bg-white/70 text-gray-600 hover:bg-white transition-colors border border-white/80">
-                                <UserPlus size={14} />
-                              </button>
-                            ) : (
-                              <button disabled className="p-2 rounded-xl bg-gray-100 text-gray-400 cursor-default">
-                                <Clock size={14} />
-                              </button>
-                            )}
-                          </div>
-                        </motion.div>
-                      ))}
-                    </motion.div>
-                  )}
-
-                </AnimatePresence>
-              </div>
-            </Glass>
-
-            {/* ── RIGHT PANEL — full width on mobile when chat open ── */}
-            <Glass
-              className={`rounded-2xl md:rounded-3xl overflow-hidden shadow-2xl flex flex-col transition-all duration-300
-                ${chatUser ? 'flex flex-1 min-w-0' : 'hidden md:flex flex-1 min-w-0'}`}
-              style={{ boxShadow: '0 32px 80px rgba(0,0,0,0.12)' }}
-            >
-              <AnimatePresence mode="wait">
-                {chatUser ? (
-                  <motion.div key={chatUser.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full">
-                    <ChatView
-                      isOpen={true}
-                      onClose={() => setChatUser(null)}
-                      currentUser={user}
-                      otherUser={chatUser}
-                      onStartCall={({ otherUser, preferVideo }) =>
-                        setCallState({ isOpen: true, otherUser, preferVideo, initiator: true })
-                      }
-                      isInline={true}
-                    />
-                  </motion.div>
-                ) : (
-                  <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                    className="h-full flex flex-col items-center justify-center gap-4 px-8 text-center">
-                    {/* Animated icon */}
-                    <motion.div
-                      animate={{ y: [0, -12, 0], rotate: [0, 5, -5, 0] }}
-                      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                      className="w-24 h-24 rounded-3xl flex items-center justify-center shadow-xl"
-                      style={{ background: 'linear-gradient(135deg, #667eea, #764ba2)' }}
-                    >
-                      <MessageCircle size={40} className="text-white" />
-                    </motion.div>
-                    <div>
-                      <h2 className="text-2xl font-black text-gray-800 tracking-tight">Your Messages</h2>
-                      <p className="text-gray-500 text-sm mt-1 max-w-xs">
-                        Select a conversation from the left, or explore people to start a new chat.
-                      </p>
-                    </div>
-                    <div className="flex gap-3 mt-2">
-                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                        onClick={() => setActiveTab('explore')}
-                        className="px-5 py-2.5 rounded-2xl text-sm font-bold text-white shadow-lg"
-                        style={{ background: 'linear-gradient(135deg, #667eea, #764ba2)' }}>
-                        <span className="flex items-center gap-2"><UserPlus size={15} /> Add People</span>
-                      </motion.button>
-                      <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}
-                        onClick={() => setActiveTab('messages')}
-                        className="px-5 py-2.5 rounded-2xl text-sm font-bold text-gray-700 bg-white/60 border border-white/80 shadow-sm">
-                        <span className="flex items-center gap-2"><Hash size={15} /> Browse Chats</span>
-                      </motion.button>
-                    </div>
-
-                    {/* Online people strip */}
-                    {contacts.filter(c => c.online).length > 0 && (
-                      <div className="mt-4 w-full max-w-md">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">Active Now</p>
-                        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-1 justify-center flex-wrap">
-                          {contacts.filter(c => c.online).slice(0, 8).map(c => (
-                            <motion.button key={c.id} whileHover={{ scale: 1.08, y: -4 }} whileTap={{ scale: 0.95 }}
-                              onClick={() => openChat(c)}
-                              className="flex flex-col items-center gap-1.5 cursor-pointer">
-                              <Avatar name={c.name} role={c.role} size={48} online />
-                              <span className="text-[10px] font-semibold text-gray-600 max-w-[52px] truncate">{c.name.split(' ')[0]}</span>
-                            </motion.button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Glass>
-
-          </div>
+// ─── ContactRow ───────────────────────────────────────────────────────────────
+const ContactRow = ({ contact, isSelected, unread = 0, lastMsg = '', online = false, starred = false, onSelect, onStar }) => (
+  <motion.div
+    layout
+    initial={{ opacity: 0, x: -8 }}
+    animate={{ opacity: 1, x: 0 }}
+    onClick={() => onSelect(contact)}
+    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer transition-colors group ${
+      isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'
+    }`}
+  >
+    <Avatar user={contact} size={44} showOnline online={online} />
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center justify-between gap-1">
+        <span className="text-[14px] font-semibold text-gray-800 truncate">{contact.name}</span>
+        {lastMsg && (
+          <span className="text-[10px] text-gray-400 flex-shrink-0">
+            {new Date(contact.lastMsgTs || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        )}
+      </div>
+      <div className="flex items-center justify-between gap-1 mt-0.5">
+        <span className="text-[12px] text-gray-400 truncate">{lastMsg || <RoleBadge role={contact.role} />}</span>
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {unread > 0 && (
+            <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-blue-500 text-white text-[10px] font-bold flex items-center justify-center">
+              {unread > 99 ? '99+' : unread}
+            </span>
+          )}
+          <button
+            onClick={(e) => { e.stopPropagation(); onStar(contact.id) }}
+            className={`p-0.5 rounded transition-opacity ${starred ? 'opacity-100' : 'opacity-0 group-hover:opacity-60'}`}
+          >
+            <Star size={13} className={starred ? 'fill-amber-400 text-amber-400' : 'text-gray-400'} />
+          </button>
         </div>
       </div>
-
-      {/* Modals */}
-      <CallModal
-        isOpen={callState.isOpen}
-        onClose={() => setCallState({ isOpen: false, otherUser: null, preferVideo: true, initiator: true })}
-        currentUser={user}
-        otherUser={callState.otherUser}
-        preferVideo={callState.preferVideo}
-        initiator={callState.initiator}
-      />
-      <IncomingCallOverlay
-        isOpen={!!incomingCall}
-        callData={incomingCall}
-        onAccept={() => {
-          setCallState({ isOpen: true, otherUser: incomingCall, preferVideo: incomingCall?.preferVideo ?? true, initiator: false });
-          setIncomingCall(null);
-        }}
-        onDecline={() => setIncomingCall(null)}
-      />
-    </>,
-    document.body
-  );
-};
-
-// ── Contact row ───────────────────────────────────────────────────────────────
-const ContactRow = ({ contact, isActive, onClick, onCall }) => (
-  <motion.div
-    whileTap={{ scale: 0.98 }}
-    onClick={onClick}
-    className="flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all duration-150 mb-1 group"
-    style={{
-      background: isActive ? 'rgba(59,130,246,0.12)' : 'transparent',
-      border: isActive ? '1px solid rgba(59,130,246,0.25)' : '1px solid transparent',
-    }}
-    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.5)'; }}
-    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
-  >
-    <Avatar name={contact.name} role={contact.role} size={44} online={contact.online} />
-    <div className="flex-1 min-w-0">
-      <p className="text-[14px] font-semibold text-gray-800 truncate">{contact.name}</p>
-      <p className="text-[11px] font-medium capitalize" style={{ color: rc(contact.role) }}>{contact.role}</p>
     </div>
-    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-      <button onClick={e => { e.stopPropagation(); onCall(false); }}
-        className="p-1.5 rounded-xl hover:bg-white/70 transition-colors text-gray-500">
-        <Phone size={14} />
+  </motion.div>
+)
+
+// ─── RequestRow ──────────────────────────────────────────────────────────────
+const RequestRow = ({ req, onAccept, onDecline }) => (
+  <motion.div
+    layout
+    initial={{ opacity: 0, y: 6 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: -6 }}
+    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50"
+  >
+    <Avatar user={{ name: req.fromName, role: req.fromRole }} size={40} />
+    <div className="flex-1 min-w-0">
+      <p className="text-[13px] font-semibold text-gray-800 truncate">{req.fromName}</p>
+      <RoleBadge role={req.fromRole} />
+    </div>
+    <div className="flex items-center gap-1.5 flex-shrink-0">
+      <button
+        onClick={() => onDecline(req.id)}
+        className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center hover:bg-red-50 hover:border-red-200 transition-colors"
+      >
+        <X size={14} className="text-gray-500" />
       </button>
-      <button onClick={e => { e.stopPropagation(); onCall(true); }}
-        className="p-1.5 rounded-xl hover:bg-white/70 transition-colors text-emerald-500">
-        <Video size={14} />
+      <button
+        onClick={() => onAccept(req)}
+        className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center hover:bg-blue-600 transition-colors shadow-sm"
+      >
+        <Check size={14} className="text-white" />
       </button>
     </div>
   </motion.div>
-);
+)
 
-// ── Empty state ───────────────────────────────────────────────────────────────
-const EmptyState = ({ icon, text, sub }) => (
-  <div className="flex flex-col items-center justify-center py-12 gap-3 opacity-60">
-    <div className="w-14 h-14 rounded-2xl bg-white/50 flex items-center justify-center text-gray-400 shadow-inner">
-      {icon}
+// ─── PeopleRow ────────────────────────────────────────────────────────────────
+const PeopleRow = ({ user, status, onAdd, online = false }) => (
+  <motion.div
+    layout
+    initial={{ opacity: 0, y: 6 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-gray-50 group"
+  >
+    <Avatar user={user} size={40} showOnline online={online} />
+    <div className="flex-1 min-w-0">
+      <p className="text-[13px] font-semibold text-gray-800 truncate">{user.name}</p>
+      <RoleBadge role={user.role} />
     </div>
-    <div className="text-center">
-      <p className="text-sm font-semibold text-gray-600">{text}</p>
-      {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+    <div className="flex-shrink-0">
+      {status === 'accepted' ? (
+        <span className="text-[11px] font-medium text-emerald-600 flex items-center gap-1">
+          <Check size={11} /> Friends
+        </span>
+      ) : status === 'pending' ? (
+        <span className="text-[11px] font-medium text-gray-400 flex items-center gap-1">
+          <Clock size={11} /> Pending
+        </span>
+      ) : (
+        <button
+          onClick={() => onAdd(user)}
+          className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-50 text-blue-600 text-[12px] font-semibold hover:bg-blue-100 transition-colors border border-blue-100"
+        >
+          <UserPlus size={12} /> Add
+        </button>
+      )}
+    </div>
+  </motion.div>
+)
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+const Sidebar = ({
+  currentUser,
+  contacts,
+  requests,
+  allUsers,
+  onlineUsers,
+  unread,
+  stars,
+  selectedContact,
+  onSelectContact,
+  onAcceptRequest,
+  onDeclineRequest,
+  onAddFriend,
+  onToggleStar,
+  onClose,
+}) => {
+  const [tab, setTab] = useState('chats')
+  const [search, setSearch] = useState('')
+
+  const totalUnread = useMemo(() => Object.values(unread).reduce((a, b) => a + b, 0), [unread])
+
+  const filteredContacts = useMemo(() => {
+    const q = search.toLowerCase()
+    return contacts.filter(c => c.name?.toLowerCase().includes(q))
+  }, [contacts, search])
+
+  const starredContacts = useMemo(() => filteredContacts.filter(c => stars.includes(c.id)), [filteredContacts, stars])
+  const regularContacts = useMemo(() => filteredContacts.filter(c => !stars.includes(c.id)), [filteredContacts, stars])
+
+  const filteredPeople = useMemo(() => {
+    const q = search.toLowerCase()
+    return allUsers.filter(u => u.id !== currentUser?.id && u.name?.toLowerCase().includes(q))
+  }, [allUsers, search, currentUser?.id])
+
+  const filteredRequests = useMemo(() => {
+    const q = search.toLowerCase()
+    return requests.filter(r => r.fromName?.toLowerCase().includes(q))
+  }, [requests, search])
+
+  const getPeopleStatus = (userId) => {
+    if (contacts.some(c => c.id === userId)) return 'accepted'
+    if (requests.some(r => r.from === userId)) return 'pending'
+    // Check if we sent them a request
+    const allReqs = lsGet(LS_REQUESTS_KEY, [])
+    if (allReqs.some(r => r.from === currentUser?.id && r.to === userId)) return 'pending'
+    return 'none'
+  }
+
+  const TABS = [
+    { id: 'chats',    label: 'Chats',    icon: MessageCircle, count: totalUnread },
+    { id: 'requests', label: 'Requests', icon: Clock,         count: requests.length },
+    { id: 'people',   label: 'People',   icon: Users,         count: 0 },
+  ]
+
+  return (
+    <div className="flex flex-col h-full" style={{ background: '#ffffff', borderRight: '1px solid #e5e7eb' }}>
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 pt-4 pb-3 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <h2 className="text-[17px] font-bold text-gray-900">Messages</h2>
+          {totalUnread > 0 && (
+            <span className="min-w-[20px] h-5 px-1.5 rounded-full bg-blue-500 text-white text-[11px] font-bold flex items-center justify-center">
+              {totalUnread > 99 ? '99+' : totalUnread}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          <button className="p-2 rounded-full hover:bg-gray-100 transition-colors relative">
+            <Bell size={18} className="text-gray-600" />
+            {totalUnread > 0 && (
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500" />
+            )}
+          </button>
+          <button
+            onClick={() => { setTab('people') }}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+            title="Find people"
+          >
+            <UserPlus size={18} className="text-gray-600" />
+          </button>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <X size={18} className="text-gray-600" />
+          </button>
+        </div>
+      </div>
+
+      {/* Search */}
+      <div className="px-3 pb-3 flex-shrink-0">
+        <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-100">
+          <Search size={15} className="text-gray-400 flex-shrink-0" />
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search..."
+            className="flex-1 bg-transparent border-0 outline-none text-[13px] text-gray-700 placeholder-gray-400"
+          />
+          {search && (
+            <button onClick={() => setSearch('')} className="flex-shrink-0">
+              <X size={13} className="text-gray-400" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex items-center gap-1 px-3 pb-3 flex-shrink-0">
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`flex-1 flex items-center justify-center gap-1 py-1.5 rounded-full text-[12px] font-semibold transition-colors ${
+              tab === t.id
+                ? 'bg-blue-500 text-white shadow-sm'
+                : 'text-gray-500 hover:bg-gray-100'
+            }`}
+          >
+            {t.label}
+            {t.count > 0 && (
+              <span className={`min-w-[16px] h-4 px-1 rounded-full text-[10px] font-bold flex items-center justify-center ${
+                tab === t.id ? 'bg-white/30 text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                {t.count}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab content */}
+      <div className="flex-1 overflow-y-auto px-1 pb-4 no-scrollbar">
+        <AnimatePresence mode="wait">
+          {tab === 'chats' && (
+            <motion.div key="chats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              {filteredContacts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-3 text-center px-4">
+                  <MessageCircle size={32} className="text-gray-300" />
+                  <p className="text-[13px] font-semibold text-gray-400">No conversations yet</p>
+                  <p className="text-[11px] text-gray-400">Add friends to start chatting</p>
+                </div>
+              ) : (
+                <>
+                  {starredContacts.length > 0 && (
+                    <div className="mb-2">
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-3 py-1.5">
+                        ⭐ Close Friends
+                      </p>
+                      {starredContacts.map(c => (
+                        <ContactRow
+                          key={c.id}
+                          contact={c}
+                          isSelected={selectedContact?.id === c.id}
+                          unread={unread[c.id] || 0}
+                          lastMsg={c.lastMsg || ''}
+                          online={onlineUsers.has(c.id)}
+                          starred
+                          onSelect={onSelectContact}
+                          onStar={onToggleStar}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {regularContacts.length > 0 && (
+                    <div>
+                      {starredContacts.length > 0 && (
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider px-3 py-1.5">
+                          All Chats
+                        </p>
+                      )}
+                      {regularContacts.map(c => (
+                        <ContactRow
+                          key={c.id}
+                          contact={c}
+                          isSelected={selectedContact?.id === c.id}
+                          unread={unread[c.id] || 0}
+                          lastMsg={c.lastMsg || ''}
+                          online={onlineUsers.has(c.id)}
+                          starred={false}
+                          onSelect={onSelectContact}
+                          onStar={onToggleStar}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </motion.div>
+          )}
+
+          {tab === 'requests' && (
+            <motion.div key="requests" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              {filteredRequests.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-3 text-center px-4">
+                  <Clock size={32} className="text-gray-300" />
+                  <p className="text-[13px] font-semibold text-gray-400">No pending requests</p>
+                </div>
+              ) : (
+                <AnimatePresence>
+                  {filteredRequests.map(r => (
+                    <RequestRow
+                      key={r.id}
+                      req={r}
+                      onAccept={onAcceptRequest}
+                      onDecline={onDeclineRequest}
+                    />
+                  ))}
+                </AnimatePresence>
+              )}
+            </motion.div>
+          )}
+
+          {tab === 'people' && (
+            <motion.div key="people" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              {filteredPeople.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-3 text-center px-4">
+                  <Users size={32} className="text-gray-300" />
+                  <p className="text-[13px] font-semibold text-gray-400">No users found</p>
+                </div>
+              ) : (
+                filteredPeople.map(u => (
+                  <PeopleRow
+                    key={u.id}
+                    user={u}
+                    status={getPeopleStatus(u.id)}
+                    online={onlineUsers.has(u.id)}
+                    onAdd={onAddFriend}
+                  />
+                ))
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </div>
+  )
+}
+
+// ─── RightEdgePeek ────────────────────────────────────────────────────────────
+const RightEdgePeek = ({ contacts, onlineUsers, unread, stars, onOpen }) => {
+  const [hovered, setHovered] = useState(false)
+
+  const topContacts = useMemo(() => {
+    const starred = contacts.filter(c => stars.includes(c.id))
+    const rest = contacts.filter(c => !stars.includes(c.id))
+    return [...starred, ...rest].slice(0, 6)
+  }, [contacts, stars])
+
+  return (
+    <div
+      className="fixed right-0 top-0 h-full z-[9998] flex items-center"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      {/* Invisible hover strip */}
+      <div className="w-4 h-full absolute right-0 top-0" />
+
+      {/* Mini preview panel */}
+      <AnimatePresence>
+        {hovered && (
+          <motion.div
+            initial={{ x: 220, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 220, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 35 }}
+            className="w-[200px] rounded-l-2xl overflow-hidden shadow-xl"
+            style={{ background: '#ffffff', border: '1px solid #e5e7eb', borderRight: 'none' }}
+          >
+            <div className="px-3 py-3 border-b border-gray-100 flex items-center justify-between">
+              <span className="text-[13px] font-bold text-gray-800">Messages</span>
+              <button
+                onClick={onOpen}
+                className="text-[11px] font-semibold text-blue-500 hover:text-blue-600 flex items-center gap-0.5"
+              >
+                Open <ChevronRight size={12} />
+              </button>
+            </div>
+            <div className="py-1">
+              {topContacts.length === 0 ? (
+                <p className="text-[11px] text-gray-400 text-center py-4">No contacts yet</p>
+              ) : (
+                topContacts.map(c => (
+                  <div
+                    key={c.id}
+                    onClick={onOpen}
+                    className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 cursor-pointer"
+                  >
+                    <Avatar user={c} size={32} showOnline online={onlineUsers.has(c.id)} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[12px] font-semibold text-gray-800 truncate">{c.name}</p>
+                    </div>
+                    {(unread[c.id] || 0) > 0 && (
+                      <span className="min-w-[16px] h-4 px-1 rounded-full bg-blue-500 text-white text-[10px] font-bold flex items-center justify-center">
+                        {unread[c.id]}
+                      </span>
+                    )}
+                    {stars.includes(c.id) && <Star size={10} className="fill-amber-400 text-amber-400 flex-shrink-0" />}
+                  </div>
+                ))
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+// ─── EmptyState ───────────────────────────────────────────────────────────────
+const EmptyState = () => (
+  <div className="flex flex-col items-center justify-center h-full gap-4 text-center px-8">
+    <div className="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center">
+      <MessageCircle size={36} className="text-gray-300" />
+    </div>
+    <div>
+      <p className="text-[16px] font-bold text-gray-700">Your messages</p>
+      <p className="text-[13px] text-gray-400 mt-1">Select a conversation to start chatting</p>
     </div>
   </div>
-);
+)
+
+// ─── Main CommunicationHub ───────────────────────────────────────────────────
+export const CommunicationHub = ({ isOpen, onClose, currentUser }) => {
+  // ── State ──────────────────────────────────────────────────────────────────
+  const [contacts, setContacts] = useState(() => lsGet(LS_CONTACTS_KEY, []))
+  const [requests, setRequests] = useState(() => lsGet(LS_REQUESTS_KEY, []).filter(r => r.to === currentUser?.id))
+  const [allUsers, setAllUsers] = useState([])
+  const [onlineUsers, setOnlineUsers] = useState(new Set())
+  const [unread, setUnread] = useState(() => lsGet(LS_UNREAD_KEY, {}))
+  const [stars, setStars] = useState(() => lsGet(LS_STARS_KEY, []))
+  const [selectedContact, setSelectedContact] = useState(null)
+  const [loadingUsers, setLoadingUsers] = useState(false)
+
+  // ── Call state ─────────────────────────────────────────────────────────────
+  const [callOpen, setCallOpen] = useState(false)
+  const [callData, setCallData] = useState(null)
+  const [incomingCall, setIncomingCall] = useState(null)
+
+  // ── Refs ───────────────────────────────────────────────────────────────────
+  const lastMessageIdRef = useRef(new Set())
+
+  // ── Persist to localStorage ───────────────────────────────────────────────
+  useEffect(() => { lsSet(LS_CONTACTS_KEY, contacts) }, [contacts])
+  useEffect(() => { lsSet(LS_UNREAD_KEY, unread) }, [unread])
+  useEffect(() => { lsSet(LS_STARS_KEY, stars) }, [stars])
+
+  // ── Load all users ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!isOpen || !currentUser) return
+    setLoadingUsers(true)
+    request('/school/users')
+      .then(res => setAllUsers(res.users || []))
+      .catch(err => console.error('[CommunicationHub] Load users failed:', err))
+      .finally(() => setLoadingUsers(false))
+  }, [isOpen, currentUser])
+
+  // ── Socket.IO: online presence ─────────────────────────────────────────────
+  useEffect(() => {
+    if (!isOpen || !currentUser) return
+    const socket = getSocket()
+    if (!socket) return
+
+    // Announce we're online
+    socket.emit('user:online', { userId: currentUser.id })
+
+    const handleUserOnline = (data) => {
+      if (data?.userId && data.userId !== currentUser.id) {
+        setOnlineUsers(prev => new Set(prev).add(data.userId))
+      }
+    }
+    const handleUserOffline = (data) => {
+      if (data?.userId) {
+        setOnlineUsers(prev => {
+          const next = new Set(prev)
+          next.delete(data.userId)
+          return next
+        })
+      }
+    }
+    const handleOnlineList = (data) => {
+      if (Array.isArray(data?.users)) {
+        setOnlineUsers(new Set(data.users.filter(id => id !== currentUser.id)))
+      }
+    }
+
+    socket.on('user:online', handleUserOnline)
+    socket.on('user:offline', handleUserOffline)
+    socket.on('online:list', handleOnlineList)
+
+    // Request current online list
+    socket.emit('online:request')
+
+    return () => {
+      socket.off('user:online', handleUserOnline)
+      socket.off('user:offline', handleUserOffline)
+      socket.off('online:list', handleOnlineList)
+      socket.emit('user:offline', { userId: currentUser.id })
+    }
+  }, [isOpen, currentUser])
+
+  // ── Socket.IO: new messages (ping + unread) ───────────────────────────────
+  useEffect(() => {
+    if (!isOpen || !currentUser) return
+    const socket = getSocket()
+    if (!socket) return
+
+    const handleNewMessage = (msg) => {
+      // Only process messages sent TO us
+      if (msg.recipient_id !== currentUser.id) return
+      // Dedupe
+      if (lastMessageIdRef.current.has(msg.id)) return
+      lastMessageIdRef.current.add(msg.id)
+
+      // Play ping
+      playPing()
+
+      // Update last message preview
+      setContacts(prev => prev.map(c =>
+        c.id === msg.sender_id
+          ? { ...c, lastMsg: msg.content?.substring(0, 40) || '', lastMsgTs: msg.created_at }
+          : c
+      ))
+
+      // Increment unread if chat not open
+      if (selectedContact?.id !== msg.sender_id) {
+        setUnread(prev => ({ ...prev, [msg.sender_id]: (prev[msg.sender_id] || 0) + 1 }))
+      }
+    }
+
+    socket.on('message:new', handleNewMessage)
+    return () => socket.off('message:new', handleNewMessage)
+  }, [isOpen, currentUser, selectedContact])
+
+  // ── Socket.IO: incoming call ───────────────────────────────────────────────
+  useEffect(() => {
+    if (!isOpen || !currentUser) return
+    const socket = getSocket()
+    if (!socket) return
+
+    const handleCallRing = (data) => {
+      if (data.type === 'call:ring' && String(data.peerId) === String(currentUser.id)) {
+        setIncomingCall(data)
+      }
+    }
+
+    socket.on('call:signal', handleCallRing)
+    return () => socket.off('call:signal', handleCallRing)
+  }, [isOpen, currentUser])
+
+  // ── Friend request handlers ────────────────────────────────────────────────
+  const handleAddFriend = useCallback((user) => {
+    const allReqs = lsGet(LS_REQUESTS_KEY, [])
+    const newReq = {
+      id: `req-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+      from: currentUser.id,
+      to: user.id,
+      fromName: currentUser.name,
+      fromRole: currentUser.role,
+      ts: Date.now(),
+    }
+    lsSet(LS_REQUESTS_KEY, [...allReqs, newReq])
+    // Notify via socket (optional)
+    const socket = getSocket()
+    if (socket) socket.emit('friend:request', newReq)
+  }, [currentUser])
+
+  const handleAcceptRequest = useCallback((req) => {
+    // Add to contacts
+    const newContact = {
+      id: req.from,
+      name: req.fromName,
+      role: req.fromRole,
+      accepted: true,
+      lastMsg: '',
+      lastMsgTs: null,
+    }
+    setContacts(prev => [...prev, newContact])
+
+    // Remove from requests
+    const allReqs = lsGet(LS_REQUESTS_KEY, [])
+    lsSet(LS_REQUESTS_KEY, allReqs.filter(r => r.id !== req.id))
+    setRequests(prev => prev.filter(r => r.id !== req.id))
+
+    // Notify via socket (optional)
+    const socket = getSocket()
+    if (socket) socket.emit('friend:accept', { requestId: req.id, userId: req.from })
+  }, [])
+
+  const handleDeclineRequest = useCallback((reqId) => {
+    const allReqs = lsGet(LS_REQUESTS_KEY, [])
+    lsSet(LS_REQUESTS_KEY, allReqs.filter(r => r.id !== reqId))
+    setRequests(prev => prev.filter(r => r.id !== reqId))
+  }, [])
+
+  // ── Contact selection ──────────────────────────────────────────────────────
+  const handleSelectContact = useCallback((contact) => {
+    setSelectedContact(contact)
+    // Clear unread
+    setUnread(prev => {
+      const next = { ...prev }
+      delete next[contact.id]
+      return next
+    })
+  }, [])
+
+  // ── Star toggle ────────────────────────────────────────────────────────────
+  const handleToggleStar = useCallback((userId) => {
+    setStars(prev => {
+      if (prev.includes(userId)) return prev.filter(id => id !== userId)
+      return [...prev, userId]
+    })
+  }, [])
+
+  // ── Call handlers ──────────────────────────────────────────────────────────
+  const handleStartCall = useCallback(({ currentUser, otherUser, preferVideo }) => {
+    setCallData({ currentUser, otherUser, preferVideo, initiator: true })
+    setCallOpen(true)
+  }, [])
+
+  const handleAcceptIncomingCall = useCallback(() => {
+    if (!incomingCall) return
+    const caller = allUsers.find(u => String(u.id) === String(incomingCall.fromUserId))
+    if (!caller) return
+    setCallData({
+      currentUser,
+      otherUser: caller,
+      preferVideo: incomingCall.preferVideo || true,
+      initiator: false,
+    })
+    setCallOpen(true)
+    setIncomingCall(null)
+  }, [incomingCall, allUsers, currentUser])
+
+  const handleDeclineIncomingCall = useCallback(() => {
+    setIncomingCall(null)
+    const socket = getSocket()
+    if (socket && incomingCall) {
+      socket.emit('call:signal', {
+        peerId: incomingCall.fromUserId,
+        type: 'call:end',
+        fromUserId: currentUser.id,
+      })
+    }
+  }, [incomingCall, currentUser])
+
+  const handleCloseCall = useCallback(() => {
+    setCallOpen(false)
+    setCallData(null)
+  }, [])
+
+  // ── Close messenger ────────────────────────────────────────────────────────
+  const handleClose = useCallback(() => {
+    setSelectedContact(null)
+    onClose()
+  }, [onClose])
+
+  if (!currentUser) return null
+
+  return (
+    <>
+      {/* Right-edge peek (always visible when messenger closed) */}
+      {!isOpen && (
+        <RightEdgePeek
+          contacts={contacts}
+          onlineUsers={onlineUsers}
+          unread={unread}
+          stars={stars}
+          onOpen={() => onClose()} // Toggle open
+        />
+      )}
+
+      {/* Main messenger overlay */}
+      {isOpen && createPortal(
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[9999] flex"
+          style={{ background: '#f9fafb' }}
+        >
+          {/* Left sidebar */}
+          <div className="w-[280px] flex-shrink-0 h-full">
+            <Sidebar
+              currentUser={currentUser}
+              contacts={contacts}
+              requests={requests}
+              allUsers={allUsers}
+              onlineUsers={onlineUsers}
+              unread={unread}
+              stars={stars}
+              selectedContact={selectedContact}
+              onSelectContact={handleSelectContact}
+              onAcceptRequest={handleAcceptRequest}
+              onDeclineRequest={handleDeclineRequest}
+              onAddFriend={handleAddFriend}
+              onToggleStar={handleToggleStar}
+              onClose={handleClose}
+            />
+          </div>
+
+          {/* Right panel */}
+          <div className="flex-1 h-full">
+            {selectedContact ? (
+              <ChatView
+                isOpen
+                onClose={() => setSelectedContact(null)}
+                currentUser={currentUser}
+                otherUser={selectedContact}
+                onStartCall={handleStartCall}
+                isInline
+              />
+            ) : (
+              <EmptyState />
+            )}
+          </div>
+        </motion.div>,
+        document.body
+      )}
+
+      {/* Incoming call overlay (portaled above messenger) */}
+      {incomingCall && createPortal(
+        <IncomingCallOverlay
+          isOpen
+          callData={incomingCall}
+          onAccept={handleAcceptIncomingCall}
+          onDecline={handleDeclineIncomingCall}
+        />,
+        document.body
+      )}
+
+      {/* Call modal (portaled above everything) */}
+      {callOpen && callData && createPortal(
+        <CallModal
+          isOpen
+          onClose={handleCloseCall}
+          currentUser={callData.currentUser}
+          otherUser={callData.otherUser}
+          preferVideo={callData.preferVideo}
+          initiator={callData.initiator}
+        />,
+        document.body
+      )}
+    </>
+  )
+}
