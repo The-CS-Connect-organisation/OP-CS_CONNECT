@@ -1,8 +1,16 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Phone, Video, Send, Smile, Loader2, ArrowLeft, Image, Paperclip, CheckCheck, AlertCircle } from 'lucide-react';
-import { useStreamChat, sanitizeId } from '../../hooks/useStreamChat';
+import { request } from '../../utils/apiClient';
+import { getSocket } from '../../utils/socketClient';
+import { getFromStorage, KEYS } from '../../data/schema';
 
+/**
+ * Firebase-backed chat view.
+ * Messages are stored in Firebase RTDB via the backend API.
+ * Real-time updates come through Socket.IO (message:new event).
+ * GetStream is NOT used here — only for calls.
+ */
 export const ChatView = ({
   isOpen,
   onClose,
@@ -11,145 +19,144 @@ export const ChatView = ({
   onStartCall,
   isInline = true
 }) => {
-  const { client, isConnected, error: connectError } = useStreamChat(currentUser);
-  const [channel, setChannel] = useState(null);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [channelError, setChannelError] = useState(null);
+  const [error, setError] = useState(null);
   const [otherTyping, setOtherTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
   const inputRef = useRef(null);
+  const typingTimerRef = useRef(null);
 
-  // Init channel — connect to GetStream inline, don't wait for isConnected hook
+  // ── Load message history ──────────────────────────────────────────────────
   useEffect(() => {
-    if (!isOpen || !otherUser?.id || !client) return;
+    if (!isOpen || !otherUser?.id || !currentUser?.id) return;
     let cancelled = false;
-    const otherId = sanitizeId(otherUser.id);
-    const myId = sanitizeId(currentUser.id);
 
-    const initChannel = async () => {
-      setLoading(true);
-      setChannelError(null);
-      try {
-        // Ensure client is connected — connect inline if not already
-        if (!client.userID) {
-          const { createUserToken } = await import('../../lib/streamClient');
-          const token = await createUserToken(myId);
-          await client.connectUser(
-            { id: myId, name: currentUser.name, role: currentUser.role || 'user' },
-            token
-          );
-        }
+    setLoading(true);
+    setError(null);
 
-        // Deterministic channel ID — sorted, max 64 chars
-        const shortMyId = myId.substring(0, 20);
-        const shortOtherId = otherId.substring(0, 20);
-        const sortedIds = [shortMyId, shortOtherId].sort();
-        const channelId = `dm${sortedIds[0]}${sortedIds[1]}`.substring(0, 64);
-
-        const ch = client.channel('messaging', channelId, {
-          members: [myId, otherId],
-          name: `${currentUser.name} & ${otherUser.name}`,
-        });
-
-        await ch.watch();
+    request(`/school/messages?otherUserId=${encodeURIComponent(otherUser.id)}&userId=${encodeURIComponent(currentUser.id)}`)
+      .then(res => {
         if (cancelled) return;
-        setChannel(ch);
-        setMessages(ch.state.messages || []);
-      } catch (err) {
-        console.error('[ChatView] Channel init failed:', err);
-        if (!cancelled) setChannelError(err?.message || 'Could not open chat. Try again.');
-      } finally {
+        setMessages(res.messages || []);
+      })
+      .catch(err => {
+        if (!cancelled) setError(err?.message || 'Could not load messages');
+      })
+      .finally(() => {
         if (!cancelled) setLoading(false);
-      }
-    };
+      });
 
-    initChannel();
     return () => { cancelled = true; };
-  }, [isOpen, otherUser?.id, currentUser?.id, client]);
+  }, [isOpen, otherUser?.id, currentUser?.id]);
 
-  // Real-time message + typing listeners
+  // ── Real-time Socket.IO listener ──────────────────────────────────────────
   useEffect(() => {
-    if (!channel) return;
-    const onNewMessage = (event) => {
-      setMessages((prev) => {
-        if (prev.some((m) => m.id === event.message.id)) return prev;
-        return [...prev, event.message];
+    if (!isOpen || !currentUser?.id) return;
+
+    const socket = getSocket();
+    if (!socket) return;
+
+    const handleNewMessage = (msg) => {
+      // Only show messages between these two users
+      const isRelevant =
+        (msg.sender_id === currentUser.id && msg.recipient_id === otherUser?.id) ||
+        (msg.sender_id === otherUser?.id && msg.recipient_id === currentUser.id);
+      if (!isRelevant) return;
+
+      setMessages(prev => {
+        if (prev.some(m => m.id === msg.id)) return prev;
+        return [...prev, msg];
       });
     };
-    const onTypingStart = (event) => {
-      if (event.user?.id !== sanitizeId(currentUser.id)) setOtherTyping(true);
-    };
-    const onTypingStop = (event) => {
-      if (event.user?.id !== sanitizeId(currentUser.id)) setOtherTyping(false);
-    };
-    channel.on('message.new', onNewMessage);
-    channel.on('typing.start', onTypingStart);
-    channel.on('typing.stop', onTypingStop);
-    return () => {
-      channel.off('message.new', onNewMessage);
-      channel.off('typing.start', onTypingStart);
-      channel.off('typing.stop', onTypingStop);
-    };
-  }, [channel, currentUser?.id]);
 
-  // Reset on close
+    const handleTypingStart = (data) => {
+      if (data?.userId === otherUser?.id) setOtherTyping(true);
+    };
+    const handleTypingStop = (data) => {
+      if (data?.userId === otherUser?.id) setOtherTyping(false);
+    };
+
+    socket.on('message:new', handleNewMessage);
+    socket.on('typing:start', handleTypingStart);
+    socket.on('typing:stop', handleTypingStop);
+
+    return () => {
+      socket.off('message:new', handleNewMessage);
+      socket.off('typing:start', handleTypingStart);
+      socket.off('typing:stop', handleTypingStop);
+    };
+  }, [isOpen, currentUser?.id, otherUser?.id]);
+
+  // ── Reset on close ────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isOpen) {
       setMessages([]);
-      setChannel(null);
       setText('');
       setOtherTyping(false);
-      setChannelError(null);
+      setError(null);
     }
   }, [isOpen]);
 
-  // Auto-scroll
+  // ── Auto-scroll ───────────────────────────────────────────────────────────
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages.length, otherTyping]);
 
-  const handleTyping = useCallback(() => {
-    if (channel) channel.keystroke().catch(() => {});
-  }, [channel]);
+  // ── Typing indicator ──────────────────────────────────────────────────────
+  const handleTypingIndicator = useCallback(() => {
+    const socket = getSocket();
+    if (!socket) return;
+    socket.emit('typing:start', { userId: currentUser.id, toUserId: otherUser?.id });
+    clearTimeout(typingTimerRef.current);
+    typingTimerRef.current = setTimeout(() => {
+      socket.emit('typing:stop', { userId: currentUser.id, toUserId: otherUser?.id });
+    }, 2000);
+  }, [currentUser?.id, otherUser?.id]);
 
+  // ── Send message ──────────────────────────────────────────────────────────
   const handleSend = async () => {
     const trimmed = text.trim();
-    if (!trimmed || !channel || sending) return;
+    if (!trimmed || sending) return;
+
     setSending(true);
-    const optimisticText = trimmed;
+    const optimistic = trimmed;
     setText('');
+
+    // Optimistic update
+    const tempMsg = {
+      id: `temp-${Date.now()}`,
+      sender_id: currentUser.id,
+      recipient_id: otherUser.id,
+      content: optimistic,
+      created_at: new Date().toISOString(),
+      _pending: true,
+    };
+    setMessages(prev => [...prev, tempMsg]);
+
     try {
-      await channel.sendMessage({ text: optimisticText });
+      const res = await request('/school/messages', {
+        method: 'POST',
+        body: JSON.stringify({
+          recipientId: otherUser.id,
+          content: optimistic,
+        }),
+        headers: { 'x-user-id': currentUser.id },
+      });
+
+      // Replace optimistic with real message
+      setMessages(prev => prev.map(m => m.id === tempMsg.id ? (res.message || m) : m));
       inputRef.current?.focus();
     } catch (err) {
       console.error('[ChatView] Send failed:', err);
-      setText(optimisticText); // restore on failure
+      // Remove optimistic on failure, restore text
+      setMessages(prev => prev.filter(m => m.id !== tempMsg.id));
+      setText(optimistic);
     } finally {
       setSending(false);
-    }
-  };
-
-  const handleFileUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file || !channel) return;
-    try {
-      setSending(true);
-      if (file.type.startsWith('image/')) {
-        const response = await channel.sendImage(file);
-        await channel.sendMessage({ text: '', attachments: [{ type: 'image', image_url: response.file, fallback: file.name }] });
-      } else {
-        const response = await channel.sendFile(file);
-        await channel.sendMessage({ text: '', attachments: [{ type: 'file', asset_url: response.file, title: file.name, file_size: file.size, mime_type: file.type }] });
-      }
-    } catch (err) {
-      console.error('[ChatView] File upload failed:', err);
-    } finally {
-      setSending(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
@@ -157,6 +164,7 @@ export const ChatView = ({
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
   };
 
+  // ── Group messages by date ────────────────────────────────────────────────
   const groupedMessages = useMemo(() => {
     const groups = [];
     let lastDate = '';
@@ -170,19 +178,13 @@ export const ChatView = ({
 
   if (!currentUser || !otherUser || !isOpen) return null;
 
-  const myId = sanitizeId(currentUser.id);
   const roleColor = otherUser.role === 'teacher' ? '#a855f7' : otherUser.role === 'student' ? '#3b82f6' : otherUser.role === 'admin' ? '#f59e0b' : '#10b981';
-
-  // Can send if channel is ready — don't block on isConnected
-  const canSend = !!channel && !sending;
+  const canSend = !!text.trim() && !sending;
 
   return (
     <div
       className={`flex flex-col h-full w-full ${isInline ? '' : 'rounded-3xl overflow-hidden shadow-2xl'}`}
-      style={{
-        background: isInline ? 'transparent' : 'rgba(255,255,255,0.85)',
-        backdropFilter: isInline ? 'none' : 'blur(20px)',
-      }}
+      style={{ background: isInline ? 'transparent' : 'rgba(255,255,255,0.85)', backdropFilter: isInline ? 'none' : 'blur(20px)' }}
     >
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-white/30 bg-white/30 backdrop-blur-md z-10 shadow-sm flex-shrink-0">
@@ -191,27 +193,23 @@ export const ChatView = ({
         </button>
         <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 relative shadow-sm" style={{ background: roleColor }}>
           {otherUser.name?.charAt(0) || '?'}
-          {isConnected && <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white shadow-sm" />}
+          <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-400 rounded-full border-2 border-white shadow-sm" />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[15px] font-bold truncate text-gray-800">{otherUser.name}</p>
           <p className="text-[11px] font-medium" style={{ color: otherTyping ? '#10b981' : '#9ca3af' }}>
-            {otherTyping ? 'typing...' : isConnected ? 'Active now' : 'Connecting...'}
+            {otherTyping ? 'typing...' : 'Active now'}
           </p>
         </div>
         <div className="flex items-center gap-1">
           {onStartCall && (
             <>
-              <button
-                onClick={() => onStartCall({ currentUser, otherUser, preferVideo: false })}
-                className="p-2.5 rounded-full hover:bg-white/50 transition-colors bg-white/30 text-gray-700"
-              >
+              <button onClick={() => onStartCall({ currentUser, otherUser, preferVideo: false })}
+                className="p-2.5 rounded-full hover:bg-white/50 transition-colors bg-white/30 text-gray-700">
                 <Phone size={17} />
               </button>
-              <button
-                onClick={() => onStartCall({ currentUser, otherUser, preferVideo: true })}
-                className="p-2.5 rounded-full hover:bg-white/50 transition-colors bg-white/30 text-emerald-600"
-              >
+              <button onClick={() => onStartCall({ currentUser, otherUser, preferVideo: true })}
+                className="p-2.5 rounded-full hover:bg-white/50 transition-colors bg-white/30 text-emerald-600">
                 <Video size={17} />
               </button>
             </>
@@ -225,22 +223,11 @@ export const ChatView = ({
           <div className="h-full flex items-center justify-center">
             <Loader2 size={24} className="animate-spin text-gray-400" />
           </div>
-        ) : channelError ? (
+        ) : error ? (
           <div className="h-full flex flex-col items-center justify-center gap-3 text-center px-6">
             <AlertCircle size={32} className="text-red-400" />
-            <p className="text-sm font-semibold text-gray-700">Couldn't open chat</p>
-            <p className="text-xs text-gray-500">{channelError}</p>
-            <button
-              onClick={() => { setChannelError(null); setLoading(false); }}
-              className="mt-2 px-4 py-2 rounded-xl bg-blue-500 text-white text-xs font-bold"
-            >
-              Retry
-            </button>
-          </div>
-        ) : !isConnected && !channel ? (
-          <div className="h-full flex flex-col items-center justify-center gap-2 opacity-60">
-            <Loader2 size={24} className="animate-spin text-gray-400" />
-            <p className="text-sm text-gray-500">Connecting to chat...</p>
+            <p className="text-sm font-semibold text-gray-700">Couldn't load messages</p>
+            <p className="text-xs text-gray-500">{error}</p>
           </div>
         ) : messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center gap-3 opacity-60">
@@ -261,7 +248,7 @@ export const ChatView = ({
                 </div>
               );
               const msg = item.msg;
-              const isMe = msg.user?.id === myId;
+              const isMe = msg.sender_id === currentUser.id;
               return (
                 <motion.div
                   key={msg.id}
@@ -271,48 +258,25 @@ export const ChatView = ({
                   className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                 >
                   <div className={`max-w-[75%] flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                    {/* Attachments */}
-                    {msg.attachments?.map((att, ai) => (
-                      <div key={ai} className="mb-1 rounded-2xl overflow-hidden shadow-sm">
-                        {att.type === 'image' ? (
-                          <img
-                            src={att.image_url || att.thumb_url}
-                            alt="attachment"
-                            className="max-w-full max-h-56 object-cover cursor-pointer hover:opacity-90 transition-opacity"
-                            onClick={() => window.open(att.image_url, '_blank')}
-                          />
-                        ) : (
-                          <a href={att.asset_url} target="_blank" rel="noreferrer"
-                            className="flex items-center gap-2 px-4 py-2.5 text-sm bg-white/70 text-blue-600 border border-white/40">
-                            <Paperclip size={14} />
-                            <span className="truncate max-w-[140px] font-medium">{att.title || 'File'}</span>
-                          </a>
-                        )}
-                      </div>
-                    ))}
-                    {/* Text bubble */}
-                    {msg.text && (
-                      <div className={`px-4 py-2.5 text-[14px] leading-relaxed shadow-sm ${
-                        isMe
-                          ? 'bg-blue-500 text-white rounded-2xl rounded-tr-sm'
-                          : 'bg-white/80 backdrop-blur-md text-gray-800 border border-white/50 rounded-2xl rounded-tl-sm'
-                      }`}>
-                        <p className="break-words whitespace-pre-wrap">{msg.text}</p>
-                      </div>
-                    )}
-                    {/* Timestamp */}
+                    <div className={`px-4 py-2.5 text-[14px] leading-relaxed shadow-sm ${
+                      isMe
+                        ? `bg-blue-500 text-white rounded-2xl rounded-tr-sm ${msg._pending ? 'opacity-60' : ''}`
+                        : 'bg-white/80 backdrop-blur-md text-gray-800 border border-white/50 rounded-2xl rounded-tl-sm'
+                    }`}>
+                      <p className="break-words whitespace-pre-wrap">{msg.content}</p>
+                    </div>
                     <div className={`flex items-center gap-1 mt-0.5 px-1 ${isMe ? 'justify-end' : ''}`}>
                       <span className="text-[10px] font-medium text-gray-400">
                         {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
-                      {isMe && <CheckCheck size={11} className="text-blue-400" />}
+                      {isMe && !msg._pending && <CheckCheck size={11} className="text-blue-400" />}
+                      {isMe && msg._pending && <Loader2 size={10} className="text-gray-400 animate-spin" />}
                     </div>
                   </div>
                 </motion.div>
               );
             })}
 
-            {/* Typing indicator */}
             {otherTyping && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
                 <div className="px-4 py-3 rounded-2xl rounded-tl-sm bg-white/60 backdrop-blur-md border border-white/40 shadow-sm flex items-center gap-1.5">
@@ -331,13 +295,10 @@ export const ChatView = ({
 
       {/* Input bar */}
       <div className="px-3 py-2.5 border-t border-white/40 bg-white/50 backdrop-blur-md flex items-center gap-2 flex-shrink-0">
-        <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileUpload} accept="image/*,.pdf,.doc,.docx" />
+        <input ref={fileInputRef} type="file" className="hidden" accept="image/*,.pdf,.doc,.docx" />
 
-        <button
-          onClick={() => fileInputRef.current?.click()}
-          className="p-2.5 rounded-full hover:bg-white/60 transition-colors bg-white/40 text-blue-500 flex-shrink-0"
-          disabled={!canSend}
-        >
+        <button onClick={() => fileInputRef.current?.click()}
+          className="p-2.5 rounded-full hover:bg-white/60 transition-colors bg-white/40 text-blue-500 flex-shrink-0">
           <Image size={19} />
         </button>
 
@@ -345,15 +306,13 @@ export const ChatView = ({
           <input
             ref={inputRef}
             value={text}
-            onChange={(e) => { setText(e.target.value); handleTyping(); }}
+            onChange={(e) => { setText(e.target.value); handleTypingIndicator(); }}
             onKeyDown={handleKeyDown}
-            placeholder={channel ? 'Message...' : 'Connecting...'}
+            placeholder="Message..."
             className="flex-1 bg-transparent border-0 outline-none text-[14px] py-1 text-gray-800 placeholder-gray-400 font-medium"
           />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="p-1 rounded-full hover:bg-black/5 transition-colors flex-shrink-0"
-          >
+          <button onClick={() => fileInputRef.current?.click()}
+            className="p-1 rounded-full hover:bg-black/5 transition-colors flex-shrink-0">
             <Paperclip size={16} className="text-gray-400" />
           </button>
         </div>
