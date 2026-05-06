@@ -142,15 +142,17 @@ export const Login = ({ onLogin, onSwitch }) => {
     setLoading(true);
     playBlip();
     
-    // Smooth delay for auth feel
-    await new Promise(r => setTimeout(r, 800));
-    
-    const result = await onLogin(email.trim().toLowerCase(), password.trim());
-    if (result.success) {
-      setLoginSuccess(true);
-      navigate(`/${result.user.role}/dashboard`);
-    } else {
-      setError(result.error);
+    try {
+      const result = await onLogin(email.trim().toLowerCase(), password.trim());
+      if (result?.success) {
+        setLoginSuccess(true);
+        navigate(`/${result.user.role}/dashboard`);
+      } else {
+        setError(result?.error || 'Invalid email or password');
+        setLoading(false);
+      }
+    } catch (err) {
+      setError('Login failed. Please try again.');
       setLoading(false);
     }
   };
