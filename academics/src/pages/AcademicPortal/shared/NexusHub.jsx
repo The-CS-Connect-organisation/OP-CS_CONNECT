@@ -53,10 +53,9 @@ export const NexusHub = ({ user, addToast }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [channelMembers, setChannelMembers] = useState([]);
   
-  // ── Stream Chat Integration ──
-  const [client, setClient] = useState(null);
-  const [chatChannel, setChatChannel] = useState(null);
+  // ── Firebase-backed Club Chat ──
   const [messages, setMessages] = useState([]);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
   // Fetch Clubs from Backend
   useEffect(() => {
@@ -80,88 +79,80 @@ export const NexusHub = ({ user, addToast }) => {
     fetchClubs();
   }, [user?.id]);
 
+  // Load club messages when club selected
   useEffect(() => {
-    const initChat = async () => {
-      try {
-        const { getStreamClient, createUserToken } = await import('../../../lib/streamClient');
-        const sanitizedUserId = sanitizeUserId(user?.id);
-        const token = await createUserToken(sanitizedUserId);
-        const chatClient = getStreamClient();
+    if (!selectedClub?.id) { setMessages([]); return; }
+    let cancelled = false;
+    setLoadingMessages(true);
+    request(`/school/clubs/${selectedClub.id}/messages`).then(res => {
+      if (!cancelled) setMessages(res.messages || []);
+    }).catch(() => {
+      if (!cancelled) setMessages([]);
+    }).finally(() => {
+      if (!cancelled) setLoadingMessages(false);
+    });
+    return () => { cancelled = true; };
+  }, [selectedClub?.id]);
 
-        await chatClient.connectUser(
-          { id: sanitizedUserId, name: user?.name || 'Guest' },
-          token
-        );
-
-        setClient(chatClient);
-      } catch (err) {
-        console.error('Stream Init Error:', err);
-      }
-    };
-
-    if (user?.id) {
-      initChat();
-    }
-    return () => {
-      if (client) client.disconnectUser().catch(() => {});
-    };
-  }, [user?.id]);
-
-  // Handle Channel Switching
+  // Real-time club messages via socket
   useEffect(() => {
-    if (client && selectedClub) {
-      const channel = client.channel('messaging', selectedClub.id, {
-        name: selectedClub.name,
-      });
-
-      channel.watch().then((state) => {
-        setMessages(state.messages);
-        setChannelMembers(Object.values(state.members || {}).map(m => m.user));
-        setChatChannel(channel);
-      });
-
-      const handleNewMessage = (event) => {
-        setMessages((prev) => [...prev, event.message]);
+    if (!selectedClub?.id) return;
+    import('../../../utils/socketClient').then(({ getSocket }) => {
+      const socket = getSocket();
+      if (!socket) return;
+      const handler = (msg) => {
+        if (msg.club_id === selectedClub.id) {
+          setMessages(prev => prev.some(m => m.id === msg.id) ? prev : [...prev, msg]);
+        }
       };
-
-      channel.on('message.new', handleNewMessage);
-      return () => channel.off('message.new', handleNewMessage);
-    }
-  }, [client, selectedClub]);
+      socket.on('club:message', handler);
+      return () => socket.off('club:message', handler);
+    });
+  }, [selectedClub?.id]);
 
   // Fetch Leaderboard on tab switch
   useEffect(() => {
     if (activeSubTab === 'leaderboard' || activeBrowseTab === 'global') {
-      const fetchLeaderboard = async () => {
-        try {
-          // Temporarily mock it based on active clubs if API is missing
-          // If the backend /clubs/leaderboard exists, use it:
-          // const res = await request('/school/clubs/leaderboard');
-          
-          // Safe fallback simulation from active clubs
-          const sorted = [...clubs].map(c => ({
-            ...c,
-            points: (c.members || 1) * 15 + Math.floor(Math.random() * 200)
-          })).sort((a,b) => b.points - a.points);
-          
-          setLeaderboardData(sorted);
-        } catch (err) {
-          console.error('Leaderboard Fetch Error:', err);
-        }
-      };
-      if (clubs.length > 0) fetchLeaderboard();
+      const sorted = [...clubs].map(c => ({
+        ...c,
+        points: (c.members || 1) * 15 + Math.floor(Math.random() * 200)
+      })).sort((a,b) => b.points - a.points);
+      setLeaderboardData(sorted);
     }
   }, [activeSubTab, activeBrowseTab, clubs]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
-    if (!message.trim() || !chatChannel) return;
+    if (!message.trim() || !selectedClub?.id) return;
+
+    const trimmed = message.trim();
+    setMessage('');
+
+    // Optimistic
+    const tempMsg = {
+      id: `temp-${Date.now()}`,
+      club_id: selectedClub.id,
+      sender_id: user?.id,
+      user: { id: user?.id, name: user?.name },
+      text: trimmed,
+      created_at: new Date().toISOString(),
+      _pending: true,
+    };
+    setMessages(prev => [...prev, tempMsg]);
 
     try {
-      await chatChannel.sendMessage({ text: message });
-      setMessage('');
+      await request(`/school/clubs/${selectedClub.id}/messages`, {
+        method: 'POST',
+        body: JSON.stringify({ content: trimmed }),
+      });
+      // Socket will deliver the real message; remove optimistic after 2s if not replaced
+      setTimeout(() => {
+        setMessages(prev => prev.map(m => m.id === tempMsg.id ? { ...m, _pending: false } : m));
+      }, 2000);
     } catch (err) {
       addToast?.('Message failed to send', 'error');
+      setMessages(prev => prev.filter(m => m.id !== tempMsg.id));
+      setMessage(trimmed);
     }
   };
 
@@ -493,22 +484,27 @@ export const NexusHub = ({ user, addToast }) => {
                           <p className="text-slate-400 text-sm">This is the start of the community conversation.</p>
                         </div>
                       ) : (
-                        messages.map((msg, i) => (
-                          <div key={msg.id || i} className={`flex gap-4 group ${msg.user.id === user?.id ? 'flex-row-reverse' : ''}`}>
+                        messages.map((msg, i) => {
+                          const isMe = (msg.sender_id || msg.user?.id) === user?.id;
+                          const senderName = msg.user?.name || (isMe ? user?.name : 'Member');
+                          const content = msg.content || msg.text || '';
+                          return (
+                          <div key={msg.id || i} className={`flex gap-4 group ${isMe ? 'flex-row-reverse' : ''}`}>
                             <div className="w-10 h-10 rounded-2xl bg-indigo-100 flex items-center justify-center shrink-0 shadow-sm border border-white overflow-hidden">
-                              {msg.user.image ? <img src={msg.user.image} alt="" /> : <span className="text-indigo-600 font-bold text-xs">{msg.user.name?.[0]}</span>}
+                              <span className="text-indigo-600 font-bold text-xs">{senderName?.[0] || '?'}</span>
                             </div>
-                            <div className={`space-y-1 max-w-[70%] ${msg.user.id === user?.id ? 'text-right' : ''}`}>
-                              <div className={`flex items-center gap-2 mb-1 ${msg.user.id === user?.id ? 'flex-row-reverse' : ''}`}>
-                                <span className="text-[11px] font-black text-slate-800 uppercase tracking-tighter">{msg.user.name}</span>
+                            <div className={`space-y-1 max-w-[70%] ${isMe ? 'text-right' : ''}`}>
+                              <div className={`flex items-center gap-2 mb-1 ${isMe ? 'flex-row-reverse' : ''}`}>
+                                <span className="text-[11px] font-black text-slate-800 uppercase tracking-tighter">{senderName}</span>
                                 <span className="text-[9px] text-slate-400">{new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                               </div>
-                              <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${msg.user.id === user?.id ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'}`}>
-                                {msg.text}
+                              <div className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${isMe ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-600'} ${msg._pending ? 'opacity-60' : ''}`}>
+                                {content}
                               </div>
                             </div>
                           </div>
-                        ))
+                          );
+                        })
                       )}
                     </div>
 

@@ -61,15 +61,19 @@ export const ChatView = ({
     if (!socket) return;
 
     const handleNewMessage = (msg) => {
-      // Only show messages between these two users
       const isRelevant =
         (msg.sender_id === currentUser.id && msg.recipient_id === otherUser?.id) ||
         (msg.sender_id === otherUser?.id && msg.recipient_id === currentUser.id);
       if (!isRelevant) return;
 
       setMessages(prev => {
+        // If we already have this message (by id), skip
         if (prev.some(m => m.id === msg.id)) return prev;
-        return [...prev, msg];
+        // Remove any pending optimistic message with same content from same sender
+        const withoutOptimistic = prev.filter(m =>
+          !(m._pending && m.sender_id === msg.sender_id && m.content === msg.content)
+        );
+        return [...withoutOptimistic, msg];
       });
     };
 
@@ -123,38 +127,40 @@ export const ChatView = ({
     if (!trimmed || sending) return;
 
     setSending(true);
-    const optimistic = trimmed;
     setText('');
 
-    // Optimistic update
-    const tempMsg = {
-      id: `temp-${Date.now()}`,
+    // Add optimistic message immediately for instant feedback
+    const tempId = `temp-${Date.now()}`;
+    const optimisticMsg = {
+      id: tempId,
       sender_id: currentUser.id,
       recipient_id: otherUser.id,
-      content: optimistic,
+      content: trimmed,
       created_at: new Date().toISOString(),
       _pending: true,
     };
-    setMessages(prev => [...prev, tempMsg]);
+    setMessages(prev => [...prev, optimisticMsg]);
 
     try {
-      const res = await request('/school/messages', {
+      await request('/school/messages', {
         method: 'POST',
-        body: JSON.stringify({
-          recipientId: otherUser.id,
-          content: optimistic,
-        }),
-        headers: { 'x-user-id': currentUser.id },
+        body: JSON.stringify({ recipientId: otherUser.id, content: trimmed }),
       });
-
-      // Replace optimistic with real message
-      setMessages(prev => prev.map(m => m.id === tempMsg.id ? (res.message || m) : m));
+      // Remove the optimistic message — the socket event will add the real one
+      // If socket doesn't fire (offline), replace optimistic with confirmed version
+      setTimeout(() => {
+        setMessages(prev => {
+          const stillHasOptimistic = prev.some(m => m.id === tempId);
+          if (!stillHasOptimistic) return prev; // socket already replaced it
+          // Replace optimistic with confirmed (no socket)
+          return prev.map(m => m.id === tempId ? { ...m, _pending: false } : m);
+        });
+      }, 2000);
       inputRef.current?.focus();
     } catch (err) {
       console.error('[ChatView] Send failed:', err);
-      // Remove optimistic on failure, restore text
-      setMessages(prev => prev.filter(m => m.id !== tempMsg.id));
-      setText(optimistic);
+      setMessages(prev => prev.filter(m => m.id !== tempId));
+      setText(trimmed);
     } finally {
       setSending(false);
     }

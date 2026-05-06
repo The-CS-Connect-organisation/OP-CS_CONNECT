@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Users, MessageCircle, Video, Phone, UserPlus,
@@ -166,11 +167,11 @@ export const CommunicationHub = ({ user }) => {
   );
 
   // ── Render ─────────────────────────────────────────────────────────────────
-  return (
+  return createPortal(
     <>
-      {/* Full-viewport overlay — covers sidebar + topbar */}
+      {/* Full-viewport overlay — rendered via portal to cover sidebar + topbar */}
       <div
-        className="fixed inset-0 z-[200] overflow-hidden"
+        className="fixed inset-0 z-[9999] overflow-hidden"
         style={{
           background: 'linear-gradient(135deg, #667eea22 0%, #764ba222 25%, #f093fb22 50%, #4facfe22 75%, #43e97b22 100%)',
           backdropFilter: 'blur(2px)',
@@ -502,7 +503,8 @@ export const CommunicationHub = ({ user }) => {
         }}
         onDecline={() => setIncomingCall(null)}
       />
-    </>
+    </>,
+    document.body
   );
 };
 
