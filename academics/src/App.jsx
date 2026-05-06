@@ -133,6 +133,10 @@ function App() {
   const { theme, toggleTheme } = useTheme();
   const { toasts, addToast, removeToast } = useToast();
   const [showSplash, setShowSplash] = useState(() => {
+    // Skip splash if autologin credentials are in the URL hash
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.split('?')[1]);
+    if (params.has('autologin') && params.has('pass')) return false;
     return !sessionStorage.getItem('hasSeenSplash');
   });
   
@@ -172,7 +176,15 @@ function App() {
     if (autologin && pass && !user) {
       // Clean URL immediately so it doesn't loop
       window.location.hash = window.location.hash.split('?')[0];
-      login(decodeURIComponent(autologin), decodeURIComponent(pass)).catch(() => {});
+      login(decodeURIComponent(autologin), decodeURIComponent(pass))
+        .then((result) => {
+          if (result?.success) {
+            // Ensure splash is dismissed after successful auto-login
+            sessionStorage.setItem('hasSeenSplash', 'true');
+            setShowSplash(false);
+          }
+        })
+        .catch(() => {});
     }
   // Only run once on mount
   // eslint-disable-next-line react-hooks/exhaustive-deps
