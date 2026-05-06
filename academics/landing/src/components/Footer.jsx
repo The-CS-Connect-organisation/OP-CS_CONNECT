@@ -17,7 +17,7 @@ export default function Footer() {
 
         {/* Links */}
         <div className="flex items-center gap-6 text-xs text-white/25 font-medium">
-          <a href="/OP-CS_CONNECT/" className="hover:text-white/50 transition-colors">
+          <a href="/OP-CS_CONNECT/academics/" className="hover:text-white/50 transition-colors">
             Portal
           </a>
           <a href="#login" className="hover:text-white/50 transition-colors">

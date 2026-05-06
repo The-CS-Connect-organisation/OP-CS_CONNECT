@@ -31,7 +31,7 @@ jobs:
         run: npm run build
         working-directory: academics/landing
 
-      # Build main app (academics — now the single unified portal)
+      # Build unified app (academics + management merged)
       - name: Install app deps
         run: npm install
         working-directory: academics
@@ -42,15 +42,12 @@ jobs:
         env:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
-      # Combine: landing at root, app at /OP-CS_CONNECT/
+      # Deploy: landing at root, app at /academics/
       - name: Prepare deploy folder
         run: |
-          mkdir -p deploy/OP-CS_CONNECT
-          # Copy app build to /OP-CS_CONNECT/
-          cp -r academics/dist/* deploy/OP-CS_CONNECT/
-          # Fix client-side routing
-          cp academics/dist/index.html deploy/OP-CS_CONNECT/404.html
-          # Landing goes to root
+          mkdir -p deploy/academics
+          cp -r academics/dist/* deploy/academics/
+          cp academics/dist/index.html deploy/academics/404.html
           cp -r academics/landing/dist/* deploy/
           cp academics/landing/dist/index.html deploy/404.html
 
