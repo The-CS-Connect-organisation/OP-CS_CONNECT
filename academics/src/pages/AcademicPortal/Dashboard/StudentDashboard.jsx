@@ -658,7 +658,7 @@ export const StudentDashboard = ({ user }) => {
               Announcements
             </h3>
             <div className="space-y-3">
-              {announcements.slice(0, 4).map(a => (
+              {safeAnnouncements.slice(0, 4).map(a => (
                 <div key={a.id} className="border-l-2 pl-3 py-1.5 border-gray-200">
                   <div className="flex justify-between items-center mb-0.5">
                     <span className={`text-[10px] font-semibold rounded-full px-2 py-0.5 ${a.priority === 'high' ? 'bg-red-50 text-red-600' : 'bg-gray-100 text-gray-500'}`}>
@@ -669,7 +669,7 @@ export const StudentDashboard = ({ user }) => {
                   <p className="text-sm leading-relaxed mt-1 text-gray-600">{a.title}</p>
                 </div>
               ))}
-              {announcements.length === 0 && (
+              {safeAnnouncements.length === 0 && (
                 <p className="text-xs text-gray-500">No announcements</p>
               )}
             </div>
