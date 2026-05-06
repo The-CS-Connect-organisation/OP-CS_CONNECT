@@ -252,7 +252,7 @@ export const CommunicationHub = ({ isOpen, onClose, currentUser }) => {
   // ── Load stars from API ───────────────────────────────────────────────────
   useEffect(() => {
     if (!isOpen || !currentUser?.id) return;
-    request('/api/user-prefs/stars')
+    request('/user-prefs/stars')
       .then(res => setStars(res.stars || []))
       .catch(() => {}); // non-critical, silently fail
   }, [isOpen, currentUser?.id]);
@@ -335,7 +335,7 @@ export const CommunicationHub = ({ isOpen, onClose, currentUser }) => {
     const next = stars.includes(userId) ? stars.filter(id => id !== userId) : [...stars, userId];
     setStars(next);
     // Fire-and-forget to API
-    request('/api/user-prefs/stars', {
+    request('/user-prefs/stars', {
       method: 'PUT',
       body: JSON.stringify({ stars: next }),
     }).catch(() => {});

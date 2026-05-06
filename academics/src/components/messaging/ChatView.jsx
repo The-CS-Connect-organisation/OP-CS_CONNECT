@@ -204,7 +204,7 @@ export const ChatView = ({
         <div className="flex-1 min-w-0">
           <p className="text-[15px] font-bold truncate text-gray-800">{otherUser.name}</p>
           <p className="text-[11px] font-medium" style={{ color: otherTyping ? '#10b981' : '#9ca3af' }}>
-            {otherTyping ? 'typing...' : onlineUsers?.has?.(otherUser?.id) ? 'Active now' : 'Last seen recently'}
+            {otherTyping ? 'typing...' : 'Active now'}
           </p>
         </div>
         <div className="flex items-center gap-1">
