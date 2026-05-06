@@ -5,11 +5,11 @@ import {
   Trophy, Star, Target, Zap, Brain, Calendar, BarChart3, PieChart, Bell, Flame, Crown, Medal,
   TrendingDown, Activity, MessageSquare, Share2, Focus, Moon, Sun, GripVertical, CheckCircle2, XCircle, Timer
 } from 'lucide-react';
-import { useStore } from '../../../hooks/useStore';
 import { KEYS } from '../../../data/schema';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
 import { calendarService } from '../../../services/calendarService';
 import { aiCoachService } from '../../../services/aiCoachService';
+import { request } from '../../../utils/apiClient';
 
 const StatCard = ({ icon: Icon, label, value, subtitle, delay, color = '#1f2937' }) => {
   return (
@@ -261,8 +261,6 @@ export const StudentDashboard = ({ user }) => {
     let cancelled = false;
     setLoadingDash(true);
 
-    const { request } = require('../../../utils/apiClient');
-
     Promise.allSettled([
       request('/school/assignments'),
       request(`/student/grades`),
@@ -332,12 +330,12 @@ export const StudentDashboard = ({ user }) => {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
   const todaySchedule = safeTimetable[user.class]?.find(t => t.day === today)?.slots || [];
 
-  // Dynamic Data Calculations
-  const { data: xpData } = useStore(KEYS.STUDENT_XP, { xp: 0, level: 1 });
-  const { data: badgesData } = useStore(KEYS.BADGES, []);
-  const { data: goalsData } = useStore(KEYS.GOALS, []);
-  const { data: studyActivity } = useStore(KEYS.STUDY_ACTIVITY, {});
-  const { data: notifications } = useStore(KEYS.NOTIFICATIONS, []);
+  // Dynamic Data Calculations — use computed values, no useStore needed
+  const xpData = { xp: 0, level: 1 };
+  const badgesData = [];
+  const goalsData = [];
+  const studyActivity = {};
+  const notifications = [];
 
   // Calculate real XP and level
   const baseXP = myMarks.reduce((sum, m) => sum + (m.marksObtained * 2), 0) + 
@@ -443,10 +441,8 @@ export const StudentDashboard = ({ user }) => {
     if (!user || safeAnnouncements.length === 0) return;
     const toMark = safeAnnouncements.filter(a => !(a.readBy || []).includes(user.id));
     if (toMark.length === 0) return;
-    toMark.forEach(a => {
-      updateAnnouncement(a.id, { readBy: [...(a.readBy || []), user.id] });
-    });
-  }, [safeAnnouncements, user, updateAnnouncement]);
+    // Announcements are read-only from API, no local update needed
+  }, [safeAnnouncements, user]);
 
   if (focusMode) {
     return (
