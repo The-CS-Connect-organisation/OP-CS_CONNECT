@@ -1,20 +1,27 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookMarked, Search, Download, FileText, Calendar, MessageSquare, Lock, Terminal, Activity, Hash, Zap, ShieldCheck, ChevronRight, Share, Globe } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Modal } from '../../../components/ui/Modal';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
-import { ChatModal } from '../../../components/messaging/ChatModal';
-import { CallModal } from '../../../components/messaging/CallModal';
 import { useSound } from '../../../hooks/useSound';
+import { request } from '../../../utils/apiClient';
 
 export const Notes = ({ user, addToast }) => {
-  const { data: notes, update: updateNote } = useStore(KEYS.NOTES, []);
-  const { data: noteRequests, add: addNoteRequest } = useStore(KEYS.NOTE_REQUESTS, []);
+  const [notes, setNotes] = useState([]);
   const { playClick, playBlip, playSwitch } = useSound();
+
+  useEffect(() => {
+    if (!user?.id) return;
+    let alive = true;
+    request('/school/notes')
+      .then(res => {
+        if (alive) setNotes(res?.notes || res?.items || res?.data?.notes || []);
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [user?.id]);
 
   const [search, setSearch] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('all');

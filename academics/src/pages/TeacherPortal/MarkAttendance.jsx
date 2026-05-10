@@ -29,19 +29,19 @@ export const MarkAttendance = ({ user, addToast }) => {
     (async () => {
       try {
         setLoading(true);
-        const res = await teacherApi.getClassAttendance(selectedClass, selectedDate);
+        // Use direct request instead of teacherApi wrapper to avoid double .data
+        const { request } = await import('../../utils/apiClient');
+        const res = await request(`/teacher/attendance/class/${selectedClass}?date=${selectedDate}`);
         if (!alive) return;
-        // API returns { success, data: { students: [...], attendance: [...] } }
-        const data = res?.data?.data ?? res?.data ?? {};
-        const studentList = data.students ?? [];
-        const existingAttendance = data.attendance ?? [];
+        const studentList = res?.students ?? res?.data?.students ?? [];
+        const existingAttendance = res?.attendance ?? res?.data?.attendance ?? [];
 
         setStudents(studentList);
 
         // Pre-fill marks from existing attendance
         const initialMarks = {};
         existingAttendance.forEach(entry => {
-          initialMarks[entry.studentId] = entry.status;
+          initialMarks[entry.studentId || entry.student_id] = entry.status;
         });
         // Default unmarked students to 'present'
         studentList.forEach(s => {

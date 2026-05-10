@@ -6,18 +6,14 @@ import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Modal } from '../../../components/ui/Modal';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS, getFromStorage } from '../../../data/schema';
 import { hasPermission, PERMISSIONS } from '../../../utils/permissions';
 import { request } from '../../../utils/apiClient';
-import { isMongoId } from '../../../utils/socketClient';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { playPaymentSuccessSound } from '../../../utils/sound';
 
 export const FeeManagement = ({ user, addToast }) => {
-  const { data: fees, add, update, remove } = useStore(KEYS.FEES, []);
-  const { data: users } = useStore(KEYS.USERS, []);
+  const [fees, setFees] = useState([]);
   const [apiStudents, setApiStudents] = useState(null);
   
   const [showPayModal, setShowPayModal] = useState(false);
@@ -38,48 +34,19 @@ export const FeeManagement = ({ user, addToast }) => {
 
   const canManageFees = hasPermission(user, PERMISSIONS.FEES_MANAGE);
 
-  const useApiStudents =
-    canManageFees && !!getFromStorage(KEYS.AUTH_TOKEN) && isMongoId(user?.id);
-
   useEffect(() => {
-    if (!useApiStudents) {
-      setApiStudents(null);
-      return;
-    }
+    if (!user?.id) return;
     let cancelled = false;
-    (async () => {
-      try {
-        const res = await request('/school/students?limit=500');
-        if (cancelled) return;
-        const rows = (res.items || []).map((p) => {
-          const uid = p.userId?._id != null ? String(p.userId._id) : String(p.userId);
-          return {
-            id: uid,
-            name: p.userId?.name || 'Student',
-            class: `Grade ${p.grade} · Sec ${p.section}`,
-            rollNo: p.rollNumber,
-            role: 'student',
-          };
-        });
-        setApiStudents(rows);
-      } catch {
-        if (!cancelled) setApiStudents([]);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [useApiStudents]);
+    request('/fees?limit=200')
+      .then(res => {
+        if (!cancelled) setFees(res.items || res.fees || []);
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
-  const studentOptions = useMemo(() => {
-    const local = users.filter((u) => u.role === 'student');
-    if (apiStudents && apiStudents.length > 0) return apiStudents;
-    return local;
-  }, [users, apiStudents]);
-
-  const resolveStudent = (studentId) =>
-    studentOptions.find((s) => s.id === studentId) ||
-    users.find((u) => u.id === studentId && u.role === 'student');
+  const studentOptions = useMemo(() => apiStudents || [], [apiStudents]);
+  const resolveStudent = (studentId) => studentOptions.find((s) => s.id === studentId);
 
   // Admin edit modal
   const [showEditModal, setShowEditModal] = useState(false);

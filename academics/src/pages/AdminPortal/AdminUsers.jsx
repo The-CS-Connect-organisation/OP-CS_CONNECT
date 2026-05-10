@@ -1,22 +1,32 @@
-import { useState } from 'react';
-import { Users, Search, Filter, Plus, Edit2, Trash2, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Users, Search, Filter, Plus, Edit2, Trash2, X, Loader2 } from 'lucide-react';
 import { CreateAccount } from './CreateAccount';
+import { request } from '../../utils/apiClient';
+
+const ROLE_COLORS = { student: '#3b82f6', teacher: '#a855f7', parent: '#10b981', admin: '#f59e0b', driver: '#ef4444', librarian: '#0ea5e9' };
 
 const AdminUsers = ({ user, addToast }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRole, setSelectedRole] = useState('all');
   const [showCreateAccount, setShowCreateAccount] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const mockUsers = [
-    { id: 1, name: 'John Doe', email: 'john@school.edu', role: 'student', grade: '10-A', status: 'active' },
-    { id: 2, name: 'Sarah Wilson', email: 'sarah@school.edu', role: 'teacher', subject: 'Mathematics', status: 'active' },
-    { id: 3, name: 'Mike Johnson', email: 'mike@school.edu', role: 'parent', student: 'Emma Johnson', status: 'active' },
-    { id: 4, name: 'Lisa Brown', email: 'lisa@school.edu', role: 'student', grade: '9-B', status: 'inactive' },
-  ];
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    request('/school/users?limit=500')
+      .then(res => {
+        if (!cancelled) setAllUsers(res.users || res.items || []);
+      })
+      .catch(() => {})
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, []);
 
-  const filteredUsers = mockUsers.filter(u => {
-    const matchesSearch = u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          u.email.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredUsers = allUsers.filter(u => {
+    const matchesSearch = u.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          u.email?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = selectedRole === 'all' || u.role === selectedRole;
     return matchesSearch && matchesRole;
   });
@@ -83,30 +93,32 @@ const AdminUsers = ({ user, addToast }) => {
             </tr>
           </thead>
           <tbody>
-            {filteredUsers.map((u) => (
-              <tr key={u.id} className="border-t" style={{ borderColor: 'var(--border-color)' }}>
-                <td className="py-3 px-4 text-sm" style={{ color: 'var(--text-primary)' }}>{u.name}</td>
+            {loading ? (
+              <tr><td colSpan={6} className="py-12 text-center"><Loader2 size={24} className="animate-spin text-gray-300 mx-auto" /></td></tr>
+            ) : filteredUsers.length === 0 ? (
+              <tr><td colSpan={6} className="py-12 text-center text-sm text-gray-400">No users found</td></tr>
+            ) : filteredUsers.map((u) => (
+              <tr key={u.id} className="border-t hover:bg-gray-50 transition-colors" style={{ borderColor: 'var(--border-color)' }}>
+                <td className="py-3 px-4 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{u.name}</td>
                 <td className="py-3 px-4 text-sm" style={{ color: 'var(--text-secondary)' }}>{u.email}</td>
                 <td className="py-3 px-4">
-                  <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                    u.role === 'student' ? 'bg-blue-100 text-blue-700' :
-                    u.role === 'teacher' ? 'bg-green-100 text-green-700' :
-                    'bg-purple-100 text-purple-700'
-                  }`}>{u.role}</span>
+                  <span className="text-xs font-semibold px-2 py-1 rounded-full capitalize"
+                    style={{ background: `${ROLE_COLORS[u.role] || '#6b7280'}18`, color: ROLE_COLORS[u.role] || '#6b7280' }}>
+                    {u.role}
+                  </span>
                 </td>
-                <td className="py-3 px-4 text-sm" style={{ color: 'var(--text-muted)' }}>{u.grade || u.subject || u.student || '-'}</td>
+                <td className="py-3 px-4 text-sm" style={{ color: 'var(--text-muted)' }}>
+                  {u.class || u.grade || u.department || '-'}
+                </td>
                 <td className="py-3 px-4">
                   <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                    u.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                  }`}>{u.status}</span>
+                    u.is_active !== false ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                  }`}>{u.is_active !== false ? 'Active' : 'Inactive'}</span>
                 </td>
                 <td className="py-3 px-4">
                   <div className="flex gap-2">
-                    <button className="p-1 rounded-lg hover:bg-gray-100" onClick={() => addToast?.('Edit user', 'info')}>
+                    <button className="p-1 rounded-lg hover:bg-gray-100" onClick={() => addToast?.('Edit coming soon', 'info')}>
                       <Edit2 size={16} style={{ color: 'var(--text-muted)' }} />
-                    </button>
-                    <button className="p-1 rounded-lg hover:bg-gray-100" onClick={() => addToast?.('Delete user', 'warning')}>
-                      <Trash2 size={16} style={{ color: 'var(--text-muted)' }} />
                     </button>
                   </div>
                 </td>

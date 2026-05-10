@@ -1,5 +1,5 @@
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 
 // Hooks
 import { useAuth } from './hooks/useAuth';
@@ -81,6 +81,57 @@ import { PerformanceReports } from './pages/TeacherPortal/PerformanceReports';
 import { ClassNotes } from './pages/TeacherPortal/ClassNotes';
 import { TeacherAILab } from './pages/TeacherPortal/TeacherAILab';
 
+// Error Boundary Component
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    this.setState({
+      error: error,
+      errorInfo: errorInfo
+    });
+    console.error('ErrorBoundary caught an error:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+          <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-6 text-center">
+            <div className="text-red-500 text-5xl mb-4">⚠️</div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Something went wrong</h2>
+            <p className="text-gray-600 mb-4">The application encountered an error. Please try refreshing the page.</p>
+            <button
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+              onClick={() => window.location.reload()}
+            >
+              Refresh Page
+            </button>
+            {process.env.NODE_ENV === 'development' && this.state.error && (
+              <details className="mt-4 text-left">
+                <summary className="cursor-pointer text-sm text-gray-500">Error Details</summary>
+                <pre className="mt-2 p-2 bg-gray-100 rounded text-xs overflow-auto">
+                  {this.state.error.toString()}
+                  {this.state.errorInfo?.componentStack}
+                </pre>
+              </details>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
 // Loading screen (shown during auth check)
 const LoadingScreen = () => (
   <div className="min-h-screen flex items-center justify-center font-nova" style={{ background: '#ffffff' }}>
@@ -108,7 +159,10 @@ const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }
   
   // If user role is not allowed in this portal at all, auto-logout and bounce
   if (!ALLOWED_ROLES.includes(user.role)) {
-    portalLogout();
+    // Call logout if provided, then redirect
+    if (portalLogout && typeof portalLogout === 'function') {
+      portalLogout();
+    }
     return <Navigate to="/login" replace />;
   }
 
@@ -162,17 +216,26 @@ function App() {
   // Auto-login from landing page URL hash
   useEffect(() => {
     const hash = window.location.hash;
-    const params = new URLSearchParams(hash.split('?')[1]);
-    const autologin = params.get('autologin');
-    const pass = params.get('pass');
+    if (!hash || !hash.includes('?')) return;
     
-    if (autologin && pass && !user) {
-      login(decodeURIComponent(autologin), decodeURIComponent(pass)).then((result) => {
-        if (result?.success) {
-          // Clean URL by removing credentials
-          window.location.hash = window.location.hash.split('?')[0];
-        }
-      }).catch(() => {});
+    const hashParts = hash.split('?');
+    if (hashParts.length < 2) return;
+    
+    try {
+      const params = new URLSearchParams(hashParts[1]);
+      const autologin = params.get('autologin');
+      const pass = params.get('pass');
+      
+      if (autologin && pass && !user) {
+        login(decodeURIComponent(autologin), decodeURIComponent(pass)).then((result) => {
+          if (result?.success) {
+            // Clean URL by removing credentials
+            window.location.hash = hashParts[0] || '';
+          }
+        }).catch(() => {});
+      }
+    } catch (error) {
+      console.error('Failed to parse auto-login URL hash:', error);
     }
   }, [user, login]);
 
@@ -192,7 +255,8 @@ function App() {
   return (
     <>
       <Toast toasts={toasts} removeToast={removeToast} />
-      <Routes>
+      <ErrorBoundary>
+        <Routes>
           {/* 🔐 Auth Gates */}
           <Route path="/login" element={
             user && ALLOWED_ROLES.includes(user.role) 
@@ -287,7 +351,7 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path="/driver-tracking" element={
-            <ProtectedRoute {...layoutProps} user={user}>
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <DriverTracking />
             </ProtectedRoute>
           } />
@@ -533,6 +597,7 @@ function App() {
           } />
           <Route path="*" element={<NotFound user={user} />} />
         </Routes>
+      </ErrorBoundary>
     </>
   );
 }
