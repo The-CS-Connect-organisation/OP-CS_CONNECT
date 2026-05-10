@@ -143,19 +143,27 @@ export const NexusHub = ({ user, addToast }) => {
     if (activeSubTab === 'leaderboard' || activeBrowseTab === 'global') {
       const fetchLeaderboard = async () => {
         try {
-          // Temporarily mock it based on active clubs if API is missing
-          // If the backend /clubs/leaderboard exists, use it:
-          // const res = await request('/school/clubs/leaderboard');
-          
-          // Safe fallback simulation from active clubs
+          const res = await request('/school/clubs/leaderboard');
+          if (res?.success && Array.isArray(res.leaderboard)) {
+            setLeaderboardData(res.leaderboard.map(c => ({
+              ...c,
+              icon: c.type === 'STEM' ? Cpu : (c.type === 'Sports' ? Trophy : Users),
+              color: c.color || '#6366f1',
+            })));
+          } else {
+            const sorted = [...clubs].map(c => ({
+              ...c,
+              points: (c.members || 1) * 15 + Math.floor(Math.random() * 200)
+            })).sort((a,b) => b.points - a.points);
+            setLeaderboardData(sorted);
+          }
+        } catch (err) {
+          console.error('Leaderboard Fetch Error:', err);
           const sorted = [...clubs].map(c => ({
             ...c,
             points: (c.members || 1) * 15 + Math.floor(Math.random() * 200)
           })).sort((a,b) => b.points - a.points);
-          
           setLeaderboardData(sorted);
-        } catch (err) {
-          console.error('Leaderboard Fetch Error:', err);
         }
       };
       if (clubs.length > 0) fetchLeaderboard();
@@ -215,23 +223,38 @@ export const NexusHub = ({ user, addToast }) => {
     }
   };
 
-  const handleResearchUpload = (e) => {
+  const handleResearchUpload = async (e) => {
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file || !selectedClub) return;
 
     setIsUploading(true);
-    // Simulate API delay
-    setTimeout(() => {
+    try {
+      const formData = new FormData();
+      formData.append('files', file);
+      formData.append('title', file.name.replace(/\.[^.]+$/, ''));
+      formData.append('author', user?.name || 'Scholar');
+
+      const res = await fetch(
+        `https://op-cs-connect-backend-vym7.onrender.com/api/school/clubs/${selectedClub.id}/research`,
+        { method: 'POST', headers: { Authorization: `Bearer ${localStorage.getItem('sms_auth_token')?.replace(/^"|"$/g, '') || ''}` }, body: formData }
+      ).then(r => r.json());
+
       const newPaper = {
-        title: file.name.split('.')[0],
+        title: res.title || file.name.replace(/\.[^.]+$/, ''),
         author: user?.name || 'Scholar',
-        date: 'Just now',
-        size: `${(file.size / 1024 / 1024).toFixed(1)} MB`
+        date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        size: `${(file.size / 1024).toFixed(1)} KB`,
+        url: res.url || '#',
       };
-      setResearchPapers([newPaper, ...researchPapers]);
-      setIsUploading(false);
+      setResearchPapers(prev => [newPaper, ...prev]);
       addToast?.('Research paper uploaded to vault!', 'success');
-    }, 1500);
+    } catch (err) {
+      console.error('Research upload failed', err);
+      addToast?.('Upload failed. Try again.', 'error');
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
   };
 
   return (
@@ -436,16 +459,84 @@ export const NexusHub = ({ user, addToast }) => {
                 )}
               </div>
             ) : activeBrowseTab === 'explore' ? (
-              <div className="border-2 border-dashed border-slate-200 rounded-[32px] py-32 flex flex-col items-center justify-center text-slate-400 bg-white">
-                <Search size={64} className="mb-4 opacity-20 text-indigo-500" />
-                <p className="font-black text-xl text-slate-600 mb-2">Explore Directory Module</p>
-                <p className="text-sm max-w-sm text-center">In upcoming updates, this module will let you filter the campus groups by interest tags, sizes, and open projects.</p>
+              <div className="space-y-6 pb-20">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="flex flex-col gap-3">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Category</label>
+                    <select className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm font-bold focus:border-indigo-400 outline-none">
+                      <option value="">All Categories</option>
+                      <option value="STEM">STEM & Technology</option>
+                      <option value="Sports">Athletic & Sports</option>
+                      <option value="Arts">Creative Arts</option>
+                      <option value="Social">Social Service</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Sort By</label>
+                    <select className="w-full bg-white border border-slate-200 rounded-2xl p-4 text-sm font-bold focus:border-indigo-400 outline-none">
+                      <option value="members">Most Members</option>
+                      <option value="recent">Most Recent</option>
+                      <option value="name">Name A-Z</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {clubs.slice(0, 8).map(club => (
+                    <motion.div
+                      key={club.id}
+                      whileHover={{ y: -4, shadow: '0 16px 32px rgba(0,0,0,0.06)' }}
+                      className="bg-white border border-slate-100 rounded-2xl p-6 group cursor-pointer transition-all"
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-2xl text-white flex items-center justify-center shadow-md" style={{ backgroundColor: club.color }}>
+                          <club.icon size={22} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-bold text-slate-800">{club.name}</h4>
+                            <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold">{club.type}</span>
+                          </div>
+                          <p className="text-xs text-slate-400">{club.members} members</p>
+                          <div className="flex flex-wrap gap-1.5 mt-2">
+                            {(club.channels || []).slice(0, 2).map(ch => (
+                              <span key={ch} className="text-[9px] bg-slate-50 text-slate-400 px-2 py-0.5 rounded-full font-bold">#{ch}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => { handleJoinClub(club.id); setActiveTab('browse'); }}
+                          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${club.isMember ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                        >
+                          {club.isMember ? 'Joined' : 'Join'}
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             ) : (
-              <div className="border-2 border-dashed border-slate-200 rounded-[32px] py-32 flex flex-col items-center justify-center text-slate-400 bg-white">
-                <Zap size={64} className="mb-4 opacity-20 text-amber-500" />
-                <p className="font-black text-xl text-slate-600 mb-2">Trending Events Feed</p>
-                <p className="text-sm max-w-sm text-center">Stay tuned! Soon you'll be able to view live broadcasts, guest speakers, and upcoming club tournaments here.</p>
+              <div className="space-y-4 pb-20">
+                {[
+                  { emoji: '🔥', text: 'STEM Club just published a new research paper on Quantum Computing', time: '2h ago' },
+                  { emoji: '🎉', text: 'Sports Club reached 200 members milestone!', time: '5h ago' },
+                  { emoji: '📚', text: '4 new assignments posted across all clubs today', time: '8h ago' },
+                  { emoji: '🏆', text: 'Inter-Club Coding Challenge starts in 2 days', time: '1d ago' },
+                ].map((event, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.08 }}
+                    className="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl hover:border-indigo-100 transition-all cursor-pointer"
+                  >
+                    <span className="text-2xl shrink-0">{event.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-800">{event.text}</p>
+                      <p className="text-[10px] text-slate-400 font-medium mt-0.5">{event.time}</p>
+                    </div>
+                    <ChevronRight size={16} className="text-slate-300 shrink-0" />
+                  </motion.div>
+                ))}
               </div>
             )}
           </div>

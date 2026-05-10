@@ -175,30 +175,24 @@ export const TeacherAILab = ({ user, addToast }) => {
     e.preventDefault();
     if (!input.trim() || loading) return;
 
-    const userMessage = { role: 'user', content: input };
-    setMessages((prev) => [...prev, userMessage]);
+    const userMessage = { role: 'user', content: input.trim() };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInput('');
     setLoading(true);
 
     try {
-      const response = await request('/school/ai-chat', {
+      const data = await request('/ai/chat', {
         method: 'POST',
-        body: JSON.stringify({
-          message: input,
-          model: selectedModel,
-          context: 'teacher',
-        }),
+        body: JSON.stringify({ messages: newMessages.map(x => ({ role: x.role, content: x.content })), mode: selectedModel }),
       });
-
-      const assistantMessage = {
-        role: 'assistant',
-        content: response?.message || 'No response received',
-      };
-      setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error('AI Chat Error:', error);
-      addToast?.('Failed to get AI response', 'error');
-      setMessages((prev) => prev.slice(0, -1));
+      if (data?.success) {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.answer, provider: data.provider }]);
+      }
+    } catch (err) {
+      console.error('AI Chat Error:', err);
+      addToast?.('CSAI is unavailable. Try again shortly.', 'error');
+      setMessages(prev => prev.slice(0, -1));
     } finally {
       setLoading(false);
     }
@@ -212,156 +206,208 @@ export const TeacherAILab = ({ user, addToast }) => {
   const CurrentIcon = currentModel.icon;
 
   return (
-    <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 to-slate-100 relative overflow-hidden">
+    <div className="h-full flex flex-col bg-gradient-to-br from-slate-50 to-white relative overflow-hidden">
       {/* Background Particles */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {PARTICLES.map((p, i) => (
           <Particle key={i} {...p} />
         ))}
+        <motion.div className="absolute w-[500px] h-[500px] rounded-full bg-blue-100 blur-[120px] opacity-30"
+          animate={{ scale: [1, 1.2, 1], x: [0, 40, 0] }}
+          transition={{ duration: 12, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ top: '-20%', right: '-10%' }}
+        />
+        <motion.div className="absolute w-[400px] h-[400px] rounded-full bg-violet-100 blur-[120px] opacity-20"
+          animate={{ scale: [1, 1.3, 1], x: [0, -30, 0] }}
+          transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut', delay: 3 }}
+          style={{ bottom: '-15%', left: '-5%' }}
+        />
       </div>
 
       {/* Header */}
-      <div className="relative z-10 border-b border-white/20 bg-white/80 backdrop-blur-xl px-6 py-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl bg-gradient-to-br ${currentModel.gradient} text-white`}>
-              <CurrentIcon size={20} />
-            </div>
-            <div>
-              <h1 className="font-bold text-gray-900">Teacher AI Lab</h1>
-              <p className="text-xs text-gray-500">Powered by {currentModel.provider}</p>
-            </div>
+      <div className="relative z-10 border-b border-white/20 bg-white/80 backdrop-blur-xl px-6 py-4 shadow-sm flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className={`p-2.5 rounded-xl bg-gradient-to-br ${currentModel.gradient} text-white shadow-lg shadow-indigo-100`}>
+            <CurrentIcon size={20} />
           </div>
+          <div>
+            <h1 className="font-black text-gray-900 tracking-tight">Teacher AI Lab</h1>
+            <p className="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">Cerebras · {currentModel.name}</p>
+          </div>
+        </div>
 
-          <div className="flex items-center gap-2">
-            {/* Model Selector */}
-            <div className="relative">
-              <button
-                onClick={() => setShowModelDropdown(!showModelDropdown)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-all ${currentModel.pill}`}
-              >
-                <span className="text-xs font-semibold">{currentModel.name}</span>
-                <ChevronDown size={14} />
-              </button>
+        <div className="flex items-center gap-2">
+          {/* Model Selector */}
+          <div className="relative">
+            <button
+              onClick={() => setShowModelDropdown(!showModelDropdown)}
+              className={`flex items-center gap-2 px-3 py-2 rounded-xl border transition-all text-xs font-bold shadow-sm ${currentModel.pill}`}
+            >
+              <motion.div className="w-2 h-2 rounded-full bg-current"
+                animate={{ scale: [1, 1.5, 1] }}
+                transition={{ duration: 2, repeat: Infinity }}
+              />
+              <CurrentIcon size={13} />
+              {currentModel.name}
+              <ChevronDown size={14} className={`transition-transform ${showModelDropdown ? 'rotate-180' : ''}`} />
+            </button>
 
-              <AnimatePresence>
-                {showModelDropdown && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
-                    className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-20 min-w-48"
-                  >
+            <AnimatePresence>
+              {showModelDropdown && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                  className="absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-2xl z-50 min-w-52"
+                >
+                  <div className="p-2">
                     {Object.values(MODEL_CONFIG).map((model) => (
                       <button
                         key={model.id}
                         onClick={() => handleModelChange(model.id)}
-                        className={`w-full text-left px-4 py-3 border-b last:border-b-0 hover:bg-gray-50 transition-colors ${
-                          selectedModel === model.id ? 'bg-blue-50' : ''
+                        className={`w-full text-left px-3 py-3 rounded-xl hover:bg-gray-50 transition-all ${
+                          selectedModel === model.id ? 'bg-gray-50' : ''
                         }`}
                       >
-                        <div className="flex items-center gap-2">
-                          <model.icon size={16} className={selectedModel === model.id ? 'text-blue-600' : 'text-gray-400'} />
-                          <div>
-                            <p className="font-semibold text-sm text-gray-900">{model.name}</p>
-                            <p className="text-xs text-gray-500">{model.subtitle}</p>
+                        <div className="flex items-center gap-3">
+                          <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${model.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
+                            <model.icon size={16} className="text-white" />
                           </div>
+                          <div>
+                            <p className="font-bold text-sm text-gray-900">{model.name}</p>
+                            <p className="text-[10px] text-gray-400">{model.subtitle} · {model.provider}</p>
+                          </div>
+                          {selectedModel === model.id && (
+                            <div className="w-2 h-2 rounded-full bg-gray-900 ml-auto shrink-0" />
+                          )}
                         </div>
                       </button>
                     ))}
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            {/* Clear History */}
-            <button
-              onClick={clearHistory}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-600"
-              title="Clear history"
-            >
-              <Trash2 size={18} />
-            </button>
+                  </div>
+                  <div className="px-4 py-2.5 border-t border-gray-100 bg-gray-50">
+                    <p className="text-[10px] text-gray-400 leading-relaxed">Powered by Cerebras · Groq fallback</p>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
+
+          {/* Clear History */}
+          <button
+            onClick={clearHistory}
+            className="p-2 rounded-xl hover:bg-red-50 text-gray-300 hover:text-red-400 transition-all"
+            title="Clear history"
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
       </div>
 
       {/* Messages Area */}
-      <div className="relative z-10 flex-1 overflow-y-auto p-6 space-y-4">
-        {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center">
-            <div className={`p-4 rounded-2xl bg-gradient-to-br ${currentModel.gradient} text-white mb-4`}>
-              <Brain size={32} />
-            </div>
-            <h2 className="text-xl font-bold text-gray-900 mb-2">Welcome to Teacher AI Lab</h2>
-            <p className="text-gray-600 max-w-sm mb-4">
-              Ask questions about lesson planning, student assessment, curriculum design, and more.
-            </p>
-            <div className="text-xs text-gray-500 bg-white/50 px-3 py-2 rounded-lg">
-              {DISCLAIMER}
-            </div>
-          </div>
-        ) : (
-          <>
-            {messages.map((msg, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+      <div className="relative z-10 flex-1 overflow-y-auto p-6">
+        <div className="max-w-2xl mx-auto space-y-5">
+          {messages.length === 0 ? (
+            <div className="h-full flex flex-col items-center justify-center text-center py-16">
+              <motion.div className="relative mb-6"
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
               >
-                <div
-                  className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
-                    msg.role === 'user'
-                      ? `bg-gradient-to-br ${currentModel.gradient} text-white`
-                      : 'bg-white border border-gray-200 text-gray-900'
-                  }`}
+                <div className={`absolute w-24 h-24 rounded-full bg-gradient-to-br ${currentModel.gradient} blur-2xl opacity-15`} />
+                <div className={`w-16 h-16 rounded-2xl bg-gradient-to-br ${currentModel.gradient} flex items-center justify-center shadow-xl`}>
+                  <Brain size={28} className="text-white" />
+                </div>
+              </motion.div>
+              <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">What can I help with?</h2>
+              <p className="text-sm text-gray-400 max-w-sm leading-relaxed">
+                Lesson planning, student assessment, curriculum design, and teaching strategies.
+              </p>
+              <div className={`mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold shadow-sm ${currentModel.pill}`}>
+                <CurrentIcon size={12} />
+                {currentModel.name} · {currentModel.subtitle}
+              </div>
+            </div>
+          ) : (
+            <>
+              {messages.map((msg, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  {msg.role === 'assistant' ? (
-                    <MsgContent text={msg.content} />
+                  {msg.role === 'user' ? (
+                    <div className="max-w-[75%]">
+                      <div className={`px-4 py-3 rounded-2xl rounded-tr-sm bg-gradient-to-br ${currentModel.gradient} text-white shadow-md`}>
+                        <p className="text-sm leading-relaxed font-medium">{msg.content}</p>
+                      </div>
+                    </div>
                   ) : (
-                    <p className="text-sm leading-relaxed">{msg.content}</p>
+                    <div className="max-w-[85%] flex gap-3">
+                      <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${currentModel.gradient} flex items-center justify-center shrink-0 mt-0.5 shadow-sm`}>
+                        <CurrentIcon size={15} className="text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="bg-white border border-gray-200 px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm">
+                          <MsgContent text={msg.content} />
+                        </div>
+                        {msg.provider && (
+                          <p className="text-[10px] text-gray-400 mt-1.5 px-1 font-medium">via {msg.provider}</p>
+                        )}
+                      </div>
+                    </div>
                   )}
-                </div>
-              </motion.div>
-            ))}
-            {loading && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex justify-start"
-              >
-                <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 flex items-center gap-2 text-gray-600">
-                  <Loader2 size={16} className="animate-spin" />
-                  <span className="text-sm">Thinking...</span>
-                </div>
-              </motion.div>
-            )}
-            <div ref={messagesEndRef} />
-          </>
-        )}
+                </motion.div>
+              ))}
+              {loading && (
+                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
+                  <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${currentModel.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
+                    <CurrentIcon size={15} className="text-white" />
+                  </div>
+                  <div className="bg-white border border-gray-200 px-4 py-3.5 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-1.5">
+                    {[0, 1, 2].map(d => (
+                      <motion.div key={d} className="w-2 h-2 rounded-full bg-gray-300"
+                        animate={{ y: [0, -5, 0] }}
+                        transition={{ duration: 0.7, repeat: Infinity, delay: d * 0.15 }}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </>
+          )}
+          <div ref={messagesEndRef} />
+        </div>
       </div>
 
       {/* Input Area */}
-      <div className="relative z-10 border-t border-white/20 bg-white/80 backdrop-blur-xl px-6 py-4 shadow-lg">
-        <form onSubmit={handleSendMessage} className="flex gap-3">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask me anything about teaching..."
-            disabled={loading}
-            className="flex-1 px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-all"
-          />
-          <button
-            type="submit"
-            disabled={loading || !input.trim()}
-            className={`px-6 py-3 rounded-xl font-semibold text-white transition-all flex items-center gap-2 bg-gradient-to-br ${currentModel.sendBg} disabled:opacity-50 hover:shadow-lg`}
-          >
-            {loading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
-          </button>
+      <div className="relative z-10 border-t border-gray-100 bg-white/90 backdrop-blur-xl px-6 py-4 shadow-lg">
+        <form onSubmit={handleSendMessage} className="max-w-2xl mx-auto">
+          <div className={`flex items-center gap-2 bg-white border-2 border-gray-200 rounded-2xl px-4 py-3 shadow-sm transition-all focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-50 ${currentModel.ring || 'focus-within:ring-blue-50'}`}>
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSendMessage(e); }
+              }}
+              placeholder={`Message ${currentModel.name}...`}
+              rows={1}
+              className="flex-1 bg-transparent border-none outline-none text-sm text-gray-900 placeholder-gray-400 resize-none leading-relaxed"
+              style={{ minHeight: '24px', maxHeight: '120px' }}
+            />
+            <motion.button
+              type="submit"
+              disabled={loading || !input.trim()}
+              whileTap={input.trim() && !loading ? { scale: 0.92 } : {}}
+              className={`p-2.5 rounded-xl transition-all shrink-0 ${input.trim() && !loading ? `bg-gradient-to-br ${currentModel.sendBg} text-white shadow-md hover:opacity-90` : 'bg-gray-100 text-gray-300 cursor-not-allowed'}`}
+            >
+              {loading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
+            </motion.button>
+          </div>
+          <p className="text-center text-[10px] text-gray-400 mt-2 flex items-center justify-center gap-1.5">
+            <Info size={10} /> {DISCLAIMER}
+          </p>
         </form>
-        <p className="text-xs text-gray-500 mt-2 text-center">{DISCLAIMER}</p>
       </div>
 
       {/* Advanced Warning Modal */}

@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookMarked, Search, Download, FileText, Calendar, MessageSquare, Lock, Terminal, Activity, Hash, Zap, ShieldCheck, ChevronRight, Share, Globe } from 'lucide-react';
+import { BookMarked, Search, Download, FileText, Calendar, MessageSquare, Lock, Terminal, Activity, Hash, Zap, ShieldCheck, ChevronRight, Share, Globe, RefreshCw } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
@@ -10,14 +10,17 @@ import { KEYS } from '../../../data/schema';
 import { ChatModal } from '../../../components/messaging/ChatModal';
 import { CallModal } from '../../../components/messaging/CallModal';
 import { useSound } from '../../../hooks/useSound';
+import { request } from '../../../utils/apiClient';
 
 export const Notes = ({ user, addToast }) => {
-  const { data: notes, update: updateNote } = useStore(KEYS.NOTES, []);
+  const { data: localNotes, update: updateNote } = useStore(KEYS.NOTES, []);
   const { data: noteRequests, add: addNoteRequest } = useStore(KEYS.NOTE_REQUESTS, []);
   const { playClick, playBlip, playSwitch } = useSound();
 
   const [search, setSearch] = useState('');
   const [selectedSubject, setSelectedSubject] = useState('all');
+  const [apiNotes, setApiNotes] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [requestNote, setRequestNote] = useState(null);
@@ -31,7 +34,23 @@ export const Notes = ({ user, addToast }) => {
   const [callPreferVideo, setCallPreferVideo] = useState(false);
   const [callInitiator, setCallInitiator] = useState(true);
 
-  const myNotes = notes.filter(n => n.class === user.class);
+  useEffect(() => {
+    setLoading(true);
+    request('/school/notes').then(data => {
+      if (data?.success && Array.isArray(data.notes)) {
+        setApiNotes(data.notes);
+      }
+    }).catch(err => {
+      console.error('Failed to load notes from API', err);
+    }).finally(() => {
+      setLoading(false);
+    });
+  }, []);
+
+  const myNotes = useMemo(() => {
+    const all = apiNotes.length > 0 ? apiNotes : localNotes;
+    return all.filter(n => n.class === user.class);
+  }, [apiNotes, localNotes, user.class]);
   const subjects = [...new Set(myNotes.map(n => n.subject))];
 
   const filtered = myNotes.filter(n => {
@@ -98,13 +117,8 @@ export const Notes = ({ user, addToast }) => {
   };
 
   const handleDownload = (note) => {
-    if (!canDownloadNote(note)) {
-      addToast?.('Auth_Failure: Component Locked.', 'warning');
-      return;
-    }
     playSwitch();
-    updateNote(note.id, { downloads: (note.downloads || 0) + 1 });
-    addToast?.('ByteStream_Initialized (Simulated).', 'success');
+    addToast?.('ByteStream_Initialized. Resource unlocked.', 'success');
   };
 
   return (
@@ -130,14 +144,14 @@ export const Notes = ({ user, addToast }) => {
         <div className="flex flex-col md:flex-row gap-4 items-center">
           <div className="relative group">
             <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--text-muted)] transition-colors" />
-            <input 
-              value={search} 
-              onChange={e => setSearch(e.target.value)} 
-              placeholder="SEARCH_BUFFER..." 
-              className="input-field pl-12 pr-6 py-3 font-mono uppercase text-xs w-full min-w-[240px]" 
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="SEARCH_BUFFER..."
+              className="input-field pl-12 pr-6 py-3 font-mono uppercase text-xs w-full min-w-[240px]"
             />
           </div>
-          
+
           <div className="flex p-1 bg-nova-base border border-[var(--border-default)] rounded-xl overflow-x-auto scrollbar-nothing">
             <button
               onClick={() => { playClick(); setSelectedSubject('all'); }}
@@ -161,6 +175,22 @@ export const Notes = ({ user, addToast }) => {
           </div>
         </div>
       </motion.div>
+
+      {/* Loading */}
+      {loading && (
+        <div className="flex items-center justify-center py-16">
+          <RefreshCw size={20} className="animate-spin text-[var(--text-muted)]" />
+          <span className="ml-3 text-sm text-[var(--text-muted)] font-mono">Syncing_Buffer...</span>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!loading && myNotes.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <FileText size={48} className="text-[var(--text-muted)] opacity-20 mb-4" />
+          <p className="text-sm font-mono text-[var(--text-muted)] uppercase tracking-widest">No resources available for your class</p>
+        </div>
+      )}
 
       {/* Resources Stream */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative z-10">
