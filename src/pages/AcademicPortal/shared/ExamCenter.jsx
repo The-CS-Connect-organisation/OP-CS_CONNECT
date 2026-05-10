@@ -1,25 +1,32 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Award, FileUp, Plus, Upload, Brain, Play, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useStore } from '../../../hooks/useStore';
 import { KEYS } from '../../../data/schema';
 import { DropzoneUpload } from '../../../components/ui/DropzoneUpload';
+import { examsService } from '../../../services/examsService';
 import { notificationsService } from '../../../services/notificationsService';
 import { localAuditRepo } from '../../../services/localRepo';
+import { apiRequest } from '../../../services/apiClient';
+import { getDataMode, DATA_MODES } from '../../../config/dataMode';
 
 export const ExamCenter = ({ user, addToast }) => {
-  const { data: exams, add } = useStore(KEYS.EXAMS, []);
+  const { data: localExams, add: addLocalExam } = useStore(KEYS.EXAMS, []);
   const { data: marks, add: addMark } = useStore(KEYS.MARKS, []);
   const { data: users } = useStore(KEYS.USERS, []);
-  const { data: questionBank, setData: setQuestionBank } = useStore('sms_question_bank', []);
-  const { data: attempts, setData: setAttempts } = useStore('sms_exam_attempts', []);
+  const { data: localQuestionBank, setData: setLocalQuestionBank } = useStore('sms_question_bank', []);
+  const { data: localAttempts, setData: setLocalAttempts } = useStore('sms_exam_attempts', []);
+
+  const [apiExams, setApiExams] = useState([]);
+  const [apiQuestionBank, setApiQuestionBank] = useState([]);
+  const [apiAttempts, setApiAttempts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [form, setForm] = useState({ name: '', subject: '', class: '10-A', date: '', maxMarks: 100, paperUrl: '' });
   const [selectedExamId, setSelectedExamId] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [score, setScore] = useState('');
 
-  // Question bank (MCQ)
   const [qForm, setQForm] = useState({
     class: '10-A',
     subject: '',
@@ -29,46 +36,73 @@ export const ExamCenter = ({ user, addToast }) => {
     correctIndex: 0,
   });
 
-  // Student mock attempt UI
-  const [activeAttempt, setActiveAttempt] = useState(null); // { id, examId, questionIds, answers, startedAt }
-  const [activeQuestions, setActiveQuestions] = useState([]); // resolved question objects
+  const [activeAttempt, setActiveAttempt] = useState(null);
+  const [activeQuestions, setActiveQuestions] = useState([]);
   const [activeIdx, setActiveIdx] = useState(0);
+
+  const useApi = getDataMode() === DATA_MODES.REMOTE_API;
+
+  // Load data from API
+  useEffect(() => {
+    if (!useApi) { setLoading(false); return; }
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [examRes, questRes] = await Promise.all([
+          examsService.listExamsForUser(user),
+          examsService.listQuestionBank({}),
+        ]);
+        setApiExams(Array.isArray(examRes) ? examRes : []);
+        setApiQuestionBank(Array.isArray(questRes) ? questRes : []);
+      } catch (err) {
+        console.error('Failed to load exams from API', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [user, useApi]);
+
+  const exams = useApi ? apiExams : localExams;
+  const questionBank = useApi ? apiQuestionBank : localQuestionBank;
+  const attempts = useApi ? apiAttempts : localAttempts;
 
   const students = useMemo(() => users.filter((u) => u.role === 'student'), [users]);
   const visibleExams = useMemo(() => {
-    if (user.role === 'student') return exams.filter((e) => e.class === user.class || !e.class);
+    if (user.role === 'student') return exams.filter((e) => e.class === user.class || !e.class || e.class_id === user.class);
     return exams;
   }, [exams, user]);
 
   const myAttempts = useMemo(() => {
     if (user.role !== 'student') return [];
-    return (attempts || []).filter((a) => a.studentId === user.id).sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt));
+    return (attempts || []).filter((a) => a.studentId === user.id || a.student_id === user.id).sort((a, b) => new Date(b.startedAt || b.started_at) - new Date(a.startedAt || a.started_at));
   }, [attempts, user]);
 
-  const createExam = () => {
+  const createExam = async () => {
     if (!form.name || !form.subject || !form.date) return;
-    const exam = { id: `exam-${Date.now()}`, ...form, createdBy: user.id, createdAt: new Date().toISOString() };
-    add(exam);
-    addToast('Exam created', 'success');
-    setForm({ name: '', subject: '', class: '10-A', date: '', maxMarks: 100, paperUrl: '' });
+    playBlip?.();
+    const examData = { name: form.name, subject: form.subject, class: form.class, date: form.date, maxMarks: Number(form.maxMarks) };
 
-    // Basic in-app notification for students in that class
-    users
-      .filter((u) => u.role === 'student' && u.class === exam.class)
-      .forEach((stu) => {
-        notificationsService.emit({
-          userId: stu.id,
-          message: `New exam scheduled: ${exam.name} (${exam.subject}) on ${exam.date}`,
-          type: 'exam',
-          meta: { examId: exam.id, class: exam.class, subject: exam.subject, date: exam.date },
-          actor: user,
-        });
-      });
-    localAuditRepo.append({ actorId: user.id, actorEmail: user.email, action: 'exams.create', targetId: exam.id, mode: 'LOCAL_DEMO' });
+    if (useApi) {
+      try {
+        const created = await examsService.createExam({ exam: examData, actor: user });
+        setApiExams(prev => [created, ...prev]);
+        addToast?.('Exam created', 'success');
+      } catch (err) {
+        addToast?.('Failed to create exam: ' + err.message, 'error');
+        return;
+      }
+    } else {
+      const exam = { id: `exam-${Date.now()}`, ...examData, createdBy: user.id, createdAt: new Date().toISOString() };
+      addLocalExam(exam);
+      addToast?.('Exam created', 'success');
+    }
+
+    setForm({ name: '', subject: '', class: '10-A', date: '', maxMarks: 100, paperUrl: '' });
   };
 
   const submitMarks = () => {
-    const exam = exams.find((e) => e.id === selectedExamId);
+    const exam = exams.find((e) => e.id === selectedExamId || e.id === selectedExamId);
     const student = users.find((u) => u.id === selectedStudentId);
     if (!exam || !student || score === '') return;
     addMark({
@@ -76,24 +110,23 @@ export const ExamCenter = ({ user, addToast }) => {
       studentId: student.id,
       studentName: student.name,
       examId: exam.id,
-      examName: exam.name,
+      examName: exam.name || exam.subject,
       subject: exam.subject,
       score: Number(score),
-      total: Number(exam.maxMarks || 100),
+      total: Number(exam.maxMarks || exam.max_marks || 100),
       grade: Number(score) >= 90 ? 'A' : Number(score) >= 75 ? 'B' : Number(score) >= 60 ? 'C' : Number(score) >= 45 ? 'D' : 'F',
       date: new Date().toISOString().split('T')[0],
     });
-    addToast('Marks saved', 'success');
+    addToast?.('Marks saved', 'success');
     setScore('');
   };
 
-  const addQuestion = () => {
+  const addQuestion = async () => {
     if (!qForm.subject || !qForm.text || qForm.options.some((o) => !o.trim())) {
       addToast?.('Fill question, subject, and all options', 'error');
       return;
     }
     const q = {
-      id: `q-${Date.now()}`,
       type: 'mcq',
       class: qForm.class,
       subject: qForm.subject,
@@ -101,19 +134,31 @@ export const ExamCenter = ({ user, addToast }) => {
       marks: Number(qForm.marks || 1),
       options: qForm.options.map((o) => o.trim()),
       correctIndex: Number(qForm.correctIndex || 0),
-      createdAt: new Date().toISOString(),
-      createdBy: user.id,
     };
-    setQuestionBank([q, ...(Array.isArray(questionBank) ? questionBank : [])]);
-    addToast?.('Question added to bank', 'success');
+
+    if (useApi) {
+      try {
+        const created = await apiRequest('/exams/questions', { method: 'POST', body: JSON.stringify(q) });
+        const qWithId = { id: created?.question?.id || `q-${Date.now()}`, ...q, createdAt: new Date().toISOString(), createdBy: user.id };
+        setApiQuestionBank(prev => [qWithId, ...prev]);
+        addToast?.('Question added to bank', 'success');
+      } catch (err) {
+        addToast?.('Failed to add question: ' + err.message, 'error');
+        return;
+      }
+    } else {
+      const qWithId = { id: `q-${Date.now()}`, ...q, createdAt: new Date().toISOString(), createdBy: user.id };
+      setLocalQuestionBank([qWithId, ...(Array.isArray(localQuestionBank) ? localQuestionBank : [])]);
+      addToast?.('Question added to bank', 'success');
+    }
+
     setQForm((d) => ({ ...d, subject: d.subject, text: '', marks: 1, options: ['', '', '', ''], correctIndex: 0 }));
-    localAuditRepo.append({ actorId: user.id, actorEmail: user.email, action: 'questions.create', targetId: q.id, mode: 'LOCAL_DEMO' });
   };
 
-  const startMock = (exam) => {
+  const startMock = async (exam) => {
     if (!exam) return;
     const pool = (Array.isArray(questionBank) ? questionBank : []).filter(
-      (q) => q.type === 'mcq' && (!exam.class || q.class === exam.class) && (!exam.subject || q.subject === exam.subject)
+      (q) => q.type === 'mcq' && (!exam.class || !exam.class_id || q.class === exam.class || q.class === exam.class_id)
     );
     if (pool.length === 0) {
       addToast?.('No questions available for this exam. Ask teacher to add a question bank.', 'error');
@@ -126,7 +171,7 @@ export const ExamCenter = ({ user, addToast }) => {
       examId: exam.id,
       examName: exam.name,
       subject: exam.subject,
-      class: exam.class,
+      class: exam.class || exam.class_id,
       studentId: user.id,
       startedAt: new Date().toISOString(),
       finishedAt: null,
@@ -135,6 +180,18 @@ export const ExamCenter = ({ user, addToast }) => {
       score: null,
       maxScore: picked.reduce((s, q) => s + (q.marks || 1), 0),
     };
+
+    if (useApi) {
+      try {
+        const apiAttempt = await examsService.startAttempt({ examId: exam.id, student: user, questionIds: picked.map(q => q.id) });
+        setApiAttempts(prev => [{ ...attempt, id: apiAttempt?.id || attempt.id }, ...(Array.isArray(apiAttempts) ? apiAttempts : [])]);
+      } catch (err) {
+        console.error('API attempt failed, using local', err);
+      }
+    } else {
+      setLocalAttempts([attempt, ...(Array.isArray(localAttempts) ? localAttempts : [])]);
+    }
+
     setActiveAttempt(attempt);
     setActiveQuestions(picked);
     setActiveIdx(0);
@@ -155,24 +212,31 @@ export const ExamCenter = ({ user, addToast }) => {
       const a = answers[q.id];
       if (q.type === 'mcq' && Number(a) === Number(q.correctIndex)) scoreSum += Number(q.marks || 1);
     }
-    const finished = {
-      ...activeAttempt,
-      finishedAt: new Date().toISOString(),
-      score: scoreSum,
-    };
-    setAttempts([finished, ...(Array.isArray(attempts) ? attempts : [])]);
+    const finished = { ...activeAttempt, finishedAt: new Date().toISOString(), score: scoreSum };
+
+    if (useApi) {
+      const existing = apiAttempts.find(a => a.id === activeAttempt.id);
+      if (existing) {
+        setApiAttempts(prev => prev.map(a => a.id === activeAttempt.id ? finished : a));
+      }
+      examsService.finishAttempt({ attemptId: activeAttempt.id, updates: { score: scoreSum, finished: true }, actor: user }).catch(console.error);
+    } else {
+      setLocalAttempts([finished, ...(Array.isArray(localAttempts) ? localAttempts : [])]);
+    }
+
     setActiveAttempt(null);
     setActiveQuestions([]);
     setActiveIdx(0);
     addToast?.(`Mock completed. Score: ${scoreSum}/${finished.maxScore}`, 'success');
-    localAuditRepo.append({ actorId: user.id, actorEmail: user.email, action: 'exams.mockFinish', targetId: finished.examId, mode: 'LOCAL_DEMO' });
   };
+
+  const playBlip = () => {};
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto w-full pt-2 pb-12">
       {/* Header */}
-      <motion.div 
-        initial={{ opacity: 0, y: -12 }} 
+      <motion.div
+        initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="glass-card p-6 md:p-8 backdrop-blur-xl relative overflow-hidden"
@@ -191,6 +255,7 @@ export const ExamCenter = ({ user, addToast }) => {
               <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
               {user?.role === 'admin' ? 'Admin Mode' : user?.role === 'teacher' ? 'Teacher Mode' : 'Student Mode'}
             </span>
+            {useApi && <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] font-semibold bg-blue-50 text-blue-600 border border-blue-200 ml-auto">API</span>}
           </div>
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight flex items-center gap-3 text-gray-900">
             <span className="w-1 h-10 rounded-full bg-gradient-to-b from-amber-500 to-red-500" />
@@ -202,8 +267,15 @@ export const ExamCenter = ({ user, addToast }) => {
         </div>
       </motion.div>
 
+      {/* Loading state */}
+      {loading && useApi && (
+        <div className="text-center py-8">
+          <div className="animate-pulse text-sm text-gray-500">Loading exams...</div>
+        </div>
+      )}
+
       {/* Create Exam */}
-      {(user.role === 'admin' || user.role === 'teacher') && (
+      {(user.role === 'admin' || user.role === 'teacher') && !loading && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="glass-card p-6 backdrop-blur-xl space-y-4">
           <h2 className="text-sm font-semibold flex items-center gap-2 text-gray-600">
@@ -216,14 +288,6 @@ export const ExamCenter = ({ user, addToast }) => {
             <input type="date" className="input-field" value={form.date} onChange={(e) => setForm((d) => ({ ...d, date: e.target.value }))} />
             <input type="number" className="input-field" value={form.maxMarks} onChange={(e) => setForm((d) => ({ ...d, maxMarks: e.target.value }))} />
           </div>
-          <DropzoneUpload
-            label="Upload Exam Paper PDF"
-            accept="application/pdf"
-            maxSizeMb={10}
-            previewUrl={form.paperUrl}
-            onUploaded={(doc) => setForm((d) => ({ ...d, paperUrl: doc.dataUrl, paperName: doc.fileName }))}
-            onClear={() => setForm((d) => ({ ...d, paperUrl: '', paperName: '' }))}
-          />
           <button onClick={createExam} className="btn-primary flex items-center gap-2 text-sm py-2.5 px-5">
             <Plus size={15} /> Create Exam
           </button>
@@ -231,7 +295,7 @@ export const ExamCenter = ({ user, addToast }) => {
       )}
 
       {/* Enter Marks */}
-      {(user.role === 'teacher' || user.role === 'admin') && (
+      {(user.role === 'teacher' || user.role === 'admin') && !loading && (
         <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
           className="glass-card p-6 backdrop-blur-xl space-y-4">
           <h2 className="text-sm font-semibold flex items-center gap-2 text-gray-600">
@@ -255,7 +319,7 @@ export const ExamCenter = ({ user, addToast }) => {
       )}
 
       {/* Exam list */}
-      {visibleExams.length > 0 && (
+      {!loading && visibleExams.length > 0 && (
         <div className="space-y-3">
           <h3 className="text-sm font-semibold px-1 text-gray-500">All Exams</h3>
           {visibleExams.map((exam) => {
@@ -266,7 +330,7 @@ export const ExamCenter = ({ user, addToast }) => {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                   <div>
                     <h3 className="text-base font-semibold text-gray-900">{exam.name}</h3>
-                    <p className="text-sm mt-0.5 text-gray-500">{exam.subject} · Class {exam.class} · {exam.date}</p>
+                    <p className="text-sm mt-0.5 text-gray-500">{exam.subject} · Class {exam.class || exam.class_name || 'N/A'} · {exam.date || exam.created_at?.split('T')[0]}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     {user.role === 'student' && (
@@ -366,8 +430,8 @@ export const ExamCenter = ({ user, addToast }) => {
         </div>
       )}
 
-      {/* Student attempt history / analytics */}
-      {user.role === 'student' && (
+      {/* Student attempt history */}
+      {user.role === 'student' && !loading && (
         <div className="glass-card p-6 backdrop-blur-xl space-y-3">
           <h3 className="text-sm font-semibold text-gray-700">My Mock Attempts</h3>
           {myAttempts.length === 0 ? (
@@ -377,11 +441,11 @@ export const ExamCenter = ({ user, addToast }) => {
               {myAttempts.slice(0, 10).map((a) => (
                 <div key={a.id} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200">
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">{a.examName}</p>
-                    <p className="text-xs text-gray-500">{a.subject} · {new Date(a.startedAt).toLocaleString()}</p>
+                    <p className="text-sm font-semibold text-gray-900">{a.examName || a.subject}</p>
+                    <p className="text-xs text-gray-500">{a.subject} · {new Date(a.startedAt || a.started_at).toLocaleString()}</p>
                   </div>
                   <div className="font-mono font-bold text-gray-900">
-                    {a.score ?? '-'} / {a.maxScore ?? '-'}
+                    {a.score ?? '-'} / {a.maxScore ?? a.max_score ?? '-'}
                   </div>
                 </div>
               ))}
@@ -391,7 +455,7 @@ export const ExamCenter = ({ user, addToast }) => {
       )}
 
       {/* Question bank management */}
-      {(user.role === 'admin' || user.role === 'teacher') && (
+      {(user.role === 'admin' || user.role === 'teacher') && !loading && (
         <div className="glass-card p-6 backdrop-blur-xl space-y-4">
           <h2 className="text-sm font-semibold flex items-center gap-2 text-gray-600">
             <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" /> Question Bank (MCQ)

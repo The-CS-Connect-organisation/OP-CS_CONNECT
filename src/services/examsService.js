@@ -8,9 +8,9 @@ export const examsService = {
   async listExamsForUser(user) {
     if (!user) return [];
     if (getDataMode() === DATA_MODES.REMOTE_API) {
-      const query = user?.class ? `?class=${encodeURIComponent(user.class)}` : '';
+      const query = user?.class ? `?classId=${encodeURIComponent(user.class)}` : '';
       const payload = await apiRequest(`/exams${query}`, { method: 'GET' });
-      return payload?.exams ?? payload ?? [];
+      return payload?.items ?? payload?.exams ?? [];
     }
     const all = localExamsRepo.list();
     if (user.role === 'student') return all.filter((e) => !e.class || e.class === user.class);
