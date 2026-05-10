@@ -1,5 +1,5 @@
-import { motion, useScroll, useTransform } from 'framer-motion';
-import { useRef } from 'react';
+import { motion, useScroll, useTransform, useMotionValue } from 'framer-motion';
+import { useRef, useState, useEffect } from 'react';
 import {
   BookOpen,
   BarChart3,
@@ -93,50 +93,94 @@ const FEATURES = [
 function FeatureCard({ feature, index }) {
   const Icon = feature.icon;
   const cardRef = useRef(null);
-  
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleMouseMove = (e) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
   return (
     <motion.div
       ref={cardRef}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-100px' }}
-      transition={{ 
-        duration: 0.7, 
-        delay: index * 0.1, 
-        ease: [0.16, 1, 0.3, 1] 
+      transition={{
+        duration: 0.7,
+        delay: index * 0.1,
+        ease: [0.16, 1, 0.3, 1]
       }}
-      whileHover={{ 
+      whileHover={{
         y: -8,
         transition: { duration: 0.3, ease: [0.16, 1, 0.3, 1] }
       }}
-      className="group relative p-8 rounded-3xl bg-white border border-gray-100 hover:border-orange-200 hover:shadow-2xl transition-all duration-300"
+      className="group relative p-8 rounded-3xl bg-white border border-gray-100 hover:border-orange-200 hover:shadow-2xl transition-all duration-300 overflow-hidden"
     >
+      {/* Animated gradient border on hover */}
+      <motion.div
+        className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{
+          padding: '2px',
+          background: 'linear-gradient(135deg, #f59e0b, #f97316, #fbbf24, #f59e0b)',
+          backgroundSize: '300% 100%',
+          animation: isHovered ? 'textGradient 2s ease infinite' : 'none',
+        }}
+      >
+        <div className="w-full h-full bg-white rounded-3xl" />
+      </motion.div>
+
       {/* Hover gradient effect */}
       <motion.div
         className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
         style={{
-          background: 'linear-gradient(135deg, rgba(245,158,11,0.03) 0%, rgba(249,115,22,0.05) 100%)',
+          background: 'linear-gradient(135deg, rgba(245,158,11,0.05) 0%, rgba(249,115,22,0.08) 100%)',
         }}
       />
 
-      {/* Icon */}
+      {/* Interactive spotlight */}
+      <motion.div
+        className="absolute pointer-events-none rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+        style={{
+          background: `radial-gradient(300px circle at ${mousePos.x}px ${mousePos.y}px, rgba(245,158,11,0.08), transparent 50%)`,
+        }}
+      />
+
+      {/* Icon with glow effect */}
       <motion.div
         className="relative w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
-        style={{ 
+        style={{
           background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
         }}
-        whileHover={{ 
+        whileHover={{
           scale: 1.1,
           rotate: [0, -5, 5, 0],
-          transition: { duration: 0.4 }
+          transition: { duration: 0.4 },
+          boxShadow: '0 0 30px rgba(245,158,11,0.5)',
         }}
       >
         <Icon size={28} className="text-white" />
       </motion.div>
 
       {/* Text */}
-      <h3 className="relative text-lg font-bold text-gray-900 mb-2">{feature.title}</h3>
-      <p className="relative text-sm text-gray-600 leading-relaxed">{feature.description}</p>
+      <h3 className="relative text-lg font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors">{feature.title}</h3>
+      <p className="relative text-sm text-gray-600 leading-relaxed group-hover:text-gray-700 transition-colors">{feature.description}</p>
+
+      {/* Corner accent */}
+      <motion.div
+        className="absolute top-0 right-0 w-20 h-20 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+        style={{
+          background: 'radial-gradient(circle at top right, rgba(245,158,11,0.15), transparent 70%)',
+        }}
+      />
     </motion.div>
   );
 }
