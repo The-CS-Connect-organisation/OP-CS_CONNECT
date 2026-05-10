@@ -31,6 +31,8 @@ export const Assignments = ({ user }) => {
         setAssignments(Array.isArray(list) ? list : []);
         // Don't fetch all submissions here - they're fetched per assignment
         setSubmissions([]);
+      } catch (err) {
+        console.error('Failed to load assignments:', err);
       } finally {
         if (alive) setLoading(false);
       }

@@ -48,7 +48,7 @@ export const Timetable = ({ user }) => {
     (async () => {
       try {
         const res = await studentApi.getTimetable();
-        if (alive && res?.timetable) setApiTimetable(res.timetable);
+        if (alive) setApiTimetable(res?.data?.timetable ?? res?.timetable ?? null);
       } catch (e) {
         console.error('Failed to load timetable:', e);
       }

@@ -1,4 +1,4 @@
-import { getFromStorage, setToStorage } from '../data/schema';
+import { setToStorage } from '../data/schema';
 
 export const DATA_MODES = {
   LOCAL_DEMO: 'LOCAL_DEMO',
@@ -8,7 +8,8 @@ export const DATA_MODES = {
 const STORAGE_KEY = 'sms_data_mode';
 
 export const getDataMode = () => {
-  // Always use REMOTE_API (Firebase) - no local demo fallback
+  // Always use REMOTE_API - no local demo fallback
+  // This ensures all data comes from the Firebase API
   return DATA_MODES.REMOTE_API;
 };
 

@@ -1,57 +1,34 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
-import { Printer, RefreshCw, User } from 'lucide-react';
+import { Printer, RefreshCw, User, MapPin, Phone, Mail, Book, Heart } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
+import { apiRequest } from '../../../services/apiClient';
 
 export const StudentProfile = ({ user, addToast }) => {
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Mock data with ALL fields
-  const mockData = {
-    // Personal Information
-    fullName: 'Aarav Menon',
-    email: 'aarav.menon@school.edu',
-    phone: '+91 98765 43210',
-    dateOfBirth: '15 Mar 2008',
-    age: 16,
-    bloodGroup: 'O+',
-    religion: 'Hindu',
-    nationality: 'Indian',
-    
-    // Academic Information
-    admissionNumber: 'ADM-2022-001847',
-    rollNumber: '12',
-    class: '10-A',
-    section: 'A',
-    joinedDate: '01 Apr 2022',
-    
-    // Identification Numbers
-    aadharNumber: 'XXXX-XXXX-9012',
-    pen: 'PEN-2022-847562',
-    apaarId: 'APAAR-2022-847562-IN',
-    
-    // Parent Information - Mother
-    motherName: 'Priya Menon',
-    motherPhone: '+91 98765 43211',
-    motherHouseName: 'Menon Residence',
-    motherHouseLocation: 'Near Central Park',
-    
-    // Parent Information - Father
-    fatherName: 'Rajesh Menon',
-    fatherPhone: '+91 98765 43212',
-    fatherHouseName: 'Menon Residence',
-    fatherHouseLocation: 'Near Central Park',
-    
-    // Address
-    address: '42, Maple Street, Green Valley Colony, New Delhi - 110001',
-    
-    // Photo
-    photo: null,
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      const res = await apiRequest(`/school/students/${user.id}/profile`);
+      setProfile(res);
+    } catch (err) {
+      console.error('Failed to load student profile:', err);
+      addToast?.('Failed to load profile data', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => {
+    fetchProfile();
+  }, [user?.id]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await fetchProfile();
     setRefreshing(false);
     addToast?.('Profile refreshed', 'success');
   };
@@ -59,6 +36,63 @@ export const StudentProfile = ({ user, addToast }) => {
   const handlePrint = () => {
     window.print();
   };
+
+  const data = profile || {};
+  // Backend returns: { success, profile: { ... } } with camelCase fields
+  const sp = {
+    admission_no: data.admissionNumber,
+    roll_number: data.rollNumber,
+    date_of_birth: data.dateOfBirth,
+    blood_group: data.bloodGroup,
+    religion: data.religion,
+    nationality: data.nationality,
+    admission_no: data.admissionNumber,
+    pen: data.pen,
+    apaar_id: data.apaarId,
+    grade: data.class,
+    section: data.section,
+    subjects: data.subjects,
+    attendance_percent: data.attendancePercent,
+    xp: data.xp,
+    badges: data.badges,
+    updated_at: data.updatedAt,
+  };
+  // Also check raw response
+  const spRaw = data.student_profile || data;
+  const mother = data.mother || spRaw.mother || spRaw.mother_data || {};
+  const father = data.father || spRaw.father || spRaw.father_data || {};
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <div className="h-12 w-64 rounded-lg bg-gray-200 animate-pulse" />
+            <div className="h-10 w-24 rounded-lg bg-gray-200 animate-pulse" />
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-10 space-y-8">
+            <div className="flex gap-8 pb-8 border-b">
+              <div className="w-32 h-32 rounded-full bg-gray-200 animate-pulse" />
+              <div className="flex-1 space-y-4">
+                <div className="h-8 w-48 rounded bg-gray-200 animate-pulse" />
+                <div className="grid grid-cols-3 gap-4">
+                  {[1, 2, 3].map(i => <div key={i} className="h-12 rounded bg-gray-200 animate-pulse" />)}
+                </div>
+              </div>
+            </div>
+            {[1, 2, 3].map(i => (
+              <div key={i} className="space-y-4">
+                <div className="h-6 w-40 rounded bg-gray-200 animate-pulse" />
+                <div className="grid grid-cols-2 gap-6">
+                  {[1, 2, 3, 4].map(j => <div key={j} className="h-16 rounded bg-gray-100 animate-pulse" />)}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-8">
@@ -104,27 +138,23 @@ export const StudentProfile = ({ user, addToast }) => {
               <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10 pb-10 border-b-2 border-slate-200">
                 <div className="flex-shrink-0">
                   <div className="w-32 h-32 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden border-4 border-blue-500">
-                    {mockData.photo ? (
-                      <img src={mockData.photo} alt={mockData.fullName} className="w-full h-full object-cover" />
-                    ) : (
-                      <User size={64} className="text-slate-400" />
-                    )}
+                    <User size={64} className="text-slate-400" />
                   </div>
                 </div>
                 <div className="flex-1 text-center md:text-left">
-                  <h2 className="text-3xl font-bold text-slate-900 mb-2">{mockData.fullName}</h2>
+                  <h2 className="text-3xl font-bold text-slate-900 mb-2">{user?.name || 'Student'}</h2>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                     <div>
                       <p className="text-slate-600 font-semibold">Admission</p>
-                      <p className="text-slate-900 font-bold">{mockData.admissionNumber}</p>
+                      <p className="text-slate-900 font-bold">{sp.admission_no || sp.pen || '—'}</p>
                     </div>
                     <div>
                       <p className="text-slate-600 font-semibold">Roll No</p>
-                      <p className="text-slate-900 font-bold">{mockData.rollNumber}</p>
+                      <p className="text-slate-900 font-bold">{sp.roll_number || '—'}</p>
                     </div>
                     <div>
                       <p className="text-slate-600 font-semibold">Class</p>
-                      <p className="text-slate-900 font-bold">{mockData.class}</p>
+                      <p className="text-slate-900 font-bold">{sp.grade || '—'}{sp.section ? `-${sp.section}` : ''}</p>
                     </div>
                   </div>
                 </div>
@@ -138,37 +168,43 @@ export const StudentProfile = ({ user, addToast }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
                     <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Full Name</p>
-                    <p className="text-lg font-semibold text-slate-900">{mockData.fullName}</p>
+                    <p className="text-lg font-semibold text-slate-900">{user?.name || '—'}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Email Address</p>
-                    <p className="text-lg font-semibold text-slate-900">{mockData.email}</p>
+                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Email</p>
+                    <p className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                      <Mail size={14} className="text-slate-400" />
+                      {user?.email || '—'}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Phone Number</p>
-                    <p className="text-lg font-semibold text-slate-900">{mockData.phone}</p>
+                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Phone</p>
+                    <p className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                      <Phone size={14} className="text-slate-400" />
+                      {user?.phone || '—'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Date of Birth</p>
-                    <p className="text-lg font-semibold text-slate-900">{mockData.dateOfBirth} (Age: {mockData.age})</p>
+                    <p className="text-lg font-semibold text-slate-900">
+                      {sp.date_of_birth ? new Date(sp.date_of_birth).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '—'}
+                    </p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Blood Group</p>
-                    <div className="inline-block px-4 py-2 bg-red-100 border-2 border-red-500 rounded-lg font-bold text-red-700 text-lg">
-                      {mockData.bloodGroup}
-                    </div>
+                    {sp.blood_group ? (
+                      <div className="inline-block px-4 py-2 bg-red-100 border-2 border-red-500 rounded-lg font-bold text-red-700 text-lg">
+                        {sp.blood_group}
+                      </div>
+                    ) : <p className="text-lg font-semibold text-slate-900">—</p>}
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Religion</p>
-                    <p className="text-lg font-semibold text-slate-900">{mockData.religion}</p>
+                    <p className="text-lg font-semibold text-slate-900">{sp.religion || '—'}</p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Nationality</p>
-                    <p className="text-lg font-semibold text-slate-900">{mockData.nationality}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Joined Date</p>
-                    <p className="text-lg font-semibold text-slate-900">{mockData.joinedDate}</p>
+                    <p className="text-lg font-semibold text-slate-900">{sp.nationality || '—'}</p>
                   </div>
                 </div>
               </div>
@@ -180,20 +216,30 @@ export const StudentProfile = ({ user, addToast }) => {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
-                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Admission Number</p>
-                    <p className="text-lg font-semibold text-slate-900">{mockData.admissionNumber}</p>
+                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Admission No</p>
+                    <p className="text-lg font-semibold text-slate-900 font-mono">{sp.admission_no || '—'}</p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Roll Number</p>
-                    <p className="text-lg font-semibold text-slate-900">{mockData.rollNumber}</p>
+                    <p className="text-lg font-semibold text-slate-900">{sp.roll_number || '—'}</p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Class</p>
-                    <p className="text-lg font-semibold text-slate-900">{mockData.class}</p>
+                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Class & Section</p>
+                    <p className="text-lg font-semibold text-slate-900">
+                      {sp.grade || '—'}{sp.section ? ` - Section ${sp.section}` : ''}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Section</p>
-                    <p className="text-lg font-semibold text-slate-900">{mockData.section}</p>
+                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Subjects</p>
+                    <p className="text-lg font-semibold text-slate-900">
+                      {sp.subjects?.join(', ') || '—'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Attendance</p>
+                    <p className="text-lg font-semibold text-slate-900">
+                      {sp.attendance_percent ? `${sp.attendance_percent}%` : '—'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -203,19 +249,18 @@ export const StudentProfile = ({ user, addToast }) => {
                 <h3 className="text-2xl font-bold text-slate-900 mb-6 pb-3 border-b-2 border-purple-500">
                   Identification
                 </h3>
-                <p className="text-sm text-slate-600 mb-6 italic font-semibold">Aadhar number is masked for privacy</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                   <div>
                     <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Aadhar (Masked)</p>
-                    <p className="text-lg font-semibold text-slate-900 font-mono">{mockData.aadharNumber}</p>
+                    <p className="text-lg font-semibold text-slate-900 font-mono">{sp.aadhar_number || '—'}</p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">PEN</p>
-                    <p className="text-lg font-semibold text-slate-900 font-mono">{mockData.pen}</p>
+                    <p className="text-lg font-semibold text-slate-900 font-mono">{sp.pen || '—'}</p>
                   </div>
                   <div>
                     <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Apaar ID</p>
-                    <p className="text-lg font-semibold text-slate-900 font-mono">{mockData.apaarId}</p>
+                    <p className="text-lg font-semibold text-slate-900 font-mono">{sp.apaar_id || '—'}</p>
                   </div>
                 </div>
               </div>
@@ -237,22 +282,34 @@ export const StudentProfile = ({ user, addToast }) => {
                     <div className="space-y-5">
                       <div>
                         <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Full Name</p>
-                        <p className="text-base font-semibold text-slate-900">{mockData.motherName}</p>
+                        <p className="text-base font-semibold text-slate-900">{mother.full_name || '—'}</p>
                       </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Phone Number</p>
-                        <a href={`tel:${mockData.motherPhone}`} className="text-base font-semibold text-blue-600 hover:text-blue-800 underline">
-                          {mockData.motherPhone}
-                        </a>
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">House Name</p>
-                        <p className="text-base font-semibold text-slate-900">{mockData.motherHouseName}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">House Location</p>
-                        <p className="text-base font-semibold text-slate-900">{mockData.motherHouseLocation}</p>
-                      </div>
+                      {mother.phone && (
+                        <div>
+                          <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Phone</p>
+                          <a href={`tel:${mother.phone}`} className="text-base font-semibold text-blue-600 hover:text-blue-800 underline">
+                            {mother.phone}
+                          </a>
+                        </div>
+                      )}
+                      {mother.email && (
+                        <div>
+                          <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Email</p>
+                          <p className="text-base font-semibold text-slate-900">{mother.email}</p>
+                        </div>
+                      )}
+                      {mother.house_name && (
+                        <div>
+                          <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">House Name</p>
+                          <p className="text-base font-semibold text-slate-900">{mother.house_name}</p>
+                        </div>
+                      )}
+                      {mother.address && (
+                        <div>
+                          <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Address</p>
+                          <p className="text-base font-semibold text-slate-900">{mother.address}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -267,37 +324,59 @@ export const StudentProfile = ({ user, addToast }) => {
                     <div className="space-y-5">
                       <div>
                         <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Full Name</p>
-                        <p className="text-base font-semibold text-slate-900">{mockData.fatherName}</p>
+                        <p className="text-base font-semibold text-slate-900">{father.full_name || '—'}</p>
                       </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Phone Number</p>
-                        <a href={`tel:${mockData.fatherPhone}`} className="text-base font-semibold text-blue-600 hover:text-blue-800 underline">
-                          {mockData.fatherPhone}
-                        </a>
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">House Name</p>
-                        <p className="text-base font-semibold text-slate-900">{mockData.fatherHouseName}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">House Location</p>
-                        <p className="text-base font-semibold text-slate-900">{mockData.fatherHouseLocation}</p>
-                      </div>
+                      {father.phone && (
+                        <div>
+                          <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Phone</p>
+                          <a href={`tel:${father.phone}`} className="text-base font-semibold text-blue-600 hover:text-blue-800 underline">
+                            {father.phone}
+                          </a>
+                        </div>
+                      )}
+                      {father.email && (
+                        <div>
+                          <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Email</p>
+                          <p className="text-base font-semibold text-slate-900">{father.email}</p>
+                        </div>
+                      )}
+                      {father.house_name && (
+                        <div>
+                          <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">House Name</p>
+                          <p className="text-base font-semibold text-slate-900">{father.house_name}</p>
+                        </div>
+                      )}
+                      {father.address && (
+                        <div>
+                          <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-2">Address</p>
+                          <p className="text-base font-semibold text-slate-900">{father.address}</p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
-
-                {/* Address */}
-                <div className="mt-8 bg-slate-100 p-8 rounded-lg border-2 border-slate-300">
-                  <p className="text-xs font-bold text-slate-600 uppercase tracking-widest mb-3">Complete Address</p>
-                  <p className="text-base font-semibold text-slate-900 leading-relaxed">{mockData.address}</p>
-                </div>
               </div>
+
+              {/* Badges */}
+              {sp.badges?.length > 0 && (
+                <div className="mb-10">
+                  <h3 className="text-2xl font-bold text-slate-900 mb-6 pb-3 border-b-2 border-yellow-500">
+                    Achievements & Badges
+                  </h3>
+                  <div className="flex flex-wrap gap-3">
+                    {sp.badges.map((badge, i) => (
+                      <span key={i} className="px-4 py-2 rounded-full bg-yellow-100 border border-yellow-300 text-yellow-800 font-semibold text-sm">
+                        {badge}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Last Updated */}
               <div className="text-center pt-6 border-t border-slate-200">
                 <p className="text-xs text-slate-600">
-                  Last updated: {new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  Last updated: {sp.updated_at ? new Date(sp.updated_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : new Date().toLocaleDateString()}
                 </p>
               </div>
             </div>

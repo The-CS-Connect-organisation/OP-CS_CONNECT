@@ -1,20 +1,12 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Users, FileText, CheckCircle, Clock, TrendingUp, Bell, BarChart3, 
-  MessageSquare, BookOpen, Zap, Calendar, Brain
+import {
+  Users, FileText, CheckCircle, Clock, TrendingUp, Bell, BarChart3,
+  MessageSquare, BookOpen, Zap, Calendar, Brain, RefreshCw
 } from 'lucide-react';
-import { teacherApi } from '../../services/apiDataLayer';
+import { apiRequest } from '../../services/apiClient';
 import { Skeleton } from '../../components/ui/Skeleton';
-
-/**
- * @component TeacherDashboard
- * @description Main productivity hub for teachers with quick-access buttons, pending actions, and real-time updates
- * @param {Object} user - Current user object
- * @param {Function} addToast - Toast notification function
- * @returns {JSX.Element}
- */
 
 const ROUTE_MAP = {
   attendance: '/teacher/attendance',
@@ -98,35 +90,88 @@ const PendingActionCard = ({ icon: Icon, title, count, color, onClick }) => (
 export const TeacherDashboard = ({ user, addToast }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [dashboard, setDashboard] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [overview, setOverview] = useState({
+    totalClasses: 0,
+    totalStudents: 0,
+    todayAttendance: null,
+    pendingGrading: 0,
+    unreadNotifications: 0,
+  });
+  const [assignments, setAssignments] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [weeklyActivity] = useState({
+    assignmentsGraded: 0,
+    attendanceMarked: 0,
+    messagesSent: 0,
+    notesCreated: 0,
+  });
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [assignmentsRes, announcementsRes, classesRes, submissionsRes] = await Promise.allSettled([
+        apiRequest('/school/assignments'),
+        apiRequest('/school/announcements'),
+        apiRequest('/school/classes'),
+        apiRequest('/school/submissions'),
+      ]);
+
+      const assignmentList = assignmentsRes.status === 'fulfilled'
+        ? (assignmentsRes.value?.items ?? assignmentsRes.value ?? [])
+        : [];
+      const myAssignments = assignmentList.filter(a => a.teacher_id === user.id || a.teacherId === user.id);
+
+      const submissions = submissionsRes.status === 'fulfilled'
+        ? (submissionsRes.value?.submissions ?? submissionsRes.value?.items ?? [])
+        : [];
+
+      const mySubmissionCount = submissions.filter(s =>
+        myAssignments.some(a => a.id === s.assignment_id || a.id === s.assignmentId)
+      ).length;
+
+      const gradedCount = submissions.filter(s =>
+        s.marks != null && myAssignments.some(a => a.id === s.assignment_id || a.id === s.assignmentId)
+      ).length;
+
+      const classes = classesRes.status === 'fulfilled'
+        ? (classesRes.value?.classRooms ?? classesRes.value?.items ?? classesRes.value ?? [])
+        : [];
+
+      const notifs = announcementsRes.status === 'fulfilled'
+        ? (announcementsRes.value?.announcements ?? [])
+        : [];
+
+      setOverview({
+        totalClasses: classes.length,
+        totalStudents: 0,
+        todayAttendance: null,
+        pendingGrading: mySubmissionCount - gradedCount,
+        unreadNotifications: notifs.filter(n => !n.read).length,
+      });
+      setAssignments(myAssignments.slice(0, 5));
+      setAnnouncements(notifs.slice(0, 5));
+    } catch (err) {
+      console.error('Failed to load teacher dashboard:', err);
+    } finally {
+      if (refreshing) setRefreshing(false);
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    let alive = true;
-    (async () => {
-      try {
-        setLoading(true);
-        const res = await teacherApi.getDashboard();
-        if (!alive) return;
-        // API returns { success, data: { dashboard: {...} } } or { success, dashboard: {...} }
-        const data = res?.data?.dashboard ?? res?.data ?? {};
-        setDashboard(data);
-      } catch (err) {
-        if (!alive) return;
-        addToast?.('Failed to load dashboard data', 'error');
-      } finally {
-        if (alive) setLoading(false);
-      }
-    })();
-    return () => { alive = false; };
-  }, []);
-
-  const overview = dashboard?.overview ?? {};
-  const upcomingDeadlines = dashboard?.upcomingDeadlines ?? [];
-  const weeklyActivity = dashboard?.weeklyActivity ?? {};
+    fetchData();
+  }, [user?.id]);
 
   const handleNavigate = (action) => {
     const route = ROUTE_MAP[action];
     if (route) navigate(route);
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+    addToast?.('Dashboard refreshed', 'success');
   };
 
   return (
@@ -142,43 +187,53 @@ export const TeacherDashboard = ({ user, addToast }) => {
           <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-gradient-to-br from-purple-100 to-transparent blur-3xl" />
           <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-gradient-to-tr from-blue-100 to-transparent blur-3xl" />
         </div>
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold bg-purple-50 text-purple-600 border border-purple-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              Teacher Portal
-            </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-600 border border-blue-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-              {user.department || 'Faculty'}
-            </span>
-            {(overview.unreadNotifications ?? 0) > 0 && (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold bg-red-50 text-red-600 border border-red-200 ml-auto">
-                <Bell size={12} />
-                {overview.unreadNotifications} new
+        <div className="relative z-10 flex items-start justify-between">
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold bg-purple-50 text-purple-600 border border-purple-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                Teacher Portal
               </span>
-            )}
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight flex items-center gap-3 mb-3 text-gray-900">
-            <span className="w-1 h-10 rounded-full bg-gradient-to-b from-purple-500 to-blue-500" />
-            Welcome, {user.name}
-          </h1>
-          <div className="flex flex-wrap gap-2 mt-4">
-            {[`Department: ${user.department || 'N/A'}`, `Subjects: ${user.subjects?.join(', ') || 'N/A'}`].map((tag) => (
-              <span key={tag} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">
-                {tag}
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-600 border border-blue-200">
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                {user.department || 'Faculty'}
               </span>
-            ))}
+              {overview.unreadNotifications > 0 && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold bg-red-50 text-red-600 border border-red-200">
+                  <Bell size={12} />
+                  {overview.unreadNotifications} new
+                </span>
+              )}
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold tracking-tight flex items-center gap-3 mb-3 text-gray-900">
+              <span className="w-1 h-10 rounded-full bg-gradient-to-b from-purple-500 to-blue-500" />
+              Welcome, {user.name}
+            </h1>
+            <div className="flex flex-wrap gap-2 mt-4">
+              {[`Department: ${user.department || 'N/A'}`, `Subjects: ${user.subjects?.join(', ') || 'N/A'}`].map((tag) => (
+                <span key={tag} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">
+                  {tag}
+                </span>
+              ))}
+            </div>
           </div>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="p-2.5 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm"
+            title="Refresh"
+          >
+            <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
+          </button>
         </div>
       </motion.div>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard loading={loading} icon={Users} label="Total Classes" value={overview.totalClasses} subtitle="Active classes" delay={0.1} color="#3b82f6" />
-        <StatCard loading={loading} icon={Users} label="Total Students" value={overview.totalStudents} subtitle="Enrolled" delay={0.15} color="#10b981" />
-        <StatCard loading={loading} icon={CheckCircle} label="Today's Attendance" value={overview.todayAttendance != null ? `${overview.todayAttendance}%` : '—'} subtitle="Attendance rate" delay={0.2} color="#f59e0b" />
-        <StatCard loading={loading} icon={Clock} label="Pending Grading" value={overview.pendingGrading} subtitle="Needs attention" delay={0.25} color="#a855f7" />
+        <StatCard loading={loading} icon={BookOpen} label="My Assignments" value={assignments.length} subtitle="Total created" delay={0.1} color="#3b82f6" />
+        <StatCard loading={loading} icon={Users} label="Classes" value={overview.totalClasses} subtitle="Active classes" delay={0.15} color="#10b981" />
+        <StatCard loading={loading} icon={CheckCircle} label="Pending Grading" value={overview.pendingGrading} subtitle="Needs attention" delay={0.2} color="#f59e0b" />
+        <StatCard loading={loading} icon={Bell} label="Notifications" value={overview.unreadNotifications} subtitle="Unread" delay={0.25} color="#a855f7" />
       </div>
 
       {/* Quick Action Buttons */}
@@ -210,7 +265,7 @@ export const TeacherDashboard = ({ user, addToast }) => {
         <PendingActionCard
           icon={Brain}
           title="AI Insights"
-          count={overview.insightsCount ?? '→'}
+          count="→"
           color="#8b5cf6"
           onClick={() => handleNavigate('insights')}
         />
@@ -218,30 +273,30 @@ export const TeacherDashboard = ({ user, addToast }) => {
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Upcoming Deadlines */}
+        {/* My Assignments */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.3 }} className="nova-card p-6">
           <h3 className="text-sm font-semibold mb-5 flex items-center gap-2 text-gray-600">
-            <Calendar size={14} />
-            Upcoming Deadlines
+            <FileText size={14} />
+            My Assignments
           </h3>
           {loading ? (
             <div className="space-y-3">
               {[1, 2, 3].map(i => <Skeleton key={i} className="h-14 w-full rounded-xl" />)}
             </div>
-          ) : upcomingDeadlines.length === 0 ? (
+          ) : assignments.length === 0 ? (
             <div className="py-12 border border-dashed rounded-xl flex items-center justify-center border-gray-200">
-              <p className="text-xs text-gray-500">No upcoming deadlines</p>
+              <p className="text-xs text-gray-500">No assignments created yet</p>
             </div>
           ) : (
             <div className="space-y-2.5">
-              {upcomingDeadlines.slice(0, 5).map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+              {assignments.map((a) => (
+                <div key={a.id} className="flex items-center justify-between p-3.5 rounded-xl bg-gray-50 border border-gray-200">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 truncate">{item.title}</p>
-                    <p className="text-xs mt-0.5 text-gray-500">{item.subject || item.type}</p>
+                    <p className="text-sm font-semibold text-gray-900 truncate">{a.title}</p>
+                    <p className="text-xs mt-0.5 text-gray-500">{a.subject} • {a.class_id || a.class || '—'}</p>
                   </div>
                   <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 ml-3 flex-shrink-0">
-                    {item.dueDate ? new Date(item.dueDate).toLocaleDateString() : 'Soon'}
+                    {a.due_date ? new Date(a.due_date).toLocaleDateString() : 'No due date'}
                   </span>
                 </div>
               ))}
@@ -249,27 +304,32 @@ export const TeacherDashboard = ({ user, addToast }) => {
           )}
         </motion.div>
 
-        {/* Weekly Activity */}
+        {/* Announcements */}
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.35 }} className="nova-card p-6">
           <h3 className="text-sm font-semibold mb-5 flex items-center gap-2 text-gray-600">
-            <FileText size={14} />
-            Weekly Activity
+            <Bell size={14} />
+            Recent Announcements
           </h3>
           {loading ? (
             <div className="space-y-3">
-              {[1, 2, 3].map(i => <Skeleton key={i} className="h-10 w-full rounded-xl" />)}
+              {[1, 2, 3].map(i => <Skeleton key={i} className="h-12 w-full rounded-xl" />)}
+            </div>
+          ) : announcements.length === 0 ? (
+            <div className="py-12 border border-dashed rounded-xl flex items-center justify-center border-gray-200">
+              <p className="text-xs text-gray-500">No announcements yet</p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {[
-                { label: 'Assignments Graded', value: weeklyActivity.assignmentsGraded ?? 0, color: '#10b981' },
-                { label: 'Attendance Marked', value: weeklyActivity.attendanceMarked ?? 0, color: '#3b82f6' },
-                { label: 'Messages Sent', value: weeklyActivity.messagesSent ?? 0, color: '#f59e0b' },
-                { label: 'Notes Created', value: weeklyActivity.notesCreated ?? 0, color: '#8b5cf6' },
-              ].map(item => (
-                <div key={item.label} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-200">
-                  <p className="text-sm font-medium text-gray-700">{item.label}</p>
-                  <span className="text-base font-bold" style={{ color: item.color }}>{item.value}</span>
+            <div className="space-y-2">
+              {announcements.map((ann) => (
+                <div key={ann.id} className="flex items-start gap-2.5 p-3 rounded-xl bg-gray-50 border border-gray-200">
+                  <div className={`w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 ${
+                    ann.priority === 'high' ? 'bg-red-500' :
+                    ann.priority === 'medium' ? 'bg-yellow-500' : 'bg-green-500'
+                  }`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-gray-900 truncate">{ann.title}</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">{ann.body?.substring(0, 80)}…</p>
+                  </div>
                 </div>
               ))}
             </div>

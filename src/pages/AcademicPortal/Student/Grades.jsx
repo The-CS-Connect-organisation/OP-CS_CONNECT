@@ -29,7 +29,7 @@ export const Grades = ({ user }) => {
       try {
         setLoading(true);
         const res = await studentApi.getGrades();
-        if (alive && res?.marks) setApiMarks(res.marks);
+        if (alive) setApiMarks(res?.data?.marks ?? res?.marks ?? []);
       } catch (e) {
         console.error('Failed to load grades:', e);
       } finally {

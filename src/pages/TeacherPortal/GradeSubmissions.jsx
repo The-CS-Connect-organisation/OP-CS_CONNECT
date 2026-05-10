@@ -12,7 +12,7 @@ import { KEYS } from '../../data/schema';
 import { useSound } from '../../hooks/useSound';
 
 export const GradeSubmissions = ({ user, addToast }) => {
-  const { data: assignments } = useStore(KEYS.ASSIGNMENTS, []);
+  const { data: localAssignments } = useStore(KEYS.ASSIGNMENTS, []);
   const { data: users } = useStore(KEYS.USERS, []);
   const { playClick, playBlip } = useSound();
 
@@ -20,12 +20,31 @@ export const GradeSubmissions = ({ user, addToast }) => {
   const [gradingModal, setGradingModal] = useState(false);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
   const [gradeData, setGradeData] = useState({ marks: '', feedback: '' });
+  const [apiAssignments, setApiAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [templates, setTemplates] = useState([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
   const [submissionsLoading, setSubmissionsLoading] = useState(true);
 
-  const myAssignments = assignments.filter(a => a.teacherId === user.id);
+  // Fetch assignments from API
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      try {
+        const list = await assignmentsService.listForUser(user);
+        if (!alive) return;
+        setApiAssignments(Array.isArray(list) ? list : []);
+      } catch (err) {
+        console.error('Failed to load assignments:', err);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
+  }, [user?.id]);
+
+  // Use API assignments for teacher-owned ones
+  const myAssignments = apiAssignments.filter(a => a.teacher_id === user.id || a.teacherId === user.id);
 
   // Load grading templates on mount
   useEffect(() => {

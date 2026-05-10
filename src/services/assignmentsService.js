@@ -11,11 +11,9 @@ export const assignmentsService = {
   async listForUser(user) {
     if (!user) return [];
     if (getDataMode() === DATA_MODES.REMOTE_API) {
-      // Expected API: GET /school/assignments?class=10-A or GET /school/assignments/me
-      // If backend differs, we can adjust later without touching pages.
-      const query = user?.class ? `?class=${encodeURIComponent(user.class)}` : '';
-      const payload = await apiRequest(`/school/assignments${query}`, { method: 'GET' });
-      return payload?.assignments ?? payload ?? [];
+      // Use student-specific endpoint that filters by class and enriches with submissions
+      const payload = await apiRequest('/student/assignments', { method: 'GET' });
+      return payload?.assignments ?? payload?.items ?? payload ?? [];
     }
 
     const all = localAssignmentsRepo.list();
