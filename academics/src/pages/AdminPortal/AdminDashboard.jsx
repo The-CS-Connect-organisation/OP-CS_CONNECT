@@ -18,10 +18,11 @@ const AdminDashboard = ({ user, addToast }) => {
     const fetchStats = async () => {
       try {
         setLoading(true);
-        const [usersRes, feesRes, announcementsRes] = await Promise.allSettled([
+        const [usersRes, feesRes, announcementsRes, classesRes] = await Promise.allSettled([
           request('/school/users?limit=500'),
           request('/fees?limit=500'),
           request('/school/announcements?limit=10'),
+          request('/school/classes'),
         ]);
 
         const users = usersRes.status === 'fulfilled'
@@ -30,12 +31,14 @@ const AdminDashboard = ({ user, addToast }) => {
           ? (feesRes.value.fees || feesRes.value.items || []) : [];
         const announcements = announcementsRes.status === 'fulfilled'
           ? (announcementsRes.value.announcements || announcementsRes.value.items || []) : [];
+        const classes = classesRes.status === 'fulfilled'
+          ? (classesRes.value.classes || []) : [];
 
         setStats({
           totalStudents: users.filter(u => u.role === 'student').length,
           totalTeachers: users.filter(u => u.role === 'teacher').length,
           totalParents: users.filter(u => u.role === 'parent').length,
-          totalClasses: 0,
+          totalClasses: classes.length,
           attendanceToday: 0,
           feesCollected: fees.filter(f => f.status === 'paid').reduce((s, f) => s + (f.amount || 0), 0),
           upcomingExams: 0,
