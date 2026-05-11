@@ -322,7 +322,7 @@ const SharedNotes = ({ user, addToast }) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed inset-2 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-2xl sm:max-h-[85vh] rounded-3xl overflow-hidden z-50 flex flex-col"
+              className="fixed left-2 right-2 top-1/2 -translate-y-1/2 sm:left-1/2 sm:-translate-x-1/2 w-auto sm:w-full sm:max-w-2xl max-h-[90dvh] rounded-3xl overflow-hidden z-50 flex flex-col"
               style={{
                 background: '#1c1917',
                 boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
@@ -363,7 +363,7 @@ const SharedNotes = ({ user, addToast }) => {
               </div>
 
               {/* Modal Body */}
-              <div className="flex-1 overflow-y-auto p-6 max-h-[calc(100vh-160px)]">
+              <div className="flex-1 overflow-y-auto p-6 min-h-0">
                 {/* Description */}
                 <div className="mb-6">
                   <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>
@@ -469,7 +469,7 @@ const SharedNotes = ({ user, addToast }) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed inset-2 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-lg rounded-3xl overflow-hidden z-50 flex flex-col"
+              className="fixed left-2 right-2 top-1/2 -translate-y-1/2 sm:left-1/2 sm:-translate-x-1/2 w-auto sm:w-full sm:max-w-lg max-h-[90dvh] rounded-3xl overflow-hidden z-50 flex flex-col"
               style={{
                 background: '#1c1917',
                 boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
@@ -498,7 +498,7 @@ const SharedNotes = ({ user, addToast }) => {
               </div>
 
               {/* Modal Body - Upload Form */}
-              <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(100vh-200px)]">
+              <div className="flex-1 p-6 space-y-4 overflow-y-auto min-h-0">
                 {/* Title Field */}
                 <div>
                   <label className="block text-xs font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>

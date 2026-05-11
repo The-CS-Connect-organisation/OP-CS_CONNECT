@@ -25,6 +25,7 @@ import {
   FileText
 } from 'lucide-react';
 import { request } from '../../../utils/apiClient';
+import { getSocket } from '../../../utils/socketClient';
 
 // No mock data since we use API
 

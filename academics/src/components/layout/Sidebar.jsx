@@ -89,6 +89,7 @@ const ROLE_NAV = {
         { title: 'Messages', icon: MessageCircle, route: '/student/messages' },
         { title: 'Nexus Hub', icon: Users, route: '/student/nexus' },
         { title: 'Achievements', icon: Trophy, route: '/student/achievements' },
+        { title: 'Accolades', icon: Award, route: '/student/accolades' },
         { title: 'Profile', icon: Users, route: '/student/profile' },
       ]
     },

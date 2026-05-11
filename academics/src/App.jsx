@@ -61,6 +61,7 @@ import { AssignmentDetails } from './pages/AcademicPortal/Student/AssignmentDeta
 import { BusTracking } from './pages/AcademicPortal/Student/BusTracking';
 import { DriverTracking } from './pages/AcademicPortal/Student/DriverTracking';
 import { Achievements } from './pages/AcademicPortal/Student/Achievements';
+import { Accolades } from './pages/AcademicPortal/Student/Accolades';
 import { DailyBriefing } from './pages/AcademicPortal/Student/DailyBriefing';
 
 // Academic Portal - Shared Features
@@ -317,6 +318,11 @@ function App() {
           <Route path="/student/achievements" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <Achievements user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/accolades" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <Accolades user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/student/briefing" element={

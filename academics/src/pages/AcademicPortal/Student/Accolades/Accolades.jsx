@@ -5,12 +5,12 @@ import {
   Zap, Medal, Crown, ExternalLink, FileText
 } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
-import { Button } from '../../../components/ui/Button';
-import { Card } from '../../../components/ui/Card';
-import { cloudinaryService } from '../../../services/cloudinaryService';
-import { studentApi, apiUtils } from '../../../services/apiDataLayer';
-import { getFromStorage, setToStorage } from '../../../data/schema';
-import { useSound } from '../../../hooks/useSound';
+import { Button } from '../../../../components/ui/Button';
+import { Card } from '../../../../components/ui/Card';
+import { cloudinaryService } from '../../../../services/cloudinaryService';
+import { studentApi, apiUtils } from '../../../../services/apiDataLayer';
+import { getFromStorage, setToStorage } from '../../../../data/schema';
+import { useSound } from '../../../../hooks/useSound';
 
 const STORAGE_KEY = 'sms_accolades';
 const CATEGORIES = [

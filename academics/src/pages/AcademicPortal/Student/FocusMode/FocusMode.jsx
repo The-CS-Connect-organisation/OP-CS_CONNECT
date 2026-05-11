@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Play, Pause, RotateCcw, SkipForward, Target, Clock, Flame,
   Zap, CheckCircle2, Trash2, Sparkles, Brain, Trophy, BarChart3,
-  ChevronRight, Plus, Calendar, BookOpen, AlertCircle, Timer
+  ChevronRight, Plus, Calendar, BookOpen, AlertCircle, Timer, Coffee as CoffeeIcon
 } from 'lucide-react';
 import { getFromStorage, setToStorage } from '../../../../data/schema';
 import { useSound } from '../../../../hooks/useSound';
@@ -16,8 +16,8 @@ const SESSIONS_BEFORE_LONG = 4;
 
 const POMODORO_Modes = {
   work: { label: 'Focus', duration: POMODORO_WORK, color: '#ea580c', bg: '#fff7ed', icon: Zap },
-  short: { label: 'Short Break', duration: POMODORO_BREAK, color: '#10b981', bg: '#f0fdf4', icon: Coffee },
-  long: { label: 'Long Break', duration: POMODORO_LONG, color: '#8b5cf6', bg: '#f5f3ff', icon: Coffee },
+  short: { label: 'Short Break', duration: POMODORO_BREAK, color: '#10b981', bg: '#f0fdf4', icon: CoffeeIcon },
+  long: { label: 'Long Break', duration: POMODORO_LONG, color: '#8b5cf6', bg: '#f5f3ff', icon: CoffeeIcon },
 };
 
 // ── Stats helpers ──────────────────────────────────────────────────────────────

@@ -110,9 +110,45 @@ export const Timetable = ({ user }) => {
     request('/school/timetables')
       .then(res => {
         if (!alive) return;
-        // Backend returns: { success: true, entries: "[\...]" } — entries is a JSON string
         const normalized = normalizeTimetableResponse(res);
-        setApiEntries(normalized);
+        if (normalized.length === 0) {
+          // Provide rich mock data if backend timetable is empty
+          const fallbackMock = [
+            { day: 'Monday', period: '1', subject: 'Mathematics', teacherId: 'teacher-1', room: '101' },
+            { day: 'Monday', period: '2', subject: 'Physics', teacherId: 'teacher-2', room: '102' },
+            { day: 'Monday', period: 'Break', subject: '', isBreak: true },
+            { day: 'Monday', period: '3', subject: 'Chemistry', teacherId: 'teacher-3', room: '103' },
+            { day: 'Monday', period: 'Lunch', subject: '', isBreak: true },
+            { day: 'Monday', period: '4', subject: 'English', teacherId: 'teacher-4', room: '104' },
+            { day: 'Tuesday', period: '1', subject: 'Biology', teacherId: 'teacher-5', room: '105' },
+            { day: 'Tuesday', period: '2', subject: 'Computer Science', teacherId: 'teacher-6', room: 'Lab 1' },
+            { day: 'Tuesday', period: 'Break', subject: '', isBreak: true },
+            { day: 'Tuesday', period: '3', subject: 'History', teacherId: 'teacher-7', room: '106' },
+            { day: 'Tuesday', period: 'Lunch', subject: '', isBreak: true },
+            { day: 'Tuesday', period: '4', subject: 'Mathematics', teacherId: 'teacher-1', room: '101' },
+            { day: 'Wednesday', period: '1', subject: 'English', teacherId: 'teacher-4', room: '104' },
+            { day: 'Wednesday', period: '2', subject: 'Geography', teacherId: 'teacher-8', room: '107' },
+            { day: 'Wednesday', period: 'Break', subject: '', isBreak: true },
+            { day: 'Wednesday', period: '3', subject: 'Physics', teacherId: 'teacher-2', room: '102' },
+            { day: 'Wednesday', period: 'Lunch', subject: '', isBreak: true },
+            { day: 'Wednesday', period: '4', subject: 'Physical Education', teacherId: 'teacher-9', room: 'Gym' },
+            { day: 'Thursday', period: '1', subject: 'Chemistry', teacherId: 'teacher-3', room: '103' },
+            { day: 'Thursday', period: '2', subject: 'Biology', teacherId: 'teacher-5', room: '105' },
+            { day: 'Thursday', period: 'Break', subject: '', isBreak: true },
+            { day: 'Thursday', period: '3', subject: 'Computer Science', teacherId: 'teacher-6', room: 'Lab 1' },
+            { day: 'Thursday', period: 'Lunch', subject: '', isBreak: true },
+            { day: 'Thursday', period: '4', subject: 'History', teacherId: 'teacher-7', room: '106' },
+            { day: 'Friday', period: '1', subject: 'Mathematics', teacherId: 'teacher-1', room: '101' },
+            { day: 'Friday', period: '2', subject: 'Physics', teacherId: 'teacher-2', room: '102' },
+            { day: 'Friday', period: 'Break', subject: '', isBreak: true },
+            { day: 'Friday', period: '3', subject: 'English', teacherId: 'teacher-4', room: '104' },
+            { day: 'Friday', period: 'Lunch', subject: '', isBreak: true },
+            { day: 'Friday', period: '4', subject: 'Geography', teacherId: 'teacher-8', room: '107' }
+          ];
+          setApiEntries(normalizeTimetableResponse({ entries: fallbackMock }));
+        } else {
+          setApiEntries(normalized);
+        }
         setLoading(false);
       })
       .catch(e => {

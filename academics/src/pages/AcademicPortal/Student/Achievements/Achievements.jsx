@@ -634,11 +634,20 @@ export const Achievements = ({ user }) => {
               <p className="text-sm font-mono mt-0.5" style={{ color: '#525252' }}>Level {levelInfo.level} &middot; {totalXP.toLocaleString()} XP</p>
             </div>
           </div>
-          <div
-            className="px-4 py-2 rounded-lg text-xs font-black font-mono uppercase tracking-widest"
-            style={{ background: 'rgba(234,88,12,0.1)', color: '#ea580c', border: '1px solid rgba(234,88,12,0.2)' }}
-          >
-            {earnedBadgeIds.size} / {BADGE_DEFS.length} Badges
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => window.location.href = '/student/accolades'}
+              className="px-4 py-2 rounded-lg text-xs font-black font-mono uppercase tracking-widest transition-all hover:bg-[#ea580c] hover:text-white"
+              style={{ background: 'rgba(234,88,12,0.1)', color: '#ea580c', border: '1px solid rgba(234,88,12,0.2)' }}
+            >
+              Upload Accolade
+            </button>
+            <div
+              className="px-4 py-2 rounded-lg text-xs font-black font-mono uppercase tracking-widest"
+              style={{ background: 'rgba(234,88,12,0.1)', color: '#ea580c', border: '1px solid rgba(234,88,12,0.2)' }}
+            >
+              {earnedBadgeIds.size} / {BADGE_DEFS.length} Badges
+            </div>
           </div>
         </motion.div>
 

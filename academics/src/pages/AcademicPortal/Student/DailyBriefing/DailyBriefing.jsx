@@ -53,16 +53,18 @@ export const DailyBriefing = ({ user, addToast }) => {
 
   const todayDay = today.toLocaleDateString('en-US', { weekday: 'long' });
 
-  // Today's schedule from timetable (flat array with day/time fields)
-  const timetable = useMemo(() => getFromStorage(KEYS.TIMETABLE, []), []);
+  const timetable = useMemo(() => {
+    const raw = getFromStorage(KEYS.TIMETABLE, []);
+    return Array.isArray(raw) ? raw : (Object.values(raw).flat().flatMap(x => Array.isArray(x) ? x : Object.values(x).flat()) || []);
+  }, []);
   const todaySchedule = useMemo(() => {
     return timetable
-      .filter(slot => slot.day === todayDay)
+      .filter(slot => slot && slot.day === todayDay)
       .sort((a, b) => {
-        const timeA = a.time || a.period || '12:00';
-        const timeB = b.time || b.period || '12:00';
-        const hA = parseInt(timeA.split(':')[0]);
-        const hB = parseInt(timeB.split(':')[0]);
+        const timeA = String(a.time || a.period || '12:00');
+        const timeB = String(b.time || b.period || '12:00');
+        const hA = parseInt(timeA.split(':')[0]) || 0;
+        const hB = parseInt(timeB.split(':')[0]) || 0;
         return hA - hB;
       });
   }, [timetable, todayDay]);
