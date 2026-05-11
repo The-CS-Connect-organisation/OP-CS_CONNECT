@@ -48,6 +48,17 @@ export const FeeManagement = ({ user, addToast }) => {
   const studentOptions = useMemo(() => apiStudents || [], [apiStudents]);
   const resolveStudent = (studentId) => studentOptions.find((s) => s.id === studentId);
 
+  // Local CRUD helpers (API-backed)
+  const add = (fee) => {
+    setFees(prev => [fee, ...prev]);
+  };
+  const update = (feeId, changes) => {
+    setFees(prev => prev.map(f => f.id === feeId ? { ...f, ...changes } : f));
+  };
+  const remove = (feeId) => {
+    setFees(prev => prev.filter(f => f.id !== feeId));
+  };
+
   // Admin edit modal
   const [showEditModal, setShowEditModal] = useState(false);
   const [editFeeId, setEditFeeId] = useState(null);
