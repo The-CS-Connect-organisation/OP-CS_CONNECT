@@ -18,6 +18,64 @@ const SUBJECT_COLORS = {
   default: { bg: 'rgba(0, 0, 0, 0.05)', border: 'rgba(0, 0, 0, 0.15)', text: '#374151', glow: 'rgba(0, 0, 0, 0.05)' },
 };
 
+const TEACHER_MAP = {
+  'teacher-1': 'Rajesh Kumar',
+  'teacher-2': 'James Anderson',
+  'teacher-3': 'Emily Chen',
+};
+
+const PERIOD_TIME_MAP = {
+  1: { start: '09:00', end: '09:40', label: '09:00 – 09:40' },
+  2: { start: '09:40', end: '10:20', label: '09:40 – 10:20' },
+  3: { start: '10:30', end: '11:10', label: '10:30 – 11:10' },
+  4: { start: '11:10', end: '11:50', label: '11:10 – 11:50' },
+  5: { start: '11:50', end: '12:30', label: '11:50 – 12:30' },
+  6: { start: '13:00', end: '13:40', label: '13:00 – 13:40' },
+  7: { start: '13:40', end: '14:20', label: '13:40 – 14:20' },
+  8: { start: '14:20', end: '15:00', label: '14:20 – 15:00' },
+};
+
+const BREAK_LABELS = { Lunch: 'Lunch Break', Break: 'Break' };
+
+const getTimePeriod = (time) => {
+  const hour = parseInt((time || '12:00').split(':')[0]);
+  if (hour < 12) return 'Morning';
+  if (hour < 15) return 'Afternoon';
+  return 'Evening';
+};
+
+const normalizeTimetableResponse = (res) => {
+  // Backend returns { success: true, entries: "[\...]" } — entries is a JSON string
+  const raw = res?.entries ?? res?.data?.entries ?? res?.timetable ?? res?.data?.timetable ?? res ?? [];
+  const entries = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  if (!Array.isArray(entries)) return [];
+
+  return entries.map(e => {
+    const periodNum = parseInt((e.period || '').replace(/\D/g, '') || e.period, 10);
+    const periodStr = String(e.period || '');
+    const isBreak = BREAK_LABELS[periodStr] !== undefined || !e.subject;
+    const timeSlot = PERIOD_TIME_MAP[periodNum] || null;
+    const teacherId = e.teacherId || e.teacher_id || '';
+    return {
+      ...e,
+      period: periodStr,
+      teacherId,
+      teacher: isBreak ? null : (TEACHER_MAP[teacherId] || teacherId || null),
+      startTime: timeSlot?.start || null,
+      endTime: timeSlot?.end || null,
+      time: isBreak ? null : (timeSlot?.label || null),
+      isBreak,
+    };
+  });
+};
+
+const getTimePeriodDisplay = (slot) => {
+  // For break slots, use the period label
+  if (slot.isBreak) return '—';
+  if (slot.time) return getTimePeriod(slot.time.split(' – ')[0]);
+  return '—';
+};
+
 const getSubjectColor = (subject) => {
   return SUBJECT_COLORS[subject] || SUBJECT_COLORS.default;
 };
@@ -52,9 +110,9 @@ export const Timetable = ({ user }) => {
     request('/school/timetables')
       .then(res => {
         if (!alive) return;
-        // Backend returns: { success: true, classId, entries: [{ day, period, subject, teacher, room, time }] }
-        const entries = res?.entries || res?.data?.entries || [];
-        setApiEntries(Array.isArray(entries) ? entries : []);
+        // Backend returns: { success: true, entries: "[\...]" } — entries is a JSON string
+        const normalized = normalizeTimetableResponse(res);
+        setApiEntries(normalized);
         setLoading(false);
       })
       .catch(e => {
@@ -67,18 +125,27 @@ export const Timetable = ({ user }) => {
     return () => { alive = false; };
   }, [user?.id]);
 
-  // Group entries by day
+  // Group entries by day, sorted by period number
   const classTimetable = DAYS_ORDERED
     .map(day => ({
       day,
       slots: apiEntries
         .filter(e => e.day === day)
         .sort((a, b) => {
-          const timeA = a.time || a.period || '';
-          const timeB = b.time || b.period || '';
-          const hA = parseInt(timeA.split(':')[0] || '0');
-          const hB = parseInt(timeB.split(':')[0] || '0');
-          return hA - hB;
+          const ra = a.period || '';
+          const rb = b.period || '';
+          // Extract period number: "Period 1" -> 1, "Lunch" -> 999, "Break" -> 998
+          const isALunch = ra === 'Lunch';
+          const isBLunch = rb === 'Lunch';
+          const isABreak = ra === 'Break';
+          const isBBreak = rb === 'Break';
+          if (isALunch) return 1;
+          if (isBLunch) return -1;
+          if (isABreak) return 1;
+          if (isBBreak) return -1;
+          const na = parseInt(ra.replace(/\D/g, ''), 10) || 0;
+          const nb = parseInt(rb.replace(/\D/g, ''), 10) || 0;
+          return na - nb;
         }),
     }))
     .filter(day => day.slots.length > 0);
@@ -228,7 +295,9 @@ export const Timetable = ({ user }) => {
                 todaySchedule.map((slot, idx) => {
                   const colors = getSubjectColor(slot.subject);
                   const timeStr = slot.time || slot.period || '';
-                  const isBreak = ['Break', 'Lunch'].includes(slot.period);
+                  const periodLabel = slot.isBreak ? (BREAK_LABELS[slot.period] || slot.period) : (slot.subject || slot.period);
+                  const isBreak = slot.isBreak;
+                  const timeDisplay = slot.time || (isBreak ? null : null);
 
                   return (
                     <motion.div
@@ -261,15 +330,26 @@ export const Timetable = ({ user }) => {
                               }}
                             >
                               <Clock size={16} className="mb-1" style={{ color: colors.text }} />
-                              <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
-                                {timeStr.includes('-')
-                                  ? timeStr.split(' - ')[0]
-                                  : timeStr.split(' ')[0]}
-                              </span>
-                              {timeStr.includes('-') && (
-                                <span className="text-[10px] text-[var(--text-muted)]">
-                                  {timeStr.split(' - ')[1]}
-                                </span>
+                              {isBreak ? (
+                                <>
+                                  <span className="text-sm font-bold" style={{ color: 'var(--text-muted)' }}>
+                                    {slot.period === 'Lunch' ? '12:30' : slot.period === 'Break' ? '10:15' : slot.period}
+                                  </span>
+                                  {slot.period === 'Lunch' && (
+                                    <span className="text-[10px] text-[var(--text-muted)]">13:00</span>
+                                  )}
+                                </>
+                              ) : timeStr.includes('–') ? (
+                                <>
+                                  <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                                    {timeStr.split(' – ')[0]}
+                                  </span>
+                                  <span className="text-[10px] text-[var(--text-muted)]">
+                                    {timeStr.split(' – ')[1]}
+                                  </span>
+                                </>
+                              ) : (
+                                <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{slot.period}</span>
                               )}
                             </div>
                           </div>
@@ -286,7 +366,7 @@ export const Timetable = ({ user }) => {
                                     className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider"
                                     style={{ background: colors.bg, color: colors.text, border: `1px solid ${colors.border}` }}
                                   >
-                                    {getTimePeriod(timeStr)}
+                                    {getTimePeriodDisplay(slot)}
                                   </span>
                                   {isBreak && (
                                     <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 border border-gray-200">
@@ -295,7 +375,7 @@ export const Timetable = ({ user }) => {
                                   )}
                                 </div>
                                 <h3 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-                                  {slot.subject || slot.period}
+                                  {periodLabel}
                                 </h3>
                               </div>
 
@@ -325,7 +405,7 @@ export const Timetable = ({ user }) => {
                                     <span className="font-medium">Room {slot.room}</span>
                                   </span>
                                 )}
-                                {timeStr.includes('-') && (
+                                {timeStr.includes('–') && (
                                   <span className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
                                     <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-elevated)' }}>
                                       <Clock size={14} />

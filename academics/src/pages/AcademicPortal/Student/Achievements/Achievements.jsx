@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trophy, Zap, Star, Target, Flame, Award, Medal, Crown,
-  TrendingUp, ChevronRight, Lock, CheckCircle2, Clock,
+  TrendingUp, ChevronRight, Lock, CheckCircle2, Clock, RefreshCw,
   Sword, Shield, BookOpen, Calendar, Users, FlameKindling,
   GraduationCap, Brain, Clock3, BarChart3, Bookmark, Heart, UserCheck
 } from 'lucide-react';
@@ -10,6 +10,12 @@ import { Card } from '../../../../components/ui/Card';
 import { Button } from '../../../../components/ui/Button';
 import { getFromStorage, setToStorage, KEYS } from '../../../../data/schema';
 import { useSound } from '../../../../hooks/useSound';
+// Firebase is optional — only import if available
+let firebaseLeaderboardService = null;
+try {
+  const fb = require('../../../../services/firebaseService');
+  firebaseLeaderboardService = fb.firebaseLeaderboardService;
+} catch { /* Firebase not available */ }
 
 // Badge definitions
 const BADGE_DEFS = [
@@ -157,13 +163,15 @@ export const LeaderboardPanel = ({ user }) => {
         { id: 'u10', name: 'Diya Krishnan', avatar: null },
       ];
 
-      await firebaseLeaderboardService.syncAllStudents(
-        classId,
-        classmates,
-        attendance,
-        marks,
-        submissions
-      );
+      if (firebaseLeaderboardService) {
+        await firebaseLeaderboardService.syncAllStudents(
+          classId,
+          classmates,
+          attendance,
+          marks,
+          submissions
+        );
+      }
 
       setLastSync(new Date());
     } catch (err) {
@@ -182,20 +190,22 @@ export const LeaderboardPanel = ({ user }) => {
 
     // Set up real-time listeners
     let unsubAll, unsubWeekly;
-    if (mode === 'all') {
-      unsubAll = firebaseLeaderboardService.subscribe(classId, (data) => {
-        setEntries(data);
-        setIsRealtime(true);
-        const idx = data.findIndex(e => e.studentId === user.id || e.id === user.id);
-        setMyRank(idx >= 0 ? idx + 1 : null);
-      });
-    } else {
-      unsubWeekly = firebaseLeaderboardService.subscribeWeekly(classId, (data) => {
-        setEntries(data);
-        setIsRealtime(true);
-        const idx = data.findIndex(e => e.studentId === user.id || e.id === user.id);
-        setMyRank(idx >= 0 ? idx + 1 : null);
-      });
+    if (firebaseLeaderboardService) {
+      if (mode === 'all') {
+        unsubAll = firebaseLeaderboardService.subscribe(classId, (data) => {
+          setEntries(data);
+          setIsRealtime(true);
+          const idx = data.findIndex(e => e.studentId === user.id || e.id === user.id);
+          setMyRank(idx >= 0 ? idx + 1 : null);
+        });
+      } else {
+        unsubWeekly = firebaseLeaderboardService.subscribeWeekly(classId, (data) => {
+          setEntries(data);
+          setIsRealtime(true);
+          const idx = data.findIndex(e => e.studentId === user.id || e.id === user.id);
+          setMyRank(idx >= 0 ? idx + 1 : null);
+        });
+      }
     }
 
     return () => {
@@ -208,20 +218,22 @@ export const LeaderboardPanel = ({ user }) => {
   useEffect(() => {
     if (!user) return;
     let unsub;
-    if (mode === 'all') {
-      unsub = firebaseLeaderboardService.subscribe(classId, (data) => {
-        setEntries(data);
-        setIsRealtime(true);
-        const idx = data.findIndex(e => e.studentId === user.id || e.id === user.id);
-        setMyRank(idx >= 0 ? idx + 1 : null);
-      });
-    } else {
-      unsub = firebaseLeaderboardService.subscribeWeekly(classId, (data) => {
-        setEntries(data);
-        setIsRealtime(true);
-        const idx = data.findIndex(e => e.studentId === user.id || e.id === user.id);
-        setMyRank(idx >= 0 ? idx + 1 : null);
-      });
+    if (firebaseLeaderboardService) {
+      if (mode === 'all') {
+        unsub = firebaseLeaderboardService.subscribe(classId, (data) => {
+          setEntries(data);
+          setIsRealtime(true);
+          const idx = data.findIndex(e => e.studentId === user.id || e.id === user.id);
+          setMyRank(idx >= 0 ? idx + 1 : null);
+        });
+      } else {
+        unsub = firebaseLeaderboardService.subscribeWeekly(classId, (data) => {
+          setEntries(data);
+          setIsRealtime(true);
+          const idx = data.findIndex(e => e.studentId === user.id || e.id === user.id);
+          setMyRank(idx >= 0 ? idx + 1 : null);
+        });
+      }
     }
     return () => { if (unsub) unsub(); };
   }, [mode, user, classId]);

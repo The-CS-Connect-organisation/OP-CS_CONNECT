@@ -1,14 +1,16 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar, ChevronLeft, ChevronRight, Plus, Clock, BookOpen, FileText,
   AlertCircle, Sparkles, Edit2, Trash2, X, Bell, CheckCircle2, Zap,
-  Video, Link2, CheckCircle, XCircle, UserPlus, Users
+  Video, Link2, CheckCircle, XCircle, UserPlus, Users, CalendarCheck,
+  Mail, Check, CheckCheck, Inbox
 } from 'lucide-react';
 import { Card } from '../../../../components/ui/Card';
 import { Badge } from '../../../../components/ui/Badge';
 import { Button } from '../../../../components/ui/Button';
 import { getFromStorage, setToStorage } from '../../../../data/schema';
+import { request } from '../../../../utils/apiClient';
 
 const HOURS = Array.from({ length: 14 }, (_, i) => {
   const h = 7 + i;
@@ -27,6 +29,17 @@ const EVENT_TYPES = {
 };
 
 const getEventStyle = (type) => EVENT_TYPES[type] || EVENT_TYPES.custom;
+
+const MEETING_TYPES = ['Study Group', 'Doubt Session', 'Teacher Consultation', 'Peer Review'];
+const DURATION_OPTIONS = ['15', '30', '45', '60'];
+
+function loadMeetingInvites() {
+  return getFromStorage('sms_meeting_invites', []);
+}
+
+function saveMeetingInvites(invites) {
+  setToStorage('sms_meeting_invites', invites);
+}
 
 const today = new Date();
 today.setHours(0, 0, 0, 0);
@@ -51,7 +64,7 @@ function saveEvents(events) {
   setToStorage('sms_calendar_events', events);
 }
 
-export const CSCalendar = ({ user }) => {
+export const CSCalendar = ({ user, addToast }) => {
   const [weekStart, setWeekStart] = useState(() => {
     const d = new Date();
     d.setDate(d.getDate() - d.getDay() + 1);
@@ -59,11 +72,60 @@ export const CSCalendar = ({ user }) => {
     return d;
   });
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showScheduleMeeting, setShowScheduleMeeting] = useState(false);
   const [editEvent, setEditEvent] = useState(null);
   const [events, setEvents] = useState(loadEvents);
   const [selectedDay, setSelectedDay] = useState(null);
+  const [meetingInvites, setMeetingInvites] = useState(loadMeetingInvites);
+  const [activeTab, setActiveTab] = useState('calendar'); // 'calendar' | 'invites'
+  const [allUsers, setAllUsers] = useState([]);
 
   const weekDates = useMemo(() => getWeekDates(weekStart), [weekStart]);
+
+  // Load users for meeting scheduling
+  useEffect(() => {
+    if (!user?.id) return;
+    request('/school/users?limit=500')
+      .then(res => {
+        const list = res.users || res.items || (Array.isArray(res) ? res : []);
+        setAllUsers(list.filter(u => String(u.id) !== String(user.id)));
+      })
+      .catch(() => {});
+  }, [user?.id]);
+
+  // Handle meeting invite response
+  const handleMeetingResponse = useCallback((inviteId, action) => {
+    const invites = loadMeetingInvites();
+    const updated = invites.map(inv => inv.id === inviteId ? { ...inv, status: action } : inv);
+    saveMeetingInvites(updated);
+    setMeetingInvites(updated);
+
+    if (action === 'accepted') {
+      const invite = invites.find(inv => inv.id === inviteId);
+      if (invite) {
+        const calEvents = getFromStorage('sms_calendar_events', []);
+        const [hour, min] = invite.time.split(':').map(Number);
+        const endHour = hour + Math.floor(invite.duration / 60);
+        const newEvent = {
+          id: `meeting-${Date.now()}`,
+          title: invite.title,
+          type: 'meeting',
+          date: invite.date,
+          time: invite.time,
+          endTime: `${String(endHour).padStart(2, '0')}:${String(min).padStart(2, '0')}`,
+          subject: `${invite.meetingType} with ${invite.fromUserName}`,
+          meetLink: invite.meetLink || null,
+          inviteId: invite.id,
+        };
+        calEvents.push(newEvent);
+        setToStorage('sms_calendar_events', calEvents);
+        setEvents(calEvents);
+        addToast?.(`Meeting "${invite.title}" added to calendar`, 'success');
+      }
+    } else {
+      addToast?.('Meeting invite declined', 'info');
+    }
+  }, [addToast]);
 
   const navigateWeek = (dir) => {
     const next = new Date(weekStart);
@@ -180,6 +242,23 @@ export const CSCalendar = ({ user }) => {
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
+          {/* Tabs */}
+          <div className="flex gap-1 bg-white border border-gray-200 rounded-xl p-1">
+            <button onClick={() => setActiveTab('calendar')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeTab === 'calendar' ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+              Calendar
+            </button>
+            <button onClick={() => setActiveTab('invites')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors relative ${activeTab === 'invites' ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-100'}`}>
+              Invites
+              {meetingInvites.filter(i => i.toUserId === user?.id && i.status === 'pending').length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
+                  {meetingInvites.filter(i => i.toUserId === user?.id && i.status === 'pending').length}
+                </span>
+              )}
+            </button>
+          </div>
+
           {/* Week navigation */}
           <div className="flex items-center gap-1 bg-white border border-gray-200 rounded-xl p-1">
             <button onClick={() => navigateWeek(-1)} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
@@ -197,8 +276,8 @@ export const CSCalendar = ({ user }) => {
             {weekDates[0].toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })} – {weekDates[6].toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
           </span>
 
-          <Button variant="primary" icon={Plus} onClick={() => setShowAddModal(true)} className="px-4 py-2 text-xs" style={{ background: '#ea580c', boxShadow: '0 4px 12px rgba(234, 88, 12, 0.3)' }}>
-            Add Event
+          <Button variant="primary" icon={CalendarCheck} onClick={() => setShowScheduleMeeting(true)} className="px-4 py-2 text-xs" style={{ background: '#f97316', boxShadow: '0 4px 12px rgba(249,115,22,0.3)' }}>
+            Schedule Meeting
           </Button>
         </div>
       </div>
@@ -213,6 +292,9 @@ export const CSCalendar = ({ user }) => {
         ))}
       </div>
 
+      {/* Week Grid or Invites Panel */}
+      {activeTab === 'calendar' ? (
+        <>
       {/* Week Grid */}
       <Card className="border border-gray-200 overflow-hidden">
         {/* Day headers */}
@@ -343,6 +425,20 @@ export const CSCalendar = ({ user }) => {
           </motion.div>
         )}
       </AnimatePresence>
+        </>
+      ) : (
+        /* Invites panel */
+        <MeetingInvitesPanel
+          user={user}
+          allUsers={allUsers}
+          invites={meetingInvites}
+          onRespond={handleMeetingResponse}
+          onRefresh={(updated) => {
+            saveMeetingInvites(updated);
+            setMeetingInvites(updated);
+          }}
+        />
+      )}
 
       {/* Add / Edit Event Modal */}
       <AnimatePresence>

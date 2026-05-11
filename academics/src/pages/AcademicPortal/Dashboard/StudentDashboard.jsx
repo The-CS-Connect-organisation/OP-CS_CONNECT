@@ -406,13 +406,79 @@ const CalendarDay = ({ day, events }) => {
   );
 };
 
+const TEACHER_MAP = {
+  'teacher-1': 'Rajesh Kumar',
+  'teacher-2': 'James Anderson',
+  'teacher-3': 'Emily Chen',
+};
+
+const PERIOD_TIME_MAP = {
+  1: { start: '09:00', end: '09:40', label: '09:00 – 09:40' },
+  2: { start: '09:40', end: '10:20', label: '09:40 – 10:20' },
+  3: { start: '10:30', end: '11:10', label: '10:30 – 11:10' },
+  4: { start: '11:10', end: '11:50', label: '11:10 – 11:50' },
+  5: { start: '11:50', end: '12:30', label: '11:50 – 12:30' },
+  6: { start: '13:00', end: '13:40', label: '13:00 – 13:40' },
+  7: { start: '13:40', end: '14:20', label: '13:40 – 14:20' },
+  8: { start: '14:20', end: '15:00', label: '14:20 – 15:00' },
+};
+
+const BREAK_LABELS = { Lunch: 'Lunch', Break: 'Break' };
+
+const normalizeTimetableResponse = (res) => {
+  // Backend returns { success: true, entries: "[\...]" } — entries is a JSON string
+  const raw = res?.entries ?? res?.data?.entries ?? res?.timetable ?? res?.data?.timetable ?? res ?? [];
+  const entries = typeof raw === 'string' ? JSON.parse(raw) : raw;
+  if (!Array.isArray(entries)) return [];
+
+  // Transform each entry: normalize field names and add time slots
+  return entries.map(e => {
+    const periodNum = parseInt((e.period || '').replace(/\D/g, '') || e.period, 10);
+    const isBreak = !e.subject || BREAK_LABELS[e.period] !== undefined;
+    const timeSlot = PERIOD_TIME_MAP[periodNum] || null;
+    const teacherId = e.teacherId || e.teacher_id || '';
+    return {
+      ...e,
+      teacherId,
+      teacher: isBreak ? '—' : (TEACHER_MAP[teacherId] || teacherId || '—'),
+      startTime: timeSlot?.start || null,
+      endTime: timeSlot?.end || null,
+      time: timeSlot?.label || (isBreak ? e.period : '—'),
+      isBreak,
+    };
+  });
+};
+
+// Group entries by classId (stored as key) then by day, sorted by period
+const buildTimetableLookup = (entries) => {
+  const lookup = {};
+  for (const entry of entries) {
+    const cls = entry.classId || entry.class_id || entry.class || 'default';
+    if (!lookup[cls]) lookup[cls] = {};
+    const day = entry.day;
+    if (!lookup[cls][day]) lookup[cls][day] = [];
+    lookup[cls][day].push(entry);
+  }
+  // Sort each day's slots by period
+  for (const cls of Object.keys(lookup)) {
+    for (const day of Object.keys(lookup[cls])) {
+      lookup[cls][day].sort((a, b) => {
+        const pn = parseInt((a.period || '').replace(/\D/g, '') || a.period, 10);
+        const pb = parseInt((b.period || '').replace(/\D/g, '') || b.period, 10);
+        return pn - pb;
+      });
+    }
+  }
+  return lookup;
+};
+
 export const StudentDashboard = ({ user }) => {
   // API-fetched data
   const [apiAssignments, setApiAssignments] = useState([]);
   const [apiMarks, setApiMarks] = useState([]);
   const [apiAttendance, setApiAttendance] = useState([]);
   const [apiAnnouncements, setApiAnnouncements] = useState([]);
-  const [apiTimetable, setApiTimetable] = useState({});
+  const [apiTimetableEntries, setApiTimetableEntries] = useState([]);
   const [loadingDash, setLoadingDash] = useState(true);
 
   useEffect(() => {
@@ -445,7 +511,8 @@ export const StudentDashboard = ({ user }) => {
         setApiAnnouncements(list);
       }
       if (ttRes.status === 'fulfilled') {
-        setApiTimetable(ttRes.value.timetable || ttRes.value || {});
+        const normalized = normalizeTimetableResponse(ttRes.value);
+        setApiTimetableEntries(normalized);
       }
     }).finally(() => { if (!cancelled) setLoadingDash(false); });
 
@@ -457,10 +524,12 @@ export const StudentDashboard = ({ user }) => {
   const safeSubmissions = [];
   const safeMarks = apiMarks;
   const safeAttendance = apiAttendance;
-  const safeTimetable = apiTimetable;
   const safeAnnouncements = apiAnnouncements;
   const safeExams = [];
   const safeAttempts = [];
+
+  // Build timetable lookup: { className: { day: slots } }
+  const safeTimetable = useMemo(() => buildTimetableLookup(apiTimetableEntries), [apiTimetableEntries]);
   
   const [focusMode, setFocusMode] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
@@ -487,7 +556,7 @@ export const StudentDashboard = ({ user }) => {
   const attendanceRate = myAttendance.length > 0 ? Math.round((presentCount / myAttendance.length) * 100) : 0;
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-  const todaySchedule = safeTimetable[user.class]?.find(t => t.day === today)?.slots || [];
+  const todaySchedule = safeTimetable[user.class]?.[today] || safeTimetable[user.classroomId]?.[today] || [];
 
   // Dynamic Data Calculations — use computed values, no useStore needed
   const xpData = { xp: 0, level: 1 };
@@ -769,13 +838,18 @@ export const StudentDashboard = ({ user }) => {
             ) : (
               <div className="space-y-2.5">
                 {todaySchedule.map((slot, idx) => (
-                  <div key={idx} className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3.5 rounded-xl bg-gray-50 border border-gray-200">
+                  <div key={idx} className={`flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3.5 rounded-xl border ${slot.isBreak ? 'bg-gray-50 border-gray-200 opacity-70' : 'bg-gray-50 border-gray-200'}`}>
                     <div className="px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold bg-gray-200 text-gray-700 flex-shrink-0">
-                      {slot.time.split(' ')[0]}
+                      {slot.time.split(' – ')[0]}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-900">{slot.subject}</p>
-                      <p className="text-xs mt-0.5 text-gray-500">{slot.teacher} • Room {slot.room}</p>
+                      <p className="text-sm font-semibold text-gray-900">{slot.subject || slot.period}</p>
+                      {!slot.isBreak && (
+                        <p className="text-xs mt-0.5 text-gray-500">{slot.teacher} • Room {slot.room}</p>
+                      )}
+                      {slot.isBreak && (
+                        <p className="text-xs mt-0.5 text-gray-400">{BREAK_LABELS[slot.period] || slot.period}</p>
+                      )}
                     </div>
                   </div>
                 ))}

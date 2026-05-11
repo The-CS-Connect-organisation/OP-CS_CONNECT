@@ -567,6 +567,198 @@ export const firebaseMarksService = {
 };
 
 // ============================================================================
+// MESSAGES SERVICE
+// ============================================================================
+
+export const firebaseMessagesService = {
+  /**
+   * Get all messages for a conversation
+   * @param {string} conversationId
+   */
+  async getMessages(conversationId) {
+    try {
+      const snapshot = await get(
+        query(ref(database, `messages/${conversationId}/messages`), orderByChild('timestamp'))
+      );
+      if (!snapshot.exists()) return [];
+      const data = snapshot.val();
+      return Object.keys(data).map(key => ({ id: key, ...data[key] }));
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Get conversation metadata
+   * @param {string} userId1
+   * @param {string} userId2
+   */
+  async getConversation(userId1, userId2) {
+    const convId = [userId1, userId2].sort().join('_');
+    try {
+      const snapshot = await get(ref(database, `conversations/${convId}`));
+      if (!snapshot.exists()) return null;
+      return { conversationId: convId, id: convId, ...snapshot.val() };
+    } catch (error) {
+      console.error('Error fetching conversation:', error);
+      return null;
+    }
+  },
+
+  /**
+   * Get all conversations for a user
+   * @param {string} userId
+   */
+  async getConversations(userId) {
+    try {
+      const snapshot = await get(ref(database, 'conversations'));
+      if (!snapshot.exists()) return [];
+      const data = snapshot.val();
+      return Object.keys(data)
+        .filter(key => key.includes(userId))
+        .map(key => ({ id: key, ...data[key] }));
+    } catch (error) {
+      console.error('Error fetching conversations:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Create or update a conversation
+   * @param {string} userId1
+   * @param {string} userId2
+   * @param {object} meta - { user1Name, user2Name, user1Role, user2Role, ... }
+   */
+  async upsertConversation(userId1, userId2, meta = {}) {
+    const convId = [userId1, userId2].sort().join('_');
+    try {
+      await set(ref(database, `conversations/${convId}`), {
+        id: convId,
+        participants: [userId1, userId2],
+        user1Id: userId1,
+        user2Id: userId2,
+        user1Name: meta.user1Name || '',
+        user2Name: meta.user2Name || '',
+        user1Role: meta.user1Role || 'student',
+        user2Role: meta.user2Role || 'student',
+        lastMessage: meta.lastMessage || '',
+        lastMessageTime: meta.lastMessageTime || null,
+        lastMessageSender: meta.lastMessageSender || null,
+        unread1: meta.unread1 || 0,
+        unread2: meta.unread2 || 0,
+        groupName: meta.groupName || null,
+        isGroup: meta.isGroup || false,
+        createdAt: meta.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
+      return { id: convId, ...meta };
+    } catch (error) {
+      console.error('Error upserting conversation:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Send a message (writes to Firebase RTDB)
+   * @param {string} conversationId
+   * @param {object} msgData - { senderId, senderName, receiverId, text, attachments }
+   */
+  async sendMessage(conversationId, msgData) {
+    const msgId = ref(database).push().key;
+    const timestamp = new Date().toISOString();
+    const msg = {
+      id: msgId,
+      senderId: msgData.senderId,
+      senderName: msgData.senderName,
+      receiverId: msgData.receiverId,
+      text: msgData.text,
+      timestamp,
+      read: false,
+      attachments: msgData.attachments || [],
+    };
+    try {
+      await set(ref(database, `messages/${conversationId}/messages/${msgId}`), msg);
+      // Update conversation last message
+      await update(ref(database, `conversations/${conversationId}`), {
+        lastMessage: (msgData.text || '').substring(0, 80),
+        lastMessageTime: timestamp,
+        lastMessageSender: msgData.senderId,
+        updatedAt: timestamp,
+      });
+      return msg;
+    } catch (error) {
+      console.error('Error sending message:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Mark messages as read for a user
+   * @param {string} conversationId
+   * @param {string} userId
+   */
+  async markRead(conversationId, userId) {
+    try {
+      const snapshot = await get(ref(database, `messages/${conversationId}/messages`));
+      if (!snapshot.exists()) return;
+      const updates = {};
+      snapshot.forEach(child => {
+        const msg = child.val();
+        if (msg.receiverId === userId && !msg.read) {
+          updates[`messages/${conversationId}/messages/${child.key}/read`] = true;
+        }
+      });
+      if (Object.keys(updates).length > 0) {
+        await update(ref(database), updates);
+      }
+    } catch (error) {
+      console.error('Error marking read:', error);
+    }
+  },
+
+  /**
+   * Subscribe to new messages in a conversation (real-time)
+   * @param {string} conversationId
+   * @param {function} callback - called with new message
+   * @returns unsubscribe function
+   */
+  subscribeToMessages(conversationId, callback) {
+    const messagesRef = query(
+      ref(database, `messages/${conversationId}/messages`),
+      orderByChild('timestamp'),
+      limitToLast(1)
+    );
+    return onValue(messagesRef, (snapshot) => {
+      if (snapshot.exists()) {
+        snapshot.forEach(child => {
+          callback({ id: child.key, ...child.val() });
+        });
+      }
+    }, (error) => {
+      console.error('Messages subscription error:', error);
+    });
+  },
+
+  /**
+   * Subscribe to a conversation's real-time updates
+   * @param {string} conversationId
+   * @param {function} callback
+   * @returns unsubscribe function
+   */
+  subscribeToConversation(conversationId, callback) {
+    const convRef = ref(database, `conversations/${conversationId}`);
+    return onValue(convRef, (snapshot) => {
+      if (snapshot.exists()) {
+        callback({ id: snapshot.key, ...snapshot.val() });
+      }
+    }, (error) => {
+      console.error('Conversation subscription error:', error);
+    });
+  },
+};
+
+// ============================================================================
 // NOTIFICATIONS SERVICE
 // ============================================================================
 
@@ -847,6 +1039,7 @@ export default {
   firebaseSubmissionsService,
   firebaseAttendanceService,
   firebaseMarksService,
+  firebaseMessagesService,
   firebaseNotificationsService,
   firebaseLeaderboardService,
 };

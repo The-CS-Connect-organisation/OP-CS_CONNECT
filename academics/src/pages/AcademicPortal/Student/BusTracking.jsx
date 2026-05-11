@@ -95,7 +95,7 @@ export const BusTracking = ({ user }) => {
   // Load buses from backend
   const loadBuses = useCallback(async () => {
     try {
-      const data = await request({ path: '/bus/buses' });
+      const data = await request('/bus/buses');
       if (data?.items) {
         setBuses(data.items);
         // Auto-select student's bus in student view

@@ -322,14 +322,14 @@ const SharedNotes = ({ user, addToast }) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed inset-4 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-2xl sm:max-h-[85vh] rounded-3xl overflow-hidden z-50 flex flex-col"
+              className="fixed inset-2 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-2xl sm:max-h-[85vh] rounded-3xl overflow-hidden z-50 flex flex-col"
               style={{
                 background: '#1c1917',
                 boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
               }}
             >
               {/* Modal Header */}
-              <div className="p-6 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="p-6 pb-4 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     {selectedNote.subject && (
@@ -363,7 +363,7 @@ const SharedNotes = ({ user, addToast }) => {
               </div>
 
               {/* Modal Body */}
-              <div className="flex-1 overflow-y-auto p-6">
+              <div className="flex-1 overflow-y-auto p-6 max-h-[calc(100vh-160px)]">
                 {/* Description */}
                 <div className="mb-6">
                   <p className="text-sm leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)' }}>
@@ -419,7 +419,7 @@ const SharedNotes = ({ user, addToast }) => {
               </div>
 
               {/* Modal Footer - Add Annotation */}
-              <div className="p-5" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="p-5 flex-shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                 <div className="flex items-center gap-2 mb-3">
                   <Pencil size={14} style={{ color: '#f97316' }} />
                   <span className="text-xs font-semibold" style={{ color: 'rgba(255,255,255,0.5)' }}>Add Annotation</span>
@@ -469,14 +469,14 @@ const SharedNotes = ({ user, addToast }) => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="fixed inset-4 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-lg rounded-3xl overflow-hidden z-50 flex flex-col"
+              className="fixed inset-2 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-full sm:max-w-lg rounded-3xl overflow-hidden z-50 flex flex-col"
               style={{
                 background: '#1c1917',
                 boxShadow: '0 24px 80px rgba(0,0,0,0.5)',
               }}
             >
               {/* Modal Header */}
-              <div className="p-6 pb-4" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="p-6 pb-4 flex-shrink-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(234,88,12,0.15)' }}>
@@ -498,7 +498,7 @@ const SharedNotes = ({ user, addToast }) => {
               </div>
 
               {/* Modal Body - Upload Form */}
-              <div className="p-6 space-y-4">
+              <div className="p-6 space-y-4 overflow-y-auto max-h-[calc(100vh-200px)]">
                 {/* Title Field */}
                 <div>
                   <label className="block text-xs font-semibold mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>
@@ -558,7 +558,7 @@ const SharedNotes = ({ user, addToast }) => {
               </div>
 
               {/* Modal Footer */}
-              <div className="p-6 pt-4" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+              <div className="p-6 pt-4 flex-shrink-0" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                 <div className="flex gap-3">
                   <button
                     onClick={() => { playClick(); setShowUploadModal(false); }}

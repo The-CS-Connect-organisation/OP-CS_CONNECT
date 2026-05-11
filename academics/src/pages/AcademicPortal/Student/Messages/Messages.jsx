@@ -10,11 +10,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Send, ArrowLeft, Users, Phone, Video, Loader2,
   Check, CheckCheck, MoreVertical, PhoneOff, X, Calendar,
-  CheckCircle, XCircle, Clock, Link2, UserPlus
+  CheckCircle, XCircle, Clock, Link2, UserPlus, MessageCircle
 } from 'lucide-react';
 import { request } from '../../../../utils/apiClient';
 import { getSocket } from '../../../../utils/socketClient';
 import { getFromStorage, setToStorage } from '../../../../data/schema';
+import { firebaseMessagesService } from '../../../../services/firebaseService';
+import { isStreamChatAvailable, startStreamCall } from '../../../../services/streamChatService';
 
 // ── Role colours ──────────────────────────────────────────────────────────────
 const ROLE_COLOR = {
@@ -98,11 +100,14 @@ export const Messages = ({ user, addToast }) => {
   const [showScheduleMeeting, setShowScheduleMeeting] = useState(false);
   const [meetingInvites, setMeetingInvites] = useState(loadMeetingInvites());
   const [activeTab, setActiveTab]       = useState('chat'); // 'chat' | 'invites'
+  const [showCallModal, setShowCallModal] = useState(false);  // call modal state
+  const [callModalInfo, setCallModalInfo] = useState(null);  // {message} for modal
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const typingTimerRef = useRef(null);
   const seenMsgIds = useRef(new Set());
+  const firebaseUnsubscribeRef = useRef(null);
 
   // ── Load all users from API ─────────────────────────────────────────────────
   useEffect(() => {
@@ -137,6 +142,13 @@ export const Messages = ({ user, addToast }) => {
   useEffect(() => {
     if (!selectedUser?.id || !user?.id) return;
     let cancelled = false;
+
+    // Unsubscribe from previous Firebase subscription
+    if (firebaseUnsubscribeRef.current) {
+      firebaseUnsubscribeRef.current();
+      firebaseUnsubscribeRef.current = null;
+    }
+
     request(`/school/messages?otherUserId=${encodeURIComponent(selectedUser.id)}&userId=${encodeURIComponent(user.id)}`)
       .then(res => {
         if (!cancelled) setMessages(res.messages || []);
@@ -144,7 +156,26 @@ export const Messages = ({ user, addToast }) => {
       .catch(() => {
         if (!cancelled) setMessages([]);
       });
-    return () => { cancelled = true; };
+
+    // Firebase real-time: subscribe to new messages in the conversation
+    const convId = [user.id, selectedUser.id].sort().join('_');
+    const unsub = firebaseMessagesService.subscribeToMessages(convId, (newMsg) => {
+      if (cancelled) return;
+      if (newMsg.senderId === user.id) return; // skip own messages (already handled via socket)
+      setMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
+      // Mark as read in Firebase
+      firebaseMessagesService.markRead(convId, user.id).catch(() => {});
+      playPing();
+    });
+    firebaseUnsubscribeRef.current = unsub;
+
+    return () => {
+      cancelled = true;
+      if (firebaseUnsubscribeRef.current) {
+        firebaseUnsubscribeRef.current();
+        firebaseUnsubscribeRef.current = null;
+      }
+    };
   }, [selectedUser?.id, user?.id]);
 
   // ── Socket: online presence ────────────────────────────────────────────────
@@ -500,6 +531,30 @@ export const Messages = ({ user, addToast }) => {
                 className="p-2 rounded-xl bg-white/10 text-white/50 hover:bg-white/20 hover:text-white transition-colors">
                 <Calendar size={16} />
               </button>
+              {selectedUser && (
+                <>
+                  <button
+                    onClick={async () => {
+                      const result = await startStreamCall('audio');
+                      if (!result.available) { setCallModalInfo(result); setShowCallModal(true); }
+                    }}
+                    className="p-2 rounded-xl bg-white/10 text-white/50 hover:bg-white/20 hover:text-white transition-colors"
+                    title="Voice Call"
+                  >
+                    <Phone size={16} />
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const result = await startStreamCall('video');
+                      if (!result.available) { setCallModalInfo(result); setShowCallModal(true); }
+                    }}
+                    className="p-2 rounded-xl bg-white/10 text-white/50 hover:bg-white/20 hover:text-white transition-colors"
+                    title="Video Call"
+                  >
+                    <Video size={16} />
+                  </button>
+                </>
+              )}
             </div>
 
             {/* Messages */}
@@ -575,15 +630,21 @@ export const Messages = ({ user, addToast }) => {
             </div>
 
             {/* Input bar */}
-            <div className="px-4 py-3 border-t border-white/10 bg-white/5 backdrop-blur-md flex items-center gap-2 flex-shrink-0">
-              <div className="flex-1 flex items-center rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm px-3 py-1.5 gap-2">
-                <input
+            <div className="px-4 py-3 border-t border-white/10 bg-white/5 backdrop-blur-md flex items-end gap-2 flex-shrink-0">
+              <div className="flex-1 flex items-center rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm px-3 py-2 gap-2">
+                <textarea
                   ref={inputRef}
                   value={text}
                   onChange={e => { setText(e.target.value); handleTyping(); }}
                   onKeyDown={handleKeyDown}
                   placeholder="Message..."
-                  className="flex-1 bg-transparent border-0 outline-none text-[14px] py-1 text-white placeholder-white/30"
+                  rows={1}
+                  className="flex-1 bg-transparent border-0 outline-none text-[14px] text-white placeholder-white/30 resize-none no-scrollbar overflow-hidden"
+                  style={{ minHeight: '20px', maxHeight: '120px', lineHeight: '20px' }}
+                  onInput={e => {
+                    e.target.style.height = 'auto';
+                    e.target.style.height = Math.min(e.target.scrollHeight, 480) + 'px';
+                  }}
                 />
               </div>
               <AnimatePresence mode="wait">
@@ -646,6 +707,41 @@ export const Messages = ({ user, addToast }) => {
           />
         )}
       </AnimatePresence>
+
+      {/* Call Modal */}
+      <AnimatePresence>
+        {showCallModal && callModalInfo && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+            style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}
+            onClick={() => setShowCallModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              className="bg-gray-900 rounded-2xl p-6 w-full max-w-sm shadow-2xl border border-white/10 text-center"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="w-14 h-14 rounded-full bg-orange-500/20 flex items-center justify-center mx-auto mb-4">
+                <Phone size={24} className="text-orange-400" />
+              </div>
+              <h3 className="text-lg font-bold text-white mb-2">Call Feature</h3>
+              <p className="text-sm text-white/50 mb-5 leading-relaxed">{callModalInfo.message}</p>
+              <button
+                onClick={() => setShowCallModal(false)}
+                className="w-full py-2.5 rounded-xl text-white text-sm font-bold"
+                style={{ background: 'linear-gradient(135deg, #f97316, #ea580c)' }}
+              >
+                Got it
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
@@ -689,12 +785,6 @@ const ConversationRow = ({ contactUser, isSelected, unread, lastMsg, lastTs, onl
   </motion.div>
 );
 
-// ── MessageCircle icon (fallback) ─────────────────────────────────────────────
-const MessageCircle = ({ size, className }) => (
-  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
-  </svg>
-);
 
 // ── Meeting Invites List ───────────────────────────────────────────────────────
 const MeetingInvitesList = ({ invites, onRespond }) => {
