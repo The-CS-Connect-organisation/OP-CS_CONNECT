@@ -70,13 +70,13 @@ const AdminExams = ({ user, addToast }) => {
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>Exam Management</h1>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>Schedule and manage examinations</p>
+          <h1 className="text-2xl font-extrabold tracking-tight text-gray-900">Exam Management</h1>
+          <p className="text-sm mt-1 text-gray-500">Schedule and manage examinations</p>
         </div>
         <button
           onClick={() => setShowForm(v => !v)}
           className="px-4 py-2 rounded-xl text-white text-sm font-medium flex items-center gap-2 transition-all hover:brightness-105"
-          style={{ background: 'var(--primary)' }}
+          style={{ background: '#ea580c' }}
         >
           <Plus size={16} /> Schedule Exam
         </button>
@@ -89,18 +89,17 @@ const AdminExams = ({ user, addToast }) => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="bg-white rounded-2xl p-6 overflow-hidden"
-            style={{ border: '1px solid var(--border-color)' }}
+            className="bg-white rounded-2xl p-6 overflow-hidden border border-gray-200"
           >
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>New Exam</h3>
+              <h3 className="font-bold text-gray-900">New Exam</h3>
               <button onClick={() => setShowForm(false)} className="p-1.5 rounded-lg hover:bg-gray-100">
-                <X size={16} style={{ color: 'var(--text-muted)' }} />
+                <X size={16} className="text-gray-400" />
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--text-muted)' }}>Exam Name</label>
+                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block text-gray-500">Exam Name</label>
                 <input
                   type="text" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   placeholder="e.g., Mid-Term Mathematics"
@@ -108,7 +107,7 @@ const AdminExams = ({ user, addToast }) => {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--text-muted)' }}>Subject</label>
+                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block text-gray-500">Subject</label>
                 <input
                   type="text" value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
                   placeholder="e.g., Mathematics"
@@ -116,7 +115,7 @@ const AdminExams = ({ user, addToast }) => {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--text-muted)' }}>Class</label>
+                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block text-gray-500">Class</label>
                 <input
                   type="text" value={form.class} onChange={e => setForm(f => ({ ...f, class: e.target.value }))}
                   placeholder="e.g., 10-A"
@@ -124,14 +123,14 @@ const AdminExams = ({ user, addToast }) => {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--text-muted)' }}>Date</label>
+                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block text-gray-500">Date</label>
                 <input
                   type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
                   className="input-field"
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block" style={{ color: 'var(--text-muted)' }}>Max Marks</label>
+                <label className="text-xs font-semibold uppercase tracking-wider mb-1.5 block text-gray-500">Max Marks</label>
                 <input
                   type="number" value={form.maxMarks} onChange={e => setForm(f => ({ ...f, maxMarks: e.target.value }))}
                   placeholder="100"
@@ -140,12 +139,12 @@ const AdminExams = ({ user, addToast }) => {
               </div>
             </div>
             <div className="flex gap-3 mt-4">
-              <button onClick={() => setShowForm(false)} className="px-4 py-2 rounded-xl border text-sm font-medium" style={{ borderColor: 'var(--border-color)', color: 'var(--text-secondary)' }}>Cancel</button>
+              <button onClick={() => setShowForm(false)} className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50">Cancel</button>
               <button
                 onClick={handleCreate}
                 disabled={creating}
                 className="px-4 py-2 rounded-xl text-white text-sm font-bold flex items-center gap-2 disabled:opacity-50"
-                style={{ background: 'var(--primary)' }}
+                style={{ background: '#ea580c' }}
               >
                 {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
                 {creating ? 'Creating...' : 'Create Exam'}
@@ -157,26 +156,26 @@ const AdminExams = ({ user, addToast }) => {
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-2xl p-5" style={{ border: '1px solid var(--border-color)' }}>
-          <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{upcomingCount}</h3>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Upcoming Exams</p>
+        <div className="bg-white rounded-2xl p-5 border border-gray-200">
+          <h3 className="text-2xl font-bold text-gray-900">{upcomingCount}</h3>
+          <p className="text-xs mt-1 text-gray-500">Upcoming Exams</p>
         </div>
-        <div className="bg-white rounded-2xl p-5" style={{ border: '1px solid var(--border-color)' }}>
-          <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{completedCount}</h3>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Completed Exams</p>
+        <div className="bg-white rounded-2xl p-5 border border-gray-200">
+          <h3 className="text-2xl font-bold text-gray-900">{completedCount}</h3>
+          <p className="text-xs mt-1 text-gray-500">Completed Exams</p>
         </div>
-        <div className="bg-white rounded-2xl p-5" style={{ border: '1px solid var(--border-color)' }}>
-          <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{exams.length}</h3>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Total Exams</p>
+        <div className="bg-white rounded-2xl p-5 border border-gray-200">
+          <h3 className="text-2xl font-bold text-gray-900">{exams.length}</h3>
+          <p className="text-xs mt-1 text-gray-500">Total Exams</p>
         </div>
       </div>
 
       {/* Exam table */}
-      <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border-color)' }}>
+      <div className="bg-white rounded-2xl overflow-hidden border border-gray-200">
         {loading ? (
           <div className="py-20 flex items-center justify-center gap-3">
-            <Loader2 size={20} className="animate-spin" style={{ color: 'var(--primary)' }} />
-            <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading exams...</span>
+            <Loader2 size={20} className="animate-spin" style={{ color: '#ea580c' }} />
+            <span className="text-sm text-gray-500">Loading exams...</span>
           </div>
         ) : error ? (
           <div className="py-16 text-center">
@@ -186,39 +185,38 @@ const AdminExams = ({ user, addToast }) => {
         ) : exams.length === 0 ? (
           <div className="py-20 text-center">
             <ClipboardList size={40} className="mx-auto mb-3 text-gray-200" />
-            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>No exams scheduled yet</p>
-            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Click "Schedule Exam" to create one</p>
+            <p className="text-sm text-gray-500">No exams scheduled yet</p>
+            <p className="text-xs mt-1 text-gray-400">Click "Schedule Exam" to create one</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Exam Name</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Subject</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Class</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Date</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Max Marks</th>
-                  <th className="text-left py-3 px-4 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-secondary)' }}>Actions</th>
+                  <th className="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider text-gray-500">Exam Name</th>
+                  <th className="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider text-gray-500">Subject</th>
+                  <th className="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider text-gray-500">Class</th>
+                  <th className="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider text-gray-500">Date</th>
+                  <th className="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider text-gray-500">Max Marks</th>
+                  <th className="text-left py-3 px-4 text-xs font-bold uppercase tracking-wider text-gray-500">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {exams.map((exam) => {
-                  const isUpcoming = !exam.status && exam.date ? new Date(exam.date) >= new Date() : exam.status !== 'completed';
                   return (
-                    <tr key={exam.id} className="border-t hover:bg-gray-50 transition-colors" style={{ borderColor: 'var(--border-color)' }}>
-                      <td className="py-3 px-4 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{exam.name}</td>
-                      <td className="py-3 px-4 text-sm" style={{ color: 'var(--text-secondary)' }}>{exam.subject}</td>
-                      <td className="py-3 px-4 text-sm" style={{ color: 'var(--text-secondary)' }}>{exam.class || '—'}</td>
-                      <td className="py-3 px-4 text-sm" style={{ color: 'var(--text-muted)' }}>{exam.date}</td>
-                      <td className="py-3 px-4 text-sm" style={{ color: 'var(--text-muted)' }}>{exam.maxMarks || '—'}</td>
+                    <tr key={exam.id} className="border-t border-gray-100 hover:bg-gray-50 transition-colors">
+                      <td className="py-3 px-4 text-sm font-medium text-gray-900">{exam.name}</td>
+                      <td className="py-3 px-4 text-sm text-gray-600">{exam.subject}</td>
+                      <td className="py-3 px-4 text-sm text-gray-500">{exam.class || '—'}</td>
+                      <td className="py-3 px-4 text-sm text-gray-500">{exam.date}</td>
+                      <td className="py-3 px-4 text-sm text-gray-500">{exam.maxMarks || '—'}</td>
                       <td className="py-3 px-4">
                         <div className="flex gap-2">
                           <button className="p-1.5 rounded-lg hover:bg-gray-100" onClick={() => addToast?.('Opening exam details...', 'info')}>
-                            <Eye size={15} style={{ color: 'var(--text-muted)' }} />
+                            <Eye size={15} className="text-gray-400" />
                           </button>
                           <button className="p-1.5 rounded-lg hover:bg-gray-100" onClick={() => addToast?.('Opening exam editor...', 'info')}>
-                            <Edit2 size={15} style={{ color: 'var(--text-muted)' }} />
+                            <Edit2 size={15} className="text-gray-400" />
                           </button>
                           <button className="p-1.5 rounded-lg hover:bg-red-50" onClick={() => handleDelete(exam.id)}>
                             <Trash2 size={15} className="text-red-400" />

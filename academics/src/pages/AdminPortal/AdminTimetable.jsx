@@ -231,7 +231,7 @@ const AdminTimetable = ({ user, addToast }) => {
       <div className="bg-white rounded-2xl overflow-hidden" style={{ border: '1px solid var(--border-color)' }}>
         {loadingEntries ? (
           <div className="flex items-center justify-center py-24 gap-3">
-            <Loader2 size={20} className="animate-spin" style={{ color: 'var(--primary)' }} />
+            <Loader2 size={20} className="animate-spin" style={{ color: '#ea580c' }} />
             <span className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading timetable...</span>
           </div>
         ) : (
@@ -385,7 +385,7 @@ const AdminTimetable = ({ user, addToast }) => {
                 <button
                   onClick={handleCellSave}
                   className="flex-1 px-4 py-2.5 rounded-xl text-white text-sm font-bold transition-all hover:brightness-105"
-                  style={{ background: 'var(--primary)' }}
+                  style={{ background: '#ea580c' }}
                 >
                   {cellData.subject ? 'Save Slot' : 'Clear Slot'}
                 </button>
