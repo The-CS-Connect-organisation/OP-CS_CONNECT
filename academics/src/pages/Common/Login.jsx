@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, BookOpen, Users, ShieldCheck, GraduationCap, Loader2, ChevronRight, Star } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, BookOpen, Users, ShieldCheck, GraduationCap, Loader2, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 
@@ -10,13 +10,6 @@ const ROLES = [
   { id: 'admin', label: 'Admin', icon: ShieldCheck, color: '#1c1917', bg: '#fafaf9' },
   { id: 'parent', label: 'Parent', icon: Users, color: '#0891b2', bg: '#ecfeff' },
 ];
-
-const DEMO_CREDENTIALS = {
-  student: { email: 'student@schoolsync.edu', password: 'student123', name: 'Aarav Patel', class: '10-A', rollNo: '12' },
-  teacher: { email: 'teacher@schoolsync.edu', password: 'teacher123', name: 'Sarah Wilson', subject: 'Mathematics' },
-  admin: { email: 'admin@schoolsync.edu', password: 'admin123', name: 'Admin User' },
-  parent: { email: 'parent2@schoolsync.edu', password: 'parent123', name: 'Priya Patel' },
-};
 
 const FEATURE_BULLETS = [
   'AI-powered study planner with personalized schedules',
@@ -34,7 +27,6 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [showDemoCards, setShowDemoCards] = useState(true);
   const canvasRef = useRef(null);
 
   // Warm particle canvas
@@ -91,13 +83,6 @@ const Login = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const fillDemo = () => {
-    const cred = DEMO_CREDENTIALS[selectedRole];
-    setEmail(cred.email);
-    setPassword(cred.password);
-    setShowDemoCards(false);
   };
 
   const role = ROLES.find(r => r.id === selectedRole);
@@ -222,7 +207,7 @@ const Login = () => {
                 {ROLES.map(r => (
                   <button
                     key={r.id}
-                    onClick={() => { setSelectedRole(r.id); setShowDemoCards(true); setEmail(''); setPassword(''); setError(''); }}
+                    onClick={() => { setSelectedRole(r.id); setEmail(''); setPassword(''); setError(''); }}
                     className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-bold transition-all duration-200"
                     style={{
                       background: selectedRole === r.id ? 'white' : 'transparent',
@@ -236,50 +221,6 @@ const Login = () => {
                 ))}
               </div>
 
-              {/* Demo credentials cards */}
-              <AnimatePresence mode="wait">
-                {showDemoCards && (
-                  <motion.div
-                    key={selectedRole}
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mb-5 overflow-hidden"
-                  >
-                    <div className="rounded-2xl p-4" style={{ background: role.bg, border: `1px solid ${role.color}22` }}>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: role.color }}>Demo Credentials</span>
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full" style={{ background: `${role.color}15`, color: role.color }}>
-                          {role.label}
-                        </span>
-                      </div>
-                      <div className="space-y-1.5">
-                        {[
-                          { label: 'Email', value: DEMO_CREDENTIALS[selectedRole].email },
-                          { label: 'Password', value: DEMO_CREDENTIALS[selectedRole].password },
-                          ...(selectedRole === 'student' ? [{ label: 'Name', value: DEMO_CREDENTIALS.student.name }] : []),
-                          ...(selectedRole === 'teacher' ? [{ label: 'Name', value: DEMO_CREDENTIALS.teacher.name }] : []),
-                          ...(selectedRole === 'admin' ? [{ label: 'Name', value: DEMO_CREDENTIALS.admin.name }] : []),
-                          ...(selectedRole === 'parent' ? [{ label: 'Name', value: DEMO_CREDENTIALS.parent.name }] : []),
-                        ].map(item => (
-                          <div key={item.label} className="flex items-center gap-2">
-                            <span className="text-[10px] font-semibold w-16 flex-shrink-0" style={{ color: '#a8a29e' }}>{item.label}</span>
-                            <span className="text-xs font-bold" style={{ color: '#57534e' }}>{item.value}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <button
-                        onClick={fillDemo}
-                        className="mt-3 w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all hover:brightness-105 active:scale-[0.98]"
-                        style={{ background: role.color, color: 'white' }}
-                      >
-                        <Star size={11} />
-                        Use Demo Account
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
 
               {/* Form */}
               <form onSubmit={handleLogin} className="space-y-4">
@@ -293,7 +234,7 @@ const Login = () => {
                     <input
                       type="email"
                       value={email}
-                      onChange={e => { setEmail(e.target.value); setShowDemoCards(false); }}
+                      onChange={e => { setEmail(e.target.value); }}
                       placeholder="you@example.com"
                       className="w-full pl-11 pr-4 py-3 rounded-xl border text-sm font-medium bg-white transition-all focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400"
                       style={{ borderColor: error && !email ? '#ef4444' : '#e7e5e4', color: '#1c1917' }}
@@ -311,7 +252,7 @@ const Login = () => {
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={password}
-                      onChange={e => { setPassword(e.target.value); setShowDemoCards(false); }}
+                      onChange={e => { setPassword(e.target.value); }}
                       placeholder="••••••••"
                       className="w-full pl-11 pr-11 py-3 rounded-xl border text-sm font-medium bg-white transition-all focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-400"
                       style={{ borderColor: error && !password ? '#ef4444' : '#e7e5e4', color: '#1c1917' }}
