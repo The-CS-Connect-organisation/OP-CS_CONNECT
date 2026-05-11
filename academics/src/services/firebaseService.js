@@ -31,8 +31,19 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+let app = null;
+let database = null;
+
+try {
+  if (firebaseConfig.projectId && firebaseConfig.databaseURL) {
+    app = initializeApp(firebaseConfig);
+    database = getDatabase(app);
+  } else {
+    console.warn('Firebase config missing projectId or databaseURL. Running in offline/fallback mode.');
+  }
+} catch (err) {
+  console.error('Firebase initialization failed:', err);
+}
 
 // ============================================================================
 // USERS SERVICE

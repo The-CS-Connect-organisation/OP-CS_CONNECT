@@ -1,2 +1,2 @@
 export { Accolades } from './Accolades';
-export default Accolades;
+export { default } from './Accolades';
