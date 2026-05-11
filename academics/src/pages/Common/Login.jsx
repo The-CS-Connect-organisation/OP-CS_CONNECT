@@ -78,11 +78,16 @@ const Login = () => {
     try {
       setLoading(true);
       setError('');
-      const user = await authService.login(email, password);
+      const result = await authService.login(email, password);
+      if (!result.success) {
+        setError(result.error || 'Invalid credentials. Please try again.');
+        return;
+      }
+      const user = result.user;
       const dest = user.role === 'admin' ? '/admin' : user.role === 'teacher' ? '/teacher' : '/student';
       navigate(dest);
     } catch (err) {
-      setError(err.message || 'Invalid credentials. Please try again.');
+      setError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setLoading(false);
     }
