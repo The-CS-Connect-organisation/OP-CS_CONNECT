@@ -1,4 +1,4 @@
-// Data structure helpers - Firebase only (no localStorage)
+// Data structure helpers - Firebase + localStorage fallback
 export const KEYS = {
   USERS: 'sms_users',
   CURRENT_USER: 'sms_current_user',
@@ -26,48 +26,71 @@ export const KEYS = {
 export const STORAGE_EVENT = 'sms_storage_changed';
 
 const emitStorageChange = (key) => {
-  // Allow this file to be imported safely in non-browser environments.
   if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
   window.dispatchEvent(new CustomEvent(STORAGE_EVENT, { detail: { key } }));
 };
 
-// Stub functions - all data comes from Firebase, except CURRENT_USER which uses localStorage for session persistence
+// Keys that use localStorage (all others are Firebase)
+const LOCAL_STORAGE_KEYS = new Set([
+  KEYS.CURRENT_USER,
+  KEYS.AUTH_TOKEN,
+  KEYS.USERS,
+  KEYS.ASSIGNMENTS,
+  KEYS.ATTENDANCE,
+  KEYS.MARKS,
+  KEYS.EXAMS,
+  KEYS.TIMETABLE,
+  KEYS.NOTES,
+  KEYS.ANNOUNCEMENTS,
+  KEYS.NOTIFICATIONS,
+  KEYS.FEES,
+  KEYS.NOTE_REQUESTS,
+  KEYS.CHAT_MESSAGES,
+  KEYS.PAYROLL,
+  KEYS.HR_RECORDS,
+  KEYS.THEME,
+  KEYS.STUDENT_XP,
+  KEYS.BADGES,
+  KEYS.STUDY_ACTIVITY,
+  KEYS.GOALS,
+  KEYS.WEEKLY_CHALLENGE,
+]);
+
 export const getFromStorage = (key, defaultValue = null) => {
-  // Only CURRENT_USER and AUTH_TOKEN use localStorage for session persistence
-  if (key === KEYS.CURRENT_USER || key === KEYS.AUTH_TOKEN) {
-    try {
-      const item = localStorage.getItem(key);
-      return item ? JSON.parse(item) : defaultValue;
-    } catch (err) {
-      console.error(`Error reading from localStorage for ${key}:`, err);
-      return defaultValue;
-    }
+  if (!LOCAL_STORAGE_KEYS.has(key)) return defaultValue;
+  try {
+    const item = localStorage.getItem(key);
+    if (item === null) return defaultValue;
+    try { return JSON.parse(item); } catch { return item; }
+  } catch (err) {
+    console.error(`Error reading from localStorage for ${key}:`, err);
+    return defaultValue;
   }
-  // All other data comes from Firebase - return default value
-  return defaultValue;
 };
 
 export const setToStorage = (key, value) => {
-  // Only CURRENT_USER and AUTH_TOKEN use localStorage for session persistence
-  if (key === KEYS.CURRENT_USER || key === KEYS.AUTH_TOKEN) {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch (err) {
-      console.error(`Error writing to localStorage for ${key}:`, err);
-    }
+  if (!LOCAL_STORAGE_KEYS.has(key)) {
+    emitStorageChange(key);
+    return true;
+  }
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (err) {
+    console.error(`Error writing to localStorage for ${key}:`, err);
   }
   emitStorageChange(key);
   return true;
 };
 
 export const removeFromStorage = (key) => {
-  // Only CURRENT_USER and AUTH_TOKEN use localStorage
-  if (key === KEYS.CURRENT_USER || key === KEYS.AUTH_TOKEN) {
-    try {
-      localStorage.removeItem(key);
-    } catch (err) {
-      console.error(`Error removing from localStorage for ${key}:`, err);
-    }
+  if (!LOCAL_STORAGE_KEYS.has(key)) {
+    emitStorageChange(key);
+    return;
+  }
+  try {
+    localStorage.removeItem(key);
+  } catch (err) {
+    console.error(`Error removing from localStorage for ${key}:`, err);
   }
   emitStorageChange(key);
 };
