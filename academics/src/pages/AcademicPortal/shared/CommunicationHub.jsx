@@ -53,6 +53,18 @@ const playPing = () => {
   } catch {}
 };
 
+// ── Relative time ─────────────────────────────────────────────────────────────
+const relTime = (ts) => {
+  if (!ts) return '';
+  const diff = Date.now() - new Date(ts).getTime();
+  const m = Math.floor(diff / 60000);
+  if (m < 1) return 'now';
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h`;
+  return `${Math.floor(h / 24)}d`;
+};
+
 // ── Avatar ────────────────────────────────────────────────────────────────────
 const Avatar = ({ user, size = 40, online = false }) => (
   <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
@@ -80,7 +92,7 @@ const RoleBadge = ({ role }) => (
 );
 
 // ── Contact row ───────────────────────────────────────────────────────────────
-const ContactRow = ({ contact, isSelected, unread = 0, lastMsg = '', online = false, starred = false, onSelect, onToggleStar }) => (
+const ContactRow = ({ contact, isSelected, unread = 0, lastMsg = '', lastMsgTs = '', online = false, starred = false, onSelect, onToggleStar }) => (
   <motion.div
     layout
     initial={{ opacity: 0, x: -6 }}
@@ -96,11 +108,16 @@ const ContactRow = ({ contact, isSelected, unread = 0, lastMsg = '', online = fa
         <span className={`text-[14px] truncate ${unread > 0 ? 'font-bold text-gray-900' : 'font-semibold text-gray-700'}`}>
           {contact.name}
         </span>
-        {unread > 0 && (
-          <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-blue-500 text-white text-[10px] font-bold flex items-center justify-center flex-shrink-0">
-            {unread > 99 ? '99+' : unread}
-          </span>
-        )}
+        <div className="flex items-center gap-1.5 flex-shrink-0">
+          {lastMsgTs && (
+            <span className="text-[10px] text-gray-400 font-medium">{relTime(lastMsgTs)}</span>
+          )}
+          {unread > 0 && (
+            <span className="min-w-[18px] h-[18px] px-1 rounded-full bg-blue-500 text-white text-[10px] font-bold flex items-center justify-center">
+              {unread > 99 ? '99+' : unread}
+            </span>
+          )}
+        </div>
       </div>
       <div className="flex items-center justify-between gap-1 mt-0.5">
         <span className="text-[12px] text-gray-400 truncate">
@@ -361,7 +378,7 @@ export const CommunicationHub = ({ isOpen, onClose, currentUser }) => {
     );
     if (tab === 'starred') list = list.filter(u => stars.includes(u.id));
 
-    // Sort: starred first, then by unread, then alphabetical
+    // Sort: starred first, then by unread, then most recent message, then alphabetical
     return list.sort((a, b) => {
       const aStarred = stars.includes(a.id) ? 1 : 0;
       const bStarred = stars.includes(b.id) ? 1 : 0;
@@ -369,9 +386,12 @@ export const CommunicationHub = ({ isOpen, onClose, currentUser }) => {
       const aUnread = unread[a.id] || 0;
       const bUnread = unread[b.id] || 0;
       if (bUnread !== aUnread) return bUnread - aUnread;
+      const aTs = lastMsgs[a.id]?.ts ? new Date(lastMsgs[a.id].ts).getTime() : 0;
+      const bTs = lastMsgs[b.id]?.ts ? new Date(lastMsgs[b.id].ts).getTime() : 0;
+      if (bTs !== aTs) return bTs - aTs;
       return (a.name || '').localeCompare(b.name || '');
     });
-  }, [allUsers, search, tab, stars, unread]);
+  }, [allUsers, search, tab, stars, unread, lastMsgs]);
 
   const totalUnread = useMemo(() => Object.values(unread).reduce((a, b) => a + b, 0), [unread]);
 
@@ -471,6 +491,7 @@ export const CommunicationHub = ({ isOpen, onClose, currentUser }) => {
                     isSelected={selectedContact?.id === u.id}
                     unread={unread[u.id] || 0}
                     lastMsg={lastMsgs[u.id]?.text || ''}
+                    lastMsgTs={lastMsgs[u.id]?.ts || ''}
                     online={onlineUsers.has(u.id)}
                     starred={stars.includes(u.id)}
                     onSelect={handleSelect}

@@ -278,9 +278,10 @@ export const ChatView = ({
                       {isMe && (
                         msg._pending
                           ? <Loader2 size={10} className="text-gray-300 animate-spin" />
-                          : msg.read
-                            ? <CheckCheck size={12} className="text-blue-500" />
-                            : <CheckCheck size={12} className="text-gray-400" />
+                          : <span className="flex items-center">
+                              <CheckCheck size={12} className={msg.read ? 'text-blue-500' : 'text-gray-400'} />
+                              <CheckCheck size={12} className={msg.read ? 'text-blue-500 -ml-2' : 'text-gray-300 -ml-2'} />
+                            </span>
                       )}
                     </div>
                   </div>
