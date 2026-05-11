@@ -1,227 +1,328 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { Sunrise, Calendar, Clock, FileText, Brain, CheckCircle2, AlertCircle, ChevronRight, Target, Zap } from 'lucide-react';
-import { getFromStorage } from '../../../../data/schema';
+import { Sunrise, Calendar, Clock, FileText, CheckCircle, AlertCircle, Lightbulb, GraduationCap, ChevronRight } from 'lucide-react';
+import { Card } from '../../../../components/ui/Card';
 import { useSound } from '../../../../hooks/useSound';
+import { KEYS, getFromStorage } from '../../../../data/schema';
 
-const AI_TIPS = [
-  "Math tip: Practice algebraic equations daily — just 20 minutes builds pattern recognition faster than cramming.",
-  "Physics insight: Draw free-body diagrams for every mechanics problem. Visual memory beats memorizing formulas.",
-  "Chemistry hack: Memorize the periodic table in groups of 3-4 elements daily using mnemonic stories.",
-  "Biology tip: Draw diagrams from memory, then compare. The act of drawing burns concepts into long-term memory.",
-  "English: Read one paragraph out loud daily. Reading fluency directly improves comprehension scores.",
-  "Focus tip: Use the Pomodoro technique — 25 min study, 5 min break. Your brain consolidates memory during breaks.",
-];
+const AI_TIPS = {
+  Mathematics: "Focus on understanding the 'why' behind formulas, not just memorizing them. Try explaining concepts to yourself out loud to identify gaps.",
+  Physics: "Physics is about visualizing phenomena. Draw diagrams for every problem, even the simple ones. It builds intuition for complex scenarios.",
+  Chemistry: "Chemistry concepts connect like a web. Review previous chapters before moving forward. Focus on understanding periodic trends.",
+  Biology: "Biology is vocabulary-heavy. Use flashcards for terms and create concept maps linking systems together.",
+  English: "Read actively: underline passages and annotate margins. For writing, outline before drafting to clarify your argument structure.",
+  'Computer Science': "Code daily, even 20 minutes. Focus on understanding algorithms before syntax. Build small projects to reinforce learning.",
+  History: "Connect events chronologically. Ask 'why' for every historical fact — context transforms memorization into understanding.",
+  Geography: "Use maps actively while studying. Draw freehand maps and fill in features. Link climate patterns to real-world locations.",
+  'Physical Education': "Practice makes permanent. Focus on correct form over speed. Review theory concepts regularly for written assessments.",
+  default: "Review your notes within 24 hours of class. Spaced repetition is the most effective way to retain information long-term."
+};
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08 }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } }
+};
+
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good Morning';
+  if (hour < 17) return 'Good Afternoon';
+  return 'Good Evening';
+};
+
+const formatDate = () => {
+  return new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+};
 
 export const DailyBriefing = ({ user, addToast }) => {
-  const { playClick, playBlip } = useSound();
-  const [assignments, setAssignments] = useState([]);
-  const [exams, setExams] = useState([]);
-  const [timetable, setTimetable] = useState([]);
-  const [attendance, setAttendance] = useState([]);
-
-  const greeting = useMemo(() => {
-    const h = new Date().getHours();
-    if (h < 12) return 'Good morning';
-    if (h < 17) return 'Good afternoon';
-    return 'Good evening';
-  }, []);
-
+  const { playClick } = useSound();
   const today = new Date();
-  const dateStr = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-
-  useEffect(() => {
-    setAssignments(getFromStorage('sms_assignments', []));
-    setExams(getFromStorage('sms_exams', []));
-    setTimetable(getFromStorage('sms_timetable', []));
-    setAttendance(getFromStorage('sms_attendance', []));
-  }, []);
 
   const todayDay = today.toLocaleDateString('en-US', { weekday: 'long' });
-  const todaySlots = timetable[user?.class]?.find(t => t.day === todayDay)?.slots || [];
 
-  const pendingAssignments = assignments.filter(a => a.status === 'active' && new Date(a.dueDate) >= new Date()).slice(0, 4);
-  const upcomingExams = exams.filter(e => e.status === 'scheduled' && new Date(e.date) >= new Date()).slice(0, 3);
+  // Today's schedule from timetable (flat array with day/time fields)
+  const timetable = useMemo(() => getFromStorage(KEYS.TIMETABLE, []), []);
+  const todaySchedule = useMemo(() => {
+    return timetable
+      .filter(slot => slot.day === todayDay)
+      .sort((a, b) => {
+        const timeA = a.time || a.period || '12:00';
+        const timeB = b.time || b.period || '12:00';
+        const hA = parseInt(timeA.split(':')[0]);
+        const hB = parseInt(timeB.split(':')[0]);
+        return hA - hB;
+      });
+  }, [timetable, todayDay]);
 
-  const thisWeekAttend = attendance.slice(0, 7);
-  const presentCount = thisWeekAttend.filter(a => a.status === 'present' || a.status === 'late').length;
-  const attendanceRate = thisWeekAttend.length > 0 ? Math.round((presentCount / thisWeekAttend.length) * 100) : 100;
+  // Assignments from localStorage
+  const assignments = useMemo(() => {
+    const all = getFromStorage(KEYS.ASSIGNMENTS, []);
+    const normalizeClass = (cls) => cls?.replace(/[\s-]/g, '').toUpperCase();
+    return all.filter(a => normalizeClass(a.class) === normalizeClass(user?.class));
+  }, [user?.class]);
 
-  const aiTip = AI_TIPS[today.getDay() % AI_TIPS.length];
+  const upcomingDeadlines = useMemo(() => {
+    const now = new Date();
+    const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    return assignments
+      .filter(a => {
+        const due = new Date(a.dueDate || a.due);
+        return due >= now && due <= weekFromNow;
+      })
+      .sort((a, b) => new Date(a.dueDate || a.due) - new Date(b.dueDate || b.due));
+  }, [assignments]);
+
+  // Attendance this week
+  const attendance = useMemo(() => getFromStorage(KEYS.ATTENDANCE, []), []);
+  const weekAttendance = useMemo(() => {
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay());
+    return attendance.filter(rec => {
+      const recDate = new Date(rec.date);
+      return recDate >= startOfWeek && recDate <= now;
+    });
+  }, [attendance]);
+
+  const presentDays = weekAttendance.filter(r =>
+    r.status === 'present' || r.status === 'Present' || r.status === 'late'
+  ).length;
+  const attendanceRate = weekAttendance.length > 0
+    ? Math.round((presentDays / weekAttendance.length) * 100)
+    : null;
+
+  // Marks for weakest subject
+  const marks = useMemo(() => getFromStorage(KEYS.MARKS, []), []);
+  const myMarks = useMemo(() => marks.filter(m => m.studentId === user?.id), [marks, user?.id]);
+
+  const weakestSubject = useMemo(() => {
+    if (myMarks.length === 0) return null;
+    const bySubject = {};
+    myMarks.forEach(m => {
+      const sub = m.subject || m.subjectName;
+      if (!sub) return;
+      if (!bySubject[sub]) bySubject[sub] = [];
+      const score = parseFloat(m.score ?? m.marks ?? m.total ?? 0);
+      const max = parseFloat(m.maxScore ?? m.max ?? 100);
+      if (max > 0) bySubject[sub].push(score / max);
+    });
+    const averages = Object.entries(bySubject).map(([sub, scores]) => ({
+      subject: sub,
+      avg: scores.reduce((a, b) => a + b, 0) / scores.length
+    }));
+    if (averages.length === 0) return null;
+    averages.sort((a, b) => a.avg - b.avg);
+    return averages[0].subject;
+  }, [myMarks]);
+
+  const tip = weakestSubject && AI_TIPS[weakestSubject]
+    ? AI_TIPS[weakestSubject]
+    : AI_TIPS.default;
+
+  // Next exam
+  const exams = useMemo(() => getFromStorage(KEYS.EXAMS, []), []);
+  const nextExam = useMemo(() => {
+    const now = new Date();
+    return exams
+      .filter(e => new Date(e.date || e.examDate) >= now)
+      .sort((a, b) => new Date(a.date || a.examDate) - new Date(b.date || b.examDate))[0];
+  }, [exams]);
+
+  const pendingCount = assignments.filter(a => {
+    const due = new Date(a.dueDate || a.due);
+    return due >= new Date() && a.status !== 'graded';
+  }).length;
 
   return (
-    <div className="max-w-[1400px] mx-auto w-full pt-4 pb-12">
-      {/* Hero greeting */}
+    <div
+      className="max-w-5xl mx-auto w-full pt-2 pb-12 px-4 md:px-6"
+      style={{ background: '#fefaf6', minHeight: '100%' }}
+    >
+      {/* Hero Greeting */}
       <motion.div
-        initial={{ opacity: 0, y: -12 }}
+        initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
         className="mb-8"
       >
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #ea580c, #f97316)', boxShadow: '0 4px 14px rgba(234,88,12,0.35)' }}>
-            <Sunrise size={22} className="text-white" />
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
+            style={{ background: 'linear-gradient(135deg, #ea580c 0%, #f97316 100%)', boxShadow: '0 6px 20px rgba(234, 88, 12, 0.3)' }}>
+            <Sunrise size={26} className="text-white" />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-              {greeting}, {user?.name?.split(' ')[0]}
+            <h1 className="text-2xl md:text-3xl font-bold tracking-tight" style={{ color: '#1c1917' }}>
+              {getGreeting()}, {user?.name?.split(' ')[0] || 'Student'}
             </h1>
-            <p className="text-sm font-medium" style={{ color: '#a8a29e' }}>{dateStr}</p>
+            <p className="text-sm" style={{ color: '#a8a29e' }}>{formatDate()}</p>
           </div>
         </div>
       </motion.div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Schedule */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Today's classes */}
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-            className="nova-card p-6">
-            <h3 className="text-sm font-bold flex items-center gap-2 mb-4" style={{ color: 'var(--text-primary)' }}>
-              <Calendar size={16} style={{ color: '#ea580c' }} /> Today's Classes
-            </h3>
-            {todaySlots.length === 0 ? (
-              <p className="text-xs text-center py-8" style={{ color: '#a8a29e' }}>No classes scheduled today</p>
+      {/* Stats Row */}
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="grid grid-cols-3 gap-3 mb-8"
+      >
+        <motion.div variants={itemVariants}>
+          <Card className="p-4 text-center">
+            <div className="w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center"
+              style={{ background: 'rgba(234, 88, 12, 0.08)' }}>
+              <CheckCircle size={18} style={{ color: '#ea580c' }} />
+            </div>
+            <p className="text-2xl font-bold" style={{ color: '#1c1917' }}>
+              {attendanceRate !== null ? `${attendanceRate}%` : '—'}
+            </p>
+            <p className="text-xs font-medium mt-0.5" style={{ color: '#a8a29e' }}>Attendance</p>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <Card className="p-4 text-center">
+            <div className="w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center"
+              style={{ background: 'rgba(234, 88, 12, 0.08)' }}>
+              <FileText size={18} style={{ color: '#ea580c' }} />
+            </div>
+            <p className="text-2xl font-bold" style={{ color: '#1c1917' }}>{pendingCount}</p>
+            <p className="text-xs font-medium mt-0.5" style={{ color: '#a8a29e' }}>Pending</p>
+          </Card>
+        </motion.div>
+
+        <motion.div variants={itemVariants}>
+          <Card className="p-4 text-center">
+            <div className="w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center"
+              style={{ background: 'rgba(234, 88, 12, 0.08)' }}>
+              <GraduationCap size={18} style={{ color: '#ea580c' }} />
+            </div>
+            <p className="text-sm font-bold truncate px-1" style={{ color: '#1c1917' }}>
+              {nextExam ? (nextExam.subject || nextExam.subjectName || 'Soon') : 'None'}
+            </p>
+            <p className="text-xs font-medium mt-0.5" style={{ color: '#a8a29e' }}>Next Exam</p>
+          </Card>
+        </motion.div>
+      </motion.div>
+
+      {/* Two-column layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Today's Schedule */}
+        <motion.div variants={itemVariants} initial="hidden" animate="visible" transition={{ delay: 0.24 }}>
+          <Card className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Clock size={16} style={{ color: '#ea580c' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1c1917' }}>Today's Schedule</h2>
+            </div>
+            {todaySchedule.length === 0 ? (
+              <div className="py-8 text-center">
+                <p className="text-sm" style={{ color: '#a8a29e' }}>No classes scheduled for today</p>
+              </div>
             ) : (
-              <div className="space-y-2.5">
-                {todaySlots.map((slot, i) => (
-                  <motion.div key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                    className="flex items-center gap-4 p-4 rounded-xl border"
-                    style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-surface)' }}>
-                    <div className="px-2.5 py-1 rounded-lg text-[11px] font-mono font-semibold shrink-0"
-                      style={{ background: '#ea580c15', color: '#ea580c' }}>
-                      {slot.time?.split(' ')[0] || '—'}
+              <div className="space-y-2">
+                {todaySchedule.map((slot, idx) => {
+                  const isBreak = ['Break', 'Lunch', 'Recess'].includes(slot.period);
+                  return (
+                    <div
+                      key={idx}
+                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm ${isBreak ? 'opacity-60' : ''}`}
+                      style={{
+                        background: isBreak ? 'rgba(0,0,0,0.04)' : 'rgba(234, 88, 12, 0.04)',
+                        borderLeft: `3px solid ${isBreak ? '#d6d3d1' : '#ea580c'}`
+                      }}
+                    >
+                      <span className="text-xs font-semibold w-12 shrink-0" style={{ color: '#78716c' }}>
+                        {slot.time ? slot.time.split(' - ')[0] : slot.period || ''}
+                      </span>
+                      <span className="font-semibold flex-1" style={{ color: '#1c1917' }}>
+                        {slot.subject || slot.period}
+                      </span>
+                      {slot.room && (
+                        <span className="text-xs" style={{ color: '#a8a29e' }}>Rm {slot.room}</span>
+                      )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>{slot.subject}</p>
-                      <p className="text-[10px]" style={{ color: '#a8a29e' }}>{slot.teacher} • Room {slot.room}</p>
-                    </div>
-                  </motion.div>
-                ))}
+                  );
+                })}
               </div>
             )}
-          </motion.div>
+          </Card>
+        </motion.div>
 
-          {/* Pending assignments + upcoming exams */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-              className="nova-card p-6">
-              <h3 className="text-sm font-bold flex items-center gap-2 mb-4" style={{ color: 'var(--text-primary)' }}>
-                <AlertCircle size={16} style={{ color: '#f59e0b' }} /> Pending Work
-              </h3>
-              {pendingAssignments.length === 0 ? (
-                <div className="text-center py-6">
-                  <CheckCircle2 size={24} className="mx-auto mb-2" style={{ color: '#10b981' }} />
-                  <p className="text-xs font-medium" style={{ color: '#10b981' }}>All caught up!</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {pendingAssignments.map(a => (
-                    <div key={a.id} className="p-3 rounded-lg" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-                      <p className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{a.title}</p>
-                      <p className="text-[10px]" style={{ color: '#a8a29e' }}>{a.subject} • Due {a.dueDate}</p>
+        {/* Upcoming Deadlines */}
+        <motion.div variants={itemVariants} initial="hidden" animate="visible" transition={{ delay: 0.32 }}>
+          <Card className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <AlertCircle size={16} style={{ color: '#ea580c' }} />
+              <h2 className="text-base font-bold" style={{ color: '#1c1917' }}>Upcoming Deadlines</h2>
+            </div>
+            {upcomingDeadlines.length === 0 ? (
+              <div className="py-8 text-center">
+                <p className="text-sm" style={{ color: '#a8a29e' }}>No deadlines in the next 7 days</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {upcomingDeadlines.slice(0, 5).map((a, idx) => {
+                  const due = new Date(a.dueDate || a.due);
+                  const daysLeft = Math.ceil((due - new Date()) / (1000 * 60 * 60 * 24));
+                  return (
+                    <div key={idx} className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm"
+                      style={{ background: 'rgba(234, 88, 12, 0.04)', borderLeft: '3px solid #ea580c' }}>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold truncate" style={{ color: '#1c1917' }}>{a.title}</p>
+                        <p className="text-xs mt-0.5" style={{ color: '#a8a29e' }}>{a.subject}</p>
+                      </div>
+                      <span className="text-xs font-semibold shrink-0 px-2 py-0.5 rounded-lg"
+                        style={{
+                          background: daysLeft <= 1 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(234, 88, 12, 0.08)',
+                          color: daysLeft <= 1 ? '#dc2626' : '#ea580c'
+                        }}>
+                        {daysLeft === 0 ? 'Today' : daysLeft === 1 ? 'Tomorrow' : `${daysLeft}d`}
+                      </span>
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
+              </div>
+            )}
+          </Card>
+        </motion.div>
+
+        {/* AI Tip */}
+        <motion.div
+          variants={itemVariants}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.4 }}
+          className="lg:col-span-2"
+        >
+          <Card className="p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center"
+                style={{ background: 'rgba(234, 88, 12, 0.08)' }}>
+                <Lightbulb size={14} style={{ color: '#ea580c' }} />
+              </div>
+              <h2 className="text-base font-bold" style={{ color: '#1c1917' }}>Tip of the Day</h2>
+              {weakestSubject && (
+                <span className="text-xs px-2 py-0.5 rounded-full font-semibold ml-auto"
+                  style={{ background: 'rgba(234, 88, 12, 0.06)', color: '#ea580c' }}>
+                  Focus: {weakestSubject}
+                </span>
               )}
-            </motion.div>
-
-            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
-              className="nova-card p-6">
-              <h3 className="text-sm font-bold flex items-center gap-2 mb-4" style={{ color: 'var(--text-primary)' }}>
-                <FileText size={16} style={{ color: '#ef4444' }} /> Upcoming Exams
-              </h3>
-              {upcomingExams.length === 0 ? (
-                <p className="text-xs text-center py-6" style={{ color: '#a8a29e' }}>No upcoming exams</p>
-              ) : (
-                <div className="space-y-2">
-                  {upcomingExams.map(e => (
-                    <div key={e.id} className="p-3 rounded-lg" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-                      <p className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>{e.name}</p>
-                      <p className="text-[10px]" style={{ color: '#a8a29e' }}>{e.subject} • {e.date}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </motion.div>
-          </div>
-
-          {/* AI Coach tip */}
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
-            className="nova-card p-6"
-            style={{ background: 'linear-gradient(135deg, #fff7ed, #fff)', border: '1px solid rgba(234,88,12,0.15)' }}>
-            <div className="flex items-start gap-4">
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: '#ea580c', boxShadow: '0 4px 12px rgba(234,88,12,0.35)' }}>
-                <Brain size={20} className="text-white" />
-              </div>
-              <div>
-                <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#ea580c' }}>AI Study Coach</p>
-                <p className="text-sm font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{aiTip}</p>
-              </div>
             </div>
-          </motion.div>
-        </div>
-
-        {/* Right: Quick stats */}
-        <div className="space-y-6">
-          {/* Attendance */}
-          <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.08 }}
-            className="nova-card p-6">
-            <h3 className="text-sm font-bold flex items-center gap-2 mb-4" style={{ color: 'var(--text-primary)' }}>
-              <CheckCircle2 size={16} style={{ color: '#10b981' }} /> Attendance This Week
-            </h3>
-            <div className="flex items-center gap-4">
-              <div className="relative w-20 h-20">
-                <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
-                  <circle cx="18" cy="18" r="15.9" fill="none" stroke="rgba(0,0,0,0.06)" strokeWidth="3" />
-                  <circle cx="18" cy="18" r="15.9" fill="none" stroke="#10b981" strokeWidth="3"
-                    strokeDasharray={`${attendanceRate} 100`} strokeLinecap="round"
-                    style={{ filter: 'drop-shadow(0 0 4px rgba(16,185,129,0.4))' }} />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-lg font-extrabold" style={{ color: 'var(--text-primary)' }}>{attendanceRate}%</span>
-                </div>
-              </div>
-              <div>
-                <p className="text-xs font-medium" style={{ color: '#a8a29e' }}>{presentCount}/{thisWeekAttend.length} days present</p>
-                <p className="text-[10px] mt-1" style={{ color: attendanceRate >= 75 ? '#10b981' : '#ef4444' }}>
-                  {attendanceRate >= 75 ? 'Above threshold' : 'Below 75% - attend all classes!'}
-                </p>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Quick links */}
-          <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.12 }}
-            className="nova-card p-6">
-            <h3 className="text-sm font-bold mb-4" style={{ color: 'var(--text-primary)' }}>Quick Actions</h3>
-            <div className="space-y-2">
-              {[
-                { icon: Target, label: 'Study Planner', route: '/student/planner', color: '#ea580c' },
-                { icon: Zap, label: 'Focus Mode', route: '/student/focus', color: '#8b5cf6' },
-                { icon: Calendar, label: 'CS Calendar', route: '/student/calendar', color: '#3b82f6' },
-              ].map(item => (
-                <button key={item.route} onClick={() => window.location.href = item.route}
-                  className="w-full flex items-center justify-between p-3 rounded-xl transition-all hover:shadow-sm"
-                  style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-subtle)' }}>
-                  <span className="flex items-center gap-3 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                    <item.icon size={16} style={{ color: item.color }} /> {item.label}
-                  </span>
-                  <ChevronRight size={14} style={{ color: '#a8a29e' }} />
-                </button>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Date widget */}
-          <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.16 }}
-            className="nova-card p-6 text-center">
-            <div className="text-5xl font-black tracking-tighter" style={{ color: '#ea580c', lineHeight: 1 }}>{today.getDate()}</div>
-            <div className="text-sm font-semibold mt-1" style={{ color: 'var(--text-secondary)' }}>{today.toLocaleDateString('en-US', { month: 'long' })}</div>
-            <div className="text-xs" style={{ color: '#a8a29e' }}>{today.toLocaleDateString('en-US', { year: 'numeric' })}</div>
-          </motion.div>
-        </div>
+            <p className="text-sm leading-relaxed" style={{ color: '#57534e' }}>{tip}</p>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );

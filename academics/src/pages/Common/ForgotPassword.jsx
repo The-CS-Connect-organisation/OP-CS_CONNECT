@@ -2,17 +2,11 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, ArrowLeft, KeyRound, Lock, Eye, EyeOff, CheckCircle, ArrowRight } from 'lucide-react';
 import { apiRequest } from '../../services/apiClient';
-import { getDataMode, DATA_MODES } from '../../config/dataMode';
 
-/**
- * @component ForgotPassword
- * 3-step password reset: Email → OTP → New Password
- */
 export const ForgotPassword = ({ onBack }) => {
-  const [step, setStep] = useState(1); // 1=email, 2=otp, 3=new password, 4=done
+  const [step, setStep] = useState(1);
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [demoOtp, setDemoOtp] = useState('');
   const [userId, setUserId] = useState('');
   const [resetToken, setResetToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -26,19 +20,11 @@ export const ForgotPassword = ({ onBack }) => {
     setError('');
     setLoading(true);
     try {
-      if (getDataMode() === DATA_MODES.LOCAL_DEMO) {
-        // Demo mode: simulate OTP
-        setDemoOtp('123456');
-        setUserId('demo-user');
-        setStep(2);
-        return;
-      }
       const res = await apiRequest('/auth/forgot-password', {
         method: 'POST',
         body: JSON.stringify({ email }),
       });
       if (res?.success) {
-        setDemoOtp(res.demo_otp || '');
         setUserId(res.user_id || '');
         setStep(2);
       }
@@ -54,15 +40,6 @@ export const ForgotPassword = ({ onBack }) => {
     setError('');
     setLoading(true);
     try {
-      if (getDataMode() === DATA_MODES.LOCAL_DEMO) {
-        if (otp === '123456') {
-          setResetToken('demo-reset-token');
-          setStep(3);
-        } else {
-          setError('Invalid code. Use 123456 in demo mode.');
-        }
-        return;
-      }
       const res = await apiRequest('/auth/verify-otp', {
         method: 'POST',
         body: JSON.stringify({ userId, otp }),
@@ -91,10 +68,6 @@ export const ForgotPassword = ({ onBack }) => {
     }
     setLoading(true);
     try {
-      if (getDataMode() === DATA_MODES.LOCAL_DEMO) {
-        setStep(4);
-        return;
-      }
       const res = await apiRequest('/auth/reset-password', {
         method: 'POST',
         body: JSON.stringify({ resetToken, newPassword }),
@@ -114,7 +87,6 @@ export const ForgotPassword = ({ onBack }) => {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-[400px]"
       >
-        {/* Back button */}
         {step < 4 && (
           <button
             onClick={onBack}
@@ -127,8 +99,6 @@ export const ForgotPassword = ({ onBack }) => {
 
         <div className="bg-white border border-slate-200 rounded-[24px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <AnimatePresence mode="wait">
-
-            {/* Step 1: Email */}
             {step === 1 && (
               <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="text-center mb-6">
@@ -162,7 +132,6 @@ export const ForgotPassword = ({ onBack }) => {
               </motion.div>
             )}
 
-            {/* Step 2: OTP */}
             {step === 2 && (
               <motion.div key="step2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="text-center mb-6">
@@ -171,11 +140,6 @@ export const ForgotPassword = ({ onBack }) => {
                   </div>
                   <h2 className="text-xl font-bold text-slate-900">Enter reset code</h2>
                   <p className="text-sm text-slate-500 mt-1">Check your email for the 6-digit code</p>
-                  {demoOtp && (
-                    <div className="mt-3 px-3 py-2 bg-amber-50 border border-amber-200 rounded-xl">
-                      <p className="text-xs text-amber-700 font-semibold">Demo code: <span className="font-mono text-base">{demoOtp}</span></p>
-                    </div>
-                  )}
                 </div>
                 <form onSubmit={handleVerifyOtp} className="space-y-4">
                   <div className="space-y-1.5">
@@ -202,7 +166,6 @@ export const ForgotPassword = ({ onBack }) => {
               </motion.div>
             )}
 
-            {/* Step 3: New Password */}
             {step === 3 && (
               <motion.div key="step3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }}>
                 <div className="text-center mb-6">
@@ -254,7 +217,6 @@ export const ForgotPassword = ({ onBack }) => {
               </motion.div>
             )}
 
-            {/* Step 4: Done */}
             {step === 4 && (
               <motion.div key="step4" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center py-4">
                 <motion.div
@@ -275,7 +237,6 @@ export const ForgotPassword = ({ onBack }) => {
                 </button>
               </motion.div>
             )}
-
           </AnimatePresence>
         </div>
       </motion.div>

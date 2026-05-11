@@ -1,1 +1,1 @@
-export { DailyBriefing as DailyBriefing } from './DailyBriefing';
+export { DailyBriefing } from './DailyBriefing';

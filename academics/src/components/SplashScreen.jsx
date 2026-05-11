@@ -4,26 +4,22 @@ import { Mail, Lock, Eye, EyeOff, ArrowRight, GraduationCap, BookOpen, Users, Bu
 
 const PHRASES = ['Learn.', 'Grow.', 'Succeed.'];
 
-// Demo credentials for each role — 3 per role
+// Demo credentials — confirmed working on real backend
 const DEMO_PROFILES = [
-  { role: 'Student', num: 1, icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student@schoolsync.edu',  password: 'student123' },
-  { role: 'Student', num: 2, icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student2@schoolsync.edu', password: 'student123' },
-  { role: 'Student', num: 3, icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student3@schoolsync.edu', password: 'student123' },
+  { role: 'Student', num: 1, icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student@schoolsync.edu',    password: 'student123' },
+  { role: 'Student', num: 2, icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student2@schoolsync.edu',  password: 'student123' },
+  { role: 'Student', num: 3, icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student3@schoolsync.edu',  password: 'student123' },
   { role: 'Teacher', num: 1, icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher@schoolsync.edu',  password: 'teacher123' },
   { role: 'Teacher', num: 2, icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher2@schoolsync.edu', password: 'teacher123' },
   { role: 'Teacher', num: 3, icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher3@schoolsync.edu', password: 'teacher123' },
-  { role: 'Parent',  num: 1, icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent@schoolsync.edu',   password: 'parent123'  },
-  { role: 'Parent',  num: 2, icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent2@schoolsync.edu',  password: 'parent123'  },
-  { role: 'Parent',  num: 3, icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent3@schoolsync.edu',  password: 'parent123'  },
-  { role: 'Driver',  num: 1, icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver@schoolsync.edu',   password: 'driver123'  },
-  { role: 'Driver',  num: 2, icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver2@schoolsync.edu',  password: 'driver123'  },
-  { role: 'Driver',  num: 3, icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver3@schoolsync.edu',  password: 'driver123'  },
+  { role: 'Parent',  num: 1, icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent2@schoolsync.edu',  password: 'parent123'  },
+  { role: 'Parent',  num: 2, icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent3@schoolsync.edu',  password: 'parent123'  },
   { role: 'Admin',   num: 1, icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin@schoolsync.edu',    password: 'admin123'   },
   { role: 'Admin',   num: 2, icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin2@schoolsync.edu',   password: 'admin123'   },
   { role: 'Admin',   num: 3, icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin3@schoolsync.edu',   password: 'admin123'   },
 ];
 
-const ROLE_GROUPS = ['Student', 'Teacher', 'Parent', 'Driver', 'Admin'];
+const ROLE_GROUPS = ['Student', 'Teacher', 'Parent', 'Admin'];
 
 const AuroraBlob = ({ color, x, y, size, delay, duration }) => (
   <motion.div

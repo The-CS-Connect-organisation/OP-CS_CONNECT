@@ -15,7 +15,7 @@ const DEMO_CREDENTIALS = {
   student: { email: 'student@schoolsync.edu', password: 'student123', name: 'Aarav Patel', class: '10-A', rollNo: '12' },
   teacher: { email: 'teacher@schoolsync.edu', password: 'teacher123', name: 'Sarah Wilson', subject: 'Mathematics' },
   admin: { email: 'admin@schoolsync.edu', password: 'admin123', name: 'Admin User' },
-  parent: { email: 'parent@schoolsync.edu', password: 'parent123', name: 'Priya Patel' },
+  parent: { email: 'parent2@schoolsync.edu', password: 'parent123', name: 'Priya Patel' },
 };
 
 const FEATURE_BULLETS = [
