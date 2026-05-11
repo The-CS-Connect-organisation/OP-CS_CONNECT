@@ -11,28 +11,32 @@ import { calendarService } from '../../../services/calendarService';
 import { aiCoachService } from '../../../services/aiCoachService';
 import { request } from '../../../utils/apiClient';
 
-const StatCard = ({ icon: Icon, label, value, subtitle, delay, color = '#1f2937' }) => {
+const StatCard = ({ icon: Icon, label, value, subtitle, delay, color = '#ea580c' }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.4 }}
-      className="nova-card p-6 hover:shadow-md transition-all duration-300"
+      transition={{ delay, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      whileHover={{ y: -2 }}
+      className="nova-card p-5 relative overflow-hidden"
+      style={{ transition: 'all 250ms' }}
     >
+      {/* Top accent bar */}
+      <div className="absolute top-0 left-0 right-0 h-[3px]" style={{ background: color }} />
       <div className="flex justify-between items-start mb-4">
-        <span className="text-xs font-semibold uppercase tracking-wider text-gray-500">{label}</span>
-        <div 
+        <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: '#a8a29e', letterSpacing: '0.08em' }}>{label}</span>
+        <div
           className="w-10 h-10 rounded-xl flex items-center justify-center"
-          style={{ background: `${color}15`, border: `1px solid ${color}30` }}
+          style={{ background: `${color}15`, border: `1px solid ${color}25` }}
         >
-          <Icon size={18} style={{ color }} />
+          <Icon size={17} style={{ color }} />
         </div>
       </div>
-      <span className="text-4xl font-bold tracking-tight block text-gray-900">{value}</span>
+      <span className="text-4xl font-extrabold tracking-tight block" style={{ color: '#1c1917' }}>{value}</span>
       {subtitle && (
-        <div className="flex items-center gap-2 mt-2">
+        <div className="flex items-center gap-2 mt-2.5">
           <span className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
-          <span className="text-xs text-gray-500">{subtitle}</span>
+          <span className="text-xs font-medium" style={{ color: '#a8a29e' }}>{subtitle}</span>
         </div>
       )}
     </motion.div>
@@ -474,42 +478,49 @@ export const StudentDashboard = ({ user }) => {
       <motion.div
         initial={{ opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="nova-card p-6 md:p-8 relative overflow-hidden"
       >
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 right-0 w-64 h-64 rounded-full bg-gradient-to-br from-blue-100 to-transparent blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-gradient-to-tr from-purple-100 to-transparent blur-3xl" />
+        {/* Atmospheric background */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 right-0 w-64 h-64 rounded-full" style={{ background: 'radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%)' }} />
+          <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full" style={{ background: 'radial-gradient(circle, rgba(168,85,247,0.06) 0%, transparent 70%)' }} />
         </div>
-        
+
         <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold bg-green-50 text-green-600 border border-green-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              Student Portal
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold" style={{ background: 'rgba(234,88,12,0.08)', color: '#ea580c', border: '1px solid rgba(234,88,12,0.15)' }}>
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: '#22c55e' }} />
+              Active Session
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-600 border border-blue-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold" style={{ background: 'rgba(59,130,246,0.08)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.15)' }}>
+              <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#3b82f6' }} />
               {user.class}
             </span>
-            <button 
+            <button
               onClick={() => setFocusMode(!focusMode)}
-              className="ml-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold bg-purple-50 text-purple-600 border border-purple-200"
+              className="ml-auto inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold transition-all hover:brightness-95"
+              style={{ background: 'rgba(168,85,247,0.08)', color: '#7c3aed', border: '1px solid rgba(168,85,247,0.15)' }}
             >
               <Focus size={12} /> Focus Mode
             </button>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight flex items-center gap-3 mb-3 text-gray-900">
-            <span className="w-1 h-10 rounded-full bg-gradient-to-b from-blue-500 to-purple-500" />
-            Welcome back, {user.name.split(' ')[0]}
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight flex items-center gap-3 mb-3" style={{ color: '#1c1917' }}>
+            <span className="w-1.5 h-10 rounded-full" style={{ background: 'linear-gradient(180deg, #ea580c, #f97316)' }} />
+            Welcome back, <span style={{ color: '#ea580c' }}>{user.name.split(' ')[0]}</span>
           </h1>
-          <div className="flex flex-wrap gap-2 mt-4">
-            {[`Class: ${user.class}`, `ID: ${user.admissionNo || user.rollNo || user.id.slice(-6).toUpperCase()}`, today].map((tag, i) => (
-              <span 
-                key={tag}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200"
+          <div className="flex flex-wrap gap-2 mt-5">
+            {[
+              { label: 'Class', value: user.class },
+              { label: 'ID', value: user.admissionNo || user.rollNo || user.id.slice(-6).toUpperCase() },
+              { label: 'Level', value: level },
+            ].map((tag, i) => (
+              <span
+                key={tag.label}
+                className="px-3.5 py-1.5 rounded-xl text-xs font-semibold"
+                style={{ background: 'var(--bg-surface)', color: '#78716c', border: '1px solid rgba(0,0,0,0.06)' }}
               >
-                {tag}
+                {tag.label}: <span style={{ color: '#1c1917' }}>{tag.value}</span>
               </span>
             ))}
           </div>
