@@ -89,6 +89,16 @@ const DEMO_EXAMS = [
   { id: 'exam-5', name: 'Unit Test 4', subject: 'English', class: '10-A', date: daysAgo(7), maxMarks: 50, status: 'scheduled' },
 ];
 
+const DEMO_NOTIFICATIONS = [
+  { id: 'ntf-1', userId: 'student-1', type: 'assignment', message: 'New assignment: Algebra Fundamentals due tomorrow', read: false, createdAt: new Date(Date.now() - 5 * 60000).toISOString(), meta: { subject: 'Mathematics', assignmentId: 'assign-1' } },
+  { id: 'ntf-2', userId: 'student-1', type: 'deadline', message: 'Chemistry Lab Report due in 2 days', read: false, createdAt: new Date(Date.now() - 30 * 60000).toISOString(), meta: { subject: 'Chemistry', assignmentId: 'assign-3' } },
+  { id: 'ntf-3', userId: 'student-1', type: 'announcement', message: 'Half-Yearly exam results are now available', read: false, createdAt: new Date(Date.now() - 2 * 3600000).toISOString(), meta: {} },
+  { id: 'ntf-4', userId: 'student-1', type: 'achievement', message: 'You earned the "Early Bird" badge!', read: true, createdAt: new Date(Date.now() - 24 * 3600000).toISOString(), meta: { badge: 'early-bird' } },
+  { id: 'ntf-5', userId: 'student-1', type: 'reminder', message: 'Attendance rate is below 75%. Attend all classes!', read: true, createdAt: new Date(Date.now() - 48 * 3600000).toISOString(), meta: {} },
+  { id: 'ntf-6', userId: 'teacher-1', type: 'submission', message: 'Aarav Patel submitted Algebra Fundamentals', read: false, createdAt: new Date(Date.now() - 10 * 60000).toISOString(), meta: { assignmentId: 'assign-1', studentId: 'student-1' } },
+  { id: 'ntf-7', userId: 'admin-1', type: 'announcement', message: 'System backup completed successfully', read: true, createdAt: new Date(Date.now() - 3600000).toISOString(), meta: {} },
+];
+
 // ── Seeder ─────────────────────────────────────────────────────────────────────
 
 let seeded = false;
@@ -137,6 +147,12 @@ export function seedIfNeeded() {
   const existingExams = getFromStorage(KEYS.EXAMS, null);
   if (existingExams === null || !Array.isArray(existingExams) || existingExams.length === 0) {
     setToStorage(KEYS.EXAMS, DEMO_EXAMS);
+  }
+
+  // Notifications
+  const existingNtf = getFromStorage(KEYS.NOTIFICATIONS, null);
+  if (existingNtf === null || !Array.isArray(existingNtf) || existingNtf.length === 0) {
+    setToStorage(KEYS.NOTIFICATIONS, DEMO_NOTIFICATIONS);
   }
 }
 
