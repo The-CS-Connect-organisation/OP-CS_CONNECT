@@ -1,16 +1,958 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cornerstone SchoolSync — Unified Portal</title>
-    <meta name="description" content="The unified entry point for Cornerstone SchoolSync — Academic and Management portals." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OP-CS CONNECT</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-darker: #09090b;
+      --accent: #ea580c;
+      --accent-light: #f97316;
+      --accent-dark: #c2410c;
+      --accent-glow: rgba(234, 88, 12, 0.5);
+      --text-primary: #ffffff;
+      --text-secondary: #a1a1aa;
+      --text-muted: #71717a;
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.08);
+    }
+
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background: linear-gradient(180deg, var(--bg-dark) 0%, var(--bg-darker) 100%);
+      color: var(--text-primary);
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* Aurora Background */
+    .aurora-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .aurora-blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.4;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .aurora-blob-1 {
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+      top: -200px;
+      left: -100px;
+      animation-delay: 0s;
+    }
+
+    .aurora-blob-2 {
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, #7c3aed 0%, transparent 70%);
+      top: 30%;
+      right: -150px;
+      animation-delay: -7s;
+    }
+
+    .aurora-blob-3 {
+      width: 450px;
+      height: 450px;
+      background: radial-gradient(circle, var(--accent-light) 0%, transparent 70%);
+      bottom: 10%;
+      left: 20%;
+      animation-delay: -14s;
+    }
+
+    .aurora-blob-4 {
+      width: 350px;
+      height: 350px;
+      background: radial-gradient(circle, #db2777 0%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      animation-delay: -3s;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translate(0, 0) scale(1);
+      }
+      25% {
+        transform: translate(50px, -30px) scale(1.1);
+      }
+      50% {
+        transform: translate(-20px, 50px) scale(0.9);
+      }
+      75% {
+        transform: translate(-40px, -20px) scale(1.05);
+      }
+    }
+
+    /* Container */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Navigation */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 20px 0;
+      backdrop-filter: blur(20px);
+      background: rgba(10, 10, 15, 0.8);
+      border-bottom: 1px solid var(--card-border);
+      transition: all 0.3s ease;
+    }
+
+    .nav-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
+      transition: color 0.3s ease;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent);
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 120px 0 80px;
+      position: relative;
+    }
+
+    .hero-content {
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 100px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 32px;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease forwards;
+    }
+
+    .hero-badge::before {
+      content: '';
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    .hero-title {
+      font-size: clamp(3rem, 10vw, 6rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+    }
+
+    .hero-title .word {
+      display: inline-block;
+    }
+
+    .hero-title .accent {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+    }
+
+    .hero-title .accent::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 30%;
+      background: var(--accent);
+      filter: blur(20px);
+      opacity: 0.3;
+      z-index: -1;
+      animation: glowPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes glowPulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 0.5; }
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 48px;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease 0.6s forwards;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeInUp 0.8s ease 0.8s forwards;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 32px;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: inherit;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+      color: white;
+      box-shadow: 0 0 0 0 var(--accent-glow), 0 8px 32px rgba(234, 88, 12, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 0 0 40px 10px var(--accent-glow), 0 16px 48px rgba(234, 88, 12, 0.4);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--card-bg);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Floating Cards */
+    .floating-cards {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .floating-card {
+      position: absolute;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      animation: floatCard 0.8s ease forwards;
+    }
+
+    .floating-card-1 {
+      top: 20%;
+      left: 5%;
+      width: 180px;
+      animation-delay: 1s;
+    }
+
+    .floating-card-2 {
+      top: 30%;
+      right: 8%;
+      width: 160px;
+      animation-delay: 1.2s;
+    }
+
+    .floating-card-3 {
+      bottom: 25%;
+      left: 10%;
+      width: 200px;
+      animation-delay: 1.4s;
+    }
+
+    .floating-card-4 {
+      bottom: 30%;
+      right: 5%;
+      width: 150px;
+      animation-delay: 1.6s;
+    }
+
+    @keyframes floatCard {
+      from {
+        opacity: 0;
+        transform: translateY(20px) rotate(-3deg);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) rotate(0);
+      }
+    }
+
+    .floating-card-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+      font-size: 1.2rem;
+    }
+
+    .floating-card-text {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* Sections */
+    section {
+      padding: 120px 0;
+      position: relative;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 80px;
+    }
+
+    .section-label {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin-bottom: 20px;
+    }
+
+    .section-desc {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+    }
+
+    /* Features Grid */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 32px;
+    }
+
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(234, 88, 12, 0.3);
+      transform: translateY(-8px);
+    }
+
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+
+    .feature-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(234, 88, 12, 0.3);
+    }
+
+    .feature-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .feature-desc {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      line-height: 1.7;
+    }
+
+    /* Stats Section */
+    .stats {
+      background: var(--card-bg);
+      border-top: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 48px;
+      text-align: center;
+    }
+
+    .stat-item {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.6s ease;
+    }
+
+    .stat-number {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* CTA Section */
+    .cta-section {
+      text-align: center;
+      position: relative;
+    }
+
+    .cta-box {
+      background: linear-gradient(135deg, rgba(234, 88, 12, 0.1) 0%, rgba(234, 88, 12, 0.05) 100%);
+      border: 1px solid rgba(234, 88, 12, 0.2);
+      border-radius: 32px;
+      padding: 80px 40px;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.6s ease;
+    }
+
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, var(--accent-glow) 0%, transparent 50%);
+      opacity: 0.1;
+      animation: rotate 30s linear infinite;
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .cta-title {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 800;
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .cta-desc {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      max-width: 500px;
+      margin: 0 auto 40px;
+      position: relative;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: relative;
+    }
+
+    /* Footer */
+    .footer {
+      padding: 60px 0;
+      border-top: 1px solid var(--card-border);
+      text-align: center;
+    }
+
+    .footer-text {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .footer-text a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    /* Scroll Animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 1024px) {
+      .floating-cards {
+        display: none;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hero {
+        padding: 100px 0 60px;
+        min-height: auto;
+      }
+
+      section {
+        padding: 80px 0;
+      }
+
+      .section-header {
+        margin-bottom: 48px;
+      }
+
+      .features-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-card {
+        padding: 32px;
+      }
+
+      .cta-box {
+        padding: 48px 24px;
+        border-radius: 24px;
+      }
+
+      .stats-grid {
+        gap: 32px;
+      }
+
+      .hero-cta {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .btn {
+        width: 100%;
+        max-width: 280px;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero-badge {
+        font-size: 0.75rem;
+        padding: 6px 12px;
+      }
+
+      .stat-item {
+        padding: 16px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Aurora Background -->
+  <div class="aurora-container">
+    <div class="aurora-blob aurora-blob-1"></div>
+    <div class="aurora-blob aurora-blob-2"></div>
+    <div class="aurora-blob aurora-blob-3"></div>
+    <div class="aurora-blob aurora-blob-4"></div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="container">
+      <div class="nav-content">
+        <div class="logo">OP-CS CONNECT</div>
+        <ul class="nav-links">
+          <li><a href="#features">Features</a></li>
+          <li><a href="#stats">Stats</a></li>
+          <li><a href="#cta">Get Started</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="floating-cards">
+      <div class="floating-card floating-card-1">
+        <div class="floating-card-icon">&#x2728;</div>
+        <div class="floating-card-text">Real-time Sync</div>
+      </div>
+      <div class="floating-card floating-card-2">
+        <div class="floating-card-icon">&#x1F4CA;</div>
+        <div class="floating-card-text">Analytics</div>
+      </div>
+      <div class="floating-card floating-card-3">
+        <div class="floating-card-icon">&#x1F512;</div>
+        <div class="floating-card-text">Secure</div>
+      </div>
+      <div class="floating-card floating-card-4">
+        <div class="floating-card-icon">&#x26A1;</div>
+        <div class="floating-card-text">Fast</div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge">
+          Now Available
+        </div>
+        <h1 class="hero-title" id="hero-title"></h1>
+        <p class="hero-subtitle">
+          Transform your academic journey with seamless connections, powerful tools, and an unmatched collaborative experience.
+        </p>
+        <div class="hero-cta">
+          <a href="#cta" class="btn btn-primary">
+            Get Started Free
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+          <a href="#features" class="btn btn-secondary">
+            Learn More
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features">
+    <div class="container">
+      <div class="section-header reveal">
+        <span class="section-label">Features</span>
+        <h2 class="section-title">Everything You Need to Excel</h2>
+        <p class="section-desc">Powerful tools designed to supercharge your academic experience and help you achieve your goals faster.</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card reveal">
+          <div class="feature-icon">&#x1F4DA;</div>
+          <h3 class="feature-title">Resource Library</h3>
+          <p class="feature-desc">Access thousands of study materials, notes, and resources shared by students across all disciplines.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">&#x1F465;</div>
+          <h3 class="feature-title">Study Groups</h3>
+          <p class="feature-desc">Connect with peers, form study groups, and collaborate on projects in real-time.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">&#x1F4C8;</div>
+          <h3 class="feature-title">Progress Tracking</h3>
+          <p class="feature-desc">Monitor your academic progress with detailed analytics and personalized insights.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">&#x1F4AC;</div>
+          <h3 class="feature-title">Discussion Forums</h3>
+          <p class="feature-desc">Engage in meaningful discussions, ask questions, and get answers from the community.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">&#x1F4DD;</div>
+          <h3 class="feature-title">Smart Notes</h3>
+          <p class="feature-desc">Create, organize, and share notes with advanced formatting and collaboration features.</p>
+        </div>
+        <div class="feature-card reveal">
+          <div class="feature-icon">&#x1F3AF;</div>
+          <h3 class="feature-title">Expert Mentors</h3>
+          <p class="feature-desc">Get guidance from experienced mentors and tutors to accelerate your learning journey.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section id="stats" class="stats">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-number" data-target="5000">0</div>
+          <div class="stat-label">Active Students</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" data-target="12000">0</div>
+          <div class="stat-label">Resources Shared</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" data-target="98">0</div>
+          <div class="stat-label">% Satisfaction</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number" data-target="24">0</div>
+          <div class="stat-label">/7 Support</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section id="cta" class="cta-section">
+    <div class="container">
+      <div class="cta-box reveal">
+        <h2 class="cta-title">Ready to Transform Your Academic Journey?</h2>
+        <p class="cta-desc">Join thousands of students already using OP-CS CONNECT to achieve their goals.</p>
+        <div class="cta-buttons">
+          <a href="#" class="btn btn-primary">
+            Start Free Trial
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+          <a href="#" class="btn btn-secondary">
+            Schedule Demo
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <p class="footer-text">
+        &copy; 2026 <a href="#">OP-CS CONNECT</a>. Built for students, by students.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Hero Title Letter Animation
+    function animateHeroTitle() {
+      const title = document.getElementById('hero-title');
+      const text = 'Connect. Learn. Excel.';
+      const words = text.split(' ');
+
+      title.innerHTML = words.map((word, wordIndex) => {
+        const chars = word.split('');
+        const delay = 0.1 + wordIndex * 0.25;
+        return `<span class="word"><span class="accent">${chars.join('</span></span>')}</span>`;
+      }).join(' ');
+
+      // Add staggered animation via JS
+      const wordSpans = title.querySelectorAll('.word');
+      let charIndex = 0;
+      wordSpans.forEach((wordSpan) => {
+        const chars = wordSpan.querySelectorAll('span');
+        chars.forEach((char) => {
+          char.style.opacity = '0';
+          char.style.transform = 'translateY(100%)';
+          char.style.display = 'inline-block';
+          char.style.animation = `charReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards`;
+          char.style.animationDelay = `${0.1 + charIndex * 0.05}s`;
+          charIndex++;
+        });
+      });
+    }
+
+    // Scroll Reveal Animation
+    function revealOnScroll() {
+      const reveals = document.querySelectorAll('.reveal, .stat-item, .feature-card, .cta-box');
+
+      reveals.forEach((el) => {
+        const windowHeight = window.innerHeight;
+        const elementTop = el.getBoundingClientRect().top;
+        const elementVisible = 100;
+
+        if (elementTop < windowHeight - elementVisible) {
+          el.classList.add('active');
+        }
+      });
+    }
+
+    // Counter Animation
+    function animateCounters() {
+      const counters = document.querySelectorAll('.stat-number');
+
+      counters.forEach(counter => {
+        const target = parseInt(counter.getAttribute('data-target'));
+        const duration = 2000;
+        const step = target / (duration / 16);
+        let current = 0;
+
+        const updateCounter = () => {
+          current += step;
+          if (current < target) {
+            counter.textContent = Math.floor(current).toLocaleString();
+            requestAnimationFrame(updateCounter);
+          } else {
+            counter.textContent = target.toLocaleString();
+          }
+        };
+
+        // Start animation when visible
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              updateCounter();
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.5 });
+
+        observer.observe(counter);
+      });
+    }
+
+    // Parallax effect for aurora blobs
+    function parallaxAurora(e) {
+      const blobs = document.querySelectorAll('.aurora-blob');
+      const x = (e.clientX / window.innerWidth - 0.5) * 20;
+      const y = (e.clientY / window.innerHeight - 0.5) * 20;
+
+      blobs.forEach((blob, index) => {
+        const factor = (index + 1) * 0.5;
+        blob.style.transform = `translate(${x * factor}px, ${y * factor}px)`;
+      });
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      animateHeroTitle();
+      revealOnScroll();
+      animateCounters();
+
+      window.addEventListener('scroll', revealOnScroll);
+      window.addEventListener('mousemove', parallaxAurora);
+    });
+  </script>
+</body>
 </html>

@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, BookOpen, Clock, Calendar, CheckCircle, Banknote,
   Bell, ChevronLeft, ChevronRight, X, Sparkles, Bot,
   LogOut, Settings, MessageCircle, FileText, BarChart3, ChevronDown,
-  ClipboardList, UserCheck, PencilLine, Megaphone, Heart, Wallet, Bus, Award, Zap
+  ClipboardList, UserCheck, PencilLine, Megaphone, Heart, Wallet, Bus, Award, Zap, Trophy, Sunrise
 } from 'lucide-react';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
@@ -55,6 +55,7 @@ const ROLE_NAV = {
     {
       section: 'Overview',
       items: [
+        { title: 'Daily Briefing', icon: Sunrise, route: '/student/briefing' },
         { title: 'Dashboard', icon: LayoutDashboard, route: '/student/dashboard' },
       ]
     },
@@ -66,6 +67,7 @@ const ROLE_NAV = {
         { title: 'Timetable', icon: Clock, route: '/student/timetable' },
         { title: 'Attendance', icon: UserCheck, route: '/student/attendance' },
         { title: 'Notes', icon: BookOpen, route: '/student/notes' },
+        { title: 'Shared Notes', icon: BookOpen, route: '/student/shared-notes' },
         { title: 'Announcements', icon: Megaphone, route: '/student/announcements' },
         { title: 'Study Planner', icon: Calendar, route: '/student/planner' },
         { title: 'CS Calendar', icon: Calendar, route: '/student/calendar' },
@@ -86,6 +88,7 @@ const ROLE_NAV = {
         { title: 'AI Assistant', icon: Sparkles, route: '/student/ai-lab' },
         { title: 'Messages', icon: MessageCircle, route: '/student/comms' },
         { title: 'Nexus Hub', icon: Users, route: '/student/nexus' },
+        { title: 'Achievements', icon: Trophy, route: '/student/achievements' },
         { title: 'Profile', icon: Users, route: '/student/profile' },
       ]
     },

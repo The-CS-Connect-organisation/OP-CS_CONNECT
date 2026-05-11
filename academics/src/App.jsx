@@ -56,9 +56,12 @@ import { Notes } from './pages/AcademicPortal/Student/Notes';
 import { StudentProfile } from './pages/AcademicPortal/Student/StudentProfile';
 import { Announcements } from './pages/AcademicPortal/Student/Announcements';
 import { StudyPlanner } from './pages/AcademicPortal/Student/StudyPlanner';
+import SharedNotes from './pages/AcademicPortal/Student/SharedNotes';
 import { AssignmentDetails } from './pages/AcademicPortal/Student/AssignmentDetails';
 import { BusTracking } from './pages/AcademicPortal/Student/BusTracking';
 import { DriverTracking } from './pages/AcademicPortal/Student/DriverTracking';
+import { Achievements } from './pages/AcademicPortal/Student/Achievements';
+import { DailyBriefing } from './pages/AcademicPortal/Student/DailyBriefing';
 
 // Academic Portal - Shared Features
 import { SettingsPanel } from './pages/AcademicPortal/shared/Settings';
@@ -270,6 +273,11 @@ function App() {
               <Notes user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
+          <Route path="/student/shared-notes" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <SharedNotes user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
           <Route path="/student/announcements" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <Announcements user={user} />
@@ -298,6 +306,16 @@ function App() {
           <Route path="/student/focus" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <FocusMode user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/achievements" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <Achievements user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/briefing" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <DailyBriefing user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/student/ai-lab" element={
