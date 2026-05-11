@@ -68,6 +68,7 @@ const ROLE_NAV = {
         { title: 'Notes', icon: BookOpen, route: '/student/notes' },
         { title: 'Announcements', icon: Megaphone, route: '/student/announcements' },
         { title: 'Study Planner', icon: Calendar, route: '/student/planner' },
+        { title: 'CS Calendar', icon: Calendar, route: '/student/calendar' },
       ]
     },
     {

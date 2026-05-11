@@ -79,6 +79,7 @@ const CommsPage = ({ user }) => {
 };
 import { ExamCenter } from './pages/AcademicPortal/shared/ExamCenter';
 import { NexusHub } from './pages/AcademicPortal/shared/NexusHub';
+import { CSCalendar } from './pages/AcademicPortal/Student/CSCalendar';
 
 
 // Teacher Portal Pages
@@ -286,6 +287,11 @@ function App() {
           <Route path="/student/planner" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <StudyPlanner user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/calendar" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <CSCalendar user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/student/ai-lab" element={
