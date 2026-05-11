@@ -84,8 +84,9 @@ export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout, user: pr
                 </span>
               ))}
             </div>
-            <span className="text-sm font-semibold mt-0.5 truncate" style={{ color: 'var(--text-primary)' }}>
-              {greeting}, <span style={{ color: 'var(--text-muted)' }}>{user?.name?.split(' ')[0]}</span>
+            <span className="text-sm font-semibold mt-0.5 truncate flex items-center gap-1.5" style={{ color: 'var(--text-primary)' }}>
+              <span style={{ color: '#ea580c' }}>{greeting}</span>
+              <span style={{ color: 'var(--text-muted)' }}>, {user?.name?.split(' ')[0]}</span>
             </span>
           </div>
         </div>
@@ -96,8 +97,8 @@ export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout, user: pr
             className="relative flex items-center h-9 rounded-xl border transition-all duration-200"
             style={{ 
               background: searchFocused ? '#ffffff' : 'var(--bg-surface)',
-              borderColor: searchFocused ? '#111111' : 'var(--border-default)',
-              boxShadow: searchFocused ? '0 0 0 3px rgba(0,0,0,0.06)' : 'none'
+              borderColor: searchFocused ? '#ea580c' : 'var(--border-default)',
+              boxShadow: searchFocused ? '0 0 0 3px rgba(234,88,12,0.12)' : 'none'
             }}
           >
             <Search size={14} className="absolute left-3" style={{ color: searchFocused ? 'var(--text-primary)' : 'var(--text-dim)' }} />
@@ -129,7 +130,7 @@ export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout, user: pr
               style={{ color: 'var(--text-muted)' }}
             >
               <Bell size={18} />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-pink-400" />
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full" style={{ background: '#ea580c' }} />
             </motion.button>
             
             <AnimatePresence>
@@ -151,7 +152,7 @@ export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout, user: pr
                       <div className="w-1.5 h-1.5 rounded-full bg-pink-400" />
                       Notifications
                     </span>
-                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-pink-50 text-pink-500 border border-pink-100">2 new</span>
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full" style={{ background: 'rgba(234,88,12,0.08)', color: '#ea580c', border: '1px solid rgba(234,88,12,0.15)' }}>2 new</span>
                   </div>
                   <div className="flex flex-col max-h-[280px] overflow-y-auto no-scrollbar">
                     {[
@@ -183,7 +184,7 @@ export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout, user: pr
               style={{ borderColor: 'var(--border-default)' }}
             >
               <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-[var(--text-primary)]"
-                style={{ background: '#111111' }}>
+                style={{ background: 'linear-gradient(135deg, #ea580c, #f97316)', boxShadow: '0 2px 8px rgba(234,88,12,0.3)' }}>
                 {user?.profilePhotoUrl 
                   ? <img src={user.profilePhotoUrl} className="w-full h-full rounded-lg object-cover" alt="" /> 
                   : (user?.name?.charAt(0) || 'U')
@@ -211,7 +212,7 @@ export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout, user: pr
                 >
                   <div className="p-3 mb-1 rounded-lg flex gap-3 items-center" style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}>
                     <div className="w-9 h-9 rounded-lg flex items-center justify-center font-bold text-sm text-[var(--text-primary)] shrink-0"
-                      style={{ background: '#111111' }}>
+                      style={{ background: 'linear-gradient(135deg, #ea580c, #f97316)', boxShadow: '0 2px 8px rgba(234,88,12,0.3)' }}>
                       {user?.name?.charAt(0)}
                     </div>
                     <div className="flex flex-col min-w-0">

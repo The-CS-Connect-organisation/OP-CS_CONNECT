@@ -1,5 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import 'leaflet/dist/leaflet.css';
 @tailwind base;
 @tailwind components;
@@ -18,26 +17,26 @@
   --bg-floating: #e8ecf4;
   --bg-overlay: rgba(255, 255, 255, 0.95);
 
-  /* ── Accent Palette — Black + Pink pop ── */
-  --accent-primary: #111111;
-  --accent-pink: #ff6b9d;
+  /* ── Accent Palette — Orange + Warm ── */
+  --accent-primary: #ea580c;
+  --accent-pink: #f97316;
   --accent-purple: #a855f7;
   --accent-blue: #3b82f6;
-  --accent-gradient: linear-gradient(135deg, #111111, #374151);
-  --accent-gradient-pink: linear-gradient(135deg, #ff6b9d, #a855f7);
-  --accent-glow: rgba(17, 17, 17, 0.06);
-  --accent-glow-strong: rgba(17, 17, 17, 0.12);
+  --accent-gradient: linear-gradient(135deg, #ea580c, #f97316);
+  --accent-gradient-pink: linear-gradient(135deg, #f97316, #ea580c);
+  --accent-glow: rgba(234, 88, 12, 0.08);
+  --accent-glow-strong: rgba(234, 88, 12, 0.15);
 
-  /* ── True Black Spectrum ── */
-  --black: #0a0a0a;
-  --black-90: rgba(10, 10, 10, 0.90);
-  --black-70: rgba(10, 10, 10, 0.70);
-  --black-50: rgba(10, 10, 10, 0.50);
-  --black-30: rgba(10, 10, 10, 0.30);
-  --black-15: rgba(10, 10, 10, 0.15);
-  --black-10: rgba(10, 10, 10, 0.10);
-  --black-06: rgba(10, 10, 10, 0.06);
-  --black-03: rgba(10, 10, 10, 0.03);
+  /* ── Orange Spectrum ── */
+  --orange: #ea580c;
+  --orange-90: rgba(234, 88, 12, 0.90);
+  --orange-70: rgba(234, 88, 12, 0.70);
+  --orange-50: rgba(234, 88, 12, 0.50);
+  --orange-30: rgba(234, 88, 12, 0.30);
+  --orange-15: rgba(234, 88, 12, 0.15);
+  --orange-10: rgba(234, 88, 12, 0.10);
+  --orange-06: rgba(234, 88, 12, 0.06);
+  --orange-03: rgba(234, 88, 12, 0.03);
 
   /* ── Text Hierarchy ── */
   --text-primary: #0a0a0a;
@@ -99,7 +98,7 @@
   }
 
   body {
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     background: var(--bg-base);
     color: var(--text-primary);
     min-height: 100vh;
@@ -108,13 +107,14 @@
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     line-height: 1.6;
+    font-size: 14px;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    letter-spacing: -0.025em;
-    line-height: 1.2;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
     color: var(--text-primary);
   }
 
@@ -136,8 +136,8 @@
   }
 
   ::selection {
-    background: #111111;
-    color: white;
+    background: rgba(234, 88, 12, 0.18);
+    color: #c2410c;
   }
 
   .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -205,7 +205,7 @@
 
   /* ══ GRADIENT TEXT ══ */
   .gradient-text {
-    background: var(--accent-gradient-pink);
+    background: linear-gradient(135deg, #ea580c, #f97316, #fb923c);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -214,7 +214,7 @@
   }
 
   .gradient-text-subtle {
-    background: linear-gradient(135deg, #111111, #374151);
+    background: linear-gradient(135deg, #ea580c, #f97316);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -239,15 +239,15 @@
   /* ══ BUTTONS ══ */
   .btn-primary {
     @apply px-6 py-3 font-semibold transition-all duration-200;
-    background: #111111;
+    background: #ea580c;
     color: white;
-    border: 1px solid rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(234, 88, 12, 0.2);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 12px rgba(234, 88, 12, 0.25);
   }
   .btn-primary:hover {
-    background: #0a0a0a;
-    box-shadow: var(--shadow-lg);
+    background: #c2410c;
+    box-shadow: 0 8px 24px rgba(234, 88, 12, 0.35);
     transform: translateY(-1px);
   }
   .btn-primary:active {
