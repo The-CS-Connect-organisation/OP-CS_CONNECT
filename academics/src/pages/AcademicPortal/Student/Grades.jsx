@@ -9,6 +9,7 @@ import { useSound } from '../../../hooks/useSound';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { request } from '../../../utils/apiClient';
+import { getFromStorage } from '../../../data/schema';
 
 export const Grades = ({ user }) => {
   const { playClick, playBlip } = useSound();
@@ -20,11 +21,18 @@ export const Grades = ({ user }) => {
     if (!user?.id) return;
     let alive = true;
     setLoading(true);
+    // Load local demo data first
+    const local = getFromStorage('sms_marks', []);
+    if (local.length > 0) setApiMarks(local);
+    // Then try API
     request('/student/grades')
       .then(res => {
-        if (alive) setApiMarks(res?.marks || res?.data?.marks || res?.items || []);
+        if (alive) {
+          const marks = res?.marks || res?.data?.marks || res?.items || [];
+          if (marks.length > 0) setApiMarks(marks);
+        }
       })
-      .catch(e => console.error('Failed to load grades:', e))
+      .catch(e => console.error('API grades fetch failed (expected in LOCAL_DEMO):', e))
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [user?.id]);

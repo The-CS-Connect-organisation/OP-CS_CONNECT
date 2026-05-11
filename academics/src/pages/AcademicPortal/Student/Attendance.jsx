@@ -6,6 +6,7 @@ import { Badge } from '../../../components/ui/Badge';
 import { AttendanceChart } from '../../../components/charts/AttendanceChart';
 import { useSound } from '../../../hooks/useSound';
 import { request } from '../../../utils/apiClient';
+import { getFromStorage } from '../../../data/schema';
 
 export const Attendance = ({ user }) => {
   const { playClick } = useSound();
@@ -13,13 +14,18 @@ export const Attendance = ({ user }) => {
 
   useEffect(() => {
     if (!user?.id) return;
-    let alive = true;
+    // Load local demo data first
+    const localData = getFromStorage('sms_attendance', []);
+    if (localData.length > 0) {
+      setApiAttendance(localData);
+    }
+    // Then try API (will fail in LOCAL_DEMO mode via apiRequest in services)
     request('/student/attendance')
       .then(res => {
-        if (alive) setApiAttendance(res?.records || res?.data?.records || []);
+        const records = res?.records || res?.data?.records || [];
+        if (records.length > 0) setApiAttendance(records);
       })
-      .catch(e => console.error('Failed to load attendance:', e));
-    return () => { alive = false; };
+      .catch(e => console.error('API attendance fetch failed (expected in LOCAL_DEMO):', e));
   }, [user?.id]);
 
   const myAttendance = apiAttendance

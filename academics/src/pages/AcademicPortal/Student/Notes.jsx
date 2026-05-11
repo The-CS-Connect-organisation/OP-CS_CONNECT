@@ -6,7 +6,7 @@ import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Modal } from '../../../components/ui/Modal';
 import { useSound } from '../../../hooks/useSound';
-import { request } from '../../../utils/apiClient';
+import { request as apiRequest } from '../../../utils/apiClient';
 
 export const Notes = ({ user, addToast }) => {
   const [notes, setNotes] = useState([]);
@@ -19,7 +19,7 @@ export const Notes = ({ user, addToast }) => {
     let alive = true;
     setLoading(true);
     setError(null);
-    request('/school/notes')
+    apiRequest('/school/notes')
       .then(res => {
         if (alive) setNotes(res?.notes || res?.items || res?.data?.notes || []);
       })
