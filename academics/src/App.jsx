@@ -80,6 +80,7 @@ const CommsPage = ({ user }) => {
 import { ExamCenter } from './pages/AcademicPortal/shared/ExamCenter';
 import { NexusHub } from './pages/AcademicPortal/shared/NexusHub';
 import { CSCalendar } from './pages/AcademicPortal/Student/CSCalendar';
+import { FocusMode } from './pages/AcademicPortal/Student/FocusMode';
 
 
 // Teacher Portal Pages
@@ -292,6 +293,11 @@ function App() {
           <Route path="/student/calendar" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <CSCalendar user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/student/focus" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+              <FocusMode user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
           <Route path="/student/ai-lab" element={

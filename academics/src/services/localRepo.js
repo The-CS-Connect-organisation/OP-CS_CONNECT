@@ -11,10 +11,14 @@ const daysAgo = (d) => {
 // ── Demo seed data ─────────────────────────────────────────────────────────────
 
 const DEMO_USERS = [
-  { id: 'student-1', name: 'Aarav Patel', email: 'student@demo.com', password: 'demo123', role: 'student', class: '10-A', rollNo: '12', avatar: '👦', isActive: true },
-  { id: 'teacher-1', name: 'Sarah Wilson', email: 'teacher@demo.com', password: 'demo123', role: 'teacher', subject: 'Mathematics', avatar: '👨‍🏫', isActive: true },
-  { id: 'admin-1', name: 'Admin User', email: 'admin@demo.com', password: 'demo123', role: 'admin', avatar: '👩‍💼', isActive: true },
-  { id: 'parent-1', name: 'Priya Patel', email: 'parent@demo.com', password: 'demo123', role: 'parent', childId: 'student-1', avatar: '🧑', isActive: true },
+  { id: 'student-1', name: 'Aarav Patel', email: 'student@schoolsync.edu', password: 'student123', role: 'student', class: '10-A', rollNo: '12', avatar: '👦', isActive: true },
+  { id: 'student-2', name: 'Priya Sharma', email: 'student2@schoolsync.edu', password: 'student123', role: 'student', class: '10-A', rollNo: '15', avatar: '👧', isActive: true },
+  { id: 'student-3', name: 'Rahul Verma', email: 'student3@schoolsync.edu', password: 'student123', role: 'student', class: '10-B', rollNo: '8', avatar: '👦', isActive: true },
+  { id: 'teacher-1', name: 'Sarah Wilson', email: 'teacher@schoolsync.edu', password: 'teacher123', role: 'teacher', subject: 'Mathematics', avatar: '👨‍🏫', isActive: true },
+  { id: 'teacher-2', name: 'John Smith', email: 'teacher2@schoolsync.edu', password: 'teacher123', role: 'teacher', subject: 'English', avatar: '👩‍🏫', isActive: true },
+  { id: 'teacher-3', name: 'Michael Lee', email: 'teacher3@schoolsync.edu', password: 'teacher123', role: 'teacher', subject: 'Physics', avatar: '👨‍🏫', isActive: true },
+  { id: 'admin-1', name: 'Admin User', email: 'admin@schoolsync.edu', password: 'admin123', role: 'admin', avatar: '👩‍💼', isActive: true },
+  { id: 'parent-1', name: 'Priya Patel', email: 'parent@schoolsync.edu', password: 'parent123', role: 'parent', childId: 'student-1', avatar: '🧑', isActive: true },
 ];
 
 const DEMO_ASSIGNMENTS = [

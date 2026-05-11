@@ -5,7 +5,7 @@ import {
   LayoutDashboard, Users, BookOpen, Clock, Calendar, CheckCircle, Banknote,
   Bell, ChevronLeft, ChevronRight, X, Sparkles, Bot,
   LogOut, Settings, MessageCircle, FileText, BarChart3, ChevronDown,
-  ClipboardList, UserCheck, PencilLine, Megaphone, Heart, Wallet, Bus, Award
+  ClipboardList, UserCheck, PencilLine, Megaphone, Heart, Wallet, Bus, Award, Zap
 } from 'lucide-react';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
@@ -69,6 +69,7 @@ const ROLE_NAV = {
         { title: 'Announcements', icon: Megaphone, route: '/student/announcements' },
         { title: 'Study Planner', icon: Calendar, route: '/student/planner' },
         { title: 'CS Calendar', icon: Calendar, route: '/student/calendar' },
+        { title: 'Focus Mode', icon: Zap, route: '/student/focus' },
       ]
     },
     {
