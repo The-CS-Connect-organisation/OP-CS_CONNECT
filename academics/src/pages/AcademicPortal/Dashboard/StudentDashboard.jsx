@@ -98,7 +98,7 @@ const StudyHeatmap = () => {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   const weeks = Array.from({ length: 5 }, (_, i) => i);
   const intensity = () => Math.random();
-  
+
   return (
     <div className="nova-card p-6">
       <h3 className="text-sm font-semibold mb-4 flex items-center gap-2 text-gray-600">
@@ -116,6 +116,161 @@ const StudyHeatmap = () => {
         ))}
       </div>
       <p className="text-xs text-gray-400 mt-3">Last 5 weeks activity</p>
+    </div>
+  );
+};
+
+const CSCalendarWidget = ({ assignments, announcements }) => {
+  const today = new Date();
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    return d;
+  });
+
+  const getEventsForDay = (day) => {
+    const dateStr = day.toISOString().split('T')[0];
+    const events = [];
+
+    // Class events from announcements
+    announcements.forEach(a => {
+      if (a.date === dateStr || a.startDate === dateStr) {
+        events.push({ type: 'class', label: a.title, color: '#3b82f6' });
+      }
+    });
+
+    // Assignment events
+    assignments.forEach(a => {
+      const dueDate = a.dueDate || a.due_date;
+      if (dueDate && dueDate.split('T')[0] === dateStr) {
+        events.push({ type: 'assignment', label: a.title, color: '#f59e0b' });
+      }
+    });
+
+    // Exam events (from assignments with exam type)
+    assignments.forEach(a => {
+      if (a.type === 'exam' || a.isExam) {
+        const examDate = a.examDate || a.date || a.dueDate;
+        if (examDate && examDate.split('T')[0] === dateStr) {
+          events.push({ type: 'exam', label: a.title, color: '#ef4444' });
+        }
+      }
+    });
+
+    // Study events from announcements
+    announcements.forEach(a => {
+      if ((a.type === 'study' || a.category === 'study') && (a.date === dateStr || a.startDate === dateStr)) {
+        events.push({ type: 'study', label: a.title, color: '#8b5cf6' });
+      }
+    });
+
+    // Custom/Event from announcements
+    announcements.forEach(a => {
+      if ((a.type === 'event' || a.category === 'event') && (a.date === dateStr || a.startDate === dateStr)) {
+        events.push({ type: 'event', label: a.title, color: '#10b981' });
+      }
+    });
+
+    return events;
+  };
+
+  const eventTypeColors = [
+    { type: 'Class', color: '#3b82f6', bg: 'bg-blue-100' },
+    { type: 'Assignment', color: '#f59e0b', bg: 'bg-amber-100' },
+    { type: 'Exam', color: '#ef4444', bg: 'bg-red-100' },
+    { type: 'Study', color: '#8b5cf6', bg: 'bg-purple-100' },
+    { type: 'Event', color: '#10b981', bg: 'bg-green-100' },
+  ];
+
+  return (
+    <div className="nova-card p-6 bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-white/10 flex items-center justify-center">
+            <Calendar size={18} className="text-orange-400" />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-white">CS Calendar</h3>
+            <p className="text-[11px] text-gray-400">Next 7 days at a glance</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <a
+            href="/student/calendar"
+            className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white transition-colors flex items-center gap-1.5"
+          >
+            <span className="text-[10px]">+</span> New Event
+          </a>
+          <a
+            href="/student/calendar"
+            className="text-xs font-medium px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-gray-300 transition-colors flex items-center gap-1.5"
+          >
+            Open Calendar
+            <ChevronRight size={12} />
+          </a>
+        </div>
+      </div>
+
+      {/* 7-Day Strip */}
+      <div className="grid grid-cols-7 gap-2 mb-4">
+        {days.map((day, i) => {
+          const events = getEventsForDay(day);
+          const overflow = events.length > 3 ? events.length - 3 : 0;
+          const visibleEvents = events.slice(0, 3);
+          const isToday = i === 0;
+
+          return (
+            <div
+              key={i}
+              className={`
+                relative flex flex-col items-center p-3 rounded-xl cursor-pointer
+                transition-all hover:bg-white/10
+                ${isToday ? 'bg-orange-500/20 ring-1 ring-orange-500/50' : 'bg-white/5'}
+              `}
+              onClick={() => window.location.href = '/student/calendar'}
+            >
+              <span className="text-[10px] font-medium text-gray-400 uppercase">
+                {i === 0 ? 'Today' : day.toLocaleDateString('en-US', { weekday: 'short' })}
+              </span>
+              <span className={`text-lg font-bold mt-1 ${isToday ? 'text-orange-400' : 'text-white'}`}>
+                {day.getDate()}
+              </span>
+              <div className="flex flex-col gap-1 mt-2 items-center">
+                {visibleEvents.map((e, j) => (
+                  <div
+                    key={j}
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: e.color }}
+                    title={e.label}
+                  />
+                ))}
+                {overflow > 0 && (
+                  <span className="text-[9px] font-bold text-gray-400">+{overflow}</span>
+                )}
+                {events.length === 0 && (
+                  <div className="w-3 h-3 rounded-full bg-white/10" />
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Event Type Pills */}
+      <div className="flex flex-wrap gap-2 pt-4 border-t border-white/10">
+        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider self-center mr-1">Legend:</span>
+        {eventTypeColors.map((item) => (
+          <span
+            key={item.type}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold ${item.bg}`}
+            style={{ color: item.color }}
+          >
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+            {item.type}
+          </span>
+        ))}
+      </div>
     </div>
   );
 };
@@ -703,6 +858,9 @@ export const StudentDashboard = ({ user }) => {
           })}
         </div>
       </div>
+
+      {/* CS Calendar Widget */}
+      <CSCalendarWidget assignments={safeAssignments} announcements={safeAnnouncements} />
     </div>
   );
 };

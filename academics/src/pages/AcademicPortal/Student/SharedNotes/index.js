@@ -1,1 +1,1 @@
-export { default } from './SharedNotes';
+export { SharedNotes as SharedNotes, default } from './SharedNotes';
