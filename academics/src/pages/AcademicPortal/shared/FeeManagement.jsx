@@ -39,7 +39,27 @@ export const FeeManagement = ({ user, addToast }) => {
     let cancelled = false;
     request('/fees?limit=200')
       .then(res => {
-        if (!cancelled) setFees(res.items || res.fees || []);
+        if (!cancelled) {
+          const raw = res.items || res.fees || [];
+          // Normalize underscore field names from backend
+          const normalized = raw.map(f => ({
+            id: f.id,
+            studentId: f.student_id,
+            studentName: f.student_name || '',
+            class: f.class,
+            term: f.term,
+            amount: f.amount,
+            dueDate: f.due_date,
+            status: f.status,
+            paidAt: f.paid_at,
+            transactionId: f.transaction_id,
+            paymentMethod: f.payment_method,
+            createdAt: f.created_at,
+            description: f.description,
+            updatedAt: f.updated_at,
+          }));
+          setFees(normalized);
+        }
       })
       .catch(() => {});
     return () => { cancelled = true; };
@@ -589,7 +609,7 @@ export const FeeManagement = ({ user, addToast }) => {
                         Processing...
                       </span>
                     ) : (
-                      `Pay ₹${selectedFee.amount.toLocaleString('en-IN')}`
+                      <span>Pay ₹{selectedFee.amount.toLocaleString('en-IN')}</span>
                     )}
                   </Button>
                 </div>
