@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar, ChevronLeft, ChevronRight, Plus, Clock, BookOpen, FileText,
-  AlertCircle, Sparkles, Edit2, Trash2, X, Bell, CheckCircle2, Zap
+  AlertCircle, Sparkles, Edit2, Trash2, X, Bell, CheckCircle2, Zap,
+  Video, Link2, CheckCircle, XCircle, UserPlus, Users
 } from 'lucide-react';
 import { Card } from '../../../../components/ui/Card';
 import { Badge } from '../../../../components/ui/Badge';
@@ -22,6 +23,7 @@ const EVENT_TYPES = {
   exam: { label: 'Exam', color: '#ef4444', bg: '#fef2f2' },
   study: { label: 'Study', color: '#8b5cf6', bg: '#f5f3ff' },
   custom: { label: 'Event', color: '#10b981', bg: '#f0fdf4' },
+  meeting: { label: 'Meeting', color: '#f97316', bg: '#fff7ed' },
 };
 
 const getEventStyle = (type) => EVENT_TYPES[type] || EVENT_TYPES.custom;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Trophy, Zap, Star, Target, Flame, Award, Medal, Crown,
@@ -65,6 +65,310 @@ const getLevelXP = (xp) => {
   const next = LEVELS[level] || LEVELS[LEVELS.length - 1];
   return { level, base, next, progress: ((xp - base) / (next - base)) * 100 };
 };
+
+// ============================================================================
+// REALTIME LEADERBOARD PANEL (Firebase)
+// ============================================================================
+
+// XP sources: attendance=5/day present, marks=2 per mark point, submissions=10 per assignment
+
+const RankBadge = ({ rank, size = 'md' }) => {
+  const configs = {
+    1: { bg: 'linear-gradient(135deg, #ffd700, #ffb700)', shadow: '0 0 20px rgba(255,215,0,0.5)', label: '#1', emoji: 'G' },
+    2: { bg: 'linear-gradient(135deg, #e0e0e0, #b0b0b0)', shadow: '0 0 16px rgba(192,192,192,0.4)', label: '#2', emoji: 'S' },
+    3: { bg: 'linear-gradient(135deg, #cd7f32, #a0522d)', shadow: '0 0 14px rgba(205,127,50,0.4)', label: '#3', emoji: 'B' },
+  };
+  const c = configs[rank] || null;
+  const sizeClass = size === 'sm' ? 'w-7 h-7 text-xs' : 'w-9 h-9 text-sm';
+  const fs = size === 'sm' ? 12 : 14;
+  if (c) {
+    return (
+      <div className={`${sizeClass} rounded-full flex items-center justify-center font-black`}
+        style={{ background: c.bg, boxShadow: c.shadow, color: '#0a0a0f', fontSize: fs }}>
+        {c.label}
+      </div>
+    );
+  }
+  return (
+    <div className={`${sizeClass} rounded-full flex items-center justify-center font-mono font-bold`}
+      style={{ background: '#18181b', color: '#525252', fontSize: fs }}>
+      #{rank}
+    </div>
+  );
+};
+
+const AvatarCircle = ({ name, avatar, size = 'sm' }) => {
+  const sizeClass = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm';
+  const initial = (name || '?')[0]?.toUpperCase();
+  const colors = ['#ea580c', '#f97316', '#fb923c', '#fdba74', '#ffedd5'];
+  const colorIndex = (name || '').charCodeAt(0) % colors.length;
+  return avatar ? (
+    <img src={avatar} alt={name} className={`${sizeClass} rounded-full object-cover`} />
+  ) : (
+    <div className={`${sizeClass} rounded-full flex items-center justify-center font-bold`}
+      style={{ background: colors[colorIndex] + '33', color: colors[colorIndex], border: `1px solid ${colors[colorIndex]}55` }}>
+      {initial}
+    </div>
+  );
+};
+
+export const LeaderboardPanel = ({ user }) => {
+  const [mode, setMode] = useState('all'); // 'all' | 'weekly'
+  const [entries, setEntries] = useState([]);
+  const [myRank, setMyRank] = useState(null);
+  const [syncing, setSyncing] = useState(false);
+  const [lastSync, setLastSync] = useState(null);
+  const [isRealtime, setIsRealtime] = useState(false);
+
+  const classId = user?.classId || user?.class_id || 'default';
+
+  // Load backend data and sync to Firebase on mount
+  const syncFromBackend = useCallback(async () => {
+    if (!user) return;
+    setSyncing(true);
+    try {
+      // Fetch all backend data
+      const [attendRes, marksRes, assignRes, profileRes] = await Promise.allSettled([
+        studentApi.getAttendance(),
+        studentApi.getGrades(),
+        studentApi.getAssignments(),
+        studentApi.getProfile(),
+      ]);
+
+      const attendance = attendRes.status === 'fulfilled' ? (attendRes.value?.data || []) : [];
+      const marks = marksRes.status === 'fulfilled' ? (marksRes.value?.data || []) : [];
+      const submissions = assignRes.status === 'fulfilled'
+        ? (assignRes.value?.data || []).filter(a => a.status === 'submitted')
+        : [];
+      const profile = profileRes.status === 'fulfilled' ? (profileRes.value?.data || {}) : {};
+
+      // Get classmates (mock list + current user)
+      const classmates = [
+        { id: user.id, name: user.name, avatar: user.avatar },
+        { id: 'u1', name: 'Aarav Sharma', avatar: null },
+        { id: 'u2', name: 'Priya Patel', avatar: null },
+        { id: 'u3', name: 'Rohan Gupta', avatar: null },
+        { id: 'u4', name: 'Sneha Reddy', avatar: null },
+        { id: 'u5', name: 'Arjun Nair', avatar: null },
+        { id: 'u6', name: 'Meera Iyer', avatar: null },
+        { id: 'u7', name: 'Vivaan Shah', avatar: null },
+        { id: 'u8', name: 'Ananya Singh', avatar: null },
+        { id: 'u9', name: 'Karan Mehta', avatar: null },
+        { id: 'u10', name: 'Diya Krishnan', avatar: null },
+      ];
+
+      await firebaseLeaderboardService.syncAllStudents(
+        classId,
+        classmates,
+        attendance,
+        marks,
+        submissions
+      );
+
+      setLastSync(new Date());
+    } catch (err) {
+      console.error('[Leaderboard] Sync failed:', err);
+    } finally {
+      setSyncing(false);
+    }
+  }, [user, classId]);
+
+  // Subscribe to real-time leaderboard updates
+  useEffect(() => {
+    if (!user) return;
+
+    // Initial sync from backend
+    syncFromBackend();
+
+    // Set up real-time listeners
+    let unsubAll, unsubWeekly;
+    if (mode === 'all') {
+      unsubAll = firebaseLeaderboardService.subscribe(classId, (data) => {
+        setEntries(data);
+        setIsRealtime(true);
+        const idx = data.findIndex(e => e.studentId === user.id || e.id === user.id);
+        setMyRank(idx >= 0 ? idx + 1 : null);
+      });
+    } else {
+      unsubWeekly = firebaseLeaderboardService.subscribeWeekly(classId, (data) => {
+        setEntries(data);
+        setIsRealtime(true);
+        const idx = data.findIndex(e => e.studentId === user.id || e.id === user.id);
+        setMyRank(idx >= 0 ? idx + 1 : null);
+      });
+    }
+
+    return () => {
+      if (unsubAll) unsubAll();
+      if (unsubWeekly) unsubWeekly();
+    };
+  }, [user, classId, mode, syncFromBackend]);
+
+  // Re-subscribe when mode changes
+  useEffect(() => {
+    if (!user) return;
+    let unsub;
+    if (mode === 'all') {
+      unsub = firebaseLeaderboardService.subscribe(classId, (data) => {
+        setEntries(data);
+        setIsRealtime(true);
+        const idx = data.findIndex(e => e.studentId === user.id || e.id === user.id);
+        setMyRank(idx >= 0 ? idx + 1 : null);
+      });
+    } else {
+      unsub = firebaseLeaderboardService.subscribeWeekly(classId, (data) => {
+        setEntries(data);
+        setIsRealtime(true);
+        const idx = data.findIndex(e => e.studentId === user.id || e.id === user.id);
+        setMyRank(idx >= 0 ? idx + 1 : null);
+      });
+    }
+    return () => { if (unsub) unsub(); };
+  }, [mode, user, classId]);
+
+  const displayEntries = entries.slice(0, 10);
+
+  return (
+    <div className="space-y-4">
+      {/* Header with toggle */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Medal size={18} style={{ color: '#ea580c' }} />
+          <h3 className="text-base font-bold" style={{ color: '#fafafa' }}>Leaderboard</h3>
+          {isRealtime && (
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 rounded-full animate-pulse" style={{ background: '#22c55e' }} />
+              <span className="text-[10px] font-mono" style={{ color: '#22c55e' }}>LIVE</span>
+            </div>
+          )}
+        </div>
+        <div className="flex items-center gap-2">
+          {lastSync && (
+            <span className="text-[10px] font-mono hidden sm:block" style={{ color: '#525252' }}>
+              Synced {lastSync.toLocaleTimeString()}
+            </span>
+          )}
+          <button
+            onClick={syncFromBackend}
+            disabled={syncing}
+            className="p-1.5 rounded-lg transition-all disabled:opacity-50"
+            style={{ background: 'rgba(234,88,12,0.1)', border: '1px solid rgba(234,88,12,0.15)' }}
+            title="Sync from backend"
+          >
+            <RefreshCw size={12} className={syncing ? 'animate-spin' : ''} style={{ color: '#ea580c' }} />
+          </button>
+        </div>
+      </div>
+
+      {/* Mode Toggle */}
+      <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid rgba(234,88,12,0.2)' }}>
+        {['all', 'weekly'].map(m => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            className="flex-1 py-2 text-xs font-bold uppercase tracking-widest transition-all"
+            style={{
+              background: mode === m ? 'rgba(234,88,12,0.15)' : 'transparent',
+              color: mode === m ? '#ea580c' : '#71717a',
+            }}
+          >
+            {m === 'all' ? 'All Time' : 'Weekly'}
+          </button>
+        ))}
+      </div>
+
+      {/* XP XP source info */}
+      <div className="flex items-center gap-3 text-[10px] font-mono" style={{ color: '#525252' }}>
+        <span>5 XP/day present</span>
+        <span>|</span>
+        <span>2 XP/mark point</span>
+        <span>|</span>
+        <span>10 XP/submission</span>
+      </div>
+
+      {/* Leaderboard entries */}
+      <div className="space-y-1.5">
+        <AnimatePresence mode="popLayout">
+          {displayEntries.map((entry, i) => {
+            const isMe = entry.studentId === user?.id || entry.id === user?.id;
+            const xpField = mode === 'weekly' ? entry.xpWeekly : entry.xp;
+            return (
+              <motion.div
+                key={entry.studentId || entry.id}
+                layout
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
+                style={{
+                  background: isMe ? 'rgba(234,88,12,0.1)' : '#0a0a0f',
+                  border: isMe
+                    ? '1px solid rgba(234,88,12,0.3)'
+                    : '1px solid rgba(255,255,255,0.04)',
+                  borderLeft: isMe ? '3px solid #ea580c' : '1px solid rgba(255,255,255,0.04)',
+                }}
+              >
+                <RankBadge rank={i + 1} />
+                <AvatarCircle name={entry.studentName} avatar={entry.avatar} />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-bold truncate" style={{ color: isMe ? '#ea580c' : '#fafafa' }}>
+                      {entry.studentName}
+                    </span>
+                    {isMe && (
+                      <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded" style={{ background: 'rgba(234,88,12,0.15)', color: '#ea580c' }}>YOU</span>
+                    )}
+                    {i === 0 && !isMe && <Crown size={12} style={{ color: '#ffd700' }} />}
+                  </div>
+                  {myRank && isMe && i > 9 && (
+                    <span className="text-[10px] font-mono" style={{ color: '#71717a' }}>Your rank: #{myRank}</span>
+                  )}
+                </div>
+                <div className="text-right">
+                  <span className="font-mono text-sm font-bold" style={{ color: '#fafafa' }}>
+                    {(xpField || 0).toLocaleString()}
+                  </span>
+                  <span className="text-[10px] font-mono ml-1" style={{ color: '#71717a' }}>XP</span>
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+
+        {displayEntries.length === 0 && (
+          <div className="flex flex-col items-center py-8">
+            <Flame size={32} style={{ color: '#3f3f46' }} />
+            <p className="text-sm mt-2" style={{ color: '#525252' }}>No leaderboard data yet</p>
+            <button
+              onClick={syncFromBackend}
+              className="mt-3 px-4 py-2 rounded-lg text-xs font-bold"
+              style={{ background: 'rgba(234,88,12,0.1)', color: '#ea580c', border: '1px solid rgba(234,88,12,0.2)' }}
+            >
+              Sync Now
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* My rank banner (if not in top 10) */}
+      {myRank && myRank > 10 && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl"
+          style={{ background: 'rgba(234,88,12,0.05)', border: '1px solid rgba(234,88,12,0.15)' }}>
+          <RankBadge rank={myRank} size="sm" />
+          <div className="flex-1">
+            <span className="text-sm font-bold" style={{ color: '#fafafa' }}>Your Position</span>
+          </div>
+          <span className="font-mono text-sm font-bold" style={{ color: '#ea580c' }}>#{myRank}</span>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
+// MAIN ACHIEVEMENTS COMPONENT
+// ============================================================================
 
 export const Achievements = ({ user }) => {
   const { playClick, playBlip } = useSound();
@@ -446,42 +750,11 @@ export const Achievements = ({ user }) => {
 
         {/* Two Column Layout: Leaderboard + Weekly Challenges */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Leaderboard */}
+          {/* Leaderboard — Firebase Realtime */}
           <motion.div variants={itemVariants}>
-            <div className="flex items-center gap-2 mb-4">
-              <Medal size={18} style={{ color: '#ea580c' }} />
-              <h2 className="text-lg font-bold" style={{ color: '#fafafa' }}>Leaderboard</h2>
-            </div>
-            <Card style={{ background: '#0a0a0f', border: '1px solid rgba(234,88,12,0.15)' }} className="overflow-hidden">
-              <div className="divide-y" style={{ borderColor: 'rgba(234,88,12,0.08)' }}>
-                {leaderboard.map((entry, i) => (
-                  <motion.div
-                    key={entry.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.06 }}
-                    className={`flex items-center gap-3 px-5 py-3.5 transition-all ${entry.isCurrentUser ? '' : 'hover:bg-white/5'}`}
-                    style={entry.isCurrentUser ? {
-                      background: 'rgba(234,88,12,0.08)',
-                      borderLeft: '3px solid #ea580c',
-                    } : {}}
-                  >
-                    <RankMedal rank={entry.rank} />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold truncate" style={{ color: entry.isCurrentUser ? '#ea580c' : '#fafafa' }}>
-                          {entry.name}
-                        </span>
-                        {entry.isCurrentUser && (
-                          <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded" style={{ background: 'rgba(234,88,12,0.15)', color: '#ea580c' }}>YOU</span>
-                        )}
-                      </div>
-                    </div>
-                    <span className="font-mono text-sm font-bold" style={{ color: '#71717a' }}>
-                      {entry.xp.toLocaleString()} XP
-                    </span>
-                  </motion.div>
-                ))}
+            <Card style={{ background: '#0a0a0f', border: '1px solid rgba(234,88,12,0.15)' }}>
+              <div className="p-5">
+                <LeaderboardPanel user={user} />
               </div>
             </Card>
           </motion.div>

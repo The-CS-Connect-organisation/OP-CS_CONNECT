@@ -653,6 +653,194 @@ export const firebaseNotificationsService = {
   },
 };
 
+// ============================================================================
+// LEADERBOARD SERVICE
+// ============================================================================
+
+export const firebaseLeaderboardService = {
+  /**
+   * Get leaderboard for a class (sorted by XP, top N)
+   */
+  async getByClass(classId, limitCount = 10) {
+    try {
+      const snapshot = await get(
+        query(ref(database, `leaderboard/${classId}/students`), orderByChild('xp'), limitToFirst(limitCount))
+      );
+      if (!snapshot.exists()) return [];
+      const data = snapshot.val();
+      return Object.entries(data)
+        .map(([studentId, val]) => ({ studentId, ...val }))
+        .sort((a, b) => b.xp - a.xp);
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      return [];
+    }
+  },
+
+  /**
+   * Upsert a student entry in the leaderboard
+   */
+  async upsertStudent(classId, studentId, data) {
+    try {
+      await set(ref(database, `leaderboard/${classId}/students/${studentId}`), {
+        ...data,
+        updatedAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error('Error upserting leaderboard entry:', error);
+    }
+  },
+
+  /**
+   * Increment XP for a student
+   */
+  async addXP(classId, studentId, xpAmount) {
+    try {
+      const studentRef = ref(database, `leaderboard/${classId}/students/${studentId}`);
+      const snapshot = await get(studentRef);
+      const current = snapshot.exists() ? snapshot.val() : {};
+      const newXP = (current.xp || 0) + xpAmount;
+      await set(studentRef, {
+        ...current,
+        xp: newXP,
+        updatedAt: new Date().toISOString(),
+      });
+      return newXP;
+    } catch (error) {
+      console.error('Error adding XP:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Sync all students' XP for a class from backend data
+   * @param {string} classId
+   * @param {Array} attendance - attendance records with {studentId, status}
+   * @param {Array} marks - marks records with {studentId, score}
+   * @param {Array} submissions - submission records with {studentId, status}
+   */
+  async syncAllStudents(classId, students, attendance, marks, submissions) {
+    try {
+      const updates = {};
+      const now = new Date().toISOString();
+
+      // Get week boundaries for weekly XP
+      const weekStart = getWeekStart();
+
+      for (const student of students) {
+        const studentId = student.id || student.studentId || student._id;
+
+        // All-time XP
+        const presentDays = attendance.filter(a => {
+          const sId = a.studentId || a.student_id;
+          return sId === studentId && a.status === 'present';
+        }).length;
+        const studentMarks = marks.filter(m => {
+          const sId = m.studentId || m.student_id;
+          return sId === studentId;
+        });
+        const totalScore = studentMarks.reduce((s, m) => s + (parseFloat(m.score) || 0), 0);
+        const submitCount = submissions.filter(s => {
+          const sId = s.studentId || s.student_id;
+          return sId === studentId && s.status === 'submitted';
+        }).length;
+        const xpAllTime = (presentDays * 5) + (Math.round(totalScore) * 2) + (submitCount * 10);
+
+        // Weekly XP (only count attendance in the current week)
+        const weeklyPresent = attendance.filter(a => {
+          const sId = a.studentId || a.student_id;
+          const aDate = new Date(a.date || a.createdAt);
+          return sId === studentId && a.status === 'present' && aDate >= weekStart;
+        }).length;
+        const weeklyMarks = marks.filter(m => {
+          const sId = m.studentId || m.student_id;
+          const mDate = new Date(m.date || m.createdAt);
+          return sId === studentId && mDate >= weekStart;
+        });
+        const weeklyScore = weeklyMarks.reduce((s, m) => s + (parseFloat(m.score) || 0), 0);
+        const weeklySubs = submissions.filter(s => {
+          const sId = s.studentId || s.student_id;
+          const sDate = new Date(s.date || s.createdAt);
+          return sId === studentId && s.status === 'submitted' && sDate >= weekStart;
+        }).length;
+        const xpWeekly = (weeklyPresent * 5) + (Math.round(weeklyScore) * 2) + (weeklySubs * 10);
+
+        updates[`leaderboard/${classId}/students/${studentId}`] = {
+          studentId,
+          studentName: student.name || student.studentName || student.fullName || studentId,
+          xp: xpAllTime,
+          xpWeekly,
+          avatar: student.avatar || null,
+          classId,
+          updatedAt: now,
+        };
+      }
+
+      await update(ref(database), updates);
+      console.log(`[Leaderboard] Synced ${students.length} students for class ${classId}`);
+    } catch (error) {
+      console.error('Error syncing leaderboard:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * Subscribe to leaderboard real-time updates
+   */
+  subscribe(classId, callback) {
+    const lbRef = query(
+      ref(database, `leaderboard/${classId}/students`),
+      orderByChild('xp')
+    );
+    return onValue(lbRef, (snapshot) => {
+      if (!snapshot.exists()) {
+        callback([]);
+        return;
+      }
+      const data = snapshot.val();
+      const entries = Object.entries(data)
+        .map(([id, val]) => ({ id, ...val }))
+        .sort((a, b) => b.xp - a.xp);
+      callback(entries);
+    }, (error) => {
+      console.error('Leaderboard subscription error:', error);
+      callback([]);
+    });
+  },
+
+  /**
+   * Subscribe to weekly leaderboard
+   */
+  subscribeWeekly(classId, callback) {
+    const lbRef = query(
+      ref(database, `leaderboard/${classId}/students`),
+      orderByChild('xpWeekly')
+    );
+    return onValue(lbRef, (snapshot) => {
+      if (!snapshot.exists()) {
+        callback([]);
+        return;
+      }
+      const data = snapshot.val();
+      const entries = Object.entries(data)
+        .map(([id, val]) => ({ id, ...val }))
+        .sort((a, b) => b.xpWeekly - a.xpWeekly);
+      callback(entries);
+    }, (error) => {
+      console.error('Weekly leaderboard subscription error:', error);
+      callback([]);
+    });
+  },
+};
+
+// Helper: get start of current week (Monday)
+function getWeekStart() {
+  const now = new Date();
+  const day = now.getDay();
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+  return new Date(now.setDate(diff));
+}
+
 export default {
   firebaseUsersService,
   firebaseAssignmentsService,
@@ -660,4 +848,5 @@ export default {
   firebaseAttendanceService,
   firebaseMarksService,
   firebaseNotificationsService,
+  firebaseLeaderboardService,
 };

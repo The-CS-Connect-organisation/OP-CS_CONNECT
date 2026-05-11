@@ -86,7 +86,7 @@ const ROLE_NAV = {
       section: 'Tools',
       items: [
         { title: 'AI Assistant', icon: Sparkles, route: '/student/ai-lab' },
-        { title: 'Messages', icon: MessageCircle, route: '/student/comms' },
+        { title: 'Messages', icon: MessageCircle, route: '/student/messages' },
         { title: 'Nexus Hub', icon: Users, route: '/student/nexus' },
         { title: 'Achievements', icon: Trophy, route: '/student/achievements' },
         { title: 'Profile', icon: Users, route: '/student/profile' },
