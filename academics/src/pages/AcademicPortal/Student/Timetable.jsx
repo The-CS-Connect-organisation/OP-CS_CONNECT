@@ -33,43 +33,75 @@ const DAY_ICONS = {
   Sunday: '💤',
 };
 
+const DAYS_ORDERED = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
 export const Timetable = ({ user }) => {
-  const [apiTimetable, setApiTimetable] = useState(null);
+  const [apiEntries, setApiEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { playClick, playBlip } = useSound();
-  const [selectedDay, setSelectedDay] = useState(new Date().toLocaleDateString('en-US', { weekday: 'long' }));
+  const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const [selectedDay, setSelectedDay] = useState(todayName);
 
   useEffect(() => {
     if (!user?.id) return;
     let alive = true;
+    setLoading(true);
+    setError(null);
+
     request('/school/timetables')
       .then(res => {
-        if (alive) {
-          const tt = res?.timetable || res?.data?.timetable || res?.data || res || {};
-          setApiTimetable(tt);
-        }
+        if (!alive) return;
+        // Backend returns: { success: true, classId, entries: [{ day, period, subject, teacher, room, time }] }
+        const entries = res?.entries || res?.data?.entries || [];
+        setApiEntries(Array.isArray(entries) ? entries : []);
+        setLoading(false);
       })
-      .catch(e => console.error('Failed to load timetable:', e));
+      .catch(e => {
+        if (!alive) return;
+        console.error('Failed to load timetable:', e);
+        setError(e.message || 'Failed to load timetable');
+        setLoading(false);
+      });
+
     return () => { alive = false; };
   }, [user?.id]);
 
-  const timetable = apiTimetable || {};
-  
-  const classTimetable = timetable[user.class] || [];
-  const todaySchedule = classTimetable.find(t => t.day === selectedDay)?.slots || [];
+  // Group entries by day
+  const classTimetable = DAYS_ORDERED
+    .map(day => ({
+      day,
+      slots: apiEntries
+        .filter(e => e.day === day)
+        .sort((a, b) => {
+          const timeA = a.time || a.period || '';
+          const timeB = b.time || b.period || '';
+          const hA = parseInt(timeA.split(':')[0] || '0');
+          const hB = parseInt(timeB.split(':')[0] || '0');
+          return hA - hB;
+        }),
+    }))
+    .filter(day => day.slots.length > 0);
+
+  // Auto-select today if it has entries
+  const activeDayData = classTimetable.find(d => d.day === selectedDay) || classTimetable[0];
+  const todaySchedule = activeDayData?.slots || [];
 
   const getTimePeriod = (time) => {
-    const hour = parseInt(time.split(':')[0]);
+    const hour = parseInt((time || '12:00').split(':')[0]);
     if (hour < 12) return 'Morning';
     if (hour < 15) return 'Afternoon';
     return 'Evening';
   };
 
+  const totalClassesThisWeek = apiEntries.filter(e => !['Break', 'Lunch'].includes(e.period)).length;
+
   return (
     <div className="space-y-8 max-w-[1400px] mx-auto w-full pt-2 pb-12">
       {/* ── Header ── */}
-      <motion.div 
-        initial={{ opacity: 0, y: -12 }} 
-        animate={{ opacity: 1, y: 0 }} 
+      <motion.div
+        initial={{ opacity: 0, y: -12 }}
+        animate={{ opacity: 1, y: 0 }}
         className="flex flex-col md:flex-row md:items-end justify-between gap-6"
       >
         <div>
@@ -85,7 +117,7 @@ export const Timetable = ({ user }) => {
             Timetable
           </h1>
           <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>
-            {user.class} • {classTimetable.length} days scheduled
+            {user.class || 'Your class'} • {totalClassesThisWeek} classes this week
           </p>
         </div>
 
@@ -93,196 +125,231 @@ export const Timetable = ({ user }) => {
         <div className="flex gap-3">
           <div className="nova-card p-4 min-w-[120px]">
             <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Today's Classes</p>
-            <p className="text-2xl font-bold mt-1" style={{ color: 'var(--text-primary)' }}>{todaySchedule.length}</p>
+            <p className="text-2xl font-bold mt-1" style={{ color: 'var(--text-primary)' }}>
+              {todaySchedule.filter(s => !['Break', 'Lunch'].includes(s.period)).length}
+            </p>
           </div>
           <div className="nova-card p-4 min-w-[120px]">
             <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>This Week</p>
             <p className="text-2xl font-bold mt-1" style={{ color: 'var(--text-primary)' }}>
-              {classTimetable.reduce((acc, day) => acc + (day.slots?.length || 0), 0)}
+              {totalClassesThisWeek}
             </p>
           </div>
         </div>
       </motion.div>
 
       {/* ── Day Selector Tabs ── */}
-      <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-        {classTimetable.map((day, idx) => {
-          const isActive = selectedDay === day.day;
-          const icon = DAY_ICONS[day.day] || '📅';
-          return (
-            <motion.button
-              key={day.day}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05 }}
-              whileHover={{ scale: 1.02, y: -1 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => { playClick(); setSelectedDay(day.day); }}
-              className={`px-5 py-3 rounded-xl text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
-                isActive
-                  ? 'bg-black text-white shadow-lg'
-                  : 'bg-white text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-surface)]'
-              }`}
-            >
-              <span className="text-lg">{icon}</span>
-              <span>{day.day}</span>
-              {isActive && (
-                <motion.div
-                  layoutId="dayIndicator"
-                  className="absolute inset-0 rounded-xl"
-                  style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}
-                />
-              )}
-            </motion.button>
-          );
-        })}
-      </div>
+      {loading ? (
+        <div className="flex gap-2 overflow-x-auto pb-2">
+          {['Mon', 'Tue', 'Wed', 'Thu', 'Fri'].map(d => (
+            <div key={d} className="h-12 w-20 rounded-xl bg-gray-100 animate-pulse" />
+          ))}
+        </div>
+      ) : classTimetable.length === 0 ? null : (
+        <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+          {classTimetable.map((day, idx) => {
+            const isActive = selectedDay === day.day;
+            const icon = DAY_ICONS[day.day] || '📅';
+            return (
+              <motion.button
+                key={day.day}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                whileHover={{ scale: 1.02, y: -1 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => { playClick(); setSelectedDay(day.day); }}
+                className={`relative px-5 py-3 rounded-xl text-sm font-semibold transition-all whitespace-nowrap flex items-center gap-2 ${
+                  isActive
+                    ? 'bg-black text-white shadow-lg'
+                    : 'bg-white text-[var(--text-secondary)] border border-[var(--border-default)] hover:border-[var(--border-strong)] hover:bg-[var(--bg-surface)]'
+                }`}
+              >
+                <span className="text-lg">{icon}</span>
+                <span>{day.day}</span>
+                {isActive && (
+                  <motion.div
+                    layoutId="dayIndicator"
+                    className="absolute inset-0 rounded-xl"
+                    style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+      )}
 
       {/* ── Schedule Grid ── */}
       <div className="relative">
-        <AnimatePresence mode="wait">
-          <motion.div 
-            key={selectedDay}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -16 }}
-            transition={{ duration: 0.3 }}
-            className="grid gap-4"
+        {loading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-28 rounded-2xl bg-gray-100 animate-pulse" />
+            ))}
+          </div>
+        ) : error ? (
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="nova-card border-dashed border-[var(--border-default)] py-24 text-center"
           >
-            {todaySchedule.length === 0 ? (
-              <motion.div 
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="nova-card border-dashed border-[var(--border-default)] py-24 text-center"
-              >
-                <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
-                  style={{ background: 'var(--bg-elevated)' }}>
-                  <Terminal size={32} className="text-[var(--text-muted)]" />
-                </div>
-                <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>No Classes Scheduled</h3>
-                <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Enjoy your free time! 🎉</p>
-              </motion.div>
-            ) : (
-              todaySchedule.map((slot, idx) => {
-                const colors = getSubjectColor(slot.subject);
-                const isNow = slot.time.includes('Now') || false;
-                
-                return (
-                  <motion.div
-                    key={`${selectedDay}-${idx}`}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.06 }}
-                  >
-                    <div 
-                      className={`nova-card p-5 cursor-pointer group relative overflow-hidden ${isNow ? 'ring-2 ring-emerald-500 ring-offset-2' : ''}`}
-                      style={{
-                        background: colors.bg,
-                        border: `1px solid ${colors.border}`,
-                      }}
-                      onMouseEnter={playClick}
+            <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
+              style={{ background: 'var(--bg-elevated)' }}>
+              <Activity size={32} className="text-red-400" />
+            </div>
+            <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Could not load timetable</h3>
+            <p className="text-sm" style={{ color: 'var(--text-muted)' }}>{error}</p>
+          </motion.div>
+        ) : (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={selectedDay}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.3 }}
+              className="grid gap-4"
+            >
+              {todaySchedule.length === 0 ? (
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="nova-card border-dashed border-[var(--border-default)] py-24 text-center"
+                >
+                  <div className="w-20 h-20 rounded-full mx-auto mb-6 flex items-center justify-center"
+                    style={{ background: 'var(--bg-elevated)' }}>
+                    <Terminal size={32} className="text-[var(--text-muted)]" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2" style={{ color: 'var(--text-primary)' }}>No Classes Scheduled</h3>
+                  <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Enjoy your free time! 🎉</p>
+                </motion.div>
+              ) : (
+                todaySchedule.map((slot, idx) => {
+                  const colors = getSubjectColor(slot.subject);
+                  const timeStr = slot.time || slot.period || '';
+                  const isBreak = ['Break', 'Lunch'].includes(slot.period);
+
+                  return (
+                    <motion.div
+                      key={`${selectedDay}-${idx}`}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: idx * 0.06 }}
                     >
-                      {/* Glow effect on hover */}
-                      <div 
-                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
-                        style={{ background: `radial-gradient(ellipse at left, ${colors.glow}, transparent 60%)` }}
-                      />
+                      <div
+                        className={`nova-card p-5 cursor-pointer group relative overflow-hidden ${isBreak ? 'opacity-70' : ''}`}
+                        style={{
+                          background: isBreak ? 'rgba(0,0,0,0.03)' : colors.bg,
+                          border: `1px solid ${colors.border}`,
+                        }}
+                        onMouseEnter={!isBreak ? playClick : undefined}
+                      >
+                        <div
+                          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+                          style={{ background: `radial-gradient(ellipse at left, ${colors.glow}, transparent 60%)` }}
+                        />
 
-                      <div className="flex items-center gap-5 relative z-10">
-                        {/* Time Block */}
-                        <div className="flex-shrink-0">
-                          <div 
-                            className="w-20 h-20 rounded-xl flex flex-col items-center justify-center"
-                            style={{ 
-                              background: 'white',
-                              border: `1px solid ${colors.border}`,
-                              boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
-                            }}
-                          >
-                            <Clock size={16} className="mb-1" style={{ color: colors.text }} />
-                            <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
-                              {slot.time.split(' - ')[0] || slot.time.split(' ')[0]}
-                            </span>
-                            {slot.time.includes('-') && (
-                              <span className="text-[10px] text-[var(--text-muted)]">
-                                {slot.time.split(' - ')[1]}
+                        <div className="flex items-center gap-5 relative z-10">
+                          <div className="flex-shrink-0">
+                            <div
+                              className="w-20 h-20 rounded-xl flex flex-col items-center justify-center"
+                              style={{
+                                background: 'white',
+                                border: `1px solid ${colors.border}`,
+                                boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
+                              }}
+                            >
+                              <Clock size={16} className="mb-1" style={{ color: colors.text }} />
+                              <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>
+                                {timeStr.includes('-')
+                                  ? timeStr.split(' - ')[0]
+                                  : timeStr.split(' ')[0]}
                               </span>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Connector Line */}
-                        <div className="flex-shrink-0 hidden md:block">
-                          <div className="w-8 h-[2px]" style={{ background: colors.border }} />
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-4">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2">
-                                <span 
-                                  className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider"
-                                  style={{ background: colors.bg, color: colors.text, border: `1px solid ${colors.border}` }}
-                                >
-                                  {getTimePeriod(slot.time)}
+                              {timeStr.includes('-') && (
+                                <span className="text-[10px] text-[var(--text-muted)]">
+                                  {timeStr.split(' - ')[1]}
                                 </span>
-                                {isNow && (
-                                  <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                    Live Now
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex-shrink-0 hidden md:block">
+                            <div className="w-8 h-[2px]" style={{ background: colors.border }} />
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <span
+                                    className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider"
+                                    style={{ background: colors.bg, color: colors.text, border: `1px solid ${colors.border}` }}
+                                  >
+                                    {getTimePeriod(timeStr)}
+                                  </span>
+                                  {isBreak && (
+                                    <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500 border border-gray-200">
+                                      Break Time
+                                    </span>
+                                  )}
+                                </div>
+                                <h3 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
+                                  {slot.subject || slot.period}
+                                </h3>
+                              </div>
+
+                              {!isBreak && (
+                                <ChevronRight
+                                  size={24}
+                                  className="flex-shrink-0 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] group-hover:translate-x-1 transition-all"
+                                />
+                              )}
+                            </div>
+
+                            {!isBreak && (
+                              <div className="flex flex-wrap gap-4 mt-4">
+                                {slot.teacher && (
+                                  <span className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                    <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-elevated)' }}>
+                                      <User size={14} />
+                                    </div>
+                                    <span className="font-medium">{slot.teacher}</span>
+                                  </span>
+                                )}
+                                {slot.room && (
+                                  <span className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                    <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-elevated)' }}>
+                                      <MapPin size={14} />
+                                    </div>
+                                    <span className="font-medium">Room {slot.room}</span>
+                                  </span>
+                                )}
+                                {timeStr.includes('-') && (
+                                  <span className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
+                                    <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-elevated)' }}>
+                                      <Clock size={14} />
+                                    </div>
+                                    <span className="font-medium">{timeStr}</span>
                                   </span>
                                 )}
                               </div>
-                              <h3 className="text-xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-                                {slot.subject}
-                              </h3>
-                            </div>
-
-                            <ChevronRight 
-                              size={24} 
-                              className="flex-shrink-0 text-[var(--text-muted)] group-hover:text-[var(--text-primary)] group-hover:translate-x-1 transition-all" 
-                            />
-                          </div>
-
-                          {/* Details */}
-                          <div className="flex flex-wrap gap-4 mt-4">
-                            <span className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                              <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-elevated)' }}>
-                                <User size={14} />
-                              </div>
-                              <span className="font-medium">{slot.teacher}</span>
-                            </span>
-                            <span className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                              <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-elevated)' }}>
-                                <MapPin size={14} />
-                              </div>
-                              <span className="font-medium">Room {slot.room}</span>
-                            </span>
-                            {slot.duration && (
-                              <span className="flex items-center gap-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-                                <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'var(--bg-elevated)' }}>
-                                  <Clock size={14} />
-                                </div>
-                                <span className="font-medium">{slot.duration}</span>
-                              </span>
                             )}
                           </div>
                         </div>
-                      </div>
 
-                      {/* Subject indicator bar */}
-                      <div 
-                        className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
-                        style={{ background: colors.text }}
-                      />
-                    </div>
-                  </motion.div>
-                );
-              })
-            )}
-          </motion.div>
-        </AnimatePresence>
+                        <div
+                          className="absolute left-0 top-0 bottom-0 w-1 rounded-l-xl"
+                          style={{ background: colors.text }}
+                        />
+                      </div>
+                    </motion.div>
+                  );
+                })
+              )}
+            </motion.div>
+          </AnimatePresence>
+        )}
       </div>
     </div>
   );
