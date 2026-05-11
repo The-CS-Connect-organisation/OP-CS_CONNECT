@@ -63,48 +63,50 @@ export const Assignments = ({ user }) => {
   return (
     <div className="space-y-8 max-w-[1400px] mx-auto w-full pt-4 pb-12">
       {/* Header section */}
-      <motion.div 
-        initial={{ opacity: 0, x: -20 }} 
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className="flex flex-col md:flex-row md:items-end justify-between gap-6"
       >
         <div>
           <div className="flex items-center gap-3 mb-4">
-             <span className="px-3 py-1 bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-default)] rounded-sm text-[10px] font-semibold font-mono">
+             <span className="px-3 py-1 bg-white border border-gray-200 rounded-sm text-[10px] font-bold uppercase tracking-widest text-gray-500">
                Overview
              </span>
-             <div className="h-[1px] w-8 bg-[var(--bg-floating)]" />
-             <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-2">
+             <div className="h-[1px] w-8 bg-gray-200" />
+             <span className="text-[10px] font-semibold uppercase tracking-widest text-gray-400 flex items-center gap-2">
                <Activity size={10} className="animate-pulse" /> Total: {myAssignments.length}
              </span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[var(--text-primary)] flex items-center gap-4">
-             <FileText className="text-[var(--text-muted)]" size={48} />
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 flex items-center gap-4">
+             <FileText className="text-orange-500" size={36} />
              Assignments
           </h1>
         </div>
 
         <div className="flex flex-col md:flex-row gap-4 items-center">
           <div className="relative group">
-            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] group-focus-within:text-[var(--text-muted)] transition-colors" />
-            <input 
-              value={search} 
-              onChange={e => setSearch(e.target.value)} 
-              placeholder="Search..." 
-              className="input-field pl-12 pr-6 py-3 font-mono uppercase text-xs w-full min-w-[240px]" 
+            <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search..."
+              className="input-field pl-12 pr-6 py-3 text-xs w-full min-w-[240px]"
             />
           </div>
           
-          <div className="flex p-1 bg-nova-base border border-[var(--border-default)] rounded-xl">
+          <div className="flex p-1 bg-white border border-gray-200 rounded-xl">
             {['all', 'pending', 'graded'].map(f => (
-              <button 
-                key={f} 
+              <button
+                key={f}
                 onClick={() => { playClick(); setFilter(f); }}
-                className={`px-5 py-2 rounded-lg text-[10px] font-mono font-semibold transition-all ${
-                  filter === f 
-                    ? 'bg-white text-[var(--text-primary)] shadow-[0_0_15px_rgba(255,255,255,0.3)]' 
-                    : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-elevated)]'
+                className={`px-5 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                  filter === f
+                    ? 'text-white shadow-md'
+                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
                 }`}
+                style={filter === f ? { background: '#ea580c' } : {}}
               >
                 {f}
               </button>
@@ -120,19 +122,19 @@ export const Assignments = ({ user }) => {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="py-32 text-center nova-card border-dashed border-[var(--border-default)]"
+              className="py-32 text-center nova-card border-dashed border-gray-200"
             >
-              <Terminal size={48} className="mx-auto text-zinc-800 mb-6" />
-              <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">Loading assignments...</p>
+              <Terminal size={48} className="mx-auto text-orange-300 mb-6" />
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">Loading assignments...</p>
             </motion.div>
           ) : filtered.length === 0 ? (
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              className="py-32 text-center nova-card border-dashed border-[var(--border-default)]"
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="py-32 text-center nova-card border-dashed border-gray-200"
             >
-              <Terminal size={48} className="mx-auto text-zinc-800 mb-6" />
-              <p className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest">No results found</p>
+              <Terminal size={48} className="mx-auto text-orange-300 mb-6" />
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-gray-400">No results found</p>
             </motion.div>
           ) : (
             filtered.map((a, idx) => {

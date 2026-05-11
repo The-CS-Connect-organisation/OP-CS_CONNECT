@@ -108,17 +108,17 @@ export const Grades = ({ user }) => {
       <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <div className="flex items-center gap-3 mb-4">
-             <span className="px-3 py-1 bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-default)] rounded-sm text-[10px] font-semibold font-mono">
+             <span className="px-3 py-1 bg-white border border-gray-200 rounded-sm text-[10px] font-bold uppercase tracking-widest text-gray-500">
                Overview
              </span>
              <div className="h-[1px] w-8 bg-[var(--bg-floating)]" />
-             <span className="text-[10px] font-mono text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-2">
-               <Activity size={10} className="animate-pulse" /> Stream_Analytics_Online
+             <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+               <Activity size={10} className="animate-pulse" /> Grade Summary
              </span>
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[var(--text-primary)] flex items-center gap-4">
-             <Award className="text-[var(--text-muted)]" size={48} />
-             Scholar_Index
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 flex items-center gap-4">
+             <Award className="text-orange-500" size={36} />
+             My Grades
           </h1>
         </div>
 

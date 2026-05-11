@@ -57,12 +57,13 @@ export const Attendance = ({ user }) => {
   return (
     <div className="space-y-10 max-w-[1400px] mx-auto w-full pt-4 pb-12">
       {/* Header section */}
-      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-[var(--text-primary)] flex items-center gap-4">
-           <CheckSquare className="text-[var(--text-muted)]" size={48} />
+      <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>
+        <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 flex items-center gap-4">
+           <CheckSquare className="text-orange-500" size={36} />
            Attendance Record
         </h1>
-        <p className="text-sm text-[var(--text-muted)] mt-2">Your attendance summary and subject-wise breakdown</p>
+        <p className="text-sm text-gray-500 mt-2">Your attendance summary and subject-wise breakdown</p>
       </motion.div>
 
       {/* Metrics Grid */}
