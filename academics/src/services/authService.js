@@ -35,8 +35,11 @@ export const authService = {
       body: JSON.stringify({ email: cleanEmail, password: cleanPassword }),
     });
     if (!payload?.user) return { success: false, error: payload?.message || 'Invalid email or password' };
-    setSession({ user: payload.user, token: payload.token });
-    return { success: true, user: payload.user };
+    // Merge enriched fields (class, grade, xp, classroomId etc.) into user
+    const enriched = payload.enriched || {};
+    const fullUser = { ...payload.user, ...enriched };
+    setSession({ user: fullUser, token: payload.token });
+    return { success: true, user: fullUser };
   },
 
   async signup(data) {

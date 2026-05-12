@@ -479,6 +479,7 @@ export const StudentDashboard = ({ user }) => {
   const [apiAttendance, setApiAttendance] = useState([]);
   const [apiAnnouncements, setApiAnnouncements] = useState([]);
   const [apiTimetableEntries, setApiTimetableEntries] = useState([]);
+  const [profileData, setProfileData] = useState(null);
   const [loadingDash, setLoadingDash] = useState(true);
 
   useEffect(() => {
@@ -489,10 +490,11 @@ export const StudentDashboard = ({ user }) => {
     Promise.allSettled([
       request('/school/assignments'),
       request(`/student/grades`),
-      request(`/school/attendance/${user.id}/report`),
+      request('/student/attendance'),
       request('/school/announcements?limit=50'),
       request('/school/timetables'),
-    ]).then(([assignRes, marksRes, attRes, annRes, ttRes]) => {
+      request('/student/profile'),
+    ]).then(([assignRes, marksRes, attRes, annRes, ttRes, profileRes]) => {
       if (cancelled) return;
       if (assignRes.status === 'fulfilled') {
         const list = assignRes.value.assignments || assignRes.value.items || [];
@@ -550,6 +552,9 @@ export const StudentDashboard = ({ user }) => {
           setApiTimetableEntries(normalized);
         }
       }
+      if (profileRes.status === 'fulfilled' && profileRes.value?.profile) {
+        setProfileData(profileRes.value.profile);
+      }
     }).finally(() => { if (!cancelled) setLoadingDash(false); });
 
     return () => { cancelled = true; };
@@ -570,7 +575,7 @@ export const StudentDashboard = ({ user }) => {
   const [focusMode, setFocusMode] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
-  const myAssignments = safeAssignments.filter(a => !a.class_id || a.class_id === user.classroomId || a.class === user.class);
+  const myAssignments = safeAssignments.filter(a => !a.class_id || a.class_id === (user.classroomId || profileData?.class_id) || a.class === (user.class || profileData?.class));
   const pendingAssignments = myAssignments.filter(a => {
     const sub = safeSubmissions.find((s) => s.assignmentId === a.id && s.studentId === user.id);
     return !sub || (sub.status !== 'submitted' && sub.status !== 'graded');
@@ -589,10 +594,11 @@ export const StudentDashboard = ({ user }) => {
 
   const myAttendance = safeAttendance.filter(a => !a.student_id || a.student_id === user.id || a.studentId === user.id);
   const presentCount = myAttendance.filter(a => a.status === 'present' || a.status === 'late').length;
-  const attendanceRate = myAttendance.length > 0 ? Math.round((presentCount / myAttendance.length) * 100) : 0;
+  const computedAttendance = myAttendance.length > 0 ? Math.round((presentCount / myAttendance.length) * 100) : 0;
+  const attendanceRate = profileData?.attendancePercent || computedAttendance;
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-  const todaySchedule = safeTimetable[user.class]?.[today] || safeTimetable[user.classroomId]?.[today] || [];
+  const todaySchedule = safeTimetable[user.class]?.[today] || safeTimetable[user.classroomId]?.[today] || safeTimetable[profileData?.class]?.[today] || safeTimetable[profileData?.class_id]?.[today] || [];
 
   // Dynamic Data Calculations — use computed values, no useStore needed
   const xpData = { xp: 0, level: 1 };
@@ -601,11 +607,12 @@ export const StudentDashboard = ({ user }) => {
   const studyActivity = {};
   const notifications = [];
 
-  // Calculate real XP and level
-  const baseXP = myMarks.reduce((sum, m) => sum + (m.marksObtained * 2), 0) + 
-                 myAttendance.filter(a => a.status === 'present').length * 5;
+  // Use real XP/level from profile, fallback to computed
+  const profileXP = profileData?.xp || 0;
+  const profileLevel = profileData?.level || 1;
+  const baseXP = profileXP > 0 ? profileXP : myMarks.reduce((sum, m) => sum + (m.marksObtained * 2), 0) + myAttendance.filter(a => a.status === 'present').length * 5;
   const xp = baseXP;
-  const level = Math.floor(xp / 1000) + 1;
+  const level = profileLevel > 0 ? profileLevel : Math.floor(xp / 1000) + 1;
   const nextLevelXP = 1000;
 
   // Calculate subject health scores dynamically
@@ -660,9 +667,9 @@ export const StudentDashboard = ({ user }) => {
   const goals = goalsData || [];
 
   const calendarEvents = useMemo(() => {
-    const myAssignments = safeAssignments.filter((a) => a.class === user.class);
+    const myAssignments = safeAssignments.filter((a) => a.class === (user.class || profileData?.class));
     return calendarService.buildEvents({ user, assignments: myAssignments, exams: safeExams, timetable: safeTimetable, announcements: safeAnnouncements });
-  }, [safeAssignments, safeExams, safeTimetable, safeAnnouncements, user]);
+  }, [safeAssignments, safeExams, safeTimetable, safeAnnouncements, user, profileData]);
 
   const upcoming = useMemo(() => calendarService.nextUpcoming({ events: calendarEvents, limit: 3 }), [calendarEvents]);
 
@@ -755,7 +762,7 @@ export const StudentDashboard = ({ user }) => {
             </span>
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold" style={{ background: 'rgba(59,130,246,0.08)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.15)' }}>
               <span className="w-1.5 h-1.5 rounded-full" style={{ background: '#3b82f6' }} />
-              {user.class}
+              {user.class || profileData?.class || 'Class 10-A'}
             </span>
             <button
               onClick={() => setFocusMode(!focusMode)}
@@ -771,7 +778,7 @@ export const StudentDashboard = ({ user }) => {
           </h1>
           <div className="flex flex-wrap gap-2 mt-5">
             {[
-              { label: 'Class', value: user.class },
+              { label: 'Class', value: user.class || profileData?.class || '10-A' },
               { label: 'ID', value: user.admissionNo || user.rollNo || user.id.slice(-6).toUpperCase() },
               { label: 'Level', value: level },
             ].map((tag, i) => (
