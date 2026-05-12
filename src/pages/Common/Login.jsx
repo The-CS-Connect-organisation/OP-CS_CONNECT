@@ -90,9 +90,8 @@ export const Login = ({ onLogin, onSwitch }) => {
       setPassword(p);
       setLoading(true);
       onLogin(e, p).then((result) => {
-        if (result?.success) {
-          navigate(`/${result.user.role}/dashboard`);
-        } else {
+        // Note: onLogin (from useAuth.login) already handles navigation
+        if (!result?.success) {
           setError(result?.error || 'Login failed');
           setLoading(false);
         }
@@ -109,10 +108,10 @@ export const Login = ({ onLogin, onSwitch }) => {
     playBlip();
     await new Promise(r => setTimeout(r, 800));
     const result = await onLogin(email.trim().toLowerCase(), password.trim());
-    if (result.success) {
-      navigate(`/${result.user.role}/dashboard`);
-    } else {
-      setError(result.error);
+    // Note: onLogin (from useAuth.login) already handles navigation
+    // So we just need to handle the error case here
+    if (!result?.success) {
+      setError(result?.error || 'Login failed');
       setLoading(false);
     }
   };
