@@ -499,7 +499,7 @@ export const StudentDashboard = ({ user }) => {
         const diff = dueDate.getTime() - now.getTime();
         const h = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
         const m = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-        const s = String(Math.floor((diff % (1000 * 60)) / 1000).padStart(2, '0');
+        const s = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
         items.push({ label: 'Assignment Due', timeLeft: `${h}:${m}:${s}` });
       }
     }

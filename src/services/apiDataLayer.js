@@ -182,22 +182,16 @@ async function performRequest(method, url, data, retries, timeout) {
 }
 
 /**
- * Get auth token
+ * Get auth token — reads from localStorage directly to stay in sync
+ * with any token set by authService or apiClient modules.
  */
 function getAuthToken() {
   try {
     const tokenJson = localStorage.getItem('sms_auth_token');
-    if (!tokenJson) {
-      console.warn('No auth token found');
-      return '';
-    }
-    // Parse if it's JSON (stored by setToStorage), otherwise use as-is
-    const token = typeof tokenJson === 'string' && tokenJson.startsWith('"') 
-      ? JSON.parse(tokenJson) 
-      : tokenJson;
+    if (!tokenJson) return '';
+    const token = tokenJson.startsWith('"') ? JSON.parse(tokenJson) : tokenJson;
     return token || '';
   } catch (e) {
-    console.warn('Error parsing auth token:', e);
     return '';
   }
 }
