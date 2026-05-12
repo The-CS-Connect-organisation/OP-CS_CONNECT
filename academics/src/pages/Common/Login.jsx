@@ -256,9 +256,6 @@ const Login = () => {
                         setEmail(cred.email);
                         setPassword(cred.password);
                         setError('');
-                        setTimeout(() => {
-                          document.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-                        }, 300);
                       }}
                       className="py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all hover:brightness-105 active:scale-95 border"
                       style={{ background: cred.bg, color: cred.color, borderColor: `${cred.color}40` }}
