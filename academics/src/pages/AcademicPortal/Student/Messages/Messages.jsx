@@ -15,7 +15,6 @@ import {
 import { request } from '../../../../utils/apiClient';
 import { getSocket } from '../../../../utils/socketClient';
 import { getFromStorage, setToStorage } from '../../../../data/schema';
-import { firebaseMessagesService } from '../../../../services/firebaseService';
 import { isStreamChatAvailable, startStreamCall } from '../../../../services/streamChatService';
 
 // ── Role colours ──────────────────────────────────────────────────────────────
@@ -157,24 +156,8 @@ export const Messages = ({ user, addToast }) => {
         if (!cancelled) setMessages([]);
       });
 
-    // Firebase real-time: subscribe to new messages in the conversation
-    const convId = [user.id, selectedUser.id].sort().join('_');
-    const unsub = firebaseMessagesService.subscribeToMessages(convId, (newMsg) => {
-      if (cancelled) return;
-      if (newMsg.senderId === user.id) return; // skip own messages (already handled via socket)
-      setMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg]);
-      // Mark as read in Firebase
-      firebaseMessagesService.markRead(convId, user.id).catch(() => {});
-      playPing();
-    });
-    firebaseUnsubscribeRef.current = unsub;
-
     return () => {
       cancelled = true;
-      if (firebaseUnsubscribeRef.current) {
-        firebaseUnsubscribeRef.current();
-        firebaseUnsubscribeRef.current = null;
-      }
     };
   }, [selectedUser?.id, user?.id]);
 

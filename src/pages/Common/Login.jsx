@@ -1,131 +1,105 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, ShieldCheck, GraduationCap, BookOpen, Users, Bus, UserCog } from 'lucide-react';
 import { useSound } from '../../hooks/useSound';
 import { ForgotPassword } from './ForgotPassword';
 
-const DEMO_PROFILES = [
-  { role: 'Student',    icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student@schoolsync.edu',    password: 'student123' },
-  { role: 'Teacher',    icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher@schoolsync.edu',    password: 'teacher123' },
-  { role: 'Parent',     icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent@schoolsync.edu',    password: 'parent123'  },
-  { role: 'Driver',     icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver@schoolsync.edu',   password: 'driver123'  },
-  { role: 'Admin',      icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin@schoolsync.edu',    password: 'admin123'   },
+const ALL_ROLES = [
+  { id: 'student',   label: 'Student',   icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5' },
+  { id: 'teacher',   label: 'Teacher',   icon: BookOpen,      color: '#a855f7', bg: '#faf0ff' },
+  { id: 'admin',      label: 'Admin',    icon: UserCog,       color: '#10b981', bg: '#f0fdf4' },
+  { id: 'parent',     label: 'Parent',   icon: Users,         color: '#3b82f6', bg: '#eff6ff' },
+  { id: 'driver',     label: 'Driver',   icon: Bus,           color: '#f59e0b', bg: '#fffbeb' },
+  { id: 'librarian',  label: 'Lib',      icon: BookOpen,      color: '#8b5cf6', bg: '#f5f3ff' },
 ];
 
-const EXTRA_PROFILES = [
-  { role: 'S2', icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student2@schoolsync.edu',   password: 'student123' },
-  { role: 'S3', icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student3@schoolsync.edu',   password: 'student123' },
-  { role: 'T2', icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher2@schoolsync.edu',  password: 'teacher123' },
-  { role: 'T3', icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher3@schoolsync.edu',  password: 'teacher123' },
-  { role: 'A2', icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin2@schoolsync.edu',   password: 'admin123'   },
-  { role: 'A3', icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin3@schoolsync.edu',   password: 'admin123'   },
-  { role: 'D1', icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver@schoolsync.edu',  password: 'driver123'  },
-  { role: 'D2', icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver2@schoolsync.edu', password: 'driver123'  },
-  { role: 'D3', icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver3@schoolsync.edu', password: 'driver123'  },
-  { role: 'P2', icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent2@schoolsync.edu',  password: 'parent123'  },
-  { role: 'P3', icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent3@schoolsync.edu',  password: 'parent123'  },
-  { role: 'L1', icon: BookOpen,      color: '#8b5cf6', bg: '#f5f3ff', email: 'librarian@schoolsync.edu', password: 'librarian123' },
-  { role: 'L2', icon: BookOpen,      color: '#8b5cf6', bg: '#f5f3ff', email: 'librarian2@schoolsync.edu', password: 'librarian123' },
-  { role: 'L3', icon: BookOpen,      color: '#8b5cf6', bg: '#f5f3ff', email: 'librarian3@schoolsync.edu', password: 'librarian123' },
+const DEMO_USERS = [
+  { role: 'student',   label: 'Student 1', email: 'student@schoolsync.edu',    password: 'student123',   color: '#ff6b9d', bg: '#fff0f5' },
+  { role: 'student',   label: 'Student 2', email: 'student2@schoolsync.edu',    password: 'student123',   color: '#fb7185', bg: '#fff0f5' },
+  { role: 'student',   label: 'Student 3', email: 'student3@schoolsync.edu',    password: 'student123',   color: '#f472b6', bg: '#fff0f5' },
+  { role: 'teacher',   label: 'Teacher 1', email: 'teacher@schoolsync.edu',    password: 'teacher123',  color: '#a855f7', bg: '#faf0ff' },
+  { role: 'teacher',   label: 'Teacher 2', email: 'teacher2@schoolsync.edu',  password: 'teacher123',  color: '#9333ea', bg: '#faf0ff' },
+  { role: 'teacher',   label: 'Teacher 3', email: 'teacher3@schoolsync.edu',  password: 'teacher123',  color: '#7e22ce', bg: '#faf0ff' },
+  { role: 'admin',     label: 'Admin 1',   email: 'admin@schoolsync.edu',      password: 'admin123',   color: '#10b981', bg: '#f0fdf4' },
+  { role: 'admin',     label: 'Admin 2',   email: 'admin2@schoolsync.edu',     password: 'admin123',   color: '#059669', bg: '#f0fdf4' },
+  { role: 'admin',     label: 'Admin 3',   email: 'admin3@schoolsync.edu',     password: 'admin123',   color: '#047857', bg: '#f0fdf4' },
+  { role: 'parent',    label: 'Parent 1',  email: 'parent@schoolsync.edu',     password: 'parent123',  color: '#3b82f6', bg: '#eff6ff' },
+  { role: 'parent',    label: 'Parent 2',  email: 'parent2@schoolsync.edu',    password: 'parent123',  color: '#2563eb', bg: '#eff6ff' },
+  { role: 'parent',    label: 'Parent 3',  email: 'parent3@schoolsync.edu',    password: 'parent123',  color: '#1d4ed8', bg: '#eff6ff' },
+  { role: 'driver',   label: 'Driver 1',  email: 'driver@schoolsync.edu',     password: 'driver123',  color: '#f59e0b', bg: '#fffbeb' },
+  { role: 'driver',   label: 'Driver 2',  email: 'driver2@schoolsync.edu',    password: 'driver123',  color: '#d97706', bg: '#fffbeb' },
+  { role: 'driver',   label: 'Driver 3',  email: 'driver3@schoolsync.edu',    password: 'driver123',  color: '#b45309', bg: '#fffbeb' },
+  { role: 'librarian',label: 'Lib 1',    email: 'librarian@schoolsync.edu',  password: 'librarian123', color: '#8b5cf6', bg: '#f5f3ff' },
+  { role: 'librarian',label: 'Lib 2',    email: 'librarian2@schoolsync.edu', password: 'librarian123', color: '#7c3aed', bg: '#f5f3ff' },
+  { role: 'librarian',label: 'Lib 3',    email: 'librarian3@schoolsync.edu', password: 'librarian123', color: '#6d28d9', bg: '#f5f3ff' },
 ];
 
 export const Login = ({ onLogin, onSwitch }) => {
   const navigate = useNavigate();
+  const [selectedRole, setSelectedRole] = useState('student');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showForgot, setShowForgot] = useState(false);
-  const [loginSuccess, setLoginSuccess] = useState(false);
   const { playClick, playBlip } = useSound();
-  const autofillAttempted = useRef(false);
 
-  // Check for auto-login credentials in URL hash - if present, don't render login page
   const hash = window.location.hash;
   const params = new URLSearchParams(hash.split('?')[1]);
   if (params.has('autologin') && params.has('pass')) {
-    return null; // Let App.jsx handle auto-login
+    return null;
   }
 
   if (showForgot) {
     return <ForgotPassword onBack={() => setShowForgot(false)} />;
   }
 
-  // Auto-fill AND auto-submit from landing page sessionStorage in one shot
+  // Auto-login from landing page sessionStorage
   useEffect(() => {
     const raw = sessionStorage.getItem('schoolsync_autofill');
     console.log('Checking sessionStorage for autofill:', raw);
     if (!raw) {
-      // Also check URL hash for credentials
       const hash = window.location.hash;
       const params = new URLSearchParams(hash.split('?')[1]);
       const autologin = params.get('autologin');
       const pass = params.get('pass');
       if (autologin && pass) {
-        console.log('Found credentials in URL hash:', { email: autologin });
         setEmail(decodeURIComponent(autologin));
         setPassword(decodeURIComponent(pass));
         setLoading(true);
         onLogin(decodeURIComponent(autologin), decodeURIComponent(pass)).then((result) => {
-          console.log('Auto-login result:', result);
           if (result?.success) {
-            setLoginSuccess(true);
             navigate(`/${result.user.role}/dashboard`);
-            // Clean URL
             window.location.hash = window.location.hash.split('?')[0];
           } else {
             setError(result?.error || 'Login failed');
             setLoading(false);
           }
-        }).catch((err) => {
-          console.error('Auto-login error:', err);
-          setError('Login failed. Please try again.');
-          setLoading(false);
         });
       }
       return;
     }
     try {
       const { email: e, password: p, portal } = JSON.parse(raw);
-      console.log('Parsed autofill data:', { email: e, portal });
-      if (portal !== 'academics') {
-        console.log('Portal mismatch, skipping autofill');
-        return;
-      }
+      if (portal !== 'academics') return;
       sessionStorage.removeItem('schoolsync_autofill');
-      if (!e || !p) {
-        console.log('Missing credentials, skipping autofill');
-        return;
-      }
-      // Set state for visual feedback
+      if (!e || !p) return;
       setEmail(e);
       setPassword(p);
-      // Submit immediately without waiting for re-render
       setLoading(true);
-      console.log('Attempting auto-login with:', e);
       onLogin(e, p).then((result) => {
-        console.log('Auto-login result:', result);
         if (result?.success) {
-          setLoginSuccess(true);
-          console.log('Login successful, navigating to dashboard');
           navigate(`/${result.user.role}/dashboard`);
         } else {
-          console.error('Auto-login failed:', result?.error);
           setError(result?.error || 'Login failed');
           setLoading(false);
         }
-      }).catch((err) => {
-        console.error('Auto-login error:', err);
-        setError('Login failed. Please try again.');
-        setLoading(false);
       });
-    } catch (err) {
-      console.error('Autofill parse error:', err);
+    } catch {
       sessionStorage.removeItem('schoolsync_autofill');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubmit = async (e) => {
@@ -133,13 +107,9 @@ export const Login = ({ onLogin, onSwitch }) => {
     setError('');
     setLoading(true);
     playBlip();
-    
-    // Smooth delay for auth feel
     await new Promise(r => setTimeout(r, 800));
-    
     const result = await onLogin(email.trim().toLowerCase(), password.trim());
     if (result.success) {
-      setLoginSuccess(true);
       navigate(`/${result.user.role}/dashboard`);
     } else {
       setError(result.error);
@@ -147,23 +117,25 @@ export const Login = ({ onLogin, onSwitch }) => {
     }
   };
 
+  const roleUsers = DEMO_USERS.filter(u => u.role === selectedRole);
+  const selectedRoleData = ALL_ROLES.find(r => r.id === selectedRole);
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-[#f8fafc] overflow-hidden relative font-sans text-slate-900">
-      {/* 🌫️ Soft Background Accents */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-100 rounded-full blur-[100px] opacity-60" />
         <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-50 rounded-full blur-[100px] opacity-60" />
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 w-full max-w-[400px] p-6"
+        className="relative z-10 w-full max-w-[420px] p-6"
       >
-        {/* Brand Section */}
+        {/* Brand */}
         <div className="text-center mb-8">
-          <motion.div 
+          <motion.div
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-white shadow-sm border border-slate-200 mb-5"
@@ -174,65 +146,58 @@ export const Login = ({ onLogin, onSwitch }) => {
           <p className="text-sm text-slate-500 mt-1 font-medium">Academic Portal Access</p>
         </div>
 
-        {/* Login Card */}
+        {/* Card */}
         <div className="bg-white border border-slate-200 rounded-[24px] p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
 
-          {/* Demo Credentials */}
-          <div className="mb-6">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-3 text-center">Demo Credentials</p>
-            <div className="grid grid-cols-5 gap-2">
-              {DEMO_PROFILES.map(({ role, icon: Icon, color, bg, email: demoEmail, password: demoPass }) => (
+          {/* Role tabs — all 6 roles */}
+          <div className="flex gap-1 p-1 rounded-2xl mb-5" style={{ background: '#f1f5f9' }}>
+            {ALL_ROLES.map(r => (
+              <button
+                key={r.id}
+                type="button"
+                onClick={() => { setSelectedRole(r.id); setEmail(''); setPassword(''); setError(''); playClick(); }}
+                className="flex-1 flex items-center justify-center gap-1 py-2 px-1 rounded-xl text-[10px] font-bold transition-all duration-200"
+                style={{
+                  background: selectedRole === r.id ? 'white' : 'transparent',
+                  color: selectedRole === r.id ? r.color : '#94a3b8',
+                  boxShadow: selectedRole === r.id ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
+                }}
+              >
+                <r.icon size={12} />
+                <span className="hidden sm:inline">{r.label}</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Demo quick-login — 3 buttons for selected role */}
+          <div className="mb-5">
+            <p className="text-[9px] font-semibold uppercase tracking-widest text-slate-400 mb-2 text-center">
+              Demo — {selectedRoleData?.label}
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {roleUsers.map((cred) => (
                 <motion.button
-                  key={role}
+                  key={cred.email}
                   type="button"
-                  whileHover={{ scale: 1.06 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => { playClick(); setEmail(demoEmail); setPassword(demoPass); setError(''); }}
-                  className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all"
-                  style={{
-                    background: email === demoEmail ? bg : '#f8fafc',
-                    borderColor: email === demoEmail ? color : '#e2e8f0',
-                  }}
-                  title={`${role}: ${demoEmail} / ${demoPass}`}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.96 }}
+                  onClick={() => { playClick(); setEmail(cred.email); setPassword(cred.password); setError(''); }}
+                  className="py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all border"
+                  style={{ background: cred.bg, color: cred.color, borderColor: `${cred.color}40` }}
                 >
-                  <Icon size={16} style={{ color }} />
-                  <span className="text-[9px] font-bold uppercase tracking-wide" style={{ color: email === demoEmail ? color : '#94a3b8' }}>
-                    {role}
-                  </span>
-                </motion.button>
-              ))}
-            </div>
-            <div className="grid grid-cols-6 gap-2 mt-1">
-              {EXTRA_PROFILES.map(({ role, icon: Icon, color, bg, email: demoEmail, password: demoPass }) => (
-                <motion.button
-                  key={role}
-                  type="button"
-                  whileHover={{ scale: 1.06 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => { playClick(); setEmail(demoEmail); setPassword(demoPass); setError(''); }}
-                  className="flex flex-col items-center gap-1 p-1.5 rounded-lg border transition-all"
-                  style={{
-                    background: email === demoEmail ? bg : '#f8fafc',
-                    borderColor: email === demoEmail ? color : '#e2e8f0',
-                  }}
-                  title={`${role}: ${demoEmail} / ${demoPass}`}
-                >
-                  <Icon size={13} style={{ color }} />
-                  <span className="text-[8px] font-bold uppercase tracking-wide" style={{ color: email === demoEmail ? color : '#94a3b8' }}>
-                    {role}
-                  </span>
+                  {cred.label}
                 </motion.button>
               ))}
             </div>
             {/* Show selected credentials */}
-            {(DEMO_PROFILES.find(p => p.email === email) || EXTRA_PROFILES.find(p => p.email === email)) && (
+            {roleUsers.find(c => c.email === email) && (
               <motion.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-3 px-3 py-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between"
               >
                 <span className="text-[10px] text-slate-500 font-mono">{email}</span>
-                <span className="text-[10px] text-slate-400 font-mono">{DEMO_PROFILES.find(p => p.email === email)?.password ?? EXTRA_PROFILES.find(p => p.email === email)?.password}</span>
+                <span className="text-[10px] text-slate-400 font-mono">{roleUsers.find(c => c.email === email)?.password}</span>
               </motion.div>
             )}
           </div>
@@ -250,13 +215,13 @@ export const Login = ({ onLogin, onSwitch }) => {
             <div className="space-y-2">
               <label className="text-xs font-semibold text-slate-700 ml-1">Email Address</label>
               <div className="relative group">
-                <input 
-                  type="email" 
-                  value={email} 
+                <input
+                  type="email"
+                  value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all" 
-                  placeholder="you@schoolsync.edu" 
-                  required 
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-4 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all"
+                  placeholder="you@schoolsync.edu"
+                  required
                 />
                 <Mail size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
               </div>
@@ -268,17 +233,17 @@ export const Login = ({ onLogin, onSwitch }) => {
                 <button type="button" onClick={() => setShowForgot(true)} className="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors">Forgot?</button>
               </div>
               <div className="relative group">
-                <input 
-                  type={showPassword ? 'text' : 'password'} 
-                  value={password} 
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
                   onChange={e => setPassword(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-11 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all" 
-                  placeholder="Enter password" 
-                  required 
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 pl-11 pr-11 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/5 transition-all"
+                  placeholder="Enter password"
+                  required
                 />
                 <Lock size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => { playClick(); setShowPassword(!showPassword); }}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
                 >
@@ -289,7 +254,7 @@ export const Login = ({ onLogin, onSwitch }) => {
 
             <AnimatePresence>
               {error && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
@@ -323,11 +288,10 @@ export const Login = ({ onLogin, onSwitch }) => {
           </form>
         </div>
 
-        {/* Footer Link */}
         <div className="mt-8 text-center">
           <p className="text-sm text-slate-500">
             Don't have an account?{' '}
-            <button 
+            <button
               onClick={onSwitch}
               className="text-slate-900 font-semibold hover:underline underline-offset-4 transition-all"
             >
@@ -342,6 +306,3 @@ export const Login = ({ onLogin, onSwitch }) => {
     </div>
   );
 };
-
-
-

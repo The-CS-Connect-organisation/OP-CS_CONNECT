@@ -1,37 +1,38 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, BookOpen, Users, ShieldCheck, GraduationCap, Loader2, ChevronRight } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, BookOpen, Users, ShieldCheck, GraduationCap, Loader2, ChevronRight, Bus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../services/authService';
 
-const ROLES = [
-  { id: 'student', label: 'Student', icon: GraduationCap, color: '#ea580c', bg: '#fff7ed' },
-  { id: 'teacher', label: 'Teacher', icon: BookOpen, color: '#7c3aed', bg: '#f5f3ff' },
-  { id: 'admin', label: 'Admin', icon: ShieldCheck, color: '#1c1917', bg: '#fafaf9' },
-  { id: 'parent', label: 'Parent', icon: Users, color: '#0891b2', bg: '#ecfeff' },
+const ALL_ROLES = [
+  { id: 'student',   label: 'Student',   icon: GraduationCap, color: '#ea580c', bg: '#fff7ed' },
+  { id: 'teacher',   label: 'Teacher',   icon: BookOpen,      color: '#7c3aed', bg: '#f5f3ff' },
+  { id: 'admin',      label: 'Admin',     icon: ShieldCheck,   color: '#1c1917', bg: '#fafaf9' },
+  { id: 'parent',     label: 'Parent',    icon: Users,         color: '#0891b2', bg: '#ecfeff' },
+  { id: 'driver',      label: 'Driver',   icon: Bus,           color: '#d97706', bg: '#fffbeb' },
+  { id: 'librarian',  label: 'Lib',      icon: BookOpen,      color: '#8b5cf6', bg: '#f5f0ff' },
 ];
 
-const DEMO_CREDENTIALS = [
-  // Main 5
-  { role: 'student',   label: 'Student', email: 'student@schoolsync.edu',    password: 'student123',   color: '#ea580c', bg: '#fff7ed' },
-  { role: 'teacher',   label: 'Teacher', email: 'teacher@schoolsync.edu',   password: 'teacher123',   color: '#7c3aed', bg: '#f5f3ff' },
-  { role: 'admin',     label: 'Admin',   email: 'admin@schoolsync.edu',      password: 'admin123',    color: '#1c1917', bg: '#fafaf9' },
-  { role: 'parent',    label: 'Parent',  email: 'parent@schoolsync.edu',     password: 'parent123',   color: '#0891b2', bg: '#ecfeff' },
-  { role: 'driver',     label: 'Driver',  email: 'driver@schoolsync.edu',     password: 'driver123',   color: '#d97706', bg: '#fffbeb' },
-  // Extra 13
-  { role: 'librarian',  label: 'Lib',     email: 'librarian@schoolsync.edu',  password: 'librarian123', color: '#7c3aed', bg: '#f5f3ff' },
-  { role: 'student2',   label: 'S2',      email: 'student2@schoolsync.edu',   password: 'student123',   color: '#f97316', bg: '#fff7ed' },
-  { role: 'student3',   label: 'S3',      email: 'student3@schoolsync.edu',   password: 'student123',   color: '#f97316', bg: '#fff7ed' },
-  { role: 'teacher2',   label: 'T2',      email: 'teacher2@schoolsync.edu',  password: 'teacher123',  color: '#8b5cf6', bg: '#f5f3ff' },
-  { role: 'teacher3',   label: 'T3',      email: 'teacher3@schoolsync.edu',  password: 'teacher123',  color: '#8b5cf6', bg: '#f5f3ff' },
-  { role: 'admin2',     label: 'A2',      email: 'admin2@schoolsync.edu',    password: 'admin123',    color: '#57534e', bg: '#fafaf9' },
-  { role: 'admin3',     label: 'A3',      email: 'admin3@schoolsync.edu',    password: 'admin123',    color: '#57534e', bg: '#fafaf9' },
-  { role: 'driver2',    label: 'D2',      email: 'driver2@schoolsync.edu',   password: 'driver123',   color: '#d97706', bg: '#fffbeb' },
-  { role: 'driver3',    label: 'D3',      email: 'driver3@schoolsync.edu',   password: 'driver123',   color: '#d97706', bg: '#fffbeb' },
-  { role: 'parent2',    label: 'P2',      email: 'parent2@schoolsync.edu',   password: 'parent123',   color: '#0891b2', bg: '#ecfeff' },
-  { role: 'parent3',    label: 'P3',      email: 'parent3@schoolsync.edu',   password: 'parent123',   color: '#0891b2', bg: '#ecfeff' },
-  { role: 'lib2',       label: 'L2',      email: 'librarian2@schoolsync.edu', password: 'librarian123', color: '#8b5cf6', bg: '#f5f3ff' },
-  { role: 'lib3',       label: 'L3',      email: 'librarian3@schoolsync.edu', password: 'librarian123', color: '#8b5cf6', bg: '#f5f3ff' },
+// 18 demo users — 3 of each role with proper numbered labels
+const DEMO_USERS = [
+  { role: 'student',  label: 'Student 1', email: 'student@schoolsync.edu',   password: 'student123',   color: '#ea580c', bg: '#fff7ed' },
+  { role: 'student',  label: 'Student 2', email: 'student2@schoolsync.edu',   password: 'student123',   color: '#f97316', bg: '#fff7ed' },
+  { role: 'student',  label: 'Student 3', email: 'student3@schoolsync.edu',   password: 'student123',   color: '#fb923c', bg: '#fff7ed' },
+  { role: 'teacher',  label: 'Teacher 1', email: 'teacher@schoolsync.edu',   password: 'teacher123',  color: '#7c3aed', bg: '#f5f3ff' },
+  { role: 'teacher',  label: 'Teacher 2', email: 'teacher2@schoolsync.edu',  password: 'teacher123',  color: '#8b5cf6', bg: '#f5f3ff' },
+  { role: 'teacher',  label: 'Teacher 3', email: 'teacher3@schoolsync.edu',  password: 'teacher123',  color: '#a78bfa', bg: '#f5f3ff' },
+  { role: 'admin',    label: 'Admin 1',   email: 'admin@schoolsync.edu',     password: 'admin123',    color: '#1c1917', bg: '#fafaf9' },
+  { role: 'admin',    label: 'Admin 2',   email: 'admin2@schoolsync.edu',    password: 'admin123',    color: '#57534e', bg: '#fafaf9' },
+  { role: 'admin',    label: 'Admin 3',   email: 'admin3@schoolsync.edu',    password: 'admin123',    color: '#78716c', bg: '#fafaf9' },
+  { role: 'parent',   label: 'Parent 1',  email: 'parent@schoolsync.edu',   password: 'parent123',  color: '#0891b2', bg: '#ecfeff' },
+  { role: 'parent',   label: 'Parent 2',  email: 'parent2@schoolsync.edu',  password: 'parent123',  color: '#06b6d4', bg: '#ecfeff' },
+  { role: 'parent',   label: 'Parent 3',  email: 'parent3@schoolsync.edu',  password: 'parent123',  color: '#22d3ee', bg: '#ecfeff' },
+  { role: 'driver',   label: 'Driver 1',  email: 'driver@schoolsync.edu',    password: 'driver123',  color: '#d97706', bg: '#fffbeb' },
+  { role: 'driver',   label: 'Driver 2',  email: 'driver2@schoolsync.edu',   password: 'driver123',  color: '#f59e0b', bg: '#fffbeb' },
+  { role: 'driver',   label: 'Driver 3',  email: 'driver3@schoolsync.edu',   password: 'driver123',  color: '#fbbf24', bg: '#fffbeb' },
+  { role: 'librarian',label: 'Librarian 1', email: 'librarian@schoolsync.edu', password: 'librarian123', color: '#8b5cf6', bg: '#f5f0ff' },
+  { role: 'librarian',label: 'Librarian 2', email: 'librarian2@schoolsync.edu', password: 'librarian123', color: '#a78bfa', bg: '#f5f0ff' },
+  { role: 'librarian',label: 'Librarian 3', email: 'librarian3@schoolsync.edu', password: 'librarian123', color: '#c4b5fd', bg: '#f5f0ff' },
 ];
 
 const FEATURE_BULLETS = [
@@ -108,7 +109,9 @@ const Login = () => {
     }
   };
 
-  const role = ROLES.find(r => r.id === selectedRole);
+  // Get 3 demo users for the selected role
+  const roleUsers = DEMO_USERS.filter(u => u.role === selectedRole);
+  const selectedRoleData = ALL_ROLES.find(r => r.id === selectedRole);
 
   return (
     <div className="min-h-screen flex" style={{ background: 'linear-gradient(135deg, #fffbeb 0%, #fff7ed 40%, #ffffff 100%)' }}>
@@ -116,7 +119,6 @@ const Login = () => {
 
       {/* Left branding panel */}
       <div className="hidden lg:flex flex-col justify-center w-[55%] px-16 relative" style={{ zIndex: 1 }}>
-        {/* Logo */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -135,7 +137,6 @@ const Login = () => {
           </div>
         </motion.div>
 
-        {/* Headline */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -154,7 +155,6 @@ const Login = () => {
           </p>
         </motion.div>
 
-        {/* Feature bullets */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -178,7 +178,6 @@ const Login = () => {
           ))}
         </motion.div>
 
-        {/* Stats */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -225,55 +224,34 @@ const Login = () => {
             </div>
 
             <div className="px-8 pb-8 pt-6">
-              {/* Role tabs */}
-              <div className="flex gap-1.5 p-1.5 rounded-2xl mb-4" style={{ background: '#f5f5f4' }}>
-                {ROLES.map(r => (
+              {/* All 6 role tabs */}
+              <div className="flex gap-1 p-1 rounded-2xl mb-4" style={{ background: '#f5f5f4' }}>
+                {ALL_ROLES.map(r => (
                   <button
                     key={r.id}
                     onClick={() => { setSelectedRole(r.id); setEmail(''); setPassword(''); setError(''); }}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl text-xs font-bold transition-all duration-200"
+                    className="flex-1 flex items-center justify-center gap-1 py-2 px-1 rounded-xl text-[10px] font-bold transition-all duration-200"
                     style={{
                       background: selectedRole === r.id ? 'white' : 'transparent',
                       color: selectedRole === r.id ? r.color : '#a8a29e',
                       boxShadow: selectedRole === r.id ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
                     }}
                   >
-                    <r.icon size={13} />
+                    <r.icon size={12} />
                     <span className="hidden sm:inline">{r.label}</span>
                   </button>
                 ))}
               </div>
 
-              {/* Demo quick-login buttons */}
+              {/* Demo quick-login buttons — 3 buttons for selected role */}
               <div className="mb-4">
                 <p className="text-[9px] font-bold uppercase tracking-widest mb-2 text-center" style={{ color: '#a8a29e' }}>
-                  Quick Demo
+                  Demo — {selectedRoleData?.label}
                 </p>
-                <div className="grid grid-cols-5 gap-1.5">
-                  {DEMO_CREDENTIALS.slice(0, 5).map((cred) => (
+                <div className="grid grid-cols-3 gap-2">
+                  {roleUsers.map((cred) => (
                     <button
-                      key={cred.role}
-                      type="button"
-                      onClick={() => {
-                        setEmail(cred.email);
-                        setPassword(cred.password);
-                        setError('');
-                        // Auto-submit after a brief delay so user sees the fill
-                        setTimeout(() => {
-                          document.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-                        }, 200);
-                      }}
-                      className="py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wide transition-all hover:brightness-105 active:scale-95"
-                      style={{ background: cred.bg, color: cred.color, border: `1px solid ${cred.color}30` }}
-                    >
-                      {cred.label}
-                    </button>
-                  ))}
-                </div>
-                <div className="grid grid-cols-5 gap-1.5 mt-1">
-                  {DEMO_CREDENTIALS.slice(5).map((cred) => (
-                    <button
-                      key={cred.role}
+                      key={cred.email}
                       type="button"
                       onClick={() => {
                         setEmail(cred.email);
@@ -281,10 +259,10 @@ const Login = () => {
                         setError('');
                         setTimeout(() => {
                           document.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-                        }, 200);
+                        }, 300);
                       }}
-                      className="py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wide transition-all hover:brightness-105 active:scale-95"
-                      style={{ background: cred.bg, color: cred.color, border: `1px solid ${cred.color}30` }}
+                      className="py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all hover:brightness-105 active:scale-95 border"
+                      style={{ background: cred.bg, color: cred.color, borderColor: `${cred.color}40` }}
                     >
                       {cred.label}
                     </button>

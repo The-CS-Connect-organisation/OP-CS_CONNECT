@@ -10,12 +10,6 @@ import { Card } from '../../../../components/ui/Card';
 import { Button } from '../../../../components/ui/Button';
 import { getFromStorage, setToStorage, KEYS } from '../../../../data/schema';
 import { useSound } from '../../../../hooks/useSound';
-// Firebase is optional — only import if available
-let firebaseLeaderboardService = null;
-try {
-  const fb = require('../../../../services/firebaseService');
-  firebaseLeaderboardService = fb.firebaseLeaderboardService;
-} catch { /* Firebase not available */ }
 
 // Badge definitions
 const BADGE_DEFS = [
