@@ -6,11 +6,20 @@ import { useSound } from '../../hooks/useSound';
 import { ForgotPassword } from './ForgotPassword';
 
 const DEMO_PROFILES = [
-  { role: 'Student', icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'alex@schoolsync.edu',    password: 'student123' },
-  { role: 'Teacher', icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'james@schoolsync.edu',   password: 'teacher123' },
-  { role: 'Parent',  icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent@schoolsync.edu',  password: 'parent123'  },
-  { role: 'Driver',  icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver@schoolsync.edu', password: 'driver123'  },
-  { role: 'Admin',   icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin@schoolsync.edu',   password: 'admin123'   },
+  { role: 'Student',    icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student@schoolsync.edu',    password: 'student123' },
+  { role: 'Teacher',     icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher@schoolsync.edu',   password: 'teacher123' },
+  { role: 'Parent',      icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent@schoolsync.edu',    password: 'parent123'  },
+  { role: 'Driver',      icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver@schoolsync.edu',   password: 'driver123'  },
+  { role: 'Admin',       icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin@schoolsync.edu',    password: 'admin123'   },
+];
+
+const EXTRA_PROFILES = [
+  { role: 'D1', icon: Bus,      color: '#f59e0b', bg: '#fffbeb', email: 'driver@schoolsync.edu',   password: 'driver123'  },
+  { role: 'D2', icon: Bus,      color: '#f59e0b', bg: '#fffbeb', email: 'driver2@schoolsync.edu',  password: 'driver123'  },
+  { role: 'D3', icon: Bus,      color: '#f59e0b', bg: '#fffbeb', email: 'driver3@schoolsync.edu',  password: 'driver123'  },
+  { role: 'L1', icon: BookOpen, color: '#8b5cf6', bg: '#f5f3ff', email: 'librarian@schoolsync.edu', password: 'librarian123' },
+  { role: 'L2', icon: BookOpen, color: '#8b5cf6', bg: '#f5f3ff', email: 'librarian2@schoolsync.edu', password: 'librarian123' },
+  { role: 'L3', icon: BookOpen, color: '#8b5cf6', bg: '#f5f3ff', email: 'librarian3@schoolsync.edu', password: 'librarian123' },
 ];
 
 export const Login = ({ onLogin, onSwitch }) => {
@@ -185,15 +194,37 @@ export const Login = ({ onLogin, onSwitch }) => {
                 </motion.button>
               ))}
             </div>
+            <div className="grid grid-cols-6 gap-2 mt-1">
+              {EXTRA_PROFILES.map(({ role, icon: Icon, color, bg, email: demoEmail, password: demoPass }) => (
+                <motion.button
+                  key={role}
+                  type="button"
+                  whileHover={{ scale: 1.06 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => { playClick(); setEmail(demoEmail); setPassword(demoPass); setError(''); }}
+                  className="flex flex-col items-center gap-1 p-1.5 rounded-lg border transition-all"
+                  style={{
+                    background: email === demoEmail ? bg : '#f8fafc',
+                    borderColor: email === demoEmail ? color : '#e2e8f0',
+                  }}
+                  title={`${role}: ${demoEmail} / ${demoPass}`}
+                >
+                  <Icon size={13} style={{ color }} />
+                  <span className="text-[8px] font-bold uppercase tracking-wide" style={{ color: email === demoEmail ? color : '#94a3b8' }}>
+                    {role}
+                  </span>
+                </motion.button>
+              ))}
+            </div>
             {/* Show selected credentials */}
-            {DEMO_PROFILES.find(p => p.email === email) && (
+            {(DEMO_PROFILES.find(p => p.email === email) || EXTRA_PROFILES.find(p => p.email === email)) && (
               <motion.div
                 initial={{ opacity: 0, y: -4 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-3 px-3 py-2 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between"
               >
                 <span className="text-[10px] text-slate-500 font-mono">{email}</span>
-                <span className="text-[10px] text-slate-400 font-mono">{DEMO_PROFILES.find(p => p.email === email)?.password}</span>
+                <span className="text-[10px] text-slate-400 font-mono">{DEMO_PROFILES.find(p => p.email === email)?.password ?? EXTRA_PROFILES.find(p => p.email === email)?.password}</span>
               </motion.div>
             )}
           </div>

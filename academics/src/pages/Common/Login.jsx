@@ -9,6 +9,8 @@ const ROLES = [
   { id: 'teacher', label: 'Teacher', icon: BookOpen, color: '#7c3aed', bg: '#f5f3ff' },
   { id: 'admin', label: 'Admin', icon: ShieldCheck, color: '#1c1917', bg: '#fafaf9' },
   { id: 'parent', label: 'Parent', icon: Users, color: '#0891b2', bg: '#ecfeff' },
+  { id: 'driver', label: 'Driver', icon: Users, color: '#d97706', bg: '#fffbeb' },
+  { id: 'librarian', label: 'Librarian', icon: BookOpen, color: '#7c3aed', bg: '#f5f3ff' },
 ];
 
 const FEATURE_BULLETS = [
