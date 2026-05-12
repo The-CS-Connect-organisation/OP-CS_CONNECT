@@ -12,16 +12,26 @@ const ROLES = [
 ];
 
 const DEMO_CREDENTIALS = [
-  { role: 'student',   label: 'Student', email: 'student@schoolsync.edu',   password: 'student123',   color: '#ea580c', bg: '#fff7ed' },
+  // Main 5
+  { role: 'student',   label: 'Student', email: 'student@schoolsync.edu',    password: 'student123',   color: '#ea580c', bg: '#fff7ed' },
   { role: 'teacher',   label: 'Teacher', email: 'teacher@schoolsync.edu',   password: 'teacher123',   color: '#7c3aed', bg: '#f5f3ff' },
   { role: 'admin',     label: 'Admin',   email: 'admin@schoolsync.edu',      password: 'admin123',    color: '#1c1917', bg: '#fafaf9' },
   { role: 'parent',    label: 'Parent',  email: 'parent@schoolsync.edu',     password: 'parent123',   color: '#0891b2', bg: '#ecfeff' },
   { role: 'driver',     label: 'Driver',  email: 'driver@schoolsync.edu',     password: 'driver123',   color: '#d97706', bg: '#fffbeb' },
-  { role: 'librarian',  label: 'Lib.',   email: 'librarian@schoolsync.edu',  password: 'librarian123', color: '#7c3aed', bg: '#f5f3ff' },
-  { role: 'driver2',    label: 'D2',      email: 'driver2@schoolsync.edu',    password: 'driver123',   color: '#d97706', bg: '#fffbeb' },
+  // Extra 13
+  { role: 'librarian',  label: 'Lib',     email: 'librarian@schoolsync.edu',  password: 'librarian123', color: '#7c3aed', bg: '#f5f3ff' },
+  { role: 'student2',   label: 'S2',      email: 'student2@schoolsync.edu',   password: 'student123',   color: '#f97316', bg: '#fff7ed' },
+  { role: 'student3',   label: 'S3',      email: 'student3@schoolsync.edu',   password: 'student123',   color: '#f97316', bg: '#fff7ed' },
+  { role: 'teacher2',   label: 'T2',      email: 'teacher2@schoolsync.edu',  password: 'teacher123',  color: '#8b5cf6', bg: '#f5f3ff' },
+  { role: 'teacher3',   label: 'T3',      email: 'teacher3@schoolsync.edu',  password: 'teacher123',  color: '#8b5cf6', bg: '#f5f3ff' },
+  { role: 'admin2',     label: 'A2',      email: 'admin2@schoolsync.edu',    password: 'admin123',    color: '#57534e', bg: '#fafaf9' },
+  { role: 'admin3',     label: 'A3',      email: 'admin3@schoolsync.edu',    password: 'admin123',    color: '#57534e', bg: '#fafaf9' },
+  { role: 'driver2',    label: 'D2',      email: 'driver2@schoolsync.edu',   password: 'driver123',   color: '#d97706', bg: '#fffbeb' },
   { role: 'driver3',    label: 'D3',      email: 'driver3@schoolsync.edu',   password: 'driver123',   color: '#d97706', bg: '#fffbeb' },
-  { role: 'lib2',       label: 'L2',      email: 'librarian2@schoolsync.edu', password: 'librarian123', color: '#7c3aed', bg: '#f5f3ff' },
-  { role: 'lib3',       label: 'L3',      email: 'librarian3@schoolsync.edu', password: 'librarian123', color: '#7c3aed', bg: '#f5f3ff' },
+  { role: 'parent2',    label: 'P2',      email: 'parent2@schoolsync.edu',   password: 'parent123',   color: '#0891b2', bg: '#ecfeff' },
+  { role: 'parent3',    label: 'P3',      email: 'parent3@schoolsync.edu',   password: 'parent123',   color: '#0891b2', bg: '#ecfeff' },
+  { role: 'lib2',       label: 'L2',      email: 'librarian2@schoolsync.edu', password: 'librarian123', color: '#8b5cf6', bg: '#f5f3ff' },
+  { role: 'lib3',       label: 'L3',      email: 'librarian3@schoolsync.edu', password: 'librarian123', color: '#8b5cf6', bg: '#f5f3ff' },
 ];
 
 const FEATURE_BULLETS = [

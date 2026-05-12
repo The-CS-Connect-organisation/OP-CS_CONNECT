@@ -7,19 +7,27 @@ import { ForgotPassword } from './ForgotPassword';
 
 const DEMO_PROFILES = [
   { role: 'Student',    icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student@schoolsync.edu',    password: 'student123' },
-  { role: 'Teacher',     icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher@schoolsync.edu',   password: 'teacher123' },
-  { role: 'Parent',      icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent@schoolsync.edu',    password: 'parent123'  },
-  { role: 'Driver',      icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver@schoolsync.edu',   password: 'driver123'  },
-  { role: 'Admin',       icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin@schoolsync.edu',    password: 'admin123'   },
+  { role: 'Teacher',    icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher@schoolsync.edu',    password: 'teacher123' },
+  { role: 'Parent',     icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent@schoolsync.edu',    password: 'parent123'  },
+  { role: 'Driver',     icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver@schoolsync.edu',   password: 'driver123'  },
+  { role: 'Admin',      icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin@schoolsync.edu',    password: 'admin123'   },
 ];
 
 const EXTRA_PROFILES = [
-  { role: 'D1', icon: Bus,      color: '#f59e0b', bg: '#fffbeb', email: 'driver@schoolsync.edu',   password: 'driver123'  },
-  { role: 'D2', icon: Bus,      color: '#f59e0b', bg: '#fffbeb', email: 'driver2@schoolsync.edu',  password: 'driver123'  },
-  { role: 'D3', icon: Bus,      color: '#f59e0b', bg: '#fffbeb', email: 'driver3@schoolsync.edu',  password: 'driver123'  },
-  { role: 'L1', icon: BookOpen, color: '#8b5cf6', bg: '#f5f3ff', email: 'librarian@schoolsync.edu', password: 'librarian123' },
-  { role: 'L2', icon: BookOpen, color: '#8b5cf6', bg: '#f5f3ff', email: 'librarian2@schoolsync.edu', password: 'librarian123' },
-  { role: 'L3', icon: BookOpen, color: '#8b5cf6', bg: '#f5f3ff', email: 'librarian3@schoolsync.edu', password: 'librarian123' },
+  { role: 'S2', icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student2@schoolsync.edu',   password: 'student123' },
+  { role: 'S3', icon: GraduationCap, color: '#ff6b9d', bg: '#fff0f5', email: 'student3@schoolsync.edu',   password: 'student123' },
+  { role: 'T2', icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher2@schoolsync.edu',  password: 'teacher123' },
+  { role: 'T3', icon: BookOpen,      color: '#a855f7', bg: '#faf0ff', email: 'teacher3@schoolsync.edu',  password: 'teacher123' },
+  { role: 'A2', icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin2@schoolsync.edu',   password: 'admin123'   },
+  { role: 'A3', icon: UserCog,       color: '#10b981', bg: '#f0fdf4', email: 'admin3@schoolsync.edu',   password: 'admin123'   },
+  { role: 'D1', icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver@schoolsync.edu',  password: 'driver123'  },
+  { role: 'D2', icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver2@schoolsync.edu', password: 'driver123'  },
+  { role: 'D3', icon: Bus,           color: '#f59e0b', bg: '#fffbeb', email: 'driver3@schoolsync.edu', password: 'driver123'  },
+  { role: 'P2', icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent2@schoolsync.edu',  password: 'parent123'  },
+  { role: 'P3', icon: Users,         color: '#3b82f6', bg: '#eff6ff', email: 'parent3@schoolsync.edu',  password: 'parent123'  },
+  { role: 'L1', icon: BookOpen,      color: '#8b5cf6', bg: '#f5f3ff', email: 'librarian@schoolsync.edu', password: 'librarian123' },
+  { role: 'L2', icon: BookOpen,      color: '#8b5cf6', bg: '#f5f3ff', email: 'librarian2@schoolsync.edu', password: 'librarian123' },
+  { role: 'L3', icon: BookOpen,      color: '#8b5cf6', bg: '#f5f3ff', email: 'librarian3@schoolsync.edu', password: 'librarian123' },
 ];
 
 export const Login = ({ onLogin, onSwitch }) => {
