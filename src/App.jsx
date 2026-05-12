@@ -205,6 +205,16 @@ function App() {
     updateNotification(id, { read: true });
   };
 
+  // Redirect to dashboard when user becomes available (catches post-login state update)
+  useEffect(() => {
+    if (user && ALLOWED_ROLES.includes(user.role)) {
+      const path = window.location.hash.replace('#', '');
+      if (path === '/' || path === '/login' || path === '/signup') {
+        navigate(`/${user.role}/dashboard`, { replace: true });
+      }
+    }
+  }, [user, navigate]);
+
   // If a user with an invalid role is somehow still in state, clear them on mount/state change
   useEffect(() => {
     if (user && !ALLOWED_ROLES.includes(user.role)) {
