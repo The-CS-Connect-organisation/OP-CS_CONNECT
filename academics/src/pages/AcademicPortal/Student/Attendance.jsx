@@ -4,6 +4,16 @@ import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { request } from '../../../utils/apiClient';
 import { useSound } from '../../../hooks/useSound';
+import { KEYS, getFromStorage, setToStorage } from '../../../data/schema';
+
+const calculateSummary = (recs) => {
+  const present = recs.filter(r => r.status === 'present' || r.status === 'late').length;
+  const absent = recs.filter(r => r.status === 'absent').length;
+  const late = recs.filter(r => r.status === 'late').length;
+  const total = recs.length;
+  const rate = total > 0 ? Math.round((present / total) * 100) : 0;
+  return { total, present, absent, late, rate };
+};
 
 const LEAVE_STORAGE_KEY = 'sms_leave_requests';
 
@@ -35,15 +45,29 @@ export const Attendance = ({ user }) => {
   useEffect(() => {
     if (!user?.id) return;
     setLoading(true);
-    request('/student/attendance')
-      .then(res => {
-        const recs = res?.records || [];
-        const smry = res?.summary || { total: 0, present: 0, absent: 0, late: 0, rate: 0 };
-        setRecords(recs);
-        setSummary(smry);
-      })
-      .catch(e => console.error('Failed to fetch attendance:', e))
-      .finally(() => setLoading(false));
+
+    // Try API first, fall back to localStorage
+    const fetchAttendance = () => {
+      request('/student/attendance')
+        .then(res => {
+          const recs = res?.records || res?.items || [];
+          const smry = res?.summary || calculateSummary(recs);
+          setRecords(recs);
+          setSummary(smry);
+          // Cache to localStorage so other pages can read it
+          setToStorage(KEYS.ATTENDANCE, recs);
+        })
+        .catch(() => {
+          // Fallback to localStorage if API fails
+          const cached = getFromStorage(KEYS.ATTENDANCE, []);
+          const myCached = cached.filter(a => a.student_id === user.id);
+          setRecords(myCached);
+          setSummary(calculateSummary(myCached));
+        })
+        .finally(() => setLoading(false));
+    };
+
+    fetchAttendance();
 
     // Load leave requests from localStorage
     const stored = getLeaveRequests();

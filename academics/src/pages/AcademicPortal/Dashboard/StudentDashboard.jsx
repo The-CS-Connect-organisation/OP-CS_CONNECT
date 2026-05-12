@@ -480,6 +480,7 @@ export const StudentDashboard = ({ user }) => {
   const [apiAnnouncements, setApiAnnouncements] = useState([]);
   const [apiTimetableEntries, setApiTimetableEntries] = useState([]);
   const [profileData, setProfileData] = useState(null);
+  const [attSummaryRate, setAttSummaryRate] = useState(null);
   const [loadingDash, setLoadingDash] = useState(true);
 
   useEffect(() => {
@@ -489,7 +490,7 @@ export const StudentDashboard = ({ user }) => {
 
     Promise.allSettled([
       request('/school/assignments'),
-      request(`/student/grades`),
+      request('/student/grades'),
       request('/student/attendance'),
       request('/school/announcements?limit=50'),
       request('/school/timetables'),
@@ -508,8 +509,13 @@ export const StudentDashboard = ({ user }) => {
       }
       if (attRes.status === 'fulfilled') {
         const list = attRes.value.records || attRes.value.items || [];
+        const apiSummary = attRes.value.summary || {};
         setApiAttendance(list);
         setToStorage(KEYS.ATTENDANCE, list);
+        // Use API summary.rate if available, otherwise compute from records
+        if (apiSummary.rate !== undefined && apiSummary.rate > 0) {
+          setAttSummaryRate(apiSummary.rate);
+        }
       }
       if (annRes.status === 'fulfilled') {
         const list = annRes.value.announcements || annRes.value.items || [];
@@ -600,7 +606,7 @@ export const StudentDashboard = ({ user }) => {
   const myAttendance = safeAttendance.filter(a => !a.student_id || a.student_id === user.id || a.studentId === user.id);
   const presentCount = myAttendance.filter(a => a.status === 'present' || a.status === 'late').length;
   const computedAttendance = myAttendance.length > 0 ? Math.round((presentCount / myAttendance.length) * 100) : 0;
-  const attendanceRate = profileData?.attendancePercent || computedAttendance;
+  const attendanceRate = attSummaryRate !== null ? attSummaryRate : (profileData?.attendancePercent || computedAttendance);
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
   const todaySchedule = safeTimetable[user.class]?.[today] || safeTimetable[user.classroomId]?.[today] || safeTimetable[profileData?.class]?.[today] || safeTimetable[profileData?.class_id]?.[today] || [];
