@@ -9,8 +9,19 @@ const ROLES = [
   { id: 'teacher', label: 'Teacher', icon: BookOpen, color: '#7c3aed', bg: '#f5f3ff' },
   { id: 'admin', label: 'Admin', icon: ShieldCheck, color: '#1c1917', bg: '#fafaf9' },
   { id: 'parent', label: 'Parent', icon: Users, color: '#0891b2', bg: '#ecfeff' },
-  { id: 'driver', label: 'Driver', icon: Users, color: '#d97706', bg: '#fffbeb' },
-  { id: 'librarian', label: 'Librarian', icon: BookOpen, color: '#7c3aed', bg: '#f5f3ff' },
+];
+
+const DEMO_CREDENTIALS = [
+  { role: 'student',   label: 'Student', email: 'student@schoolsync.edu',   password: 'student123',   color: '#ea580c', bg: '#fff7ed' },
+  { role: 'teacher',   label: 'Teacher', email: 'teacher@schoolsync.edu',   password: 'teacher123',   color: '#7c3aed', bg: '#f5f3ff' },
+  { role: 'admin',     label: 'Admin',   email: 'admin@schoolsync.edu',      password: 'admin123',    color: '#1c1917', bg: '#fafaf9' },
+  { role: 'parent',    label: 'Parent',  email: 'parent@schoolsync.edu',     password: 'parent123',   color: '#0891b2', bg: '#ecfeff' },
+  { role: 'driver',     label: 'Driver',  email: 'driver@schoolsync.edu',     password: 'driver123',   color: '#d97706', bg: '#fffbeb' },
+  { role: 'librarian',  label: 'Lib.',   email: 'librarian@schoolsync.edu',  password: 'librarian123', color: '#7c3aed', bg: '#f5f3ff' },
+  { role: 'driver2',    label: 'D2',      email: 'driver2@schoolsync.edu',    password: 'driver123',   color: '#d97706', bg: '#fffbeb' },
+  { role: 'driver3',    label: 'D3',      email: 'driver3@schoolsync.edu',   password: 'driver123',   color: '#d97706', bg: '#fffbeb' },
+  { role: 'lib2',       label: 'L2',      email: 'librarian2@schoolsync.edu', password: 'librarian123', color: '#7c3aed', bg: '#f5f3ff' },
+  { role: 'lib3',       label: 'L3',      email: 'librarian3@schoolsync.edu', password: 'librarian123', color: '#7c3aed', bg: '#f5f3ff' },
 ];
 
 const FEATURE_BULLETS = [
@@ -205,7 +216,7 @@ const Login = () => {
 
             <div className="px-8 pb-8 pt-6">
               {/* Role tabs */}
-              <div className="flex gap-1.5 p-1.5 rounded-2xl mb-6" style={{ background: '#f5f5f4' }}>
+              <div className="flex gap-1.5 p-1.5 rounded-2xl mb-4" style={{ background: '#f5f5f4' }}>
                 {ROLES.map(r => (
                   <button
                     key={r.id}
@@ -223,6 +234,53 @@ const Login = () => {
                 ))}
               </div>
 
+              {/* Demo quick-login buttons */}
+              <div className="mb-4">
+                <p className="text-[9px] font-bold uppercase tracking-widest mb-2 text-center" style={{ color: '#a8a29e' }}>
+                  Quick Demo
+                </p>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {DEMO_CREDENTIALS.slice(0, 5).map((cred) => (
+                    <button
+                      key={cred.role}
+                      type="button"
+                      onClick={() => {
+                        setEmail(cred.email);
+                        setPassword(cred.password);
+                        setError('');
+                        // Auto-submit after a brief delay so user sees the fill
+                        setTimeout(() => {
+                          document.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                        }, 200);
+                      }}
+                      className="py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wide transition-all hover:brightness-105 active:scale-95"
+                      style={{ background: cred.bg, color: cred.color, border: `1px solid ${cred.color}30` }}
+                    >
+                      {cred.label}
+                    </button>
+                  ))}
+                </div>
+                <div className="grid grid-cols-5 gap-1.5 mt-1">
+                  {DEMO_CREDENTIALS.slice(5).map((cred) => (
+                    <button
+                      key={cred.role}
+                      type="button"
+                      onClick={() => {
+                        setEmail(cred.email);
+                        setPassword(cred.password);
+                        setError('');
+                        setTimeout(() => {
+                          document.querySelector('form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                        }, 200);
+                      }}
+                      className="py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wide transition-all hover:brightness-105 active:scale-95"
+                      style={{ background: cred.bg, color: cred.color, border: `1px solid ${cred.color}30` }}
+                    >
+                      {cred.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               {/* Form */}
               <form onSubmit={handleLogin} className="space-y-4">
