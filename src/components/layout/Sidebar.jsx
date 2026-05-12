@@ -10,6 +10,7 @@ import {
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
 import { useSound } from '../../hooks/useSound';
+import { LetterSwapPingPong } from '@/components/ui/LetterSwap';
 
 const ROLE_NAV = {
   admin: [
@@ -309,7 +310,7 @@ export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, 
                       <motion.span
                         className="text-sm font-medium whitespace-nowrap overflow-hidden"
                       >
-                        {item.title}
+                        <LetterSwapPingPong>{item.title}</LetterSwapPingPong>
                       </motion.span>
                     </motion.button>
                   );

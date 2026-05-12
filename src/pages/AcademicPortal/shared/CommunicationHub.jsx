@@ -34,6 +34,7 @@ export const CommunicationHub = ({ user }) => {
   const { data: localUsers } = useStore(KEYS.USERS, []);
   const [apiContacts, setApiContacts] = useState(null);
   const [chatUser, setChatUser] = useState(null);
+  const [prefillMessage, setPrefillMessage] = useState('');
   const [callState, setCallState] = useState({ isOpen: false, otherUser: null, preferVideo: true, initiator: true });
   const [incomingCall, setIncomingCall] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,6 +69,22 @@ export const CommunicationHub = ({ user }) => {
     return () => { cancelled = true; };
   }, [useApi, user?.role]);
 
+  // Listen for open_chat events from MessageDock (prefilled message from dock)
+  useEffect(() => {
+    const handler = (e) => {
+      const { contact, message } = e.detail || {};
+      if (contact) {
+        setChatUser(contact);
+        setShowSidebarOnMobile(false);
+        if (message) {
+          setPrefillMessage(message);
+        }
+      }
+    };
+    window.addEventListener('cornerstone_open_chat', handler);
+    return () => window.removeEventListener('cornerstone_open_chat', handler);
+  }, []);
+
   useEffect(() => {
     if (!user?.id) return;
     const interval = setInterval(() => {
@@ -96,15 +113,25 @@ export const CommunicationHub = ({ user }) => {
     return () => clearInterval(interval);
   }, [user?.id, callState.isOpen, incomingCall]);
 
-  const handleChatOpen = (contact) => {
+  const handleChatOpen = (contact, prefillMessage = '') => {
     setRecentChats(prev => {
       const filtered = prev.filter(c => c.id !== contact.id);
       const updated = [{ id: contact.id, name: contact.name, role: contact.role, class: contact.class, lastChatAt: Date.now() }, ...filtered].slice(0, 20);
       localStorage.setItem('cornerstone_recent_chats', JSON.stringify(updated));
+      // Notify MessageDock to refresh
+      window.dispatchEvent(new CustomEvent('cornerstone_chats_updated'));
       return updated;
     });
-    setChatUser(contact);
-    setShowSidebarOnMobile(false);
+    if (prefillMessage) {
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('cornerstone_open_chat', {
+          detail: { contact, message: prefillMessage }
+        }));
+      }, 150);
+    } else {
+      setChatUser(contact);
+      setShowSidebarOnMobile(false);
+    }
   };
 
   const contacts = useMemo(() => {
@@ -224,6 +251,8 @@ export const CommunicationHub = ({ user }) => {
               currentUser={user}
               otherUser={chatUser}
               onStartCall={({ otherUser, preferVideo }) => setCallState({ isOpen: true, otherUser, preferVideo, initiator: true })}
+              prefillMessage={prefillMessage}
+              onPrefillConsumed={() => setPrefillMessage('')}
             />
           ) : (
             <div className="h-full flex flex-col items-center justify-center">

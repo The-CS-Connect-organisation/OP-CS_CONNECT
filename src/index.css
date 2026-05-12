@@ -423,6 +423,18 @@
 }
 
 /* ─── KEYFRAMES ───────────────────────────────────────────── */
+/* ─── LOGIN PAGE ANIMATIONS ─────────────────────────────── */
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(var(--radius)) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(var(--radius)) rotate(-360deg); }
+}
+
+@keyframes ripple {
+  0% { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+/* ─── POOKIE ANIMATIONS ─────────────────────────────────── */
 @keyframes aurora-shift {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -477,6 +489,53 @@
   100% { transform: rotate(360deg) scale(1); }
 }
 
+/* ─── MARQUEE ANIMATION ────────────────────────────────── */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes marquee-vertical {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+
+/* ─── WAITLIST / SPINNING RINGS ───────────────────────── */
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes spin-slow-reverse {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+@keyframes bounce-in {
+  0% { transform: scale(0.8); opacity: 0; }
+  50% { transform: scale(1.05); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes success-pulse {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.1); }
+  70% { transform: scale(0.95); }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes success-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 0 60px rgba(16, 185, 129, 0.8), 0 0 100px rgba(16, 185, 129, 0.4); }
+}
+@keyframes checkmark-draw {
+  0% { stroke-dashoffset: 24; }
+  100% { stroke-dashoffset: 0; }
+}
+@keyframes celebration-ring {
+  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+}
+@keyframes cube-3d-rotate {
+  0% { transform: rotateX(-20deg) rotateY(0deg); }
+  100% { transform: rotateX(-20deg) rotateY(360deg); }
+}
+
 .stagger-children > *:nth-child(1) { animation-delay: 0.05s; }
 .stagger-children > *:nth-child(2) { animation-delay: 0.1s; }
 .stagger-children > *:nth-child(3) { animation-delay: 0.15s; }
@@ -512,6 +571,85 @@
 }
 .sidebar-nav-item:hover {
   background: rgba(0, 0, 0, 0.04);
+}
+
+/* ─── DARK THEME ─────────────────────────────────────────── */
+[data-theme="dark"] {
+  /* ── Dark Backgrounds ── */
+  --bg-base: #09090b;
+  --bg-surface: #18181b;
+  --bg-elevated: #27272a;
+  --bg-floating: #3f3f46;
+  --bg-overlay: rgba(9, 9, 11, 0.95);
+
+  /* ── Text Hierarchy ── */
+  --text-primary: #fafafa;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --text-dim: #52525b;
+
+  /* ── Borders ── */
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --border-accent: rgba(255, 255, 255, 0.25);
+
+  /* ── Semantic (brighter for dark bg) ── */
+  --semantic-success: #34d399;
+  --semantic-warning: #fbbf24;
+  --semantic-error: #f87171;
+  --semantic-info: #60a5fa;
+
+  /* ── Shadows (lighter for dark bg) ── */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.6), 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.7), 0 8px 20px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 0 3px rgba(255, 255, 255, 0.06);
+  --shadow-glow-strong: 0 0 0 4px rgba(255, 255, 255, 0.10);
+
+  /* ── Legacy dark overrides ── */
+  --black: #fafafa;
+  --black-90: rgba(250, 250, 250, 0.90);
+  --black-70: rgba(250, 250, 250, 0.70);
+  --black-50: rgba(250, 250, 250, 0.50);
+  --black-30: rgba(250, 250, 250, 0.30);
+  --black-15: rgba(250, 250, 250, 0.15);
+  --black-10: rgba(250, 250, 250, 0.10);
+  --black-06: rgba(250, 250, 250, 0.06);
+  --black-03: rgba(250, 250, 250, 0.03);
+  --white-06: rgba(255, 255, 255, 0.05);
+  --white-10: rgba(255, 255, 255, 0.07);
+}
+
+/* ─── DARK MODE TOGGLE BUTTON STYLES ── */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+}
+.theme-toggle:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+[data-theme="dark"] .theme-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ─── DARK MODE INLINE OVERRIDES ── */
+/* Override common inline styles for dark mode */
+[data-theme="dark"] body,
+[data-theme="dark"] .bg-gray-50,
+[data-theme="dark"] .bg-slate-50,
+[data-theme="dark"] .bg-\[\#f8fafc\] {
+  background-color: #09090b !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

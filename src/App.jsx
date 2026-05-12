@@ -19,6 +19,7 @@ import SplashScreen from './components/SplashScreen';
 import { Login } from './pages/Common/Login';
 import { Signup } from './pages/Common/Signup';
 import { NotFound } from './pages/Common/NotFound';
+import { Landing } from './pages/Common/Landing';
 
 // Pages - Portals (Dashboards)
 import { StudentDashboard } from './pages/AcademicPortal/Dashboard/StudentDashboard';
@@ -591,9 +592,9 @@ function App() {
 
           {/* 🏁 Terminal Entry/Exit */}
           <Route path="/" element={
-            user && ALLOWED_ROLES.includes(user.role) 
-              ? <Navigate to={`/${user.role}/dashboard`} replace /> 
-              : <Navigate to="/login" replace />
+            user && ALLOWED_ROLES.includes(user.role)
+              ? <Navigate to={`/${user.role}/dashboard`} replace />
+              : <Landing user={user} onLogin={handleLogin} />
           } />
           <Route path="*" element={<NotFound user={user} />} />
         </Routes>

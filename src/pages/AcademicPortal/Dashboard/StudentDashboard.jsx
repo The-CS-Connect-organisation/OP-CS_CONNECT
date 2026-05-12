@@ -10,6 +10,7 @@ import { apiRequest } from '../../../services/apiClient';
 import { getDataMode, DATA_MODES } from '../../../config/dataMode';
 import { calendarService } from '../../../services/calendarService';
 import { aiCoachService } from '../../../services/aiCoachService';
+import { MessageDock } from '@/components/ui/MessageDock';
 
 const StatCard = ({ icon: Icon, label, value, subtitle, delay, color = '#1f2937', loading }) => {
   return (
@@ -499,7 +500,7 @@ export const StudentDashboard = ({ user }) => {
         const diff = dueDate.getTime() - now.getTime();
         const h = String(Math.floor(diff / (1000 * 60 * 60))).padStart(2, '0');
         const m = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-        const s = String(Math.floor((diff % (1000 * 60)) / 1000).padStart(2, '0');
+        const s = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
         items.push({ label: 'Assignment Due', timeLeft: `${h}:${m}:${s}` });
       }
     }
@@ -777,6 +778,13 @@ export const StudentDashboard = ({ user }) => {
           })}
         </div>
       </div>
+
+      {/* MessageDock floating widget */}
+      <MessageDock
+        user={user}
+        position="bottom"
+        theme="dark"
+      />
     </div>
   );
 };

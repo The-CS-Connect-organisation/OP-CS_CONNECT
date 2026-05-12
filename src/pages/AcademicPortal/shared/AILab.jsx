@@ -2,11 +2,18 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send, Loader2, History, Trash2, Info, MessageSquare,
-  Zap, Brain, AlertTriangle, X, ChevronDown, RotateCcw, Paperclip, FileText, ImageIcon
+  Zap, Brain, AlertTriangle, X, ChevronDown, RotateCcw, Paperclip, FileText, ImageIcon,
+  Sun, Moon, LayoutDashboard, Bot, Sparkles
 } from 'lucide-react';
 import { request } from '../../../utils/apiClient';
+import { AnimatedAIChat } from '../../../components/ui/AnimatedAIChat';
+import { AgentPlan } from '../../../components/ui/AgentPlan';
+import { AIPromptBar } from '../../../components/ui/AIPromptBar';
+import { cn } from '@/lib/utils';
+
 
 const DISCLAIMER = "CSAI can make mistakes. Verify important information.";
+
 
 const MODEL_CONFIG = {
   balanced: {
@@ -16,9 +23,8 @@ const MODEL_CONFIG = {
     provider: 'Cerebras',
     icon: Zap,
     gradient: 'from-blue-500 to-sky-400',
-    pill: 'bg-blue-50 text-blue-600 border-blue-200',
+    pill: 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
     dot: 'bg-blue-500',
-    ring: 'focus-within:ring-blue-100',
     sendBg: 'from-blue-500 to-sky-400',
   },
   advanced: {
@@ -28,14 +34,57 @@ const MODEL_CONFIG = {
     provider: 'Cerebras',
     icon: Brain,
     gradient: 'from-violet-600 to-purple-500',
-    pill: 'bg-violet-50 text-violet-600 border-violet-200',
+    pill: 'bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-900/30 dark:text-violet-400 dark:border-violet-800',
     dot: 'bg-violet-500',
-    ring: 'focus-within:ring-violet-100',
     sendBg: 'from-violet-600 to-purple-500',
+  },
+  "o3-mini": {
+    id: 'o3-mini',
+    name: 'o3-mini',
+    subtitle: 'Fast Reasoning',
+    provider: 'OpenAI',
+    icon: Brain,
+    gradient: 'from-green-500 to-emerald-400',
+    pill: 'bg-green-50 text-green-600 border-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800',
+    dot: 'bg-green-500',
+    sendBg: 'from-green-500 to-emerald-400',
+  },
+  "GPT-4.1 Mini": {
+    id: 'GPT-4.1 Mini',
+    name: 'GPT-4.1 Mini',
+    subtitle: 'Fast & Capable',
+    provider: 'OpenAI',
+    icon: Zap,
+    gradient: 'from-blue-500 to-indigo-400',
+    pill: 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400 dark:border-blue-800',
+    dot: 'bg-blue-500',
+    sendBg: 'from-blue-500 to-indigo-400',
+  },
+  "Claude 3.5 Sonnet": {
+    id: 'Claude 3.5 Sonnet',
+    name: 'Claude 3.5',
+    subtitle: 'Deep Reasoning',
+    provider: 'Anthropic',
+    icon: Brain,
+    gradient: 'from-orange-500 to-amber-400',
+    pill: 'bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400 dark:border-orange-800',
+    dot: 'bg-orange-500',
+    sendBg: 'from-orange-500 to-amber-400',
+  },
+  "Gemini 2.5 Flash": {
+    id: 'Gemini 2.5 Flash',
+    name: 'Gemini 2.5',
+    subtitle: 'Fast & Multimodal',
+    provider: 'Google',
+    icon: Sparkles,
+    gradient: 'from-cyan-500 to-blue-400',
+    pill: 'bg-cyan-50 text-cyan-600 border-cyan-200 dark:bg-cyan-900/30 dark:text-cyan-400 dark:border-cyan-800',
+    dot: 'bg-cyan-500',
+    sendBg: 'from-cyan-500 to-blue-400',
   },
 };
 
-/* ── Markdown-lite renderer ── */
+
 const MsgContent = ({ text }) => {
   const blocks = text.split(/(```[\s\S]*?```)/g);
   return (
@@ -44,22 +93,22 @@ const MsgContent = ({ text }) => {
         if (block.startsWith('```')) {
           const code = block.replace(/^```[^\n]*\n?/, '').replace(/```$/, '');
           return (
-            <pre key={bi} className="bg-gray-100 border border-gray-200 rounded-xl p-3 text-xs font-mono overflow-x-auto text-gray-800 leading-relaxed">
+            <pre className="bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl p-3 text-xs font-mono overflow-x-auto text-gray-800 dark:text-gray-200 leading-relaxed">
               {code}
             </pre>
           );
         }
         return (
-          <p key={bi} className="leading-relaxed">
+          <p className="leading-relaxed">
             {block.split('\n').map((line, li) => {
               const parts = line.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
               return (
                 <span key={li}>
                   {parts.map((p, pi) => {
                     if (p.startsWith('`') && p.endsWith('`'))
-                      return <code key={pi} className="bg-gray-100 text-violet-600 px-1.5 py-0.5 rounded text-xs font-mono border border-gray-200">{p.slice(1, -1)}</code>;
+                      return <code key={pi} className="bg-gray-100 dark:bg-zinc-800 text-violet-600 dark:text-violet-400 px-1.5 py-0.5 rounded text-xs font-mono border border-gray-200 dark:border-zinc-700">{p.slice(1, -1)}</code>;
                     if (p.startsWith('**') && p.endsWith('**'))
-                      return <strong key={pi} className="font-semibold text-gray-900">{p.slice(2, -2)}</strong>;
+                      return <strong key={pi} className="font-semibold text-gray-900 dark:text-gray-100">{p.slice(2, -2)}</strong>;
                     return p;
                   })}
                   {li < block.split('\n').length - 1 && <br />}
@@ -73,59 +122,36 @@ const MsgContent = ({ text }) => {
   );
 };
 
-/* ── Particle ── */
-const Particle = ({ x, y, size, color, delay }) => (
-  <motion.div
-    className="absolute rounded-full pointer-events-none"
-    style={{ left: `${x}%`, top: `${y}%`, width: size, height: size, background: color, filter: 'blur(1px)' }}
-    animate={{ y: [0, -28, 0], opacity: [0, 0.7, 0], scale: [0.8, 1.3, 0.8] }}
-    transition={{ duration: 4 + Math.random() * 3, repeat: Infinity, delay, ease: 'easeInOut' }}
-  />
-);
 
-const PARTICLES = [
-  { x: 12, y: 72, size: 8, color: '#3b82f6', delay: 0 },
-  { x: 82, y: 58, size: 6, color: '#8b5cf6', delay: 1 },
-  { x: 22, y: 28, size: 10, color: '#06b6d4', delay: 2 },
-  { x: 68, y: 82, size: 7, color: '#a78bfa', delay: 0.5 },
-  { x: 48, y: 18, size: 5, color: '#3b82f6', delay: 1.5 },
-  { x: 88, y: 32, size: 9, color: '#7c3aed', delay: 2.5 },
-  { x: 8,  y: 48, size: 6, color: '#60a5fa', delay: 3 },
-  { x: 58, y: 88, size: 8, color: '#818cf8', delay: 0.8 },
-  { x: 35, y: 55, size: 5, color: '#c4b5fd', delay: 1.2 },
-  { x: 75, y: 15, size: 7, color: '#38bdf8', delay: 3.5 },
-];
-
-/* ── Advanced warning ── */
 const AdvancedWarningModal = ({ onConfirm, onCancel }) => (
   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-    className="fixed inset-0 z-[200] flex items-center justify-center bg-black/20 backdrop-blur-sm"
+    className="fixed inset-0 z-[200] flex items-center justify-center bg-black/20 dark:bg-black/40 backdrop-blur-sm"
     onClick={onCancel}
   >
     <motion.div initial={{ scale: 0.92, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }}
       exit={{ scale: 0.92, opacity: 0 }}
       onClick={e => e.stopPropagation()}
-      className="bg-white border border-gray-200 rounded-3xl p-6 max-w-sm w-full mx-4 shadow-2xl"
+      className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-3xl p-6 max-w-sm w-full mx-4 shadow-2xl"
     >
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
+        <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 flex items-center justify-center shrink-0">
           <AlertTriangle size={18} className="text-amber-500" />
         </div>
         <div>
-          <h3 className="font-bold text-gray-900 text-sm">Advanced Mode</h3>
+          <h3 className="font-bold text-gray-900 dark:text-white text-sm">Advanced Mode</h3>
           <p className="text-xs text-gray-400">School-funded resource</p>
         </div>
       </div>
-      <p className="text-sm text-gray-600 leading-relaxed mb-6">
+      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-6">
         Advanced mode runs a significantly larger model funded by the school. Please use it responsibly — only when deeper reasoning is genuinely needed.
       </p>
       <div className="flex gap-3">
         <button onClick={onCancel}
-          className="flex-1 py-2.5 rounded-2xl border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-all font-medium">
+          className="flex-1 py-2.5 rounded-2xl border border-gray-200 dark:border-zinc-700 text-sm text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-all font-medium">
           Cancel
         </button>
         <button onClick={onConfirm}
-          className="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-500 text-white text-sm font-bold hover:opacity-90 shadow-lg shadow-violet-100 transition-all">
+          className="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-500 text-white text-sm font-bold hover:opacity-90 shadow-lg shadow-violet-100 dark:shadow-violet-900/30 transition-all">
           I understand
         </button>
       </div>
@@ -133,135 +159,40 @@ const AdvancedWarningModal = ({ onConfirm, onCancel }) => (
   </motion.div>
 );
 
-/* ── Splash ── */
-const SplashScreen = ({ onEnter }) => (
-  <motion.div
-    className="fixed inset-0 z-[100] flex items-center justify-center"
-    style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #ffffff 50%, #f5f0ff 100%)' }}
-    exit={{ opacity: 0, scale: 1.03 }}
-    transition={{ duration: 0.5 }}
-  >
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {PARTICLES.map((p, i) => <Particle key={i} {...p} />)}
-      <motion.div className="absolute w-[600px] h-[600px] rounded-full bg-blue-100 blur-[120px] opacity-50"
-        animate={{ scale: [1, 1.12, 1], x: [0, 30, 0] }}
-        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ top: '-10%', left: '-10%' }}
-      />
-      <motion.div className="absolute w-[500px] h-[500px] rounded-full bg-violet-100 blur-[120px] opacity-40"
-        animate={{ scale: [1, 1.15, 1], x: [0, -25, 0] }}
-        transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-        style={{ bottom: '-10%', right: '-10%' }}
-      />
-    </div>
 
-    <div className="relative flex flex-col items-center text-center px-6 w-full max-w-md">
-      {/* Logo — no box, just floating */}
-      <motion.div
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        className="mb-6 relative flex items-center justify-center"
-      >
-        <motion.div
-          className="absolute w-40 h-40 rounded-full bg-blue-200 blur-3xl opacity-40"
-          animate={{ scale: [1, 1.4, 1] }}
-          transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.img
-          src="logo.png"
-          alt="Cornerstone School"
-          className="relative w-32 h-32 object-contain drop-shadow-2xl"
-          animate={{ y: [0, -6, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      </motion.div>
-
-      {/* Wordmark */}
-      <motion.div
-        initial={{ y: 28, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.45, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <h1 className="text-7xl font-black tracking-tighter text-gray-900 leading-none select-none">
-          CS<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-violet-600">AI</span>
-        </h1>
-        <p className="text-[11px] text-gray-400 tracking-[0.28em] uppercase font-semibold mt-3">
-          Cornerstone School · AI Studio
-        </p>
-      </motion.div>
-
-      {/* Model pills */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.85, duration: 0.6 }}
-        className="flex gap-3 mt-8"
-      >
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-200 shadow-sm">
-          <Zap size={12} className="text-blue-500" />
-          <span className="text-xs text-blue-600 font-bold">CS v2</span>
-        </div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-violet-50 border border-violet-200 shadow-sm">
-          <Brain size={12} className="text-violet-500" />
-          <span className="text-xs text-violet-600 font-bold">Qwen-3 235B</span>
-        </div>
-      </motion.div>
-
-      {/* CTA */}
-      <motion.button
-        onClick={onEnter}
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.3, duration: 0.5 }}
-        whileHover={{ scale: 1.04, boxShadow: '0 24px 48px rgba(99,102,241,0.28)' }}
-        whileTap={{ scale: 0.97 }}
-        className="mt-10 px-14 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-violet-600 text-white text-sm font-bold tracking-wide shadow-xl shadow-blue-200/60 transition-all"
-      >
-        Enter Lab
-      </motion.button>
-
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.9 }}
-        className="text-[10px] text-gray-300 mt-5 tracking-widest uppercase"
-      >
-        Designed &amp; run by CSTians
-      </motion.p>
-    </div>
-  </motion.div>
-);
-
-/* ── Main component ── */
 export const AILab = ({ user, addToast }) => {
   const [showSplash, setShowSplash] = useState(true);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState('balanced');
+  const [selectedModel, setSelectedModel] = useState('GPT-4.1 Mini');
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [showAdvancedWarning, setShowAdvancedWarning] = useState(false);
   const [showModelMenu, setShowModelMenu] = useState(false);
+  const [showPlan, setShowPlan] = useState(false);
+  const [theme, setTheme] = useState('dark');
   const chatEndRef = useRef(null);
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
   const [attachments, setAttachments] = useState([]);
-  const m = MODEL_CONFIG[mode];
+
+  const isDark = theme === 'dark';
+  const m = MODEL_CONFIG[selectedModel] || MODEL_CONFIG.balanced;
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  // Close model menu on outside click
+
   useEffect(() => {
     if (!showModelMenu) return;
     const handler = () => setShowModelMenu(false);
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [showModelMenu]);
+
 
   const loadHistory = useCallback(async () => {
     setHistoryLoading(true);
@@ -275,22 +206,22 @@ export const AILab = ({ user, addToast }) => {
     }
   }, []);
 
+
   useEffect(() => {
     if (showHistory) loadHistory();
   }, [showHistory, loadHistory]);
 
-  const handleModeSelect = (id) => {
+
+  const handleModelChange = (model) => {
     setShowModelMenu(false);
-    if (id === 'advanced' && mode !== 'advanced') {
-      setShowAdvancedWarning(true);
-    } else {
-      setMode(id);
-    }
+    setSelectedModel(model);
   };
 
-  const handleSend = async () => {
-    if (!input.trim() && attachments.length === 0 || loading) return;
-    let content = input.trim();
+
+  const handleSend = async (message) => {
+    const incomingContent = message || input;
+    if (!incomingContent.trim() && attachments.length === 0 || loading) return;
+    let content = incomingContent.trim();
     if (attachments.length > 0) {
       const fileNames = attachments.map(f => f.name).join(', ');
       content = content ? `${content}\n\n[Attached: ${fileNames}]` : `[Attached: ${fileNames}]`;
@@ -298,16 +229,14 @@ export const AILab = ({ user, addToast }) => {
     const userMsg = { role: 'user', content, attachments: [...attachments] };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
-    setInput('');
     setAttachments([]);
-    if (textareaRef.current) { textareaRef.current.style.height = 'auto'; }
     setLoading(true);
     try {
       const data = await request('/ai/chat', {
         method: 'POST',
         body: JSON.stringify({
           messages: newMessages.map(x => ({ role: x.role, content: x.content })),
-          mode,
+          model: selectedModel,
         }),
       });
       if (data?.success) {
@@ -319,33 +248,66 @@ export const AILab = ({ user, addToast }) => {
       }
     } catch (e) {
       addToast?.(e.message || 'CSAI is unavailable. Try again shortly.', 'error');
-      setMessages(prev => prev.slice(0, -1)); // remove optimistic user msg on error
+      setMessages(prev => prev.slice(0, -1));
     } finally {
       setLoading(false);
-      textareaRef.current?.focus();
     }
   };
 
+
+  const panelBg = isDark ? "bg-zinc-950" : "bg-gray-50";
+  const cardBg = isDark ? "bg-zinc-900/50 border-white/5" : "bg-white border-gray-200";
+  const textPrimary = isDark ? "text-white" : "text-gray-900";
+  const textSecondary = isDark ? "text-white/70" : "text-gray-600";
+  const textMuted = isDark ? "text-white/40" : "text-gray-400";
+  const borderColor = isDark ? "border-white/5" : "border-gray-200";
+  const inputBg = isDark ? "bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:bg-white/8" : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400";
+
+
   if (showSplash) {
     return (
-      <AnimatePresence mode="wait">
-        <SplashScreen key="splash" onEnter={() => setShowSplash(false)} />
-      </AnimatePresence>
+      <div className={cn("flex", panelBg)} style={{ height: 'calc(100vh - 64px)', overflow: 'hidden' }}>
+        <div className="flex-1 flex flex-col">
+          <AIBar
+            selectedModel={selectedModel}
+            onModelChange={handleModelChange}
+            showModelMenu={showModelMenu}
+            setShowModelMenu={setShowModelMenu}
+            theme={theme}
+            setTheme={setTheme}
+            showPlan={showPlan}
+            setShowPlan={setShowPlan}
+            isDark={isDark}
+            MODEL_CONFIG={MODEL_CONFIG}
+          />
+          <div className="flex-1">
+            <AnimatedAIChat theme={theme} />
+          </div>
+        </div>
+        <button
+          onClick={() => setShowSplash(false)}
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 px-8 py-3 rounded-2xl bg-gradient-to-r from-blue-500 to-violet-600 text-white text-sm font-bold shadow-xl hover:opacity-90 transition-opacity"
+        >
+          Enter CS AI Lab
+        </button>
+      </div>
     );
   }
 
+
   return (
-    <div className="flex bg-gray-50" style={{ height: 'calc(100vh - 64px)', overflow: 'hidden', maxWidth: '100vw', position: 'relative' }}>
+    <div className={cn("flex", panelBg)} style={{ height: 'calc(100vh - 64px)', overflow: 'hidden', maxWidth: '100vw' }}>
       <AnimatePresence>
         {showAdvancedWarning && (
           <AdvancedWarningModal
-            onConfirm={() => { setMode('advanced'); setShowAdvancedWarning(false); }}
+            onConfirm={() => { setSelectedModel('advanced'); setShowAdvancedWarning(false); }}
             onCancel={() => setShowAdvancedWarning(false)}
           />
         )}
       </AnimatePresence>
 
-      {/* ── History sidebar ── */}
+
+      {/* History sidebar */}
       <AnimatePresence>
         {showHistory && (
           <motion.aside
@@ -353,24 +315,23 @@ export const AILab = ({ user, addToast }) => {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -300, opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            className="w-72 border-r border-gray-200 flex flex-col bg-white shrink-0"
+            className={cn("w-72 border-r flex flex-col shrink-0", cardBg, borderColor)}
             style={{ overflow: 'hidden' }}
           >
-            <div className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0">
+            <div className={cn("p-4 border-b flex items-center justify-between shrink-0", borderColor)}>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-gray-600 uppercase tracking-widest">History</span>
+                <span className={cn("text-xs font-bold uppercase tracking-widest", textSecondary)}>History</span>
                 {history.length > 0 && (
-                  <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full font-semibold">{history.length}</span>
+                  <span className="text-[10px] bg-white/10 text-white/60 px-2 py-0.5 rounded-full font-semibold">{history.length}</span>
                 )}
               </div>
               <div className="flex items-center gap-1">
                 <button onClick={loadHistory}
-                  className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-all"
-                  title="Refresh">
+                  className={cn("p-1.5 rounded-lg hover:bg-white/10 transition-all", textSecondary)}>
                   <RotateCcw size={13} className={historyLoading ? 'animate-spin' : ''} />
                 </button>
                 <button onClick={() => setShowHistory(false)}
-                  className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-all">
+                  className={cn("p-1.5 rounded-lg hover:bg-white/10 transition-all", textSecondary)}>
                   <X size={15} />
                 </button>
               </div>
@@ -378,13 +339,13 @@ export const AILab = ({ user, addToast }) => {
             <div className="flex-1 p-3 space-y-1" style={{ overflowY: 'auto', overflowX: 'hidden' }}>
               {historyLoading ? (
                 <div className="flex items-center justify-center py-16">
-                  <Loader2 size={20} className="animate-spin text-gray-300" />
+                  <Loader2 size={20} className="animate-spin text-white/20" />
                 </div>
               ) : history.length === 0 ? (
-                <div className="text-center py-16 text-gray-300">
-                  <MessageSquare size={28} className="mx-auto mb-3" />
+                <div className={cn("text-center py-16", textMuted)}>
+                  <MessageSquare size={28} className="mx-auto mb-3 opacity-40" />
                   <p className="text-xs font-medium">No history yet</p>
-                  <p className="text-[10px] mt-1 text-gray-200">Your chats will appear here</p>
+                  <p className="text-[10px] mt-1 opacity-60">Your chats will appear here</p>
                 </div>
               ) : history.map((item, i) => (
                 <motion.button key={i}
@@ -398,12 +359,14 @@ export const AILab = ({ user, addToast }) => {
                     ]);
                     setShowHistory(false);
                   }}
-                  className="w-full text-left p-3 rounded-xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 group"
+                  className={cn(
+                    "w-full text-left p-3 rounded-xl hover:bg-white/5 transition-all border border-transparent hover:border-white/10 group"
+                  )}
                 >
-                  <p className="text-xs text-gray-700 truncate font-medium group-hover:text-gray-900">{item.prompt}</p>
+                  <p className={cn("text-xs truncate font-medium group-hover:text-white/90", textSecondary)}>{item.prompt}</p>
                   <div className="flex items-center justify-between mt-1">
-                    <p className="text-[10px] text-gray-400">{new Date(item.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
-                    <p className="text-[10px] text-gray-300 font-medium">{item.model}</p>
+                    <p className={cn("text-[10px]", textMuted)}>{new Date(item.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</p>
+                    <p className={cn("text-[10px] font-medium", textMuted)}>{item.model}</p>
                   </div>
                 </motion.button>
               ))}
@@ -412,22 +375,54 @@ export const AILab = ({ user, addToast }) => {
         )}
       </AnimatePresence>
 
-      {/* ── Main ── */}
+
+      {/* Plan sidebar */}
+      <AnimatePresence>
+        {showPlan && (
+          <motion.aside
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 320, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 220 }}
+            className={cn("border-r flex flex-col shrink-0 overflow-hidden", cardBg, borderColor)}
+          >
+            <div className={cn("p-4 border-b flex items-center justify-between shrink-0", borderColor)}>
+              <span className={cn("text-xs font-bold uppercase tracking-widest", textSecondary)}>AI Plan</span>
+              <button onClick={() => setShowPlan(false)}
+                className={cn("p-1.5 rounded-lg hover:bg-white/10 transition-all", textSecondary)}>
+                <X size={15} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <AgentPlan theme={theme} />
+            </div>
+          </motion.aside>
+        )}
+      </AnimatePresence>
+
+
+      {/* Main */}
       <div className="flex-1 flex flex-col min-w-0" style={{ overflow: 'hidden' }}>
 
         {/* Top bar */}
-        <div className="h-14 border-b border-gray-200 flex items-center justify-between px-5 shrink-0 bg-white/90 backdrop-blur-xl shadow-sm">
+        <div className={cn("h-14 border-b flex items-center justify-between px-5 shrink-0 backdrop-blur-xl shadow-sm", cardBg, borderColor)}>
           <div className="flex items-center gap-3">
             <button onClick={() => setShowHistory(v => !v)}
-              className={`p-2 rounded-xl transition-all ${showHistory ? 'bg-gray-100 text-gray-700' : 'hover:bg-gray-100 text-gray-400 hover:text-gray-700'}`}>
+              className={cn("p-2 rounded-xl transition-all", showHistory ? 'bg-white/10 text-white/90' : 'hover:bg-white/10 text-white/40 hover:text-white/70')}>
               <History size={17} />
             </button>
-            <div className="flex items-center gap-2.5">
-              <img src="/logo.png" alt="CS" className="w-7 h-7 object-contain" />
-              <span className="font-black text-gray-900 tracking-tight text-lg leading-none">
-                CS<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-violet-600">AI</span>
+            <button onClick={() => setShowPlan(v => !v)}
+              className={cn("p-2 rounded-xl transition-all", showPlan ? 'bg-white/10 text-white/90' : 'hover:bg-white/10 text-white/40 hover:text-white/70')}>
+              <LayoutDashboard size={17} />
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
+                <Bot size={14} className="text-white" />
+              </div>
+              <span className={cn("font-black tracking-tight text-lg leading-none", textPrimary)}>
+                CS<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-500">AI</span>
               </span>
-              <span className="text-[9px] text-gray-400 uppercase tracking-[0.2em] font-semibold hidden sm:block">AI Studio</span>
+              <span className={cn("text-[9px] uppercase tracking-[0.2em] font-semibold hidden sm:block", textMuted)}>AI Studio</span>
             </div>
           </div>
 
@@ -435,14 +430,14 @@ export const AILab = ({ user, addToast }) => {
             {/* Model selector */}
             <div className="relative" onMouseDown={e => e.stopPropagation()}>
               <button onClick={() => setShowModelMenu(v => !v)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-sm ${m.pill}`}>
-                <motion.div className={`w-1.5 h-1.5 rounded-full ${m.dot}`}
+                className={cn("flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-sm", m.pill)}>
+                <motion.div className={cn("w-1.5 h-1.5 rounded-full", m.dot)}
                   animate={{ scale: [1, 1.4, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 />
                 <m.icon size={13} />
                 {m.name}
-                <ChevronDown size={12} className={`transition-transform duration-200 ${showModelMenu ? 'rotate-180' : ''}`} />
+                <ChevronDown size={12} className="transition-transform duration-200" />
               </button>
               <AnimatePresence>
                 {showModelMenu && (
@@ -451,36 +446,42 @@ export const AILab = ({ user, addToast }) => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -8, scale: 0.95 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-2xl z-50"
+                    className={cn("absolute right-0 top-full mt-2 w-64 rounded-2xl overflow-hidden shadow-2xl z-50", cardBg, borderColor)}
                   >
                     <div className="p-2">
                       {Object.values(MODEL_CONFIG).map(cfg => (
-                        <button key={cfg.id} onClick={() => handleModeSelect(cfg.id)}
-                          className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 transition-all text-left ${mode === cfg.id ? 'bg-gray-50' : ''}`}
+                        <button key={cfg.id} onClick={() => handleModelChange(cfg.id)}
+                          className={cn("w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-white/5 transition-all text-left", selectedModel === cfg.id ? 'bg-white/5' : '')}
                         >
-                          <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${cfg.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
+                          <div className={cn("w-9 h-9 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 shadow-sm", cfg.gradient)}>
                             <cfg.icon size={16} className="text-white" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold text-gray-900">{cfg.name}</p>
-                            <p className="text-[10px] text-gray-400 truncate">{cfg.subtitle} · {cfg.provider}</p>
+                            <p className={cn("text-xs font-bold", textPrimary)}>{cfg.name}</p>
+                            <p className={cn("text-[10px]", textMuted)}>{cfg.subtitle} · {cfg.provider}</p>
                           </div>
-                          {mode === cfg.id && (
-                            <div className="w-2 h-2 rounded-full bg-gray-900 shrink-0" />
+                          {selectedModel === cfg.id && (
+                            <div className="w-2 h-2 rounded-full bg-white shrink-0" />
                           )}
                         </button>
                       ))}
                     </div>
-                    <div className="px-4 py-2.5 border-t border-gray-100 bg-gray-50">
-                      <p className="text-[10px] text-gray-400 leading-relaxed">Powered by Cerebras · Groq fallback</p>
+                    <div className={cn("px-4 py-2.5 border-t bg-black/20", borderColor)}>
+                      <p className="text-[10px] text-white/40 leading-relaxed">Powered by Cerebras · Groq fallback</p>
                     </div>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
 
+            {/* Theme toggle */}
+            <button onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+              className="p-2 rounded-xl hover:bg-white/10 text-white/40 hover:text-white/70 transition-all">
+              {isDark ? <Sun size={16} /> : <Moon size={16} />}
+            </button>
+
             <button onClick={() => setMessages([])}
-              className="p-2 rounded-xl hover:bg-red-50 text-gray-300 hover:text-red-400 transition-all"
+              className="p-2 rounded-xl hover:bg-red-500/10 text-white/30 hover:text-red-400 transition-all"
               title="Clear chat">
               <Trash2 size={16} />
             </button>
@@ -501,17 +502,19 @@ export const AILab = ({ user, addToast }) => {
                   transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
                 >
                   <motion.div
-                    className={`absolute w-36 h-36 rounded-full bg-gradient-to-br ${m.gradient} blur-3xl opacity-15`}
+                    className={cn("absolute w-36 h-36 rounded-full blur-3xl opacity-15", `bg-gradient-to-br ${m.gradient}`)}
                     animate={{ scale: [1, 1.3, 1] }}
                     transition={{ duration: 3, repeat: Infinity }}
                   />
-                  <img src="logo.png" alt="CSAI" className="relative w-28 h-28 object-contain drop-shadow-xl" />
+                  <div className="relative w-28 h-28 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shadow-xl">
+                    <Bot size={40} className="text-white" />
+                  </div>
                 </motion.div>
-                <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">What can I help with?</h2>
-                <p className="text-sm text-gray-400 max-w-xs leading-relaxed">
+                <h2 className={cn("text-2xl font-black mb-2 tracking-tight", textPrimary)}>What can I help with?</h2>
+                <p className={cn("text-sm max-w-xs leading-relaxed", textMuted)}>
                   Ask me anything — academics, concepts, planning, or analysis.
                 </p>
-                <div className={`mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold shadow-sm ${m.pill}`}>
+                <div className={cn("mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold shadow-sm", m.pill)}>
                   <m.icon size={12} />
                   {m.name} · {m.subtitle}
                 </div>
@@ -523,35 +526,37 @@ export const AILab = ({ user, addToast }) => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.22 }}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={cn("flex", msg.role === 'user' ? 'justify-end' : 'justify-start')}
               >
                 {msg.role === 'user' ? (
                   <div className="max-w-[75%]">
                     {msg.attachments?.length > 0 && (
                       <div className="flex flex-wrap gap-1.5 mb-2 justify-end">
                         {msg.attachments.map((f, i) => (
-                          <div key={i} className="flex items-center gap-1.5 bg-gray-800 rounded-xl px-3 py-1.5 text-xs text-gray-300">
+                          <div key={i} className={cn("flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs", isDark ? "bg-white/10 text-white/70" : "bg-gray-800 text-gray-300")}>
                             {f.type?.startsWith('image/') ? <ImageIcon size={11} /> : <FileText size={11} />}
                             <span className="max-w-[100px] truncate">{f.name}</span>
                           </div>
                         ))}
                       </div>
                     )}
-                    <div className="bg-gray-900 text-white px-4 py-3 rounded-2xl rounded-tr-sm text-sm leading-relaxed font-medium shadow-sm">
+                    <div className={cn("px-4 py-3 rounded-2xl rounded-tr-sm text-sm leading-relaxed font-medium shadow-sm",
+                      isDark ? "bg-white text-gray-900" : "bg-gray-900 text-white"
+                    )}>
                       {msg.content}
                     </div>
                   </div>
                 ) : (
                   <div className="max-w-[85%] flex gap-3">
-                    <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${m.gradient} flex items-center justify-center shrink-0 mt-0.5 shadow-sm`}>
+                    <div className={cn("w-8 h-8 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 mt-0.5 shadow-sm", m.gradient)}>
                       <m.icon size={15} className="text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="bg-white border border-gray-200 px-4 py-3 rounded-2xl rounded-tl-sm text-sm text-gray-800 shadow-sm">
+                      <div className={cn("px-4 py-3 rounded-2xl rounded-tl-sm shadow-sm", cardBg)}>
                         <MsgContent text={msg.content} />
                       </div>
                       {msg.provider && (
-                        <p className="text-[10px] text-gray-400 mt-1.5 px-1 font-medium">via {msg.provider}</p>
+                        <p className={cn("text-[10px] mt-1.5 px-1 font-medium", textMuted)}>via {msg.provider}</p>
                       )}
                     </div>
                   </div>
@@ -561,12 +566,12 @@ export const AILab = ({ user, addToast }) => {
 
             {loading && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
-                <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${m.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
+                <div className={cn("w-8 h-8 rounded-xl bg-gradient-to-br flex items-center justify-center shrink-0 shadow-sm", m.gradient)}>
                   <m.icon size={15} className="text-white" />
                 </div>
-                <div className="bg-white border border-gray-200 px-4 py-3.5 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-1.5">
+                <div className={cn("px-4 py-3.5 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-1.5", cardBg)}>
                   {[0, 1, 2].map(i => (
-                    <motion.div key={i} className="w-2 h-2 rounded-full bg-gray-300"
+                    <motion.div key={i} className={cn("w-2 h-2 rounded-full", isDark ? "bg-white/30" : "bg-gray-400")}
                       animate={{ y: [0, -5, 0] }}
                       transition={{ duration: 0.7, repeat: Infinity, delay: i * 0.15 }}
                     />
@@ -579,78 +584,72 @@ export const AILab = ({ user, addToast }) => {
         </div>
 
         {/* Input */}
-        <div className="px-4 py-4 border-t border-gray-200 bg-white/90 backdrop-blur-xl shrink-0">
+        <div className={cn("px-4 py-4 border-t shrink-0", cardBg, borderColor)}>
           <div className="max-w-2xl mx-auto">
-            {/* Attachment previews */}
             {attachments.length > 0 && (
               <div className="flex flex-wrap gap-2 mb-2">
                 {attachments.map((file, i) => (
-                  <div key={i} className="flex items-center gap-1.5 bg-gray-100 border border-gray-200 rounded-xl px-3 py-1.5 text-xs text-gray-700 font-medium">
+                  <div key={i} className={cn("flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-medium border", inputBg)}>
                     {file.type.startsWith('image/') ? <ImageIcon size={12} className="text-blue-500" /> : <FileText size={12} className="text-violet-500" />}
                     <span className="max-w-[120px] truncate">{file.name}</span>
                     <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))}
-                      className="text-gray-400 hover:text-red-400 transition-colors ml-1">
+                      className="text-white/40 hover:text-red-400 transition-colors ml-1">
                       <X size={11} />
                     </button>
                   </div>
                 ))}
               </div>
             )}
-            <div className={`flex items-end gap-2 bg-white border border-gray-200 rounded-2xl px-3 py-3 shadow-sm transition-all ${m.ring} focus-within:ring-4 focus-within:border-gray-300`}>
-              {/* Attach button */}
-              <button
-                onClick={() => fileInputRef.current?.click()}
-                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all shrink-0 mb-0.5"
-                title="Attach file"
-              >
-                <Paperclip size={17} />
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xlsx"
-                className="hidden"
-                onChange={e => {
-                  const files = Array.from(e.target.files || []);
-                  setAttachments(prev => [...prev, ...files].slice(0, 5));
-                  e.target.value = '';
-                }}
-              />
-              <textarea
-                ref={textareaRef}
-                value={input}
-                onChange={e => {
-                  setInput(e.target.value);
-                  e.target.style.height = 'auto';
-                  e.target.style.height = Math.min(e.target.scrollHeight, 160) + 'px';
-                }}
-                onKeyDown={e => {
-                  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
-                }}
-                placeholder={`Message ${m.name}...`}
-                rows={1}
-                className="flex-1 bg-transparent text-sm text-gray-900 placeholder-gray-400 outline-none resize-none leading-relaxed"
-                style={{ minHeight: '24px', maxHeight: '160px' }}
-              />
-              <motion.button
-                onClick={handleSend}
-                disabled={loading || (!input.trim() && attachments.length === 0)}
-                whileTap={(input.trim() || attachments.length > 0) && !loading ? { scale: 0.92 } : {}}
-                className={`p-2.5 rounded-xl transition-all shrink-0 mb-0.5 ${(input.trim() || attachments.length > 0) && !loading
-                  ? `bg-gradient-to-br ${m.sendBg} text-white shadow-md hover:opacity-90`
-                  : 'bg-gray-100 text-gray-300 cursor-not-allowed'}`}
-              >
-                {loading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-              </motion.button>
-            </div>
-            <p className="text-center text-[10px] text-gray-400 mt-2 flex items-center justify-center gap-1.5">
+            <AIPromptBar
+              value={input}
+              onChange={setInput}
+              onSend={handleSend}
+              selectedModel={selectedModel}
+              onModelChange={handleModelChange}
+              theme={theme}
+            />
+            <div className={cn("flex items-center gap-1.5 mt-2 justify-center", textMuted)}>
               <Info size={10} />
-              {DISCLAIMER}
-            </p>
+              <p className="text-[10px]">{DISCLAIMER}</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 };
+
+
+// Mini top bar for splash state
+function AIBar({ selectedModel, onModelChange, showModelMenu, setShowModelMenu, theme, setTheme, showPlan, setShowPlan, isDark, MODEL_CONFIG }) {
+  const textPrimary = isDark ? "text-white" : "text-gray-900";
+  const textSecondary = isDark ? "text-white/70" : "text-gray-600";
+  const textMuted = isDark ? "text-white/40" : "text-gray-400";
+  const cardBg = isDark ? "bg-zinc-900/50 border-white/5" : "bg-white border-gray-200";
+  const m = MODEL_CONFIG[selectedModel] || MODEL_CONFIG.balanced;
+
+  return (
+    <div className={cn("h-14 border-b flex items-center justify-between px-5 shrink-0 backdrop-blur-xl shadow-sm", cardBg, isDark ? "border-white/5" : "border-gray-200")}>
+      <div className="flex items-center gap-3">
+        <button onClick={() => setShowPlan(v => !v)}
+          className={cn("p-2 rounded-xl transition-all", showPlan ? 'bg-white/10 text-white/90' : 'hover:bg-white/10 text-white/40 hover:text-white/70')}>
+          <LayoutDashboard size={17} />
+        </button>
+        <div className="flex items-center gap-2">
+          <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
+            <Bot size={14} className="text-white" />
+          </div>
+          <span className={cn("font-black tracking-tight text-lg leading-none", textPrimary)}>
+            CS<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-500">AI</span>
+          </span>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <button onClick={() => setTheme(t => t === 'dark' ? 'light' : 'dark')}
+          className="p-2 rounded-xl hover:bg-white/10 text-white/40 hover:text-white/70 transition-all">
+          {isDark ? <Sun size={16} /> : <Moon size={16} />}
+        </button>
+      </div>
+    </div>
+  );
+}

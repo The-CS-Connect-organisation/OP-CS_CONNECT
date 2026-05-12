@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Bell, Menu, X, UserCircle, Settings, LogOut, Command, ChevronRight } from 'lucide-react';
+import { Search, Bell, Menu, X, UserCircle, Settings, LogOut, Command, ChevronRight, Sun, Moon } from 'lucide-react';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
 import { useSound } from '../../hooks/useSound';
@@ -23,7 +23,7 @@ const getGreeting = () => {
   return 'Good evening';
 };
 
-export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout, user: propsUser }) => {
+export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout, user: propsUser, theme, toggleTheme }) => {
   const { data: storedUser } = useStore(KEYS.CURRENT_USER, null);
   const user = propsUser || storedUser; // Use prop user if available, fallback to stored
   const [showProfile, setShowProfile] = useState(false);
@@ -163,6 +163,21 @@ export const TopBar = ({ isMobile, setCollapsed, isCollapsed, onLogout, user: pr
               )}
             </AnimatePresence>
           </div>
+
+          {/* Theme Toggle */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => { playBlip(); toggleTheme?.(); }}
+            className="theme-toggle"
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark' ? (
+              <Sun size={17} style={{ color: 'var(--text-muted)' }} />
+            ) : (
+              <Moon size={17} style={{ color: 'var(--text-muted)' }} />
+            )}
+          </motion.button>
 
           {/* Profile */}
           <div className="relative">

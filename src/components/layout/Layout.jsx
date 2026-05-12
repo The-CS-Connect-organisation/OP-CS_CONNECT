@@ -39,14 +39,16 @@ export const Layout = ({ children, user, logout, notifications = [], onMarkRead,
 
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 relative z-10" style={{ marginLeft: '256px' }}>
-        <TopBar 
+        <TopBar
           user={user}
-          isMobile={isMobile} 
-          setCollapsed={setCollapsed} 
-          isCollapsed={isCollapsed} 
-          onLogout={handleLogout} 
+          isMobile={isMobile}
+          setCollapsed={setCollapsed}
+          isCollapsed={isCollapsed}
+          onLogout={handleLogout}
           notifications={notifications}
           onMarkRead={onMarkRead}
+          theme={theme}
+          toggleTheme={toggleTheme}
         />
 
         {/* Scrollable Content */}

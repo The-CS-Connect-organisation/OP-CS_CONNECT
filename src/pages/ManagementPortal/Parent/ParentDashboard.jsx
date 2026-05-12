@@ -4,6 +4,7 @@ import { Users, UserCheck, Award, Bell, TrendingUp, Calendar, ArrowRight } from 
 import { useStore } from '../../../hooks/useStore';
 import { KEYS } from '../../../data/schema';
 import { useSound } from '../../../hooks/useSound';
+import { MessageDock } from '@/components/ui/MessageDock';
 
 const StatCard = ({ icon: Icon, label, value, subtitle, delay, color = '#111111' }) => {
   const { playClick } = useSound();
@@ -203,6 +204,13 @@ export const ParentDashboard = ({ user }) => {
         </motion.div>
 
       </div>
+
+      {/* MessageDock floating widget */}
+      <MessageDock
+        user={user}
+        position="bottom"
+        theme="dark"
+      />
     </div>
   );
 };

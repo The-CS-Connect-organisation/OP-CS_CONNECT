@@ -1,8 +1,14 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    alias: {
+      '@': resolve(__dirname, './src'),
+    },
+  },
   base: '/OP-CS_CONNECT/academics/',
   server: {
     port: 5173
@@ -10,7 +16,6 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        // Vite/Rolldown expects `manualChunks` to be a function.
         manualChunks(id) {
           if (!id.includes('node_modules')) return undefined;
           if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) return 'react-vendor';

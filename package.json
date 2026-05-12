@@ -19,6 +19,7 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^1.11.0",
     "react": "^18.2.0",
+    "react-aria-components": "^1.17.0",
     "react-dom": "^18.2.0",
     "react-dropzone": "^14.4.1",
     "react-leaflet": "^4.2.1",

@@ -10,7 +10,9 @@ export const ChatView = ({
   currentUser,
   otherUser,
   onStartCall,
-  isInline = true
+  isInline = true,
+  prefillMessage = '',
+  onPrefillConsumed,
 }) => {
   const { client, isConnected, error: connectError } = useStreamChat(currentUser);
   const [channel, setChannel] = useState(null);
@@ -74,6 +76,23 @@ export const ChatView = ({
       channel.off('typing.stop', onTypingStop);
     };
   }, [channel, currentUser?.id]);
+
+  // Handle prefilled message from MessageDock
+  useEffect(() => {
+    if (!prefillMessage || !channel || !isOpen) return;
+    const trimmed = prefillMessage.trim();
+    if (!trimmed) return;
+    const sendPrefill = async () => {
+      try {
+        await channel.sendMessage({ text: trimmed });
+        onPrefillConsumed?.();
+      } catch (err) {
+        console.error('Failed to send prefilled message:', err);
+        onPrefillConsumed?.();
+      }
+    };
+    sendPrefill();
+  }, [prefillMessage, channel, isOpen]);
 
   useEffect(() => {
     if (!isOpen) { setMessages([]); setChannel(null); setText(''); setOtherTyping(false); }
