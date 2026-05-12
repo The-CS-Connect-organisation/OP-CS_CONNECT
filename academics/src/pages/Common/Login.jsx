@@ -100,8 +100,7 @@ const Login = () => {
         return;
       }
       const user = result.user;
-      const dest = user.role === 'admin' ? '/admin' : user.role === 'teacher' ? '/teacher' : '/student';
-      navigate(dest);
+      navigate(`/${user.role}/dashboard`);
     } catch (err) {
       setError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
