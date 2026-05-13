@@ -44,6 +44,9 @@ import { Profile as AdminProfile } from './pages/AdminPortal/Profile';
 import { CreateAccount } from './pages/AdminPortal/CreateAccount';
 import AdminAccounts from './pages/AdminPortal/AdminAccounts';
 
+// Manager Portal Pages
+import ManagerDashboard from './pages/ManagerPortal/ManagerDashboard';
+
 // Librarian Portal
 import LibraryManagement from './pages/LibrarianPortal/LibraryManagement';
 import { Profile as LibrarianProfile } from './pages/LibrarianPortal/Profile';
@@ -124,7 +127,7 @@ const LoadingScreen = () => (
 );
 
 // Allowed roles for this portal
-const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin', 'librarian'];
+const ALLOWED_ROLES = ['student', 'parent', 'teacher', 'driver', 'admin', 'librarian', 'manager'];
 
 // Protected Route Component
 const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }) => {
@@ -535,6 +538,73 @@ function App() {
           <Route path="/teacher/ai" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
               <TeacherAILab user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+
+          {/* 👨‍💼 Manager Portal */}
+          <Route path="/manager/dashboard" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <ManagerDashboard user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/analytics" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <AdminAnalytics user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/users" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <AdminUsers user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/timetable" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <AdminTimetable user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/announcements" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <AdminAnnouncements user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/exams" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <AdminExams user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/fees" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <AdminFees user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/ai-lab" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <AdminAILab user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/comms" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <CommsPage user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/bus-assignment" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <AdminBusAssignment user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/profile" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <AdminProfile user={user} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/create-account" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <CreateAccount user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/accounts" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <AdminAccounts user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
 
