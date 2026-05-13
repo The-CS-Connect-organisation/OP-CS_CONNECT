@@ -4,8 +4,8 @@
  * Abstracts all HTTP calls to backend API
  */
 
-// Hardcoded for GitHub Pages deployment - .env files don't work on static hosting
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://op-csconnect-backend-production.up.railway.app/api';
+// Hardcoded fallback for GitHub Pages deployment - env values work at build time
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://op-csconnect-backend-production.up.railway.app/api';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // 1 second
