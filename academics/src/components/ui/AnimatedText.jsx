@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, Variants } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 export function cn(...classes) {
   return classes.filter(Boolean).join(' ');
