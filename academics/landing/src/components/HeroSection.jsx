@@ -154,7 +154,7 @@ const CTACard = memo(() => {
 
           <div className="space-y-3">
             <motion.a
-              href="/OP-CS_CONNECT/academics/login"
+              href="academics/login"
               className="flex items-center justify-center gap-2 w-full h-13 px-6 py-3.5 rounded-2xl font-bold text-sm text-white"
               style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)' }}
               initial={{ opacity: 0, y: 12 }}
@@ -168,7 +168,7 @@ const CTACard = memo(() => {
             </motion.a>
 
             <motion.a
-              href="/OP-CS_CONNECT/academics/"
+              href="academics/"
               className="flex items-center justify-center gap-2 w-full h-13 px-6 py-3.5 rounded-2xl font-semibold text-sm border-2 transition-all"
               style={{ borderColor: 'var(--border-color, #e5e7eb)', color: 'var(--text-secondary, #4b5563)' }}
               initial={{ opacity: 0, y: 12 }}
