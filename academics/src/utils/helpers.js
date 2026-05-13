@@ -21,3 +21,7 @@ export const calculateGrade = (marks, total) => {
   if (percentage >= 50) return 'C';
   return 'F';
 };
+
+export const cn = (...classes) => {
+  return classes.filter(Boolean).join(' ');
+};
