@@ -21,18 +21,18 @@ export const Grades = ({ user }) => {
     if (!user?.id) return;
     let alive = true;
     setLoading(true);
-    // Load local demo data first
+    // Load local demo data first as fallback
     const local = getFromStorage('sms_marks', []);
     if (local.length > 0) setApiMarks(local);
-    // Then try API
+    // Then try API using dedicated student endpoint
     request('/student/grades')
       .then(res => {
-        if (alive) {
-          const marks = res?.marks || res?.data?.marks || res?.items || [];
-          if (marks.length > 0) setApiMarks(marks);
-        }
+        if (!alive) return;
+        const marks = res?.marks ?? res?.items ?? res?.data ?? [];
+        console.log('[Grades] API response:', res, '→ marks:', marks);
+        if (Array.isArray(marks) && marks.length > 0) setApiMarks(marks);
       })
-      .catch(e => console.error('API grades fetch failed (expected in LOCAL_DEMO):', e))
+      .catch(e => console.error('[Grades] API fetch failed:', e.message))
       .finally(() => { if (alive) setLoading(false); });
     return () => { alive = false; };
   }, [user?.id]);

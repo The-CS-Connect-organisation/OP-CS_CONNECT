@@ -6,20 +6,24 @@ import { notificationsService } from './notificationsService';
 const nowIso = () => new Date().toISOString();
 
 const normalizeClass = (cls) => String(cls ?? '').replace(/[\s-]/g, '').toUpperCase();
+const matchClass = (a, userClass) => {
+  const aClass = a.class_id || a.class || '';
+  return normalizeClass(aClass) === normalizeClass(userClass);
+};
 
 export const assignmentsService = {
   async listForUser(user) {
     if (!user) return [];
     if (getDataMode() === DATA_MODES.REMOTE_API) {
-      // Expected API: GET /school/assignments?class=10-A or GET /school/assignments/me
-      // If backend differs, we can adjust later without touching pages.
-      const query = user?.class ? `?class=${encodeURIComponent(user.class)}` : '';
-      const payload = await apiRequest(`/school/assignments${query}`, { method: 'GET' });
-      return payload?.assignments ?? payload ?? [];
+      // Use dedicated student endpoint which handles class matching server-side
+      const payload = await apiRequest('/student/assignments', { method: 'GET' });
+      const raw = payload?.assignments ?? payload?.items ?? payload ?? [];
+      // Filter client-side too (belt-and-suspenders)
+      return raw.filter(a => matchClass(a, user.class));
     }
 
     const all = localAssignmentsRepo.list();
-    return all.filter((a) => normalizeClass(a.class) === normalizeClass(user.class));
+    return all.filter(a => normalizeClass(a.class) === normalizeClass(user.class));
   },
 
   async listSubmissions({ assignmentId } = {}) {

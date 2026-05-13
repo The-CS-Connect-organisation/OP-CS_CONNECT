@@ -1,5 +1,5 @@
-// Hardcoded for GitHub Pages deployment - .env files don't work on static hosting
-const API_BASE_URL = 'https://op-cs-connect-backend-vym7.onrender.com/api';
+// Corrected API base URL — Railway deployment
+const API_BASE_URL = 'https://op-csconnect-backend-production.up.railway.app/api';
 
 // Keep-alive ping every 10 minutes to prevent Render free tier cold starts
 if (typeof window !== 'undefined') {

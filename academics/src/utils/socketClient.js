@@ -2,13 +2,8 @@ import { io } from 'socket.io-client';
 import { getFromStorage } from '../data/schema';
 import { KEYS } from '../data/schema';
 const getSocketOrigin = () => {
-  const base = 'https://op-cs-connect-backend-vym7.onrender.com/api';
-  try {
-    return new URL(base).origin;
-  } catch {
-    return 'https://op-csconnect-backend-production.up.railway.app';
-  }
-};
+  // Railway production URL (no /api suffix — socket.io connects to root)
+  return 'https://op-csconnect-backend-production.up.railway.app';
 
 let socketInstance = null;
 let lastToken = null;
