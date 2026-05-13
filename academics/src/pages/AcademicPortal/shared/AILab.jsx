@@ -137,104 +137,125 @@ const AdvancedWarningModal = ({ onConfirm, onCancel }) => (
 );
 
 /* ── Splash ── */
-const SplashScreen = ({ onEnter }) => (
-  <motion.div
-    className="fixed inset-0 z-[100] flex items-center justify-center"
-    style={{ background: 'linear-gradient(135deg, #f0f4ff 0%, #ffffff 50%, #f5f0ff 100%)' }}
-    exit={{ opacity: 0, scale: 1.03 }}
-    transition={{ duration: 0.5 }}
-  >
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {PARTICLES.map((p, i) => <Particle key={i} {...p} />)}
-      <motion.div className="absolute w-[600px] h-[600px] rounded-full bg-blue-100 blur-[120px] opacity-50"
-        animate={{ scale: [1, 1.12, 1], x: [0, 30, 0] }}
-        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
-        style={{ top: '-10%', left: '-10%' }}
-      />
-      <motion.div className="absolute w-[500px] h-[500px] rounded-full bg-violet-100 blur-[120px] opacity-40"
-        animate={{ scale: [1, 1.15, 1], x: [0, -25, 0] }}
-        transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-        style={{ bottom: '-10%', right: '-10%' }}
-      />
-    </div>
+const SplashScreen = ({ onEnter }) => {
+  return (
+    <motion.div
+      className="fixed inset-0 z-[100] flex items-center justify-center"
+      style={{ background: 'linear-gradient(135deg, #fef3c7 0%, #ffffff 50%, #f59e0b10 100%)' }}
+      exit={{ opacity: 0, scale: 1.03 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {PARTICLES.map((p, i) => <Particle key={i} {...p} />)}
+        <motion.div className="absolute w-[600px] h-[600px] rounded-full bg-orange-100 blur-[120px] opacity-50"
+          animate={{ scale: [1, 1.12, 1], x: [0, 30, 0] }}
+          transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ top: '-10%', left: '-10%' }}
+        />
+        <motion.div className="absolute w-[500px] h-[500px] rounded-full bg-amber-100 blur-[120px] opacity-40"
+          animate={{ scale: [1, 1.15, 1], x: [0, -25, 0] }}
+          transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+          style={{ bottom: '-10%', right: '-10%' }}
+        />
+      </div>
 
-    <div className="relative flex flex-col items-center text-center px-6 w-full max-w-md">
-      {/* Logo — no box, just floating */}
-      <motion.div
-        initial={{ scale: 0.5, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-        className="mb-6 relative flex items-center justify-center"
-      >
+      <div className="relative flex flex-col items-center text-center px-6 w-full max-w-2xl">
+        {/* Logo — no box, just floating */}
         <motion.div
-          className="absolute w-40 h-40 rounded-full bg-blue-200 blur-3xl opacity-40"
-          animate={{ scale: [1, 1.4, 1] }}
-          transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.img
-          src="logo.png"
-          alt="Cornerstone School"
-          className="relative w-32 h-32 object-contain drop-shadow-2xl"
-          animate={{ y: [0, -6, 0] }}
-          transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      </motion.div>
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-8 relative flex items-center justify-center"
+        >
+          <motion.div
+            className="absolute w-40 h-40 rounded-full bg-orange-200 blur-3xl opacity-40"
+            animate={{ scale: [1, 1.4, 1] }}
+            transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
+          />
+          <motion.img
+            src="logo.png"
+            alt="Cornerstone School"
+            className="relative w-36 h-36 object-contain drop-shadow-2xl"
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+          />
+        </motion.div>
 
-      {/* Wordmark */}
-      <motion.div
-        initial={{ y: 28, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.45, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-      >
-        <h1 className="text-7xl font-black tracking-tighter text-gray-900 leading-none select-none">
-          CS<span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-violet-600">AI</span>
-        </h1>
-        <p className="text-[11px] text-gray-400 tracking-[0.28em] uppercase font-semibold mt-3">
-          Cornerstone School · AI Studio
-        </p>
-      </motion.div>
+        {/* Namaste World! */}
+        <motion.div
+          initial={{ y: 32, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.45, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="relative"
+        >
+          <motion.h1 
+            className="text-7xl md:text-8xl font-black tracking-tighter text-gray-900 leading-none select-none mb-2"
+            initial={{ scale: 0.9 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+          >
+            Namaste<span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-600"> World!</span>
+          </motion.h1>
+          
+          {/* Underline effect */}
+          <motion.div
+            className="h-2 w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 rounded-full mt-4"
+            initial={{ width: 0, x: '-50%' }}
+            animate={{ width: '100%', x: 0 }}
+            transition={{ delay: 0.9, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          />
+          
+          <p className="text-xl text-gray-600 font-bold mt-6 tracking-wide">
+            Designed by CSTians, for CSTians ✨
+          </p>
+        </motion.div>
 
-      {/* Model pills */}
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.85, duration: 0.6 }}
-        className="flex gap-3 mt-8"
-      >
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 border border-blue-200 shadow-sm">
-          <Zap size={12} className="text-blue-500" />
-          <span className="text-xs text-blue-600 font-bold">CS v2</span>
-        </div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-violet-50 border border-violet-200 shadow-sm">
-          <Brain size={12} className="text-violet-500" />
-          <span className="text-xs text-violet-600 font-bold">Qwen-3 235B</span>
-        </div>
-      </motion.div>
+        {/* Model pills */}
+        <motion.div
+          initial={{ y: 24, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 1.2, duration: 0.6 }}
+          className="flex flex-wrap justify-center gap-3 mt-10"
+        >
+          <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-orange-50 border border-orange-200 shadow-lg">
+            <Zap size={14} className="text-orange-600" />
+            <span className="text-sm font-black text-orange-700">CS v2</span>
+          </div>
+          <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-violet-50 border border-violet-200 shadow-lg">
+            <Brain size={14} className="text-violet-600" />
+            <span className="text-sm font-black text-violet-700">Qwen-3 235B</span>
+          </div>
+          <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-50 border border-blue-200 shadow-lg">
+            <Sparkles size={14} className="text-blue-600" />
+            <span className="text-sm font-black text-blue-700">Llama 3.1</span>
+          </div>
+        </motion.div>
 
-      {/* CTA */}
-      <motion.button
-        onClick={onEnter}
-        initial={{ opacity: 0, y: 14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.3, duration: 0.5 }}
-        whileHover={{ scale: 1.04, boxShadow: '0 24px 48px rgba(99,102,241,0.28)' }}
-        whileTap={{ scale: 0.97 }}
-        className="mt-10 px-14 py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-violet-600 text-white text-sm font-bold tracking-wide shadow-xl shadow-blue-200/60 transition-all"
-      >
-        Enter Lab
-      </motion.button>
+        {/* CTA */}
+        <motion.button
+          onClick={onEnter}
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.6, duration: 0.5 }}
+          whileHover={{ scale: 1.05, boxShadow: '0 28px 56px rgba(249,115,22,0.35)' }}
+          whileTap={{ scale: 0.96 }}
+          className="mt-12 px-20 py-5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white text-lg font-black tracking-widest shadow-2xl shadow-orange-300/50 transition-all"
+        >
+          Enter the Lab 🚀
+        </motion.button>
 
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.9 }}
-        className="text-[10px] text-gray-300 mt-5 tracking-widest uppercase"
-      >
-        Designed &amp; run by CSTians
-      </motion.p>
-    </div>
-  </motion.div>
-);
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 2.2 }}
+          className="text-[12px] text-gray-400 mt-8 tracking-widest uppercase font-semibold"
+        >
+          Cornerstone International School · AI Studio
+        </motion.p>
+      </div>
+    </motion.div>
+  );
+};
 
 /* ── Main component ── */
 export const AILab = ({ user, addToast }) => {
