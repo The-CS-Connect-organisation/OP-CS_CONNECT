@@ -4,6 +4,7 @@ import { KEYS } from '../data/schema';
 const getSocketOrigin = () => {
   // Railway production URL (no /api suffix — socket.io connects to root)
   return 'https://op-csconnect-backend-production.up.railway.app';
+};
 
 let socketInstance = null;
 let lastToken = null;
