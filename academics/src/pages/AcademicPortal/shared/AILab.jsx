@@ -557,7 +557,7 @@ export const AILab = ({ user, addToast }) => {
                         />
                         <img src="logo.png" alt="CSAI" className="relative w-28 h-28 object-contain drop-shadow-xl" />
                       </motion.div>
-                      <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">What can I help with?</h2>
+                      <AnimatedText text="What can I help with?" textClassName="text-2xl font-black text-gray-900" />
                       <p className="text-sm text-gray-400 max-w-xs leading-relaxed">
                         Ask me anything — academics, concepts, planning, or analysis.
                       </p>
