@@ -76,7 +76,7 @@ export default function Navbar() {
 
         {/* Sign In Button */}
         <motion.a
-          href="/OP-CS_CONNECT/academics/login"
+          href="/OP-CS_CONNECT/academics/#/login"
           className="relative px-6 py-2.5 rounded-full text-sm font-semibold text-white overflow-hidden"
           style={{
             background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
