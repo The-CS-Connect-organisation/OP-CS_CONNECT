@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
-export default function Navbar({ loginRef }) {
+export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const { scrollY } = useScroll();
   
@@ -13,11 +13,6 @@ export default function Navbar({ loginRef }) {
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  const scrollToLogin = (e) => {
-    e.preventDefault();
-    loginRef?.current?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   return (
     <motion.header
@@ -81,8 +76,7 @@ export default function Navbar({ loginRef }) {
 
         {/* Sign In Button */}
         <motion.a
-          href="#login"
-          onClick={scrollToLogin}
+          href="/academics/login"
           className="relative px-6 py-2.5 rounded-full text-sm font-semibold text-white overflow-hidden"
           style={{
             background: 'linear-gradient(135deg, #f59e0b 0%, #f97316 100%)',
