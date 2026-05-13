@@ -4,92 +4,114 @@ Production-ready school management platform with role-based access, AI tutoring 
 
 ## Tech Stack
 
-- Frontend: React + Vite + Tailwind
-- Backend: Express + MongoDB + Mongoose
-- Auth: JWT + role middleware
-- AI: OpenRouter (`openai/gpt-4o` default, configurable per request)
-- Realtime: Socket.IO
-- Validation: Zod on request payloads
+- **Frontend**: React + Vite + Tailwind
+- **Backend**: Express + Firebase Realtime Database
+- **Auth**: JWT + role middleware
+- **AI**: OpenRouter / Groq / Cerebras (configurable)
+- **Realtime**: Socket.IO
+- **Database**: Firebase Realtime Database
+
+## Architecture
+
+The app uses a **REMOTE_API** data mode - all data comes from Firebase via the backend API. Nothing is hardcoded.
+
+### User Roles
+- **Student**: Dashboard, timetable, assignments, grades, attendance, AI lab
+- **Teacher**: Class management, grading, attendance, analytics, notes
+- **Parent**: Child's grades, attendance, fees, communications
+- **Admin**: Full system control, user management, analytics
+- **Driver**: Bus tracking, route management
 
 ## Environment
 
-Create `.env`:
-
-```env
-OPENROUTER_API_KEY=...
-MONGODB_URI=...
-JWT_SECRET=...
-PORT=5000
-CORS_ORIGIN=http://localhost:5173
-VITE_API_BASE_URL=http://localhost:5000/api
+Frontend uses hardcoded API URL for GitHub Pages deployment:
+```
+https://op-cs-connect-backend-vym7.onrender.com/api
 ```
 
-## Run
+## Running
 
-- `npm install`
-- `npm run dev` (frontend)
-- `npm run dev:api` (backend)
-- `npm run seed:api` (seed fake school data)
+### Frontend
+```bash
+cd OP-CS_CONNECT
+npm install
+npm run dev  # or npm run build for production
+```
+
+### Backend
+```bash
+cd OP-CS_CONNECT_-Backend-
+npm install
+npm start  # Runs on port 5000
+```
+
+## Re-Seeding Firebase Data
+
+To regenerate seed data (e.g., after upgrading seed version):
+
+1. Open Firebase Console → Realtime Database
+2. Navigate to `_meta/seed_v100_done`
+3. Delete this key
+4. Restart backend server - it will auto-seed fresh data
 
 ## API Overview
 
 Base URL: `/api`
 
 ### Auth
-
-- `POST /auth/signup`
-- `POST /auth/login`
-- `GET /auth/me` (Bearer token)
-- `GET /auth/health`
-
-### AI Features (Bearer token required)
-
-- `POST /ai/doubt-solver` (supports `stream: true` SSE)
-- `POST /ai/study-planner`
-- `POST /ai/grade-predictor`
-- `POST /ai/assignment-feedback`
-- `POST /ai/summary-generator` (`multipart/form-data`, `pdf` file)
-- `POST /ai/quiz-generator`
-- `POST /ai/attendance-insights`
-
-All AI calls are logged to MongoDB (`AIInteraction`) with prompt, response, usage, model, and timestamp.
+- `POST /auth/signup` - Register new user
+- `POST /auth/login` - Login
+- `GET /auth/me` - Get current user (Bearer token)
+- `POST /auth/password-reset` - Request OTP
+- `POST /auth/reset-password` - Reset with token
 
 ### School Features (Bearer token + role checks)
+- `GET /school/classes` - List all classes
+- `POST /school/classes` - Create class (admin)
+- `GET /school/students` - List students
+- `GET /school/students/:id/profile` - Expanded student profile
+- `GET /school/teachers` - List teachers
+- `POST /school/assignments` - Create assignment (teacher)
+- `GET /school/assignments` - List assignments
+- `POST /school/assignments/:id/submissions` - Submit (student)
+- `PATCH /school/submissions/:id/grade` - Grade (teacher)
+- `POST /school/attendance` - Mark attendance
+- `GET /school/attendance/:studentId/report` - Attendance report
+- `POST /school/announcements` - Create announcement
+- `GET /school/announcements` - List announcements
+- `POST /school/messages` - Send message
+- `GET /school/messages?otherUserId=` - Get conversation
+- `POST /school/marks` - Add marks
+- `GET /school/report-cards/:studentId` - Report card
+- `GET /school/leaderboard/:classId` - XP leaderboard
+- `GET /school/timetables?classId=` - Timetable
 
-- Classes: `POST /school/classes`
-- Student profiles: `POST /school/students/profiles`, `GET /school/students`
-- Teacher profiles: `POST /school/teachers/profiles`
-- Assignments:
-  - `POST /school/assignments` (teacher/admin)
-  - `GET /school/assignments`
-  - `POST /school/assignments/:assignmentId/submissions` (student)
-  - `PATCH /school/submissions/:submissionId/grade` (teacher/admin)
-- Attendance:
-  - `POST /school/attendance`
-  - `GET /school/attendance/:studentId/report?month=4&year=2026&format=csv`
-- Announcements:
-  - `POST /school/announcements`
-  - `GET /school/announcements`
-- Messaging:
-  - `POST /school/messages`
-  - `PATCH /school/messages/:messageId/read`
-- Marks & report cards:
-  - `POST /school/marks`
-  - `GET /school/report-cards/:studentId`
-- Leaderboard: `GET /school/leaderboard/:classId`
-- Timetable: `PUT /school/timetables` (includes clash detection)
+### AI Features
+- `POST /ai/chat` - AI chat with context
+- `GET /ai/history` - Chat history
 
-## Security & Quality
+### Gamification
+- `POST /gamification/xp` - Award XP
+- `GET /gamification/stats/:studentId` - Student stats
+- `GET /gamification/leaderboard/:classId` - Class leaderboard
 
-- Secrets from `.env`
-- Centralized error handler with Mongo error logging
-- Auth route rate limiting
-- Pagination on list endpoints
+### Student Assistant
+- `POST /student-assistant/doubts/resolve` - AI doubt solving
+- `POST /student-assistant/study-plan/generate` - Generate study plan
+- `POST /student-assistant/flashcards/generate` - Generate flashcards
+- `POST /student-assistant/practice-tests/generate` - Generate test
+
+## Security
+
+- JWT authentication with role-based access
+- Rate limiting (general + auth endpoints)
 - Input validation with Zod
-- Helmet, CORS, and request logging with Morgan
+- Helmet security headers
+- CORS configured for deployed frontend
+- Firebase security rules for production
 
 ## PWA
 
 - Manifest: `public/manifest.webmanifest`
-- Service worker: `public/sw.js`
-- Offline cache baseline for installability and timetable/notices viewing patterns
+- Installable on mobile devices
+- Offline support for basic features

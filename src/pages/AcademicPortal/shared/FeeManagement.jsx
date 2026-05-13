@@ -6,8 +6,7 @@ import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { Modal } from '../../../components/ui/Modal';
 import { ConfirmModal } from '../../../components/ui/ConfirmModal';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS, getFromStorage } from '../../../data/schema';
+import { getFromStorage, KEYS } from '../../../data/schema';
 import { hasPermission, PERMISSIONS } from '../../../utils/permissions';
 import { request } from '../../../utils/apiClient';
 import { isMongoId } from '../../../utils/socketClient';
@@ -16,8 +15,8 @@ import autoTable from 'jspdf-autotable';
 import { playPaymentSuccessSound } from '../../../utils/sound';
 
 export const FeeManagement = ({ user, addToast }) => {
-  const { data: fees, add, update, remove } = useStore(KEYS.FEES, []);
-  const { data: users } = useStore(KEYS.USERS, []);
+  const [fees, setFees] = useState([]);
+  const [loadingFees, setLoadingFees] = useState(true);
   const [apiStudents, setApiStudents] = useState(null);
   
   const [showPayModal, setShowPayModal] = useState(false);
@@ -71,15 +70,32 @@ export const FeeManagement = ({ user, addToast }) => {
     };
   }, [useApiStudents]);
 
+  // Fetch fees from API
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await request('/fees');
+        if (cancelled) return;
+        const feeData = res?.fees || res?.items || res || [];
+        setFees(feeData);
+      } catch (err) {
+        console.error('Failed to load fees:', err);
+        setFees([]);
+      } finally {
+        if (!cancelled) setLoadingFees(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const studentOptions = useMemo(() => {
-    const local = users.filter((u) => u.role === 'student');
     if (apiStudents && apiStudents.length > 0) return apiStudents;
-    return local;
-  }, [users, apiStudents]);
+    return [];
+  }, [apiStudents]);
 
   const resolveStudent = (studentId) =>
-    studentOptions.find((s) => s.id === studentId) ||
-    users.find((u) => u.id === studentId && u.role === 'student');
+    studentOptions.find((s) => s.id === studentId);
 
   // Admin edit modal
   const [showEditModal, setShowEditModal] = useState(false);
@@ -128,6 +144,15 @@ export const FeeManagement = ({ user, addToast }) => {
   const totalDue = myFees.reduce((sum, f) => sum + (f.status === 'pending' ? f.amount : 0), 0);
   const totalPaid = myFees.reduce((sum, f) => sum + (f.status === 'paid' ? f.amount : 0), 0);
 
+  // Loading state
+  if (loadingFees) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500"></div>
+      </div>
+    );
+  }
+
   useEffect(() => {
     // Auto-pick a student when opening the add modal (for smoother UX).
     if (showAddModal && studentOptions.length > 0) {
@@ -138,8 +163,8 @@ export const FeeManagement = ({ user, addToast }) => {
     }
   }, [showAddModal, newFeeStudentId, studentOptions]);
 
-  // Admin: Add new fee
-  const handleAddFee = () => {
+  // Admin: Add new fee via API
+  const handleAddFee = async () => {
     if (!canManageFees) return;
     if (studentOptions.length === 0) {
       addToast('Add at least one student in Manage Users before allocating fees.', 'error');
@@ -161,49 +186,70 @@ export const FeeManagement = ({ user, addToast }) => {
       return;
     }
 
-    const newFee = {
-      id: `fee-${Date.now()}`,
-      studentId: student.id,
-      studentName: student.name,
-      class: student.class,
-      term: (newFeeTerm || 'Custom Fee').trim(),
-      amount: amountNum,
-      dueDate: newFeeDueDate,
-      status: 'pending',
-      paidAt: null,
-      transactionId: null,
-      paymentMethod: null,
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-    add(newFee);
-    setNewFeeTerm('Custom Fee');
-    setNewFeeAmount(10000);
-    setNewFeeDueDate(new Date().toISOString().split('T')[0]);
-    setShowAddModal(false);
-    addToast('Fee structure added! ✏️', 'success');
+    try {
+      const res = await request('/fees', {
+        method: 'POST',
+        body: JSON.stringify({
+          studentId: student.id,
+          term: (newFeeTerm || 'Custom Fee').trim(),
+          amount: amountNum,
+          dueDate: newFeeDueDate,
+        }),
+      });
+      // Refresh fees after adding
+      const feesRes = await request('/fees');
+      setFees(feesRes?.fees || feesRes?.items || feesRes || []);
+      setNewFeeTerm('Custom Fee');
+      setNewFeeAmount(10000);
+      setNewFeeDueDate(new Date().toISOString().split('T')[0]);
+      setShowAddModal(false);
+      addToast('Fee structure added! ✏️', 'success');
+    } catch (err) {
+      addToast('Failed to add fee: ' + err.message, 'error');
+    }
   };
 
-  // Admin: Mark as paid manually
-  const handleMarkPaid = (fee) => {
+  // Admin: Mark as paid manually via API
+  const handleMarkPaid = async (fee) => {
     if (!canManageFees) return;
-    update(fee.id, {
-      status: 'paid',
-      paidAt: new Date().toISOString().split('T')[0],
-      transactionId: `ADMIN-${Date.now()}`,
-      paymentMethod: 'Manual'
-    });
-    addToast(`Fee marked as paid for ${fee.studentName}! ✅`, 'success');
+    try {
+      await request(`/fees/${fee.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          status: 'paid',
+          paidAt: new Date().toISOString().split('T')[0],
+          transactionId: `ADMIN-${Date.now()}`,
+          paymentMethod: 'Manual'
+        }),
+      });
+      // Refresh fees
+      const feesRes = await request('/fees');
+      setFees(feesRes?.fees || feesRes?.items || feesRes || []);
+      addToast(`Fee marked as paid for ${fee.studentName}! ✅`, 'success');
+    } catch (err) {
+      addToast('Failed to update fee: ' + err.message, 'error');
+    }
   };
 
-  const handleMarkPending = (fee) => {
+  const handleMarkPending = async (fee) => {
     if (!canManageFees) return;
-    update(fee.id, {
-      status: 'pending',
-      paidAt: null,
-      transactionId: null,
-      paymentMethod: null
-    });
-    addToast(`Fee set back to pending for ${fee.studentName}.`, 'info');
+    try {
+      await request(`/fees/${fee.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          status: 'pending',
+          paidAt: null,
+          transactionId: null,
+          paymentMethod: null,
+        }),
+      });
+      // Refresh fees
+      const feesRes = await request('/fees');
+      setFees(feesRes?.fees || feesRes?.items || feesRes || []);
+      addToast(`Fee set back to pending for ${fee.studentName}.`, 'info');
+    } catch (err) {
+      addToast('Failed to update fee: ' + err.message, 'error');
+    }
   };
 
   const downloadFeeReceiptPDF = (fee) => {

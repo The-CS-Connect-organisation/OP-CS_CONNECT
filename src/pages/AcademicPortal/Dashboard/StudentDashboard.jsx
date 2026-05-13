@@ -620,7 +620,7 @@ export const StudentDashboard = ({ user }) => {
         <div className="space-y-6">
           <AICoachTip tip={aiTip} />
           <WeeklyChallenge challenge={weeklyChallenge} />
-          <StudyHeatmap />
+          <StudyHeatmap activityData={null} />
         </div>
 
         {/* Subject Health + Goals */}
