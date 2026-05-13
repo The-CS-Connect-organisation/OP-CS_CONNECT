@@ -12,30 +12,22 @@ import { AnimatedAIInput } from '../../../components/ui/AnimatedAIInput';
 const DISCLAIMER = "CSAI can make mistakes. Verify important information.";
 
 const MODEL_CONFIG = {
-  balanced: {
-    id: 'balanced',
-    name: 'CS v2',
-    subtitle: 'Fast & Efficient',
-    provider: 'Cerebras',
-    icon: Zap,
-    gradient: 'from-blue-500 to-sky-400',
-    pill: 'bg-blue-50 text-blue-600 border-blue-200',
-    dot: 'bg-blue-500',
-    ring: 'focus-within:ring-blue-100',
-    sendBg: 'from-blue-500 to-sky-400',
-  },
-  advanced: {
-    id: 'advanced',
-    name: 'Qwen-3 235B',
-    subtitle: 'Deep Reasoning',
-    provider: 'Cerebras',
-    icon: Brain,
-    gradient: 'from-violet-600 to-purple-500',
-    pill: 'bg-violet-50 text-violet-600 border-violet-200',
-    dot: 'bg-violet-500',
-    ring: 'focus-within:ring-violet-100',
-    sendBg: 'from-violet-600 to-purple-500',
-  },
+  'llama-3.1-8b-instant': { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', subtitle: 'Fast & Efficient', provider: 'Groq', icon: Zap, gradient: 'from-blue-500 to-sky-400', pill: 'bg-blue-50 text-blue-600 border-blue-200', dot: 'bg-blue-500', ring: 'focus-within:ring-blue-100', sendBg: 'from-blue-500 to-sky-400' },
+  'llama-3.3-70b-versatile': { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', subtitle: 'Versatile', provider: 'Groq', icon: Brain, gradient: 'from-violet-600 to-purple-500', pill: 'bg-violet-50 text-violet-600 border-violet-200', dot: 'bg-violet-500', ring: 'focus-within:ring-violet-100', sendBg: 'from-violet-600 to-purple-500' },
+  'qwen-3-235b-a22b-instruct-2507': { id: 'qwen-3-235b-a22b-instruct-2507', name: 'Qwen-3 235B', subtitle: 'Deep Reasoning', provider: 'Cerebras', icon: BrainCircuit, gradient: 'from-orange-500 to-amber-600', pill: 'bg-orange-50 text-orange-600 border-orange-200', dot: 'bg-orange-500', ring: 'focus-within:ring-orange-100', sendBg: 'from-orange-500 to-amber-600' },
+  'llama3.1-8b': { id: 'llama3.1-8b', name: 'CS v2', subtitle: 'Fast & Efficient', provider: 'Cerebras', icon: Zap, gradient: 'from-blue-500 to-sky-400', pill: 'bg-blue-50 text-blue-600 border-blue-200', dot: 'bg-blue-500', ring: 'focus-within:ring-blue-100', sendBg: 'from-blue-500 to-sky-400' },
+  'allam-2-7b': { id: 'allam-2-7b', name: 'Allam 2 7B', subtitle: 'Arabic', provider: 'Groq', icon: Sparkles, gradient: 'from-emerald-500 to-teal-600', pill: 'bg-emerald-50 text-emerald-600 border-emerald-200', dot: 'bg-emerald-500', ring: 'focus-within:ring-emerald-100', sendBg: 'from-emerald-500 to-teal-600' },
+  'canopylabs/orpheus-arabic-saudi': { id: 'canopylabs/orpheus-arabic-saudi', name: 'Orpheus Arabic', subtitle: 'Saudi', provider: 'Groq', icon: Sparkles, gradient: 'from-teal-500 to-cyan-600', pill: 'bg-teal-50 text-teal-600 border-teal-200', dot: 'bg-teal-500', ring: 'focus-within:ring-teal-100', sendBg: 'from-teal-500 to-cyan-600' },
+  'canopylabs/orpheus-v1-english': { id: 'canopylabs/orpheus-v1-english', name: 'Orpheus English', subtitle: 'v1', provider: 'Groq', icon: Sparkles, gradient: 'from-cyan-500 to-sky-600', pill: 'bg-cyan-50 text-cyan-600 border-cyan-200', dot: 'bg-cyan-500', ring: 'focus-within:ring-cyan-100', sendBg: 'from-cyan-500 to-sky-600' },
+  'groq/compound': { id: 'groq/compound', name: 'Groq Compound', subtitle: 'Advanced', provider: 'Groq', icon: BrainCircuit, gradient: 'from-indigo-500 to-purple-600', pill: 'bg-indigo-50 text-indigo-600 border-indigo-200', dot: 'bg-indigo-500', ring: 'focus-within:ring-indigo-100', sendBg: 'from-indigo-500 to-purple-600' },
+  'groq/compound-mini': { id: 'groq/compound-mini', name: 'Groq Compound Mini', subtitle: 'Fast', provider: 'Groq', icon: Zap, gradient: 'from-pink-500 to-rose-600', pill: 'bg-pink-50 text-pink-600 border-pink-200', dot: 'bg-pink-500', ring: 'focus-within:ring-pink-100', sendBg: 'from-pink-500 to-rose-600' },
+  'meta-llama/llama-4-scout-17b-16e-instruct': { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', subtitle: '17B', provider: 'Groq', icon: Brain, gradient: 'from-purple-500 to-violet-600', pill: 'bg-purple-50 text-purple-600 border-purple-200', dot: 'bg-purple-500', ring: 'focus-within:ring-purple-100', sendBg: 'from-purple-500 to-violet-600' },
+  'meta-llama/llama-prompt-guard-2-22m': { id: 'meta-llama/llama-prompt-guard-2-22m', name: 'Prompt Guard 2', subtitle: '22M', provider: 'Groq', icon: AlertTriangle, gradient: 'from-amber-500 to-orange-600', pill: 'bg-amber-50 text-amber-600 border-amber-200', dot: 'bg-amber-500', ring: 'focus-within:ring-amber-100', sendBg: 'from-amber-500 to-orange-600' },
+  'meta-llama/llama-prompt-guard-2-86m': { id: 'meta-llama/llama-prompt-guard-2-86m', name: 'Prompt Guard 2', subtitle: '86M', provider: 'Groq', icon: AlertTriangle, gradient: 'from-amber-600 to-orange-700', pill: 'bg-amber-50 text-amber-600 border-amber-200', dot: 'bg-amber-600', ring: 'focus-within:ring-amber-100', sendBg: 'from-amber-600 to-orange-700' },
+  'openai/gpt-oss-120b': { id: 'openai/gpt-oss-120b', name: 'GPT OSS', subtitle: '120B', provider: 'Groq', icon: BrainCircuit, gradient: 'from-green-500 to-emerald-600', pill: 'bg-green-50 text-green-600 border-green-200', dot: 'bg-green-500', ring: 'focus-within:ring-green-100', sendBg: 'from-green-500 to-emerald-600' },
+  'openai/gpt-oss-20b': { id: 'openai/gpt-oss-20b', name: 'GPT OSS', subtitle: '20B', provider: 'Groq', icon: Zap, gradient: 'from-lime-500 to-green-600', pill: 'bg-lime-50 text-lime-600 border-lime-200', dot: 'bg-lime-500', ring: 'focus-within:ring-lime-100', sendBg: 'from-lime-500 to-green-600' },
+  'openai/gpt-oss-safeguard-20b': { id: 'openai/gpt-oss-safeguard-20b', name: 'GPT OSS Safeguard', subtitle: '20B', provider: 'Groq', icon: AlertTriangle, gradient: 'from-red-500 to-rose-600', pill: 'bg-red-50 text-red-600 border-red-200', dot: 'bg-red-500', ring: 'focus-within:ring-red-100', sendBg: 'from-red-500 to-rose-600' },
+  'qwen/qwen3-32b': { id: 'qwen/qwen3-32b', name: 'Qwen3 32B', subtitle: '32B', provider: 'Groq', icon: Brain, gradient: 'from-fuchsia-500 to-pink-600', pill: 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-200', dot: 'bg-fuchsia-500', ring: 'focus-within:ring-fuchsia-100', sendBg: 'from-fuchsia-500 to-pink-600' },
 };
 
 /* ── Markdown-lite renderer ── */
@@ -263,7 +255,7 @@ export const AILab = ({ user, addToast }) => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState('balanced');
+  const [mode, setMode] = useState('llama3.1-8b');
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
@@ -316,11 +308,7 @@ export const AILab = ({ user, addToast }) => {
 
   const handleModeSelect = (id) => {
     setShowModelMenu(false);
-    if (id === 'advanced' && mode !== 'advanced') {
-      setShowAdvancedWarning(true);
-    } else {
-      setMode(id);
-    }
+    setMode(id);
   };
 
   const handleSend = async () => {
