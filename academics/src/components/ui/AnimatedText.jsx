@@ -1,5 +1,5 @@
 import { forwardRef } from 'react';
-import { motion, Variants } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { cn } from '../../utils/helpers';
 
 const AnimatedText = forwardRef(
