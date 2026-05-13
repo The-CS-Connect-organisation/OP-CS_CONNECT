@@ -403,7 +403,7 @@ export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, 
             </div>
           </motion.div>
 
-          <button
+          <motion.button
             onClick={() => { playBlip(); navigate(`/${role}/settings`); }}
             onMouseEnter={playClick}
             className="flex items-center gap-3 w-full py-2 rounded-xl transition-all px-3"
@@ -412,9 +412,9 @@ export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, 
           >
             <Settings size={16} />
             <span className="text-sm font-medium">Settings</span>
-          </button>
+          </motion.button>
 
-          <button
+          <motion.button
             onClick={() => { playBlip(); onLogout(); }}
             onMouseEnter={playClick}
             className="flex items-center gap-3 w-full py-2 rounded-xl transition-all px-3"
@@ -423,7 +423,7 @@ export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, 
           >
             <LogOut size={16} />
             <span className="text-sm font-medium">Sign out</span>
-          </button>
+          </motion.button>
         </div>
       </motion.aside>
     </>

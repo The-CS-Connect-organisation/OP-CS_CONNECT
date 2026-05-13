@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Sparkles, BookOpen, Users, ShieldCheck, GraduationCap, Loader2, ChevronRight, Bus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { authService } from '../../services/authService';
 
 const ALL_ROLES = [
   { id: 'student',   label: 'Student',   icon: GraduationCap, color: '#ea580c', bg: '#fff7ed' },
@@ -43,7 +42,7 @@ const FEATURE_BULLETS = [
   'Class notes collaboration',
 ];
 
-const Login = () => {
+const Login = ({ onLogin }) => {
   const navigate = useNavigate();
   const [selectedRole, setSelectedRole] = useState('student');
   const [email, setEmail] = useState('');
@@ -94,13 +93,10 @@ const Login = () => {
     try {
       setLoading(true);
       setError('');
-      const result = await authService.login(email, password);
-      if (!result.success) {
-        setError(result.error || 'Invalid credentials. Please try again.');
-        return;
+      const result = await onLogin(email, password);
+      if (!result || !result.success) {
+        setError(result?.error || 'Invalid credentials. Please try again.');
       }
-      const user = result.user;
-      navigate(`/${user.role}/dashboard`);
     } catch (err) {
       setError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
@@ -345,11 +341,11 @@ const Login = () => {
 
               {/* Forgot / register */}
               <div className="flex items-center justify-between mt-4">
-                <button className="text-xs font-semibold transition-colors hover:underline" style={{ color: '#ea580c' }}>
+                <button onClick={() => navigate('/forgot-password')} className="text-xs font-semibold transition-colors hover:underline" style={{ color: '#ea580c' }}>
                   Forgot password?
                 </button>
-                <button className="text-xs font-semibold transition-colors hover:underline" style={{ color: '#78716c' }}>
-                  Contact admin
+                <button onClick={() => navigate('/signup')} className="text-xs font-semibold transition-colors hover:underline" style={{ color: '#78716c' }}>
+                  Create account
                 </button>
               </div>
             </div>

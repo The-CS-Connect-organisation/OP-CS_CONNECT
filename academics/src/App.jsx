@@ -18,6 +18,7 @@ import SplashScreen from './components/SplashScreen';
 // Pages - Common
 import { Login } from './pages/Common/Login';
 import { Signup } from './pages/Common/Signup';
+import { ForgotPassword } from './pages/Common/ForgotPassword';
 import { NotFound } from './pages/Common/NotFound';
 
 // Pages - Portals (Dashboards)
@@ -235,8 +236,13 @@ function App() {
           } />
           <Route path="/signup" element={
             user && ALLOWED_ROLES.includes(user.role)
-              ? <Navigate to={`/${user.role}/dashboard`} replace /> 
+              ? <Navigate to={`/${user.role}/dashboard`} replace />
               : <Signup onSignup={signup} onSwitch={() => navigate('/login')} />
+          } />
+          <Route path="/forgot-password" element={
+            user && ALLOWED_ROLES.includes(user.role)
+              ? <Navigate to={`/${user.role}/dashboard`} replace />
+              : <ForgotPassword onBack={() => navigate('/login')} />
           } />
 
           {/* 🎓 Academic Portal - Student */}

@@ -31,31 +31,11 @@ const emitStorageChange = (key) => {
   window.dispatchEvent(new CustomEvent(STORAGE_EVENT, { detail: { key } }));
 };
 
-// Keys that use localStorage (all others are Firebase)
+// Keys that use localStorage (only session-related keys)
 const LOCAL_STORAGE_KEYS = new Set([
   KEYS.CURRENT_USER,
   KEYS.AUTH_TOKEN,
-  KEYS.USERS,
-  KEYS.ASSIGNMENTS,
-  KEYS.ATTENDANCE,
-  KEYS.MARKS,
-  KEYS.EXAMS,
-  KEYS.TIMETABLE,
-  KEYS.NOTES,
-  KEYS.ANNOTATIONS,
-  KEYS.ANNOUNCEMENTS,
-  KEYS.NOTIFICATIONS,
-  KEYS.FEES,
-  KEYS.NOTE_REQUESTS,
-  KEYS.CHAT_MESSAGES,
-  KEYS.PAYROLL,
-  KEYS.HR_RECORDS,
   KEYS.THEME,
-  KEYS.STUDENT_XP,
-  KEYS.BADGES,
-  KEYS.STUDY_ACTIVITY,
-  KEYS.GOALS,
-  KEYS.WEEKLY_CHALLENGE,
 ]);
 
 export const getFromStorage = (key, defaultValue = null) => {

@@ -48,22 +48,18 @@ const CHALLENGE_DEFS = [
   { id: 'cw_3', label: 'Streak Builder', desc: 'Login and study 5 days this week', icon: Flame, target: 5, type: 'login' },
 ];
 
-const LEVELS = [0, 100, 300, 600, 1000, 1500, 2200, 3000, 4000, 5200, 6600, 8200, 10000];
+const XP_PER_LEVEL = 1000;
 
 const getLevel = (xp) => {
-  let level = 1;
-  for (let i = 1; i < LEVELS.length; i++) {
-    if (xp >= LEVELS[i]) level = i + 1;
-    else break;
-  }
-  return level;
+  return Math.floor(xp / XP_PER_LEVEL) + 1;
 };
 
 const getLevelXP = (xp) => {
   const level = getLevel(xp);
-  const base = LEVELS[level - 1] || 0;
-  const next = LEVELS[level] || LEVELS[LEVELS.length - 1];
-  return { level, base, next, progress: ((xp - base) / (next - base)) * 100 };
+  const base = (level - 1) * XP_PER_LEVEL;
+  const next = level * XP_PER_LEVEL;
+  const progress = Math.min(100, ((xp - base) / XP_PER_LEVEL) * 100);
+  return { level, base, next, progress };
 };
 
 // ============================================================================

@@ -244,16 +244,13 @@ const SharedNotes = ({ user, addToast }) => {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              whileHover={{ y: -2 }}
+              whileHover={{ y: -2, boxShadow: '0 8px 32px rgba(234,88,12,0.25), 0 0 0 1px rgba(234,88,12,0.4)' }}
               onClick={() => { playBlip(); setSelectedNote(note); }}
               className="cursor-pointer rounded-2xl p-5 transition-all duration-200"
               style={{
                 background: '#1c1917',
                 border: '1px solid rgba(255,255,255,0.06)',
                 boxShadow: '0 2px 12px rgba(0,0,0,0.15)',
-              }}
-              whileHover={{
-                boxShadow: '0 8px 32px rgba(234,88,12,0.25), 0 0 0 1px rgba(234,88,12,0.4)',
               }}
             >
               {/* Subject badge */}

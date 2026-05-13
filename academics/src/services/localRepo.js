@@ -11,9 +11,11 @@ const daysAgo = (d) => {
 // ── Demo seed data ─────────────────────────────────────────────────────────────
 
 const DEMO_USERS = [
-  { id: 'student-1', name: 'Aarav Patel', email: 'student@schoolsync.edu', password: 'student123', role: 'student', class: '10-A', rollNo: '12', avatar: '👦', isActive: true },
-  { id: 'student-2', name: 'Priya Sharma', email: 'student2@schoolsync.edu', password: 'student123', role: 'student', class: '10-A', rollNo: '15', avatar: '👧', isActive: true },
-  { id: 'student-3', name: 'Rahul Verma', email: 'student3@schoolsync.edu', password: 'student123', role: 'student', class: '10-B', rollNo: '8', avatar: '👦', isActive: true },
+  { id: 'student-1', name: 'Aarav Patel', email: 'student@schoolsync.edu', password: 'student123', role: 'student', class: '10-A', rollNo: '12', avatar: '👦', isActive: true, xp: 2450, level: 3 },
+  { id: 'student-2', name: 'Priya Sharma', email: 'student2@schoolsync.edu', password: 'student123', role: 'student', class: '10-A', rollNo: '15', avatar: '👧', isActive: true, xp: 1890, level: 2 },
+  { id: 'student-3', name: 'Rahul Verma', email: 'student3@schoolsync.edu', password: 'student123', role: 'student', class: '10-B', rollNo: '8', avatar: '👦', isActive: true, xp: 3200, level: 4 },
+  { id: 'student-4', name: 'Ananya Reddy', email: 'student4@schoolsync.edu', password: 'student123', role: 'student', class: '10-A', rollNo: '3', avatar: '👧', isActive: true, xp: 4100, level: 5 },
+  { id: 'student-5', name: 'Vikram Singh', email: 'student5@schoolsync.edu', password: 'student123', role: 'student', class: '10-A', rollNo: '20', avatar: '👦', isActive: true, xp: 1550, level: 2 },
   { id: 'teacher-1', name: 'Sarah Wilson', email: 'teacher@schoolsync.edu', password: 'teacher123', role: 'teacher', subject: 'Mathematics', avatar: '👨‍🏫', isActive: true },
   { id: 'teacher-2', name: 'John Smith', email: 'teacher2@schoolsync.edu', password: 'teacher123', role: 'teacher', subject: 'English', avatar: '👩‍🏫', isActive: true },
   { id: 'teacher-3', name: 'Michael Lee', email: 'teacher3@schoolsync.edu', password: 'teacher123', role: 'teacher', subject: 'Physics', avatar: '👨‍🏫', isActive: true },
@@ -30,6 +32,11 @@ const DEMO_ASSIGNMENTS = [
   { id: 'assign-6', title: 'Biology: Cell Structure Diagram', subject: 'Biology', class: '10-A', teacherId: 'teacher-6', teacherName: 'Lisa Wang', description: 'Draw and label a plant cell. Include all organelles with their functions.', dueDate: daysAgo(-14), totalMarks: 35, status: 'graded' },
   { id: 'assign-7', title: 'Computer Science: Python Basics', subject: 'Computer Science', class: '10-A', teacherId: 'teacher-7', teacherName: 'Alex Kim', description: 'Write a Python program that calculates the factorial of a number using recursion.', dueDate: daysAgo(5), totalMarks: 45, status: 'active' },
   { id: 'assign-8', title: 'Geography: Map Reading', subject: 'Geography', class: '10-A', teacherId: 'teacher-8', teacherName: 'Rajesh Kumar', description: 'Complete the map reading exercises from pages 45-50. Use coordinates to locate places.', dueDate: daysAgo(-10), totalMarks: 30, status: 'graded' },
+  { id: 'assign-9', title: 'Trigonometry: Sine & Cosine Rules', subject: 'Mathematics', class: '10-A', teacherId: 'teacher-1', teacherName: 'Sarah Wilson', description: 'Solve 15 problems on sine and cosine rules. Show all steps.', dueDate: daysAgo(-3), totalMarks: 60, status: 'active' },
+  { id: 'assign-10', title: 'Novel Study: To Kill a Mockingbird', subject: 'English', class: '10-A', teacherId: 'teacher-2', teacherName: 'John Smith', description: 'Character analysis of Atticus Finch. 400 words minimum.', dueDate: daysAgo(-4), totalMarks: 35, status: 'active' },
+  { id: 'assign-11', title: 'Newton\'s Laws of Motion', subject: 'Physics', class: '10-A', teacherId: 'teacher-3', teacherName: 'Michael Lee', description: 'Numerical problems on all three laws of motion.', dueDate: daysAgo(-1), totalMarks: 45, status: 'active' },
+  { id: 'assign-12', title: 'Organic Chemistry: Hydrocarbons', subject: 'Chemistry', class: '10-A', teacherId: 'teacher-5', teacherName: 'David Chen', description: 'Draw structures of alkanes, alkenes, and alkynes (C1 to C5).', dueDate: daysAgo(-6), totalMarks: 30, status: 'active' },
+  { id: 'assign-13', title: 'Ecology: Ecosystems', subject: 'Biology', class: '10-A', teacherId: 'teacher-6', teacherName: 'Lisa Wang', description: 'Food web diagram and explanation of trophic levels.', dueDate: daysAgo(-8), totalMarks: 40, status: 'graded' },
 ];
 
 const DEMO_ATTENDANCE = [
@@ -69,14 +76,18 @@ const DEMO_GRADES = [
   { id: 'grade-11', studentId: 'student-1', examName: 'Unit Test 2', subject: 'Mathematics', marksObtained: 79, totalMarks: 100, grade: 'B1' },
   { id: 'grade-12', studentId: 'student-1', examName: 'Unit Test 2', subject: 'English', marksObtained: 82, totalMarks: 100, grade: 'B1' },
   { id: 'grade-13', studentId: 'student-1', examName: 'Unit Test 2', subject: 'Computer Science', marksObtained: 95, totalMarks: 100, grade: 'A1' },
+  { id: 'grade-14', studentId: 'student-1', examName: 'Quarterly Exam', subject: 'Mathematics', marksObtained: 91, totalMarks: 100, grade: 'A1' },
+  { id: 'grade-15', studentId: 'student-1', examName: 'Quarterly Exam', subject: 'Science', marksObtained: 87, totalMarks: 100, grade: 'A2' },
 ];
 
 const DEMO_NOTES = [
-  { id: 'note-1', title: 'Quadratic Equations - Complete Guide', subject: 'Mathematics', teacherId: 'teacher-1', teacherName: 'Sarah Wilson', class: '10-A', description: 'Comprehensive notes covering all methods of solving quadratic equations including factorization, completing the square, and quadratic formula.', created_at: daysAgo(5) },
-  { id: 'note-2', title: 'Shakespeare: Julius Caesar Analysis', subject: 'English', teacherId: 'teacher-2', teacherName: 'John Smith', class: '10-A', description: 'Character analysis, themes, and key quotes from Act 1-3 of Julius Caesar. Includes essay writing tips.', created_at: daysAgo(10) },
-  { id: 'note-3', title: 'Kinematics and Motion Notes', subject: 'Physics', teacherId: 'teacher-3', teacherName: 'Michael Lee', class: '10-A', description: 'Full chapter notes on kinematics covering displacement, velocity, acceleration, and equations of motion with solved examples.', created_at: daysAgo(8) },
-  { id: 'note-4', title: 'Chemical Bonding Summary', subject: 'Chemistry', teacherId: 'teacher-5', teacherName: 'David Chen', class: '10-A', description: 'Quick reference guide for ionic, covalent, and metallic bonding. Includes diagrams and examples.', created_at: daysAgo(12) },
-  { id: 'note-5', title: 'Cell Division: Mitosis & Meiosis', subject: 'Biology', teacherId: 'teacher-6', teacherName: 'Lisa Wang', class: '10-A', description: 'Detailed comparison of mitosis and meiosis with labeled diagrams and stages explanation.', created_at: daysAgo(15) },
+  { id: 'note-1', title: 'Quadratic Equations - Complete Guide', subject: 'Mathematics', teacherId: 'teacher-1', teacherName: 'Sarah Wilson', class: '10-A', description: 'Comprehensive notes covering all methods of solving quadratic equations including factorization, completing the square, and quadratic formula.', createdAt: daysAgo(5), date: daysAgo(5) },
+  { id: 'note-2', title: 'Shakespeare: Julius Caesar Analysis', subject: 'English', teacherId: 'teacher-2', teacherName: 'John Smith', class: '10-A', description: 'Character analysis, themes, and key quotes from Act 1-3 of Julius Caesar. Includes essay writing tips.', createdAt: daysAgo(10), date: daysAgo(10) },
+  { id: 'note-3', title: 'Kinematics and Motion Notes', subject: 'Physics', teacherId: 'teacher-3', teacherName: 'Michael Lee', class: '10-A', description: 'Full chapter notes on kinematics covering displacement, velocity, acceleration, and equations of motion with solved examples.', createdAt: daysAgo(8), date: daysAgo(8) },
+  { id: 'note-4', title: 'Chemical Bonding Summary', subject: 'Chemistry', teacherId: 'teacher-5', teacherName: 'David Chen', class: '10-A', description: 'Quick reference guide for ionic, covalent, and metallic bonding. Includes diagrams and examples.', createdAt: daysAgo(12), date: daysAgo(12) },
+  { id: 'note-5', title: 'Cell Division: Mitosis & Meiosis', subject: 'Biology', teacherId: 'teacher-6', teacherName: 'Lisa Wang', class: '10-A', description: 'Detailed comparison of mitosis and meiosis with labeled diagrams and stages explanation.', createdAt: daysAgo(15), date: daysAgo(15) },
+  { id: 'note-6', title: 'Trigonometric Identities', subject: 'Mathematics', teacherId: 'teacher-1', teacherName: 'Sarah Wilson', class: '10-A', description: 'All key identities with proofs and practice problems.', createdAt: daysAgo(2), date: daysAgo(2) },
+  { id: 'note-7', title: 'Organic Chemistry Basics', subject: 'Chemistry', teacherId: 'teacher-5', teacherName: 'David Chen', class: '10-A', description: 'Introduction to functional groups and nomenclature.', createdAt: daysAgo(1), date: daysAgo(1) },
 ];
 
 const DEMO_SUBMISSIONS = [
@@ -91,6 +102,26 @@ const DEMO_EXAMS = [
   { id: 'exam-3', name: 'Unit Test 1', subject: 'All Subjects', class: '10-A', date: daysAgo(-60), maxMarks: 100, status: 'completed' },
   { id: 'exam-4', name: 'Pre-Board Exam 1', subject: 'All Subjects', class: '10-A', date: daysAgo(14), maxMarks: 200, status: 'scheduled' },
   { id: 'exam-5', name: 'Unit Test 4', subject: 'English', class: '10-A', date: daysAgo(7), maxMarks: 50, status: 'scheduled' },
+  { id: 'exam-6', name: 'Quarterly Exam', subject: 'All Subjects', class: '10-A', date: daysAgo(-45), maxMarks: 150, status: 'completed' },
+  { id: 'exam-7', name: 'Mid-Term Assessment', subject: 'Science', class: '10-A', date: daysAgo(-20), maxMarks: 100, status: 'completed' },
+  { id: 'exam-8', name: 'Final Exam Prep Test', subject: 'All Subjects', class: '10-A', date: daysAgo(3), maxMarks: 100, status: 'scheduled' },
+];
+
+const DEMO_ACHIEVEMENTS = [
+  { id: 'ach-1', userId: 'student-1', title: 'First Assignment Submitted', description: 'Submitted your first assignment', xp: 100, icon: '📝', date: daysAgo(20) },
+  { id: 'ach-2', userId: 'student-1', title: 'Perfect Attendance Week', description: 'Attended all classes for a week', xp: 250, icon: '🏆', date: daysAgo(15) },
+  { id: 'ach-3', userId: 'student-1', title: '90% in Math Test', description: 'Scored 90% or above in Mathematics', xp: 300, icon: '⭐', date: daysAgo(10) },
+  { id: 'ach-4', userId: 'student-1', title: 'Early Bird', description: 'Submitted assignment 3 days early', xp: 150, icon: '🐦', date: daysAgo(5) },
+  { id: 'ach-5', userId: 'student-1', title: '1000 XP Milestone', description: 'Reached 1000 total XP', xp: 200, icon: '🎉', date: daysAgo(7) },
+  { id: 'ach-6', userId: 'student-1', title: 'Quiz Master', description: 'Scored full marks in 3 quizzes', xp: 250, icon: '🎯', date: daysAgo(2) },
+];
+
+const DEMO_LEADERBOARD = [
+  { id: 'lb-1', userId: 'student-4', name: 'Ananya Reddy', class: '10-A', xp: 4100, level: 5, rank: 1, avatar: '👧' },
+  { id: 'lb-2', userId: 'student-3', name: 'Rahul Verma', class: '10-B', xp: 3200, level: 4, rank: 2, avatar: '👦' },
+  { id: 'lb-3', userId: 'student-1', name: 'Aarav Patel', class: '10-A', xp: 2450, level: 3, rank: 3, avatar: '👦' },
+  { id: 'lb-4', userId: 'student-2', name: 'Priya Sharma', class: '10-A', xp: 1890, level: 2, rank: 4, avatar: '👧' },
+  { id: 'lb-5', userId: 'student-5', name: 'Vikram Singh', class: '10-A', xp: 1550, level: 2, rank: 5, avatar: '👦' },
 ];
 
 const DEMO_NOTIFICATIONS = [
