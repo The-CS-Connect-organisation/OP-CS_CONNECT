@@ -168,7 +168,7 @@ const CTACard = memo(() => {
             </motion.a>
 
             <motion.a
-              href="academics/"
+              href="/OP-CS_CONNECT/academics/"
               className="flex items-center justify-center gap-2 w-full h-13 px-6 py-3.5 rounded-2xl font-semibold text-sm border-2 transition-all"
               style={{ borderColor: 'var(--border-color, #e5e7eb)', color: 'var(--text-secondary, #4b5563)' }}
               initial={{ opacity: 0, y: 12 }}
