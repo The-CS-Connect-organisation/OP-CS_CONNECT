@@ -489,11 +489,11 @@ export const StudentDashboard = ({ user }) => {
     setLoadingDash(true);
 
     Promise.allSettled([
-      request('/school/assignments'),
+      request('/student/assignments'),
       request('/student/grades'),
       request('/student/attendance'),
       request('/school/announcements?limit=50'),
-      request('/school/timetables'),
+      request('/student/timetable'),
       request('/student/profile'),
     ]).then(([assignRes, marksRes, attRes, annRes, ttRes, profileRes]) => {
       if (cancelled) return;
@@ -584,9 +584,19 @@ if (ttRes.status === 'fulfilled') {
 
   // Build timetable lookup: { className: { day: slots } }
   const safeTimetable = useMemo(() => buildTimetableLookup(apiTimetableEntries), [apiTimetableEntries]);
-  
+
   const [focusMode, setFocusMode] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const normalizeClassId = (id) => {
+    if (!id) return '';
+    const normalized = String(id).replace(/^(\d+)-([A-Z])$/i, 'class-$1-$2').toLowerCase();
+    return normalized === String(id).toLowerCase() ? id : normalized;
+  };
+  const rawClassId = user.classroomId || profileData?.classId || user.classId || user.class;
+  const effectiveClassId = normalizeClassId(rawClassId) || '';
+  const todaySchedule = safeTimetable[effectiveClassId]?.[today] || [];
 
   const myAssignments = safeAssignments.filter(a => !a.class_id || a.class_id === effectiveClassId || a.class_id === (user.classroomId || profileData?.classId));
   const pendingAssignments = myAssignments.filter(a => {
@@ -609,16 +619,6 @@ if (ttRes.status === 'fulfilled') {
   const presentCount = myAttendance.filter(a => a.status === 'present' || a.status === 'late').length;
   const computedAttendance = myAttendance.length > 0 ? Math.round((presentCount / myAttendance.length) * 100) : 0;
   const attendanceRate = attSummaryRate !== null ? attSummaryRate : (profileData?.attendancePercent || computedAttendance);
-
-  const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-  const normalizeClassId = (id) => {
-    if (!id) return '';
-    const normalized = String(id).replace(/^(\d+)-([A-Z])$/i, 'class-$1-$2').toLowerCase();
-    return normalized === String(id).toLowerCase() ? id : normalized;
-  };
-  const rawClassId = user.classroomId || profileData?.classId || user.class;
-  const effectiveClassId = normalizeClassId(rawClassId) || '';
-  const todaySchedule = safeTimetable[effectiveClassId]?.[today] || [];
 
   // Dynamic Data Calculations — use computed values, no useStore needed
   const xpData = { xp: 0, level: 1 };
