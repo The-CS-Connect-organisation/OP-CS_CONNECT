@@ -6,6 +6,7 @@ import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
+import { AnimatedAIInput } from '../../components/ui/AnimatedAIInput';
 
 const AiToolCard = ({ tool, onClick }) => {
   const Icon = tool.icon || Bot;
@@ -53,6 +54,8 @@ const AdminAILab = ({ user, addToast }) => {
   const [loading, setLoading] = useState(true);
   const [selectedTool, setSelectedTool] = useState(null);
   const [toolModalOpen, setToolModalOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [isSending, setIsSending] = useState(false);
 
   useEffect(() => {
     loadDashboard();
@@ -103,6 +106,35 @@ const AdminAILab = ({ user, addToast }) => {
   const handleToolClick = (tool) => {
     setSelectedTool(tool);
     setToolModalOpen(true);
+  };
+
+  const handleSendMessage = async (message, model) => {
+    if (!message.trim()) return;
+    
+    const userMessage = { role: 'user', content: message, model: model.name };
+    setChatMessages(prev => [...prev, userMessage]);
+    setIsSending(true);
+    
+    try {
+      const response = await request('/ai/chat', {
+        method: 'POST',
+        body: JSON.stringify({ message, model: model.id })
+      });
+      
+      if (response.success) {
+        setChatMessages(prev => [...prev, { 
+          role: 'assistant', 
+          content: response.reply,
+          model: model.name
+        }]);
+      } else {
+        addToast?.('error', 'Failed to get AI response');
+      }
+    } catch (err) {
+      addToast?.('error', 'AI request failed');
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const formatResponseTime = (ms) => {
@@ -159,6 +191,19 @@ const AdminAILab = ({ user, addToast }) => {
         <StatCard icon={Target} label="Accuracy" value={stats?.accuracy ? `${stats.accuracy}%` : '—'} gradient="from-amber-500 to-orange-500" trend={stats?.accuracyDelta ? `${stats.accuracyDelta > 0 ? '+' : ''}${stats.accuracyDelta}%` : null} />
         <StatCard icon={Brain} label="Tokens Used" value={stats?.totalTokens ? `${(stats.totalTokens / 1000000).toFixed(1)}M` : '—'} gradient="from-pink-500 to-rose-500" />
         <StatCard icon={TrendingUp} label="Success Rate" value={stats?.successRate ? `${stats.successRate}%` : '—'} gradient="from-cyan-500 to-blue-500" sublabel={stats?.errorCount ? `${stats.errorCount} errors` : null} />
+      </div>
+
+      {/* AI Chat Interface */}
+      <div className="bg-white rounded-2xl border border-gray-100 p-6">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Bot size={18} className="text-indigo-500" /> AI Assistant
+            </h2>
+            <p className="text-xs text-gray-500 mt-0.5">Ask anything about your school data</p>
+          </div>
+        </div>
+        <AnimatedAIInput onSend={handleSendMessage} />
       </div>
 
       {/* AI Tools */}
