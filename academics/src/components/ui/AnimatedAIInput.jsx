@@ -1,9 +1,17 @@
-import { ArrowRight, Bot, Check, ChevronDown, Paperclip } from 'lucide-react';
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { cn } from '../../utils/helpers';
+"use client";
 
-const useAutoResizeTextarea = ({ minHeight, maxHeight }) => {
+import { ArrowRight, Bot, Check, ChevronDown, Paperclip } from "lucide-react";
+import { useState, useRef, useCallback, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "../../utils/helpers";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./DropdownMenu";
+
+function useAutoResizeTextarea({ minHeight, maxHeight }) {
   const textareaRef = useRef(null);
 
   const adjustHeight = useCallback(
@@ -40,12 +48,12 @@ const useAutoResizeTextarea = ({ minHeight, maxHeight }) => {
 
   useEffect(() => {
     const handleResize = () => adjustHeight();
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, [adjustHeight]);
 
   return { textareaRef, adjustHeight };
-};
+}
 
 const OPENAI_ICON = (
   <>
@@ -107,43 +115,56 @@ const CLAUDE_ICON = (
   </>
 );
 
-export function AnimatedAIInput({ onSend, placeholder = 'What can I do for you?' }) {
-  const [value, setValue] = useState('');
+export function AnimatedAIInput({ onSend, placeholder = "What can I do for you?" }) {
+  const [value, setValue] = useState("");
   const { textareaRef, adjustHeight } = useAutoResizeTextarea({
     minHeight: 72,
     maxHeight: 300,
   });
-  const [selectedModel, setSelectedModel] = useState('GPT-4-1 Mini');
 
-  const AI_MODELS = [
-    'o3-mini',
-    'Gemini 2.5 Flash',
-    'Claude 3.5 Sonnet',
-    'GPT-4-1 Mini',
-    'GPT-4-1',
+  const ALL_MODELS = [
+    { id: "groq-allam-2-7b", name: "Allam 2 7B (Groq)", provider: "groq", icon: OPENAI_ICON },
+    { id: "groq-compound-beta", name: "Compound Beta (Groq)", provider: "groq", icon: OPENAI_ICON },
+    { id: "groq-compound-mini-beta", name: "Compound Mini Beta (Groq)", provider: "groq", icon: OPENAI_ICON },
+    { id: "groq-llama-3.1-8b-instant", name: "Llama 3.1 8B Instant (Groq)", provider: "groq", icon: OPENAI_ICON },
+    { id: "groq-llama-3.3-70b", name: "Llama 3.3 70B Versatile (Groq)", provider: "groq", icon: OPENAI_ICON },
+    { id: "groq-llama-4-scout", name: "Llama 4 Scout 17B (Groq)", provider: "groq", icon: OPENAI_ICON },
+    { id: "groq-prompt-guard-2-22m", name: "Prompt Guard 2 22M (Groq)", provider: "groq", icon: GEMINI_ICON },
+    { id: "groq-prompt-guard-2-86m", name: "Prompt Guard 2 86M (Groq)", provider: "groq", icon: GEMINI_ICON },
+    { id: "groq-gpt-oss-120b", name: "GPT OSS 120B (Groq)", provider: "groq", icon: OPENAI_ICON },
+    { id: "groq-gpt-oss-20b", name: "GPT OSS 20B (Groq)", provider: "groq", icon: OPENAI_ICON },
+    { id: "groq-gpt-oss-safeguard-20b", name: "GPT OSS Safeguard 20B (Groq)", provider: "groq", icon: OPENAI_ICON },
+    { id: "groq-qwen3-32b", name: "Qwen3 32B (Groq)", provider: "groq", icon: CLAUDE_ICON },
+    { id: "groq-whisper-large-v3", name: "Whisper Large V3 (Groq - Speech to Text)", provider: "groq", icon: GEMINI_ICON },
+    { id: "groq-whisper-large-v3-turbo", name: "Whisper Large V3 Turbo (Groq - Speech to Text)", provider: "groq", icon: GEMINI_ICON },
+    { id: "groq-orpheus-arabic", name: "Orpheus Arabic Saudi (Groq - Text to Speech)", provider: "groq", icon: CLAUDE_ICON },
+    { id: "groq-orpheus-english", name: "Orpheus English (Groq - Text to Speech)", provider: "groq", icon: CLAUDE_ICON },
+    { id: "cerebras-gpt-oss-120b", name: "GPT OSS 120B (Cerebras)", provider: "cerebras", icon: OPENAI_ICON },
+    { id: "cerebras-llama-3.1-8b", name: "Llama 3.1 8B (Cerebras)", provider: "cerebras", icon: OPENAI_ICON },
+    { id: "cerebras-qwen-3-235b", name: "Qwen 3 235B A22B (Cerebras)", provider: "cerebras", icon: CLAUDE_ICON },
+    { id: "cerebras-zai-glm-4.7", name: "ZAI GLM 4.7 (Cerebras)", provider: "cerebras", icon: OPENAI_ICON },
+    { id: "openai-gpt-4o", name: "GPT-4o (OpenAI)", provider: "openai", icon: OPENAI_ICON },
+    { id: "openai-gpt-4o-mini", name: "GPT-4o Mini (OpenAI)", provider: "openai", icon: OPENAI_ICON },
   ];
 
-  const MODEL_ICONS = {
-    'o3-mini': OPENAI_ICON,
-    'Gemini 2.5 Flash': GEMINI_ICON,
-    'Claude 3.5 Sonnet': CLAUDE_ICON,
-    'GPT-4-1 Mini': OPENAI_ICON,
-    'GPT-4-1': OPENAI_ICON,
-  };
+  const [selectedModel, setSelectedModel] = useState(ALL_MODELS[0]);
+
+  const MODEL_ICONS = {};
+  ALL_MODELS.forEach(m => { MODEL_ICONS[m.id] = m.icon; });
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey && value.trim()) {
+    if (e.key === "Enter" && !e.shiftKey && value.trim()) {
       e.preventDefault();
-      if (onSend) onSend(value);
-      setValue('');
+      if (onSend) onSend(value, selectedModel);
+      setValue("");
       adjustHeight(true);
     }
   };
 
   const handleSendClick = () => {
     if (!value.trim()) return;
-    if (onSend) onSend(value);
-    setValue('');
+    if (onSend) onSend(value, selectedModel);
+    setValue("");
     adjustHeight(true);
   };
 
@@ -152,14 +173,14 @@ export function AnimatedAIInput({ onSend, placeholder = 'What can I do for you?'
       <div className="bg-black/5 dark:bg-white/5 rounded-2xl p-1.5">
         <div className="relative">
           <div className="relative flex flex-col">
-            <div className="overflow-y-auto" style={{ maxHeight: '400px' }}>
+            <div className="overflow-y-auto" style={{ maxHeight: "400px" }}>
               <textarea
                 id="ai-input-15"
                 value={value}
                 placeholder={placeholder}
                 className={cn(
-                  'w-full rounded-xl rounded-b-none px-4 py-3 bg-black/5 dark:bg-white/5 border-none dark:text-white placeholder:text-black/70 dark:placeholder:text-white/70 resize-none focus-visible:ring-0 focus-visible:ring-offset-0',
-                  'min-h-[72px]'
+                  "w-full rounded-xl rounded-b-none px-4 py-3 bg-black/5 dark:bg-white/5 border-none dark:text-white placeholder:text-black/70 dark:placeholder:text-white/70 resize-none focus-visible:ring-0 focus-visible:ring-offset-0",
+                  "min-h-[72px]"
                 )}
                 ref={textareaRef}
                 onKeyDown={handleKeyDown}
@@ -173,34 +194,62 @@ export function AnimatedAIInput({ onSend, placeholder = 'What can I do for you?'
             <div className="h-14 bg-black/5 dark:bg-white/5 rounded-b-xl flex items-center">
               <div className="absolute left-3 right-3 bottom-3 flex items-center justify-between w-[calc(100%-24px)]">
                 <div className="flex items-center gap-2">
-                  <div className="relative">
-                    <button
-                      className="flex items-center gap-1 h-8 pl-1 pr-2 text-xs rounded-md dark:text-white hover:bg-black/10 dark:hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-blue-500"
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="flex items-center gap-1 h-8 pl-1 pr-2 text-xs rounded-md dark:text-white hover:bg-black/10 dark:hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-blue-500"
+                      >
+                        <AnimatePresence mode="wait">
+                          <motion.div
+                            key={selectedModel.id}
+                            initial={{ opacity: 0, y: -5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 5 }}
+                            transition={{ duration: 0.15 }}
+                            className="flex items-center gap-1"
+                          >
+                            {MODEL_ICONS[selectedModel.id] || (
+                              <Bot className="w-4 h-4 opacity-50" />
+                            )}
+                            {selectedModel.name}
+                            <ChevronDown className="w-3 h-3 opacity-50" />
+                          </motion.div>
+                        </AnimatePresence>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent
+                      className={cn(
+                        "min-w-[10rem]",
+                        "border-black/10 dark:border-white/10",
+                        "bg-gradient-to-b from-white via-white to-neutral-100 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-800"
+                      )}
                     >
-                      <AnimatePresence mode="wait">
-                        <motion.div
-                          key={selectedModel}
-                          initial={{ opacity: 0, y: -5 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: 5 }}
-                          transition={{ duration: 0.15 }}
-                          className="flex items-center gap-1"
+                      {ALL_MODELS.map((model) => (
+                        <DropdownMenuItem
+                          key={model.id}
+                          onSelect={() => setSelectedModel(model)}
+                          className="flex items-center justify-between gap-2"
                         >
-                          {MODEL_ICONS[selectedModel] || (
-                            <Bot className="w-4 h-4 opacity-50" />
+                          <div className="flex items-center gap-2">
+                            {model.icon || (
+                              <Bot className="w-4 h-4 opacity-50" />
+                            )}
+                            <span>{model.name}</span>
+                          </div>
+                          {selectedModel.id === model.id && (
+                            <Check className="w-4 h-4 text-blue-500" />
                           )}
-                          {selectedModel}
-                          <ChevronDown className="w-3 h-3 opacity-50" />
-                        </motion.div>
-                      </AnimatePresence>
-                    </button>
-                  </div>
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <div className="h-4 w-px bg-black/10 dark:bg-white/10 mx-0.5" />
                   <label
                     className={cn(
-                      'rounded-lg p-2 bg-black/5 dark:bg-white/5 cursor-pointer',
-                      'hover:bg-black/10 dark:hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-blue-500',
-                      'text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white'
+                      "rounded-lg p-2 bg-black/5 dark:bg-white/5 cursor-pointer",
+                      "hover:bg-black/10 dark:hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-blue-500",
+                      "text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white"
                     )}
                     aria-label="Attach file"
                   >
@@ -211,8 +260,8 @@ export function AnimatedAIInput({ onSend, placeholder = 'What can I do for you?'
                 <button
                   type="button"
                   className={cn(
-                    'rounded-lg p-2 bg-black/5 dark:bg-white/5',
-                    'hover:bg-black/10 dark:hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-blue-500'
+                    "rounded-lg p-2 bg-black/5 dark:bg-white/5",
+                    "hover:bg-black/10 dark:hover:bg-white/10 focus-visible:ring-1 focus-visible:ring-offset-0 focus-visible:ring-blue-500"
                   )}
                   aria-label="Send message"
                   disabled={!value.trim()}
@@ -220,8 +269,8 @@ export function AnimatedAIInput({ onSend, placeholder = 'What can I do for you?'
                 >
                   <ArrowRight
                     className={cn(
-                      'w-4 h-4 dark:text-white transition-opacity duration-200',
-                      value.trim() ? 'opacity-100' : 'opacity-30'
+                      "w-4 h-4 dark:text-white transition-opacity duration-200",
+                      value.trim() ? "opacity-100" : "opacity-30"
                     )}
                   />
                 </button>

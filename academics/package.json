@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@chenglou/pretext": "github:chenglou/pretext",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@supabase/supabase-js": "^2.101.1",
     "cloudinary": "^2.10.0",
     "clsx": "^2.0.0",
