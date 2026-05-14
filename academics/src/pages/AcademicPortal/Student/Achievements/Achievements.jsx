@@ -10,6 +10,8 @@ import { Card } from '../../../../components/ui/Card';
 import { Button } from '../../../../components/ui/Button';
 import { getFromStorage, setToStorage, KEYS } from '../../../../data/schema';
 import { useSound } from '../../../../hooks/useSound';
+import { studentApi } from '../../../../services/apiDataLayer';
+import { firebaseLeaderboardService } from '../../../../services/firebaseService';
 
 // Badge definitions
 const BADGE_DEFS = [

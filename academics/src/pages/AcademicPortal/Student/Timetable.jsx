@@ -107,7 +107,7 @@ export const Timetable = ({ user }) => {
     setLoading(true);
     setError(null);
 
-    request('/school/timetables')
+    request('/student/timetable')
       .then(res => {
         if (!alive) return;
         const normalized = normalizeTimetableResponse(res);

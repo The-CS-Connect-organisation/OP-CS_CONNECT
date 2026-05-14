@@ -156,13 +156,7 @@ function App() {
   const { user, loading: authLoading, login, signup, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { toasts, addToast, removeToast } = useToast();
-  const [showSplash, setShowSplash] = useState(() => {
-    // Skip splash if autologin credentials are in the URL hash
-    const hash = window.location.hash;
-    const params = new URLSearchParams(hash.split('?')[1]);
-    if (params.has('autologin') && params.has('pass')) return false;
-    return !sessionStorage.getItem('hasSeenSplash');
-  });
+  const [showSplash, setShowSplash] = useState(false);
   
   const handleSplashComplete = useCallback(() => {
     sessionStorage.setItem('hasSeenSplash', 'true');
