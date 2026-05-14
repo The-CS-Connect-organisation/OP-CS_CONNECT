@@ -521,40 +521,42 @@ export const StudentDashboard = ({ user }) => {
         const list = annRes.value.announcements || annRes.value.items || [];
         setApiAnnouncements(list);
       }
-      if (ttRes.status === 'fulfilled') {
+if (ttRes.status === 'fulfilled') {
         const normalized = normalizeTimetableResponse(ttRes.value);
         if (normalized.length === 0) {
+          // Use user data from login - user.classroomId and user.classId are set by enrichUser in authController
+          const fallbackClassId = user.classroomId || user.classId || user.class ? `class-${(user.class?.split('-')[0]) || '10'}-${(user.class?.split('-')[1]?.toLowerCase()) || 'a'}` : 'class-10-a';
           const fallbackMock = [
-            { classId: user.class || '10A', day: 'Monday', period: '1', subject: 'Mathematics', teacherId: 'teacher-1', room: '101' },
-            { classId: user.class || '10A', day: 'Monday', period: '2', subject: 'Physics', teacherId: 'teacher-2', room: '102' },
-            { classId: user.class || '10A', day: 'Monday', period: 'Break', subject: '', isBreak: true },
-            { classId: user.class || '10A', day: 'Monday', period: '3', subject: 'Chemistry', teacherId: 'teacher-3', room: '103' },
-            { classId: user.class || '10A', day: 'Monday', period: 'Lunch', subject: '', isBreak: true },
-            { classId: user.class || '10A', day: 'Monday', period: '4', subject: 'English', teacherId: 'teacher-4', room: '104' },
-            { classId: user.class || '10A', day: 'Tuesday', period: '1', subject: 'Biology', teacherId: 'teacher-5', room: '105' },
-            { classId: user.class || '10A', day: 'Tuesday', period: '2', subject: 'Computer Science', teacherId: 'teacher-6', room: 'Lab 1' },
-            { classId: user.class || '10A', day: 'Tuesday', period: 'Break', subject: '', isBreak: true },
-            { classId: user.class || '10A', day: 'Tuesday', period: '3', subject: 'History', teacherId: 'teacher-7', room: '106' },
-            { classId: user.class || '10A', day: 'Tuesday', period: 'Lunch', subject: '', isBreak: true },
-            { classId: user.class || '10A', day: 'Tuesday', period: '4', subject: 'Mathematics', teacherId: 'teacher-1', room: '101' },
-            { classId: user.class || '10A', day: 'Wednesday', period: '1', subject: 'English', teacherId: 'teacher-4', room: '104' },
-            { classId: user.class || '10A', day: 'Wednesday', period: '2', subject: 'Geography', teacherId: 'teacher-8', room: '107' },
-            { classId: user.class || '10A', day: 'Wednesday', period: 'Break', subject: '', isBreak: true },
-            { classId: user.class || '10A', day: 'Wednesday', period: '3', subject: 'Physics', teacherId: 'teacher-2', room: '102' },
-            { classId: user.class || '10A', day: 'Wednesday', period: 'Lunch', subject: '', isBreak: true },
-            { classId: user.class || '10A', day: 'Wednesday', period: '4', subject: 'Physical Education', teacherId: 'teacher-9', room: 'Gym' },
-            { classId: user.class || '10A', day: 'Thursday', period: '1', subject: 'Chemistry', teacherId: 'teacher-3', room: '103' },
-            { classId: user.class || '10A', day: 'Thursday', period: '2', subject: 'Biology', teacherId: 'teacher-5', room: '105' },
-            { classId: user.class || '10A', day: 'Thursday', period: 'Break', subject: '', isBreak: true },
-            { classId: user.class || '10A', day: 'Thursday', period: '3', subject: 'Computer Science', teacherId: 'teacher-6', room: 'Lab 1' },
-            { classId: user.class || '10A', day: 'Thursday', period: 'Lunch', subject: '', isBreak: true },
-            { classId: user.class || '10A', day: 'Thursday', period: '4', subject: 'History', teacherId: 'teacher-7', room: '106' },
-            { classId: user.class || '10A', day: 'Friday', period: '1', subject: 'Mathematics', teacherId: 'teacher-1', room: '101' },
-            { classId: user.class || '10A', day: 'Friday', period: '2', subject: 'Physics', teacherId: 'teacher-2', room: '102' },
-            { classId: user.class || '10A', day: 'Friday', period: 'Break', subject: '', isBreak: true },
-            { classId: user.class || '10A', day: 'Friday', period: '3', subject: 'English', teacherId: 'teacher-4', room: '104' },
-            { classId: user.class || '10A', day: 'Friday', period: 'Lunch', subject: '', isBreak: true },
-            { classId: user.class || '10A', day: 'Friday', period: '4', subject: 'Geography', teacherId: 'teacher-8', room: '107' }
+            { classId: fallbackClassId, day: 'Monday', period: '1', subject: 'Mathematics', teacherId: 'teacher-1', room: '101' },
+            { classId: fallbackClassId, day: 'Monday', period: '2', subject: 'Physics', teacherId: 'teacher-2', room: '102' },
+            { classId: fallbackClassId, day: 'Monday', period: 'Break', subject: '', isBreak: true },
+            { classId: fallbackClassId, day: 'Monday', period: '3', subject: 'Chemistry', teacherId: 'teacher-3', room: '103' },
+            { classId: fallbackClassId, day: 'Monday', period: 'Lunch', subject: '', isBreak: true },
+            { classId: fallbackClassId, day: 'Monday', period: '4', subject: 'English', teacherId: 'teacher-4', room: '104' },
+            { classId: fallbackClassId, day: 'Tuesday', period: '1', subject: 'Biology', teacherId: 'teacher-5', room: '105' },
+            { classId: fallbackClassId, day: 'Tuesday', period: '2', subject: 'Computer Science', teacherId: 'teacher-6', room: 'Lab 1' },
+            { classId: fallbackClassId, day: 'Tuesday', period: 'Break', subject: '', isBreak: true },
+            { classId: fallbackClassId, day: 'Tuesday', period: '3', subject: 'History', teacherId: 'teacher-7', room: '106' },
+            { classId: fallbackClassId, day: 'Tuesday', period: 'Lunch', subject: '', isBreak: true },
+            { classId: fallbackClassId, day: 'Tuesday', period: '4', subject: 'Mathematics', teacherId: 'teacher-1', room: '101' },
+            { classId: fallbackClassId, day: 'Wednesday', period: '1', subject: 'English', teacherId: 'teacher-4', room: '104' },
+            { classId: fallbackClassId, day: 'Wednesday', period: '2', subject: 'Geography', teacherId: 'teacher-8', room: '107' },
+            { classId: fallbackClassId, day: 'Wednesday', period: 'Break', subject: '', isBreak: true },
+            { classId: fallbackClassId, day: 'Wednesday', period: '3', subject: 'Physics', teacherId: 'teacher-2', room: '102' },
+            { classId: fallbackClassId, day: 'Wednesday', period: 'Lunch', subject: '', isBreak: true },
+            { classId: fallbackClassId, day: 'Wednesday', period: '4', subject: 'Physical Education', teacherId: 'teacher-9', room: 'Gym' },
+            { classId: fallbackClassId, day: 'Thursday', period: '1', subject: 'Chemistry', teacherId: 'teacher-3', room: '103' },
+            { classId: fallbackClassId, day: 'Thursday', period: '2', subject: 'Biology', teacherId: 'teacher-5', room: '105' },
+            { classId: fallbackClassId, day: 'Thursday', period: 'Break', subject: '', isBreak: true },
+            { classId: fallbackClassId, day: 'Thursday', period: '3', subject: 'Computer Science', teacherId: 'teacher-6', room: 'Lab 1' },
+            { classId: fallbackClassId, day: 'Thursday', period: 'Lunch', subject: '', isBreak: true },
+            { classId: fallbackClassId, day: 'Thursday', period: '4', subject: 'History', teacherId: 'teacher-7', room: '106' },
+            { classId: fallbackClassId, day: 'Friday', period: '1', subject: 'Mathematics', teacherId: 'teacher-1', room: '101' },
+            { classId: fallbackClassId, day: 'Friday', period: '2', subject: 'Physics', teacherId: 'teacher-2', room: '102' },
+            { classId: fallbackClassId, day: 'Friday', period: 'Break', subject: '', isBreak: true },
+            { classId: fallbackClassId, day: 'Friday', period: '3', subject: 'English', teacherId: 'teacher-4', room: '104' },
+            { classId: fallbackClassId, day: 'Friday', period: 'Lunch', subject: '', isBreak: true },
+            { classId: fallbackClassId, day: 'Friday', period: '4', subject: 'Geography', teacherId: 'teacher-8', room: '107' }
           ];
           setApiTimetableEntries(normalizeTimetableResponse({ entries: fallbackMock }));
           setToStorage(KEYS.TIMETABLE, normalizeTimetableResponse({ entries: fallbackMock }));
@@ -586,7 +588,7 @@ export const StudentDashboard = ({ user }) => {
   const [focusMode, setFocusMode] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
-  const myAssignments = safeAssignments.filter(a => !a.class_id || a.class_id === (user.classroomId || profileData?.class_id) || a.class === (user.class || profileData?.class));
+  const myAssignments = safeAssignments.filter(a => !a.class_id || a.class_id === effectiveClassId || a.class_id === (user.classroomId || profileData?.classId));
   const pendingAssignments = myAssignments.filter(a => {
     const sub = safeSubmissions.find((s) => s.assignmentId === a.id && s.studentId === user.id);
     return !sub || (sub.status !== 'submitted' && sub.status !== 'graded');
@@ -609,7 +611,14 @@ export const StudentDashboard = ({ user }) => {
   const attendanceRate = attSummaryRate !== null ? attSummaryRate : (profileData?.attendancePercent || computedAttendance);
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
-  const todaySchedule = safeTimetable[user.class]?.[today] || safeTimetable[user.classroomId]?.[today] || safeTimetable[profileData?.class]?.[today] || safeTimetable[profileData?.class_id]?.[today] || [];
+  const normalizeClassId = (id) => {
+    if (!id) return '';
+    const normalized = String(id).replace(/^(\d+)-([A-Z])$/i, 'class-$1-$2').toLowerCase();
+    return normalized === String(id).toLowerCase() ? id : normalized;
+  };
+  const rawClassId = user.classroomId || profileData?.classId || user.class;
+  const effectiveClassId = normalizeClassId(rawClassId) || '';
+  const todaySchedule = safeTimetable[effectiveClassId]?.[today] || [];
 
   // Dynamic Data Calculations — use computed values, no useStore needed
   const xpData = { xp: 0, level: 1 };
@@ -678,9 +687,9 @@ export const StudentDashboard = ({ user }) => {
   const goals = goalsData || [];
 
   const calendarEvents = useMemo(() => {
-    const myAssignments = safeAssignments.filter((a) => a.class === (user.class || profileData?.class));
+    const myAssignments = safeAssignments.filter((a) => a.class_id === effectiveClassId || a.class === (user.classroomId || profileData?.classId));
     return calendarService.buildEvents({ user, assignments: myAssignments, exams: safeExams, timetable: safeTimetable, announcements: safeAnnouncements });
-  }, [safeAssignments, safeExams, safeTimetable, safeAnnouncements, user, profileData]);
+  }, [safeAssignments, safeExams, safeTimetable, safeAnnouncements, user, profileData, effectiveClassId]);
 
   const upcoming = useMemo(() => calendarService.nextUpcoming({ events: calendarEvents, limit: 3 }), [calendarEvents]);
 
