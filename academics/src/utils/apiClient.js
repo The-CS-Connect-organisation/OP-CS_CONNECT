@@ -1,7 +1,7 @@
 // API base URL from environment (for GitHub Pages deployment, .env values work at build time)
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://op-csconnect-backend-production.up.railway.app/api';
 
-// Keep-alive ping every 10 minutes to prevent Render free tier cold starts
+// Keep-alive ping every 10 minutes to prevent cold starts
 if (typeof window !== 'undefined') {
   const ping = () => fetch(`${API_BASE_URL}/health`, { method: 'GET' }).catch(() => {});
   ping(); // ping on load
