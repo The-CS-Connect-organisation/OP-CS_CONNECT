@@ -1,0 +1,14 @@
+{
+  "background_color": "#ffffff",
+  "description": "The unified entry point for CThe official app for CS School Sync, designed to streamline school connectivity, manage resources, and keep students and organization members aligned.\nornerstone SchoolSync — Academic and Management portals.",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "CS School Sync",
+  "orientation": "portrait",
+  "scope": "/",
+  "short_name": "School Sync",
+  "start_url": "https://the-cs-connect-organisation.github.io/OP-CS_CONNECT/",
+  "theme_color": "#ffffff",
+  "id": "io.github.the-cs-connect-organisation.csschoolsync",
+  "lang": "en"
+}
