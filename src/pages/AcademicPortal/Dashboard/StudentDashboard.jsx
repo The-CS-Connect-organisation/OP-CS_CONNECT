@@ -265,7 +265,6 @@ const CalendarDay = ({ day, events }) => {
 export const StudentDashboard = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [assignments, setAssignments] = useState([]);
-  const [submissions, setSubmissions] = useState([]);
   const [marks, setMarks] = useState([]);
   const [attendance, setAttendance] = useState([]);
   const [timetable, setTimetable] = useState([]);
@@ -297,37 +296,44 @@ export const StudentDashboard = ({ user }) => {
           studentApi.getGrades(),
           studentApi.getAttendance(),
           apiRequest('/school/announcements'),
-          apiRequest('/notifications'),
-          apiRequest(`/school/students/${user.id}/profile`)
+          studentApi.getNotifications(),
+          studentApi.getExpandedProfile(user.id)
         ]);
 
-        // Handle assignments
-        if (assignmentsRes.status === 'fulfilled' && assignmentsRes.value?.items) {
-          setAssignments(assignmentsRes.value.items);
+        // Handle assignments — backend returns { assignments: [...], items: [...] }
+        if (assignmentsRes.status === 'fulfilled') {
+          const val = assignmentsRes.value;
+          setAssignments(val?.assignments ?? val?.items ?? []);
         }
 
-        // Handle marks
-        if (marksRes.status === 'fulfilled' && marksRes.value?.marks) {
-          setMarks(marksRes.value.marks);
+        // Handle marks — backend returns { marks: [...], items: [...] }
+        if (marksRes.status === 'fulfilled') {
+          const val = marksRes.value;
+          setMarks(val?.marks ?? val?.items ?? []);
         }
 
-        // Handle attendance
-        if (attendanceRes.status === 'fulfilled' && attendanceRes.value?.records) {
-          setAttendance(attendanceRes.value.records);
+        // Handle attendance — backend returns { records: [...], items: [...] }
+        if (attendanceRes.status === 'fulfilled') {
+          const val = attendanceRes.value;
+          setAttendance(val?.records ?? val?.items ?? []);
         }
 
-        // Handle announcements
-        if (announcementsRes.status === 'fulfilled' && announcementsRes.value?.items) {
-          setAnnouncements(announcementsRes.value.items);
+        // Handle announcements — backend returns { items: [...] }
+        if (announcementsRes.status === 'fulfilled') {
+          const val = announcementsRes.value;
+          setAnnouncements(val?.items ?? val?.announcements ?? []);
         }
 
-        // Handle notifications
-        if (notificationsRes.status === 'fulfilled' && notificationsRes.value?.items) {
-          setNotifications(notificationsRes.value.items.filter(n => n.userId === user.id));
+        // Handle notifications — backend returns { notifications: [...] }
+        if (notificationsRes.status === 'fulfilled') {
+          const val = notificationsRes.value;
+          setNotifications((val?.notifications ?? []).filter(n =>
+            (n.user_id === user.id) || (n.userId === user.id)
+          ));
         }
 
         // Fetch timetable for student's class
-        const userClass = profileRes.value?.profile?.class || '10-A';
+        const userClass = profileRes.value?.profile?.class || user?.class || '10-A';
         try {
           const timetableRes = await apiRequest(`/school/timetables?classId=${userClass}`);
           if (timetableRes?.entries) {
@@ -335,17 +341,6 @@ export const StudentDashboard = ({ user }) => {
           }
         } catch (ttErr) {
           console.log('Timetable fetch failed, using empty', ttErr);
-        }
-
-        // Fetch submissions
-        try {
-          const subsRes = await apiRequest('/school/assignments');
-          if (subsRes?.items) {
-            // Filter submissions for this student
-            setSubmissions(subsRes.items.filter(a => a.student_id === user.id));
-          }
-        } catch (subErr) {
-          console.log('Submissions fetch failed', subErr);
         }
 
         // Fetch goals
@@ -370,14 +365,12 @@ export const StudentDashboard = ({ user }) => {
     fetchAllData();
   }, [user?.id]);
 
-  // Filter data for current student
-  const myAssignments = assignments.filter(a =>
-    a.class_name === user?.class || a.class === user?.class
-  );
+  // Backend /student/assignments already filters by student's class
+  const myAssignments = assignments;
 
+  // Backend enriches assignments with submission data
   const pendingAssignments = myAssignments.filter(a => {
-    const sub = submissions.find(s => s.assignment_id === a.id);
-    return !sub || (sub.status !== 'graded');
+    return !a.submission || a.status === 'pending' || a.status === 'overdue';
   });
 
   const myMarks = marks.filter(m => m.student_id === user?.id);

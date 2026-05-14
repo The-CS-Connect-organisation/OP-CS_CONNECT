@@ -4,6 +4,8 @@
  * Abstracts all HTTP calls to backend API
  */
 
+import { normalizeAssignment, normalizeMark, normalizeAttendanceRecord } from '../utils/normalizeData';
+
 // Hardcoded for GitHub Pages deployment - .env files don't work on static hosting
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://op-cs-connect-backend-vym7.onrender.com/api';
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
@@ -82,7 +84,7 @@ async function makeRequest(method, endpoint, data = null, options = {}) {
     const cached = getCachedData(cacheKeyToUse);
     if (cached) {
       console.log(`[Cache Hit] ${endpoint}`);
-      return { success: true, data: cached, fromCache: true };
+      return cached;
     }
   }
 
@@ -94,8 +96,8 @@ async function makeRequest(method, endpoint, data = null, options = {}) {
   const requestPromise = performRequest(method, url, data, retries, timeout)
     .then(response => {
       // Cache successful GET responses
-      if (method === 'GET' && useCache && response.success) {
-        setCachedData(cacheKeyToUse, response.data);
+      if (method === 'GET' && useCache && response) {
+        setCachedData(cacheKeyToUse, response);
       }
 
       // Clear related caches on mutations
@@ -160,7 +162,7 @@ async function performRequest(method, url, data, retries, timeout) {
       }
 
       const responseData = await response.json();
-      return { success: true, data: responseData };
+      return responseData;
     } catch (error) {
       lastError = error;
 
@@ -475,7 +477,14 @@ export const studentApi = {
     let query = '?';
     if (subject) query += `subject=${subject}&`;
     if (term) query += `term=${term}`;
-    return makeRequest('GET', `/student/grades${query}`, null, { cacheKey: `student:grades:${subject}:${term}` });
+    const res = await makeRequest('GET', `/student/grades${query}`, null, { cacheKey: `student:grades:${subject}:${term}` });
+    if (res?.marks) {
+      res.marks = res.marks.map(normalizeMark);
+    }
+    if (res?.items) {
+      res.items = res.items.map(normalizeMark);
+    }
+    return res;
   },
 
   // Attendance
@@ -484,13 +493,27 @@ export const studentApi = {
     if (startDate) query += `startDate=${startDate}&`;
     if (endDate) query += `endDate=${endDate}&`;
     if (subject) query += `subject=${subject}`;
-    return makeRequest('GET', `/student/attendance${query}`, null, { cacheKey: 'student:attendance' });
+    const res = await makeRequest('GET', `/student/attendance${query}`, null, { cacheKey: 'student:attendance' });
+    if (res?.records) {
+      res.records = res.records.map(normalizeAttendanceRecord);
+    }
+    if (res?.items) {
+      res.items = res.items.map(normalizeAttendanceRecord);
+    }
+    return res;
   },
 
   // Assignments
   async getAssignments(status = null) {
     const query = status ? `?status=${status}` : '';
-    return makeRequest('GET', `/student/assignments${query}`, null, { cacheKey: `student:assignments:${status}` });
+    const res = await makeRequest('GET', `/student/assignments${query}`, null, { cacheKey: `student:assignments:${status}` });
+    if (res?.assignments) {
+      res.assignments = res.assignments.map(normalizeAssignment);
+    }
+    if (res?.items) {
+      res.items = res.items.map(normalizeAssignment);
+    }
+    return res;
   },
 
   async submitAssignment(assignmentId, submission) {
@@ -640,8 +663,8 @@ export const authApi = {
       password,
     }, { useCache: false });
 
-    if (response.success && response.data?.token) {
-      localStorage.setItem('sms_auth_token', response.data.token);
+    if (response?.success && response?.token) {
+      localStorage.setItem('sms_auth_token', response.token);
     }
 
     return response;
@@ -652,8 +675,8 @@ export const authApi = {
       useCache: false,
     });
 
-    if (response.success && response.data?.token) {
-      localStorage.setItem('sms_auth_token', response.data.token);
+    if (response?.success && response?.token) {
+      localStorage.setItem('sms_auth_token', response.token);
     }
 
     return response;

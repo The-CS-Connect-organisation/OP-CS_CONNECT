@@ -21,7 +21,7 @@ export const Attendance = ({ user }) => {
     (async () => {
       try {
         const res = await studentApi.getAttendance();
-        if (alive) setApiAttendance(res?.data?.records ?? res?.records ?? []);
+        if (alive) setApiAttendance(res?.records ?? res?.items ?? []);
       } catch (e) {
         console.error('Failed to load attendance:', e);
       }

@@ -110,11 +110,10 @@ export const TeacherDashboard = ({ user, addToast }) => {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [assignmentsRes, announcementsRes, classesRes, submissionsRes] = await Promise.allSettled([
-        apiRequest('/school/assignments'),
+      const [assignmentsRes, announcementsRes, classesRes] = await Promise.allSettled([
+        apiRequest(`/school/assignments?teacherId=${user.id}`),
         apiRequest('/school/announcements'),
         apiRequest('/school/classes'),
-        apiRequest('/school/submissions'),
       ]);
 
       const assignmentList = assignmentsRes.status === 'fulfilled'
@@ -122,31 +121,22 @@ export const TeacherDashboard = ({ user, addToast }) => {
         : [];
       const myAssignments = assignmentList.filter(a => a.teacher_id === user.id || a.teacherId === user.id);
 
-      const submissions = submissionsRes.status === 'fulfilled'
-        ? (submissionsRes.value?.submissions ?? submissionsRes.value?.items ?? [])
-        : [];
-
-      const mySubmissionCount = submissions.filter(s =>
-        myAssignments.some(a => a.id === s.assignment_id || a.id === s.assignmentId)
-      ).length;
-
-      const gradedCount = submissions.filter(s =>
-        s.marks != null && myAssignments.some(a => a.id === s.assignment_id || a.id === s.assignmentId)
-      ).length;
+      // Use submission_count from backend-enriched assignments
+      const mySubmissionCount = myAssignments.reduce((sum, a) => sum + (a.submission_count || 0), 0);
 
       const classes = classesRes.status === 'fulfilled'
         ? (classesRes.value?.classRooms ?? classesRes.value?.items ?? classesRes.value ?? [])
         : [];
 
       const notifs = announcementsRes.status === 'fulfilled'
-        ? (announcementsRes.value?.announcements ?? [])
+        ? (announcementsRes.value?.items ?? announcementsRes.value?.announcements ?? [])
         : [];
 
       setOverview({
         totalClasses: classes.length,
         totalStudents: 0,
         todayAttendance: null,
-        pendingGrading: mySubmissionCount - gradedCount,
+        pendingGrading: mySubmissionCount,
         unreadNotifications: notifs.filter(n => !n.read).length,
       });
       setAssignments(myAssignments.slice(0, 5));
@@ -211,7 +201,7 @@ export const TeacherDashboard = ({ user, addToast }) => {
             </h1>
             <div className="flex flex-wrap gap-2 mt-4">
               {[`Department: ${user.department || 'N/A'}`, `Subjects: ${user.subjects?.join(', ') || 'N/A'}`].map((tag) => (
-                <span key={tag} className="px-3 py-1.5 rounded-lg text-xs font-medium bg-gray-50 text-gray-600 border border-gray-200">
+                <span key={tag} className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-50 text-gray-600 border border-gray-200">
                   {tag}
                 </span>
               ))}

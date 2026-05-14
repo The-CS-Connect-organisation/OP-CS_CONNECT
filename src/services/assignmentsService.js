@@ -1,5 +1,6 @@
 import { getDataMode, DATA_MODES } from '../config/dataMode';
 import { apiRequest } from './apiClient';
+import { normalizeAssignment } from '../utils/normalizeData';
 import { localAssignmentsRepo, localSubmissionsRepo, localAuditRepo } from './localRepo';
 import { notificationsService } from './notificationsService';
 
@@ -11,9 +12,17 @@ export const assignmentsService = {
   async listForUser(user) {
     if (!user) return [];
     if (getDataMode() === DATA_MODES.REMOTE_API) {
-      // Use student-specific endpoint that filters by class and enriches with submissions
+      if (user.role === 'teacher') {
+        const payload = await apiRequest('/school/assignments?teacherId=' + user.id, { method: 'GET' });
+        return (payload?.items ?? payload?.assignments ?? []).map(normalizeAssignment);
+      }
+      if (user.role === 'admin') {
+        const payload = await apiRequest('/school/assignments', { method: 'GET' });
+        return (payload?.items ?? payload?.assignments ?? []).map(normalizeAssignment);
+      }
+      // student (default)
       const payload = await apiRequest('/student/assignments', { method: 'GET' });
-      return payload?.assignments ?? payload?.items ?? payload ?? [];
+      return (payload?.assignments ?? payload?.items ?? []).map(normalizeAssignment);
     }
 
     const all = localAssignmentsRepo.list();

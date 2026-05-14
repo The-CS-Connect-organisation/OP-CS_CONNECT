@@ -42,7 +42,8 @@ export const Assignments = ({ user }) => {
     };
   }, [user?.id]);
 
-  const myAssignments = assignments.filter((a) => normalizeClass(a.class) === normalizeClass(user.class));
+  // Backend /student/assignments already filters by student's class
+  const myAssignments = assignments;
 
   const filtered = useMemo(() => {
     return myAssignments.filter(a => {

@@ -56,7 +56,7 @@ export const GradeSubmissions = ({ user, addToast }) => {
 
         if (!alive) return;
 
-        const tData = templatesRes?.data?.data ?? templatesRes?.data ?? [];
+        const tData = templatesRes?.templates ?? templatesRes?.items ?? templatesRes?.data ?? [];
         setTemplates(Array.isArray(tData) ? tData : []);
       } finally {
         if (alive) setLoading(false);
