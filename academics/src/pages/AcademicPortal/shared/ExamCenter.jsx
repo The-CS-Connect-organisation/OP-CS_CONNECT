@@ -1,18 +1,17 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Award, FileUp, Plus, Upload, Brain, Play, CheckCircle2, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
+import { request } from '../../../utils/apiClient';
 import { DropzoneUpload } from '../../../components/ui/DropzoneUpload';
 import { notificationsService } from '../../../services/notificationsService';
 import { localAuditRepo } from '../../../services/localRepo';
 
 export const ExamCenter = ({ user, addToast }) => {
-  const { data: exams, add } = useStore(KEYS.EXAMS, []);
-  const { data: marks, add: addMark } = useStore(KEYS.MARKS, []);
-  const { data: users } = useStore(KEYS.USERS, []);
-  const { data: questionBank, setData: setQuestionBank } = useStore('sms_question_bank', []);
-  const { data: attempts, setData: setAttempts } = useStore('sms_exam_attempts', []);
+  const [exams, setExams] = useState([]);
+  const [marks, setMarks] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [questionBank, setQuestionBank] = useState([]);
+  const [attempts, setAttempts] = useState([]);
 
   const [form, setForm] = useState({ name: '', subject: '', class: '10-A', date: '', maxMarks: 100, paperUrl: '' });
   const [selectedExamId, setSelectedExamId] = useState('');
@@ -34,6 +33,21 @@ export const ExamCenter = ({ user, addToast }) => {
   const [activeQuestions, setActiveQuestions] = useState([]); // resolved question objects
   const [activeIdx, setActiveIdx] = useState(0);
 
+  useEffect(() => {
+    Promise.allSettled([
+      request('/exams'),
+      request('/school/users?role=student'),
+      request('/exams/questions'),
+      request('/exams/attempts'),
+    ]).then(([eRes, uRes, qRes, aRes]) => {
+      if (eRes.status === 'fulfilled') setExams(eRes.value?.items || eRes.value?.exams || []);
+      if (uRes.status === 'fulfilled') setUsers(uRes.value?.items || uRes.value?.users || []);
+      if (qRes.status === 'fulfilled') setQuestionBank(qRes.value?.items || qRes.value?.questions || []);
+      if (aRes.status === 'fulfilled') setAttempts(aRes.value?.items || aRes.value?.attempts || []);
+    });
+    request(`/student/grades`).then(r => setMarks(r?.grades || r?.marks || [])).catch(() => {});
+  }, []);
+
   const students = useMemo(() => users.filter((u) => u.role === 'student'), [users]);
   const visibleExams = useMemo(() => {
     if (user.role === 'student') return exams.filter((e) => e.class === user.class || !e.class);
@@ -45,12 +59,20 @@ export const ExamCenter = ({ user, addToast }) => {
     return (attempts || []).filter((a) => a.studentId === user.id).sort((a, b) => new Date(b.startedAt) - new Date(a.startedAt));
   }, [attempts, user]);
 
-  const createExam = () => {
+  const createExam = async () => {
     if (!form.name || !form.subject || !form.date) return;
-    const exam = { id: `exam-${Date.now()}`, ...form, createdBy: user.id, createdAt: new Date().toISOString() };
-    add(exam);
-    addToast('Exam created', 'success');
-    setForm({ name: '', subject: '', class: '10-A', date: '', maxMarks: 100, paperUrl: '' });
+    try {
+      const res = await request('/exams', {
+        method: 'POST',
+        body: JSON.stringify({ name: form.name, subject: form.subject, class: form.class, date: form.date, maxMarks: Number(form.maxMarks) }),
+      });
+      const exam = res.exam || { id: `exam-${Date.now()}`, ...form, createdBy: user.id, createdAt: new Date().toISOString() };
+      setExams(prev => [exam, ...prev]);
+      addToast('Exam created', 'success');
+      setForm({ name: '', subject: '', class: '10-A', date: '', maxMarks: 100, paperUrl: '' });
+    } catch {
+      addToast?.('Failed to create exam', 'error');
+    }
 
     // Basic in-app notification for students in that class
     users
@@ -67,11 +89,11 @@ export const ExamCenter = ({ user, addToast }) => {
     localAuditRepo.append({ actorId: user.id, actorEmail: user.email, action: 'exams.create', targetId: exam.id, mode: 'LOCAL_DEMO' });
   };
 
-  const submitMarks = () => {
+  const submitMarks = async () => {
     const exam = exams.find((e) => e.id === selectedExamId);
     const student = users.find((u) => u.id === selectedStudentId);
     if (!exam || !student || score === '') return;
-    addMark({
+    const mark = {
       id: `mk-${Date.now()}`,
       studentId: student.id,
       studentName: student.name,
@@ -82,12 +104,16 @@ export const ExamCenter = ({ user, addToast }) => {
       total: Number(exam.maxMarks || 100),
       grade: Number(score) >= 90 ? 'A' : Number(score) >= 75 ? 'B' : Number(score) >= 60 ? 'C' : Number(score) >= 45 ? 'D' : 'F',
       date: new Date().toISOString().split('T')[0],
-    });
+    };
+    try {
+      await request('/school/marks', { method: 'POST', body: JSON.stringify({ studentId: student.id, subject: exam.subject, score: Number(score), examType: exam.name, classId: exam.class }) });
+    } catch {}
+    setMarks(prev => [mark, ...prev]);
     addToast('Marks saved', 'success');
     setScore('');
   };
 
-  const addQuestion = () => {
+  const addQuestion = async () => {
     if (!qForm.subject || !qForm.text || qForm.options.some((o) => !o.trim())) {
       addToast?.('Fill question, subject, and all options', 'error');
       return;
@@ -104,7 +130,10 @@ export const ExamCenter = ({ user, addToast }) => {
       createdAt: new Date().toISOString(),
       createdBy: user.id,
     };
-    setQuestionBank([q, ...(Array.isArray(questionBank) ? questionBank : [])]);
+    try {
+      await request('/exams/questions', { method: 'POST', body: JSON.stringify(q) });
+    } catch {}
+    setQuestionBank(prev => [q, ...(Array.isArray(prev) ? prev : [])]);
     addToast?.('Question added to bank', 'success');
     setQForm((d) => ({ ...d, subject: d.subject, text: '', marks: 1, options: ['', '', '', ''], correctIndex: 0 }));
     localAuditRepo.append({ actorId: user.id, actorEmail: user.email, action: 'questions.create', targetId: q.id, mode: 'LOCAL_DEMO' });
@@ -160,7 +189,7 @@ export const ExamCenter = ({ user, addToast }) => {
       finishedAt: new Date().toISOString(),
       score: scoreSum,
     };
-    setAttempts([finished, ...(Array.isArray(attempts) ? attempts : [])]);
+    setAttempts(prev => [finished, ...(Array.isArray(prev) ? prev : [])]);
     setActiveAttempt(null);
     setActiveQuestions([]);
     setActiveIdx(0);

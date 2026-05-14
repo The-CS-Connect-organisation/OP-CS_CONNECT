@@ -9,7 +9,6 @@ import { Button } from '../../../../components/ui/Button';
 import { Card } from '../../../../components/ui/Card';
 import { cloudinaryService } from '../../../../services/cloudinaryService';
 import { studentApi, apiUtils } from '../../../../services/apiDataLayer';
-import { getFromStorage, setToStorage } from '../../../../data/schema';
 import { useSound } from '../../../../hooks/useSound';
 
 const STORAGE_KEY = 'sms_accolades';
@@ -95,31 +94,20 @@ export const Accolades = ({ user }) => {
     attachmentLink: '',
   });
 
-  // Load accolades from localStorage and backend
+  // Load accolades from backend
   const loadAccolades = useCallback(async () => {
-    // Try backend first
-    let backendAccolades = [];
     try {
       const res = await studentApi.getAchievements();
       if (res?.success && Array.isArray(res.data)) {
-        backendAccolades = res.data;
+        const backendAccolades = [...res.data];
+        // Sort by date
+        backendAccolades.sort((a, b) => new Date(b.dateAchieved || b.createdAt) - new Date(a.dateAchieved || a.createdAt));
+        setAccolades(backendAccolades);
       }
     } catch (e) {
-      // Backend not available, fall back to localStorage
+      console.error('[Accolades] Failed to fetch accolades:', e);
+      setAccolades([]);
     }
-
-    // Merge with localStorage
-    const localAccolades = getFromStorage(STORAGE_KEY, []);
-    const combined = [...backendAccolades];
-    localAccolades.forEach(local => {
-      if (!combined.find(c => c.id === local.id)) {
-        combined.push(local);
-      }
-    });
-
-    // Sort by date
-    combined.sort((a, b) => new Date(b.dateAchieved || b.createdAt) - new Date(a.dateAchieved || a.createdAt));
-    setAccolades(combined);
   }, []);
 
   useEffect(() => {
@@ -181,15 +169,14 @@ export const Accolades = ({ user }) => {
       updatedAt: new Date().toISOString(),
     };
 
-    // Try backend first
+    // Try backend
     try {
       const res = await studentApi.createAchievement(newAccolade);
       if (!res?.success) throw new Error('Backend failed');
     } catch (e) {
-      // Fall back to localStorage
-      const existing = getFromStorage(STORAGE_KEY, []);
-      existing.push(newAccolade);
-      setToStorage(STORAGE_KEY, existing);
+      console.error('[Accolades] Failed to save accolade:', e);
+      alert('Failed to save achievement. Please try again.');
+      return;
     }
 
     // Reset form

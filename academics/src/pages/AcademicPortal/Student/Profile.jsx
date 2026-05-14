@@ -2,11 +2,10 @@ import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { User, Mail, Phone, Calendar, MapPin, BookOpen, Award, TrendingUp, Activity, ShieldCheck, Zap, Hash, Terminal } from 'lucide-react';
 import { Card } from '../../../components/ui/Card';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
 import { useSound } from '../../../hooks/useSound';
 import { studentApi } from '../../../services/apiDataLayer';
 import { getDataMode, DATA_MODES } from '../../../config/dataMode';
+import { request } from '../../../utils/apiClient';
 
 const Badge = ({ children, color = 'zinc', className = '' }) => (
   <span className={`px-2 py-1 rounded border font-mono text-[10px] font-semibold ${color === 'rose' ? 'bg-rose-950/30 border-rose-900 text-[var(--text-muted)]' : 'bg-[var(--bg-elevated)] border-[var(--border-default)] text-[var(--text-muted)]'} ${className}`}>
@@ -15,10 +14,10 @@ const Badge = ({ children, color = 'zinc', className = '' }) => (
 );
 
 export const Profile = ({ user }) => {
-  const { data: marks } = useStore(KEYS.MARKS, []);
-  const { data: attendance } = useStore(KEYS.ATTENDANCE, []);
   const { playClick, playBlip } = useSound();
   const [apiProfile, setApiProfile] = useState(null);
+  const [marks, setMarks] = useState([]);
+  const [attendance, setAttendance] = useState([]);
 
   useEffect(() => {
     if (getDataMode() !== DATA_MODES.REMOTE_API) return;
@@ -32,6 +31,24 @@ export const Profile = ({ user }) => {
       }
     })();
     return () => { alive = false; };
+  }, [user?.id]);
+
+  // Load marks and attendance from API
+  useEffect(() => {
+    if (!user?.id) return;
+    Promise.allSettled([
+      request('/student/grades'),
+      request('/student/attendance'),
+    ]).then(([marksRes, attRes]) => {
+      if (marksRes.status === 'fulfilled') {
+        const raw = marksRes.value?.marks || marksRes.value?.items || [];
+        setMarks(Array.isArray(raw) ? raw : []);
+      }
+      if (attRes.status === 'fulfilled') {
+        const raw = attRes.value?.records || attRes.value?.items || [];
+        setAttendance(Array.isArray(raw) ? raw : []);
+      }
+    }).catch(() => {});
   }, [user?.id]);
 
   // Merge API profile data with user object

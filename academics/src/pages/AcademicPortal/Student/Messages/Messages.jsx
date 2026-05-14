@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { request } from '../../../../utils/apiClient';
 import { getSocket } from '../../../../utils/socketClient';
-import { getFromStorage, setToStorage } from '../../../../data/schema';
 import { isStreamChatAvailable, startStreamCall } from '../../../../services/streamChatService';
 
 // ── Role colours ──────────────────────────────────────────────────────────────
@@ -26,6 +25,14 @@ const ROLE_COLOR = {
   driver:  '#ef4444',
 };
 const rc = (role) => ROLE_COLOR[role] || '#6b7280';
+
+// Meeting invites storage keys
+const loadMeetingInvites = () => {
+  try { return JSON.parse(localStorage.getItem('sms_meeting_invites') || '[]'); } catch { return []; }
+};
+const saveMeetingInvites = (invites) => {
+  localStorage.setItem('sms_meeting_invites', JSON.stringify(invites));
+};
 
 // ── Relative time ─────────────────────────────────────────────────────────────
 const relTime = (ts) => {
@@ -79,10 +86,6 @@ const Avatar = ({ user, size = 44, online = false }) => (
   </div>
 );
 
-// ── Meeting invite storage helpers ────────────────────────────────────────────
-const loadMeetingInvites = () => getFromStorage('sms_meeting_invites', []);
-const saveMeetingInvites = (invites) => setToStorage('sms_meeting_invites', invites);
-
 // ── Main Component ────────────────────────────────────────────────────────────
 export const Messages = ({ user, addToast }) => {
   const [allUsers, setAllUsers]         = useState([]);
@@ -127,13 +130,13 @@ export const Messages = ({ user, addToast }) => {
   // ── Load conversations from localStorage ───────────────────────────────────
   useEffect(() => {
     if (!user?.id) return;
-    const stored = getFromStorage(`sms_conversations_${user.id}`, []);
+    const stored = JSON.parse(localStorage.getItem(`sms_conversations_${user.id}`) || '[]');
     setConversations(stored);
   }, [user?.id]);
 
   // ── Save conversations ──────────────────────────────────────────────────────
   const saveConversations = useCallback((convs) => {
-    setToStorage(`sms_conversations_${user.id}`, convs);
+    localStorage.setItem(`sms_conversations_${user.id}`, JSON.stringify(convs));
     setConversations(convs);
   }, [user?.id]);
 
@@ -344,21 +347,20 @@ export const Messages = ({ user, addToast }) => {
     if (action === 'accepted') {
       const invite = invites.find(inv => inv.id === inviteId);
       if (invite) {
-        // Add meeting event to calendar
-        const calEvents = getFromStorage('sms_calendar_events', []);
+        const calEvents = JSON.parse(localStorage.getItem('sms_calendar_events') || '[]');
         const newEvent = {
           id: `meeting-${Date.now()}`,
           title: invite.title,
           type: 'meeting',
           date: invite.date,
           time: invite.time,
-          endTime: invite.duration ? `${parseInt(invite.time.split(':')[0]) + Math.floor(invite.duration / 60)}:${invite.time.split(':')[1]}` : null,
-          subject: `${invite.meetingType} with ${invite.fromUserName}`,
+          endTime: invite.duration ? `${parseInt(String(invite.time || '09:00').split(':')[0]) + Math.floor(invite.duration / 60)}:00` : null,
+          subject: `${invite.meetingType || 'Meeting'} with ${invite.fromUserName || 'Unknown'}`,
           meetLink: invite.meetLink || null,
           inviteId: invite.id,
         };
         calEvents.push(newEvent);
-        setToStorage('sms_calendar_events', calEvents);
+        localStorage.setItem('sms_calendar_events', JSON.stringify(calEvents));
         addToast?.(`Meeting "${invite.title}" added to calendar`, 'success');
       }
     } else {

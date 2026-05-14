@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  BookOpen, 
-  Users, 
-  Search, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Download, 
-  Calendar, 
-  Clock, 
-  CheckCircle, 
+import {
+  BookOpen,
+  Users,
+  Search,
+  Plus,
+  Edit,
+  Trash2,
+  Download,
+  Calendar,
+  Clock,
+  CheckCircle,
   XCircle,
   UserCheck,
   Tag,
@@ -18,8 +18,7 @@ import {
   Printer,
   QrCode
 } from 'lucide-react';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
+import { request } from '../../../utils/apiClient';
 
 const BookCard = ({ book, onEdit, onDelete, onIssue }) => {
   const statusConfig = {
@@ -212,9 +211,21 @@ const ReturnForm = ({ book, onSubmit, onCancel }) => {
 };
 
 export const LibrarianSystem = ({ user }) => {
-  const { data: books, create: createBook, update: updateBook, remove: deleteBook } = useStore(KEYS.LIBRARY_BOOKS, []);
-  const { data: students } = useStore(KEYS.USERS, []);
-  const { data: transactions, create: createTransaction } = useStore(KEYS.LIBRARY_TRANSACTIONS, []);
+  const [books, setBooks] = useState([]);
+  const [students, setStudents] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+
+  useEffect(() => {
+    Promise.allSettled([
+      request('/school/library/books'),
+      request('/school/users?role=student'),
+      request('/school/library/transactions'),
+    ]).then(([bRes, sRes, tRes]) => {
+      if (bRes.status === 'fulfilled') setBooks(bRes.value?.books || []);
+      if (sRes.status === 'fulfilled') setStudents(sRes.value?.items || sRes.value?.users || []);
+      if (tRes.status === 'fulfilled') setTransactions(tRes.value?.transactions || []);
+    });
+  }, []);
   
   const [activeTab, setActiveTab] = useState('books');
   const [search, setSearch] = useState('');
@@ -237,9 +248,7 @@ export const LibrarianSystem = ({ user }) => {
   const handleAddBook = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    
-    const book = {
-      id: Date.now().toString(),
+    const bookData = {
       title: formData.get('title'),
       author: formData.get('author'),
       isbn: formData.get('isbn'),
@@ -247,10 +256,11 @@ export const LibrarianSystem = ({ user }) => {
       category: formData.get('category'),
       description: formData.get('description'),
       status: 'available',
-      createdAt: new Date().toISOString()
     };
-
-    await createBook(book);
+    try {
+      const res = await request('/school/library/books', { method: 'POST', body: JSON.stringify(bookData) });
+      setBooks(prev => [...prev, res.book || { id: Date.now().toString(), ...bookData, createdAt: new Date().toISOString() }]);
+    } catch {}
     setShowAddBook(false);
     e.target.reset();
   };
@@ -258,22 +268,17 @@ export const LibrarianSystem = ({ user }) => {
   const handleIssueBook = async (issueData) => {
     const student = students.find(s => s.id === issueData.studentId);
     const book = books.find(b => b.id === issueData.bookId);
-    
-    // Update book status
-    await updateBook(issueData.bookId, {
-      status: 'issued',
-      borrower: {
-        id: student.id,
-        name: student.name,
-        class: student.class
-      },
-      issueDate: issueData.issueDate,
-      dueDate: issueData.dueDate
-    });
 
-    // Create transaction
-    await createTransaction({
-      id: Date.now().toString(),
+    const updatedBook = {
+      status: 'issued',
+      borrower: { id: student.id, name: student.name, class: student.class },
+      issueDate: issueData.issueDate,
+      dueDate: issueData.dueDate,
+    };
+    try { await request(`/school/library/books/${issueData.bookId}`, { method: 'PATCH', body: JSON.stringify(updatedBook) }); } catch {}
+    setBooks(prev => prev.map(b => b.id === issueData.bookId ? { ...b, ...updatedBook } : b));
+
+    const tx = {
       bookId: issueData.bookId,
       bookTitle: book.title,
       studentId: issueData.studentId,
@@ -281,35 +286,23 @@ export const LibrarianSystem = ({ user }) => {
       studentClass: student.class,
       issueDate: issueData.issueDate,
       dueDate: issueData.dueDate,
-      status: 'issued'
-    });
-
+      status: 'issued',
+    };
+    try { await request('/school/library/transactions', { method: 'POST', body: JSON.stringify(tx) }); } catch {}
+    setTransactions(prev => [...prev, { id: Date.now().toString(), ...tx }]);
     setShowIssueForm(null);
   };
 
   const handleReturnBook = async (returnData) => {
-    const book = books.find(b => b.id === returnData.bookId);
-    
-    // Update book status
-    await updateBook(returnData.bookId, {
-      status: 'available',
-      borrower: null,
-      issueDate: null,
-      dueDate: null
-    });
+    try { await request(`/school/library/books/${returnData.bookId}`, { method: 'PATCH', body: JSON.stringify({ status: 'available', borrower: null, issueDate: null, dueDate: null }) }); } catch {}
+    setBooks(prev => prev.map(b => b.id === returnData.bookId ? { ...b, status: 'available', borrower: null, issueDate: null, dueDate: null } : b));
 
-    // Update transaction
-    const transaction = transactions.find(t => t.bookId === returnData.bookId && t.status === 'issued');
-    if (transaction) {
-      await createTransaction({
-        ...transaction,
-        id: Date.now().toString(),
-        returnDate: returnData.returnDate,
-        fine: returnData.fine,
-        status: 'returned'
-      });
+    const existingTx = transactions.find(t => t.bookId === returnData.bookId && t.status === 'issued');
+    if (existingTx) {
+      const returnTx = { ...existingTx, id: Date.now().toString(), returnDate: returnData.returnDate, fine: returnData.fine, status: 'returned' };
+      try { await request('/school/library/transactions', { method: 'POST', body: JSON.stringify(returnTx) }); } catch {}
+      setTransactions(prev => [...prev, returnTx]);
     }
-
     setShowReturnForm(null);
   };
 
@@ -516,7 +509,10 @@ Thank you for using our library!
               onEdit={(book) => {
                 // Edit functionality
               }}
-              onDelete={deleteBook}
+              onDelete={(id) => {
+                request(`/school/library/books/${id}`, { method: 'DELETE' }).catch(() => {});
+                setBooks(prev => prev.filter(b => b.id !== id));
+              }}
               onIssue={(book) => setShowIssueForm(book)}
             />
           ))}
@@ -532,7 +528,10 @@ Thank you for using our library!
               onEdit={(book) => {
                 // Edit functionality
               }}
-              onDelete={deleteBook}
+              onDelete={(id) => {
+                request(`/school/library/books/${id}`, { method: 'DELETE' }).catch(() => {});
+                setBooks(prev => prev.filter(b => b.id !== id));
+              }}
               onIssue={() => setShowReturnForm(book)}
             />
           ))}
@@ -548,7 +547,10 @@ Thank you for using our library!
               onEdit={(book) => {
                 // Edit functionality
               }}
-              onDelete={deleteBook}
+              onDelete={(id) => {
+                request(`/school/library/books/${id}`, { method: 'DELETE' }).catch(() => {});
+                setBooks(prev => prev.filter(b => b.id !== id));
+              }}
               onIssue={(book) => setShowIssueForm(book)}
             />
           ))}

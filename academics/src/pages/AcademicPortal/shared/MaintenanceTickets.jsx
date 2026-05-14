@@ -1,20 +1,19 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Wrench, 
-  AlertCircle, 
-  CheckCircle, 
-  Clock, 
-  User, 
-  Calendar, 
-  Search, 
-  Plus, 
+import {
+  Wrench,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  User,
+  Calendar,
+  Search,
+  Plus,
   Filter,
   MessageSquare,
   FileText
 } from 'lucide-react';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
+import { request } from '../../../utils/apiClient';
 
 const StatusBadge = ({ status }) => {
   const statusConfig = {
@@ -51,8 +50,18 @@ const PriorityBadge = ({ priority }) => {
 };
 
 export const MaintenanceTickets = ({ user }) => {
-  const { data: tickets, create: createTicket, update: updateTicket } = useStore(KEYS.MAINTENANCE_TICKETS, []);
-  const { data: users } = useStore(KEYS.USERS, []);
+  const [tickets, setTickets] = useState([]);
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    Promise.allSettled([
+      request('/school/maintenance'),
+      request('/school/users'),
+    ]).then(([tRes, uRes]) => {
+      if (tRes.status === 'fulfilled') setTickets(tRes.value?.tickets || []);
+      if (uRes.status === 'fulfilled') setUsers(uRes.value?.items || uRes.value?.users || []);
+    });
+  }, []);
   
   const [filter, setFilter] = useState('all');
   const [search, setSearch] = useState('');
@@ -80,28 +89,24 @@ export const MaintenanceTickets = ({ user }) => {
   const handleSubmitTicket = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    
-    const ticket = {
-      id: Date.now().toString(),
+    const ticketData = {
       title: formData.get('title'),
       description: formData.get('description'),
       location: formData.get('location'),
       priority: formData.get('priority'),
       category: formData.get('category'),
-      status: 'pending',
-      createdBy: user.id,
-      createdAt: new Date().toISOString(),
-      assignedTo: null,
-      updatedAt: new Date().toISOString()
     };
-
-    await createTicket(ticket);
+    try {
+      const res = await request('/school/maintenance', { method: 'POST', body: JSON.stringify(ticketData) });
+      setTickets(prev => [...prev, res.ticket || { id: Date.now().toString(), ...ticketData, status: 'pending', createdBy: user.id, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }]);
+    } catch {}
     setShowCreate(false);
     e.target.reset();
   };
 
   const handleUpdateStatus = async (ticketId, newStatus) => {
-    await updateTicket(ticketId, { status: newStatus, updatedAt: new Date().toISOString() });
+    try { await request(`/school/maintenance/${ticketId}`, { method: 'PATCH', body: JSON.stringify({ status: newStatus }) }); } catch {}
+    setTickets(prev => prev.map(t => t.id === ticketId ? { ...t, status: newStatus, updatedAt: new Date().toISOString() } : t));
   };
 
   return (

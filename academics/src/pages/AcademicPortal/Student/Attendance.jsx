@@ -4,7 +4,6 @@ import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { request } from '../../../utils/apiClient';
 import { useSound } from '../../../hooks/useSound';
-import { KEYS, getFromStorage, setToStorage } from '../../../data/schema';
 
 const calculateSummary = (recs) => {
   const present = recs.filter(r => r.status === 'present' || r.status === 'late').length;
@@ -46,7 +45,7 @@ export const Attendance = ({ user }) => {
     if (!user?.id) return;
     setLoading(true);
 
-    // Try API first, fall back to localStorage
+    // Try API first
     const fetchAttendance = () => {
       request('/student/attendance')
         .then(res => {
@@ -54,15 +53,10 @@ export const Attendance = ({ user }) => {
           const smry = res?.summary || calculateSummary(recs);
           setRecords(recs);
           setSummary(smry);
-          // Cache to localStorage so other pages can read it
-          setToStorage(KEYS.ATTENDANCE, recs);
         })
         .catch(() => {
-          // Fallback to localStorage if API fails
-          const cached = getFromStorage(KEYS.ATTENDANCE, []);
-          const myCached = cached.filter(a => a.student_id === user.id);
-          setRecords(myCached);
-          setSummary(calculateSummary(myCached));
+          setRecords([]);
+          setSummary({ total: 0, present: 0, absent: 0, late: 0, rate: 0 });
         })
         .finally(() => setLoading(false));
     };
@@ -70,7 +64,7 @@ export const Attendance = ({ user }) => {
     fetchAttendance();
 
     // Load leave requests from localStorage
-    const stored = getLeaveRequests();
+    const stored = JSON.parse(localStorage.getItem('sms_leave_requests') || '[]');
     setLeaveRequests(stored.filter(r => r.studentId === user.id));
   }, [user?.id]);
 

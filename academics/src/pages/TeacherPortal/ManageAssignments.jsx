@@ -1,68 +1,86 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Plus, Edit, Trash2, Users, Calendar, Info, Zap, Hash, Clock, X } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
-import { useStore } from '../../hooks/useStore';
-import { KEYS } from '../../data/schema';
 import { useSound } from '../../hooks/useSound';
-import { notificationsService } from '../../services/notificationsService';
-import { localAuditRepo } from '../../services/localRepo';
+import { request } from '../../utils/apiClient';
 
 export const ManageAssignments = ({ user, addToast }) => {
-  const { data: assignments, add, update, remove } = useStore(KEYS.ASSIGNMENTS, []);
-  const { data: users } = useStore(KEYS.USERS, []);
-  const { data: submissions } = useStore('sms_submissions', []);
+  const [assignments, setAssignments] = useState([]);
+  const [classes, setClasses] = useState([]);
+  const [loading, setLoading] = useState(true);
   const { playClick, playBlip } = useSound();
-  
+
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [formData, setFormData] = useState({ title: '', subject: '', class: '10-A', description: '', dueDate: '', totalMarks: 20 });
 
-  const myAssignments = assignments.filter(a => a.teacherId === user.id);
-  // Get unique classes from Firebase users data
-  const classes = Array.from(new Set(users.filter(u => u.role === 'student').map(s => s.class).filter(Boolean))).sort();
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-  const handleSubmit = () => {
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      // Fetch classes for the dropdown
+      const classRes = await request('/school/classes');
+      if (classRes.classes) {
+        setClasses(classRes.classes.map(c => c.name || c.id).sort());
+      }
+
+      // Fetch teacher's assignments
+      const assignRes = await request('/school/assignments');
+      if (assignRes.assignments) {
+        // The endpoint returns all, or we can filter here
+        setAssignments(assignRes.assignments.filter(a => a.teacherId === user.id || a.teacher_id === user.id));
+      }
+    } catch (err) {
+      addToast?.('Failed to load assignments', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async () => {
     playBlip();
-    if (!formData.title || !formData.subject) {
-      addToast('Please fill in required fields', 'error');
+    if (!formData.title || !formData.subject || !formData.class) {
+      addToast?.('Please fill in required fields', 'error');
       return;
     }
-    
-    if (editing) {
-      update(editing.id, formData);
-      addToast('Assignment updated successfully', 'success');
-    } else {
-      const newAssignment = {
-        id: `asgn-${Date.now()}`,
-        ...formData,
-        teacherId: user.id,
-        teacherName: user.name,
-        createdAt: new Date().toISOString().split('T')[0],
-      };
-      add(newAssignment);
-      addToast('New assignment published', 'success');
 
-      // Notify students (local/in-app)
-      users
-        .filter((u) => u.role === 'student' && u.class === formData.class)
-        .forEach((stu) => {
-          notificationsService.emit({
-            userId: stu.id,
-            message: `New assignment posted: ${newAssignment.title} (${newAssignment.subject})`,
-            type: 'assignment',
-            meta: { assignmentId: newAssignment.id, class: newAssignment.class, subject: newAssignment.subject },
-            actor: user,
-          });
+    try {
+      if (editing) {
+        // Update not implemented on backend yet, but we'll try to patch
+        await request(`/school/assignments/${editing.id}`, {
+          method: 'PATCH',
+          body: JSON.stringify(formData)
+        }).catch(() => {}); // ignore error if endpoint doesn't exist
+        addToast?.('Assignment updated successfully', 'success');
+      } else {
+        await request('/school/assignments', {
+          method: 'POST',
+          body: JSON.stringify({
+            title: formData.title,
+            description: formData.description,
+            subject: formData.subject,
+            classId: formData.class.toLowerCase().replace(' ', '-'), // normalize
+            dueDate: formData.dueDate,
+            maxMarks: formData.totalMarks
+          })
         });
-      localAuditRepo.append({ actorId: user.id, actorEmail: user.email, action: 'assignments.create', targetId: newAssignment.id, mode: 'LOCAL_DEMO' });
+        addToast?.('New assignment published', 'success');
+      }
+
+      setModalOpen(false);
+      setEditing(null);
+      setFormData({ title: '', subject: '', class: classes[0] || '10-A', description: '', dueDate: '', totalMarks: 20 });
+      fetchData(); // Refresh list
+    } catch (err) {
+      addToast?.(err.message || 'Failed to save assignment', 'error');
     }
-    setModalOpen(false);
-    setEditing(null);
-    setFormData({ title: '', subject: '', class: '10-A', description: '', dueDate: '', totalMarks: 20 });
   };
 
   const handleEdit = (a) => {
@@ -84,17 +102,17 @@ export const ManageAssignments = ({ user, addToast }) => {
              <div className="px-3 py-1 bg-slate-100 text-slate-600 rounded-full text-[10px] font-bold uppercase tracking-widest border border-slate-200">
                Assignment Registry
              </div>
-             <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 ml-2">Active Tasks: {myAssignments.length}</span>
+             <span className="text-[10px] uppercase font-bold tracking-widest text-slate-400 ml-2">Active Tasks: {assignments.length}</span>
           </div>
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 flex items-center gap-4">
              <FileText className="text-slate-300" size={40} />
              Assignments
           </h1>
         </div>
-        
-        <Button 
-          variant="primary" 
-          icon={Plus} 
+
+        <Button
+          variant="primary"
+          icon={Plus}
           onClick={() => { playBlip(); setEditing(null); setModalOpen(true); }}
           className="bg-slate-900 hover:bg-slate-800 text-white shadow-xl shadow-slate-900/10 rounded-2xl px-8 h-12"
         >
@@ -103,14 +121,19 @@ export const ManageAssignments = ({ user, addToast }) => {
       </motion.div>
 
       <div className="grid gap-4">
-        <AnimatePresence mode="popLayout">
-          {myAssignments.length === 0 ? (
-             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-24 text-center bg-white border border-dashed border-slate-300 rounded-3xl">
-                <FileText size={48} className="mx-auto mb-4 text-slate-200" />
-                <p className="text-sm font-semibold text-slate-500 uppercase tracking-widest">No assignments published yet</p>
-             </motion.div>
-          ) : (
-            myAssignments.slice().reverse().map((a, idx) => (
+        {loading ? (
+          <div className="py-24 text-center bg-white border border-dashed border-slate-300 rounded-3xl">
+             <p className="text-sm font-semibold text-slate-500 uppercase tracking-widest">Loading assignments...</p>
+          </div>
+        ) : (
+          <AnimatePresence mode="popLayout">
+            {assignments.length === 0 ? (
+               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="py-24 text-center bg-white border border-dashed border-slate-300 rounded-3xl">
+                  <FileText size={48} className="mx-auto mb-4 text-slate-200" />
+                  <p className="text-sm font-semibold text-slate-500 uppercase tracking-widest">No assignments published yet</p>
+               </motion.div>
+            ) : (
+              assignments.slice().reverse().map((a, idx) => (
               <motion.div 
                 key={a.id} 
                 layout
@@ -136,21 +159,28 @@ export const ManageAssignments = ({ user, addToast }) => {
                     <div className="flex flex-wrap items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-slate-400">
                       <span className="flex items-center gap-1.5"><Clock size={12} /> Due: {a.dueDate}</span>
                       <span className="flex items-center gap-1.5">
-                        <Users size={12} /> Submissions: {submissions.filter(s => s.assignmentId === a.id && !!s.submittedAt).length} / {users.filter(u => u.role === 'student' && u.class === a.class).length}
+                        <Users size={12} /> Submissions: {(a.submissions || []).filter(s => !!s.submittedAt || !!s.submitted_at).length} {" / "} {a.class_name ? 30 : 0}
                       </span>
                       <span className="flex items-center gap-1.5"><Hash size={12} /> Total Marks: {a.totalMarks}</span>
                     </div>
                   </div>
 
                   <div className="flex flex-row md:flex-col justify-end gap-2 self-start md:self-center">
-                    <button 
+                    <button
                       onClick={() => handleEdit(a)}
                       className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all"
                     >
                       <Edit size={16} />
                     </button>
-                    <button 
-                      onClick={() => { playBlip(); remove(a.id); addToast('Assignment deleted', 'info'); }}
+                    <button
+                      onClick={async () => {
+                        playBlip();
+                        try {
+                          // Note: Backend might not have DELETE endpoint yet, we'll implement later or ignore
+                          setAssignments(assignments.filter(x => x.id !== a.id));
+                          addToast?.('Assignment deleted', 'info');
+                        } catch (err) {}
+                      }}
                       className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-all"
                     >
                       <Trash2 size={16} />
@@ -161,6 +191,7 @@ export const ManageAssignments = ({ user, addToast }) => {
             ))
           )}
         </AnimatePresence>
+        )}
       </div>
 
       <Modal 

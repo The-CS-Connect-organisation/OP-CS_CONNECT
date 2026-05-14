@@ -5,7 +5,7 @@ import {
   Trophy, Star, Target, Zap, Brain, Calendar, BarChart3, PieChart, Bell, Flame, Crown, Medal,
   TrendingDown, Activity, MessageSquare, Share2, Focus, Moon, Sun, GripVertical, CheckCircle2, XCircle, Timer
 } from 'lucide-react';
-import { KEYS, setToStorage } from '../../../data/schema';
+import {} from '../../../data/schema';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
 import { calendarService } from '../../../services/calendarService';
 import { aiCoachService } from '../../../services/aiCoachService';
@@ -500,18 +500,15 @@ export const StudentDashboard = ({ user }) => {
       if (assignRes.status === 'fulfilled') {
         const list = assignRes.value.assignments || assignRes.value.items || [];
         setApiAssignments(list);
-        setToStorage(KEYS.ASSIGNMENTS, list);
       }
       if (marksRes.status === 'fulfilled') {
         const list = marksRes.value.marks || marksRes.value.items || [];
         setApiMarks(list);
-        setToStorage(KEYS.MARKS, list);
       }
       if (attRes.status === 'fulfilled') {
         const list = attRes.value.records || attRes.value.items || [];
         const apiSummary = attRes.value.summary || {};
         setApiAttendance(list);
-        setToStorage(KEYS.ATTENDANCE, list);
         // Use API summary.rate if available, otherwise compute from records
         if (apiSummary.rate !== undefined && apiSummary.rate > 0) {
           setAttSummaryRate(apiSummary.rate);
@@ -559,10 +556,8 @@ if (ttRes.status === 'fulfilled') {
             { classId: fallbackClassId, day: 'Friday', period: '4', subject: 'Geography', teacherId: 'teacher-8', room: '107' }
           ];
           setApiTimetableEntries(normalizeTimetableResponse({ entries: fallbackMock }));
-          setToStorage(KEYS.TIMETABLE, normalizeTimetableResponse({ entries: fallbackMock }));
         } else {
           setApiTimetableEntries(normalized);
-          setToStorage(KEYS.TIMETABLE, normalized);
         }
       }
       if (profileRes.status === 'fulfilled' && profileRes.value?.profile) {

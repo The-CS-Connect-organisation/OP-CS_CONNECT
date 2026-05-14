@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Search, X, Clock, User, StickyNote, ChevronRight, Tag, Pencil, Upload, Plus, FileText } from 'lucide-react';
-import { getFromStorage } from '../../../../data/schema';
 import { useSound } from '../../../../hooks/useSound';
 import { request } from '../../../../utils/apiClient';
 
@@ -39,7 +38,7 @@ const SharedNotes = ({ user, addToast }) => {
 
   useEffect(() => {
     fetchNotes();
-    const storedAnnotations = getFromStorage('sms_annotations', {});
+    const storedAnnotations = JSON.parse(localStorage.getItem('sms_annotations') || '{}');
     setAnnotations(storedAnnotations);
   }, []);
 

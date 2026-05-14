@@ -4,7 +4,6 @@ import { Sunrise, Calendar, Clock, FileText, CheckCircle, AlertCircle, Lightbulb
 import { Card } from '../../../../components/ui/Card';
 import { useSound } from '../../../../hooks/useSound';
 import { request } from '../../../../utils/apiClient';
-import { KEYS, getFromStorage, setToStorage } from '../../../../data/schema';
 
 const AI_TIPS = {
   Mathematics: "Focus on understanding the 'why' behind formulas, not just memorizing them. Try explaining concepts to yourself out loud to identify gaps.",
@@ -44,13 +43,13 @@ export const DailyBriefing = ({ user, addToast }) => {
   const today = new Date();
   const todayDay = today.toLocaleDateString('en-US', { weekday: 'long' });
 
-  // Seed from localStorage first (instant paint), then update from API
+  // Initialize from API
   const [apiData, setApiData] = useState({
-    timetable:   getFromStorage(KEYS.TIMETABLE,   []),
-    assignments: getFromStorage(KEYS.ASSIGNMENTS, []),
-    attendance:  getFromStorage(KEYS.ATTENDANCE,  []),
-    marks:       getFromStorage(KEYS.MARKS,       []),
-    exams:       getFromStorage(KEYS.EXAMS,       []),
+    timetable:   [],
+    assignments: [],
+    attendance:  [],
+    marks:       [],
+    exams:       [],
   });
 
   useEffect(() => {
@@ -75,7 +74,6 @@ export const DailyBriefing = ({ user, addToast }) => {
         const entries = typeof raw === 'string' ? (() => { try { return JSON.parse(raw); } catch { return []; } })() : raw;
         const timetable = Array.isArray(entries) ? entries : [];
         updates.timetable = timetable;
-        setToStorage(KEYS.TIMETABLE, timetable);
       }
 
       if (assignRes.status === 'fulfilled') {
@@ -85,21 +83,18 @@ export const DailyBriefing = ({ user, addToast }) => {
           return !ac || ac === myClass;
         });
         updates.assignments = list;
-        setToStorage(KEYS.ASSIGNMENTS, list);
       }
 
       if (attendRes.status === 'fulfilled') {
         const recs = attendRes.value?.records ?? attendRes.value?.items ?? [];
         const list = Array.isArray(recs) ? recs : [];
         updates.attendance = list;
-        setToStorage(KEYS.ATTENDANCE, list);
       }
 
       if (marksRes.status === 'fulfilled') {
         const mk = marksRes.value?.marks ?? marksRes.value?.items ?? [];
         const list = Array.isArray(mk) ? mk : [];
         updates.marks = list;
-        setToStorage(KEYS.MARKS, list);
       }
 
       if (alive && Object.keys(updates).length > 0) {

@@ -3,9 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Play, Pause, RotateCcw, SkipForward, Target, Clock, Flame,
   Zap, CheckCircle2, Trash2, Sparkles, Brain, Trophy, BarChart3,
-  ChevronRight, Plus, Calendar, BookOpen, AlertCircle, Timer, Coffee as CoffeeIcon
+  ChevronRight, Plus, Calendar, BookOpen, AlertCircle, Timer, Coffee as CoffeeIcon, X
 } from 'lucide-react';
-import { getFromStorage, setToStorage } from '../../../../data/schema';
 import { useSound } from '../../../../hooks/useSound';
 
 // ── Timer configs ─────────────────────────────────────────────────────────────
@@ -21,15 +20,6 @@ const POMODORO_Modes = {
 };
 
 // ── Stats helpers ──────────────────────────────────────────────────────────────
-const getSessionStats = () => {
-  const history = getFromStorage('sms_focus_history', []);
-  const today = new Date().toDateString();
-  const todaySessions = history.filter(s => new Date(s.completedAt).toDateString() === today);
-  const totalMinutes = history.reduce((sum, s) => sum + (s.duration || 25), 0);
-  const streak = calcStreak(history);
-  return { totalSessions: history.length, todaySessions: todaySessions.length, totalMinutes, streak };
-};
-
 const calcStreak = (history) => {
   if (!history.length) return 0;
   const dates = [...new Set(history.map(s => new Date(s.completedAt).toDateString()))].sort().reverse();
@@ -119,8 +109,7 @@ const TaskItem = ({ task, onToggle, onDelete, color }) => {
 };
 
 // ── Session History Panel ─────────────────────────────────────────────────────
-const SessionHistory = () => {
-  const history = getFromStorage('sms_focus_history', []);
+const SessionHistory = ({ history }) => {
   const grouped = {};
   history.forEach(s => {
     const d = new Date(s.completedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
@@ -168,28 +157,26 @@ export const FocusMode = ({ user, addToast }) => {
   const [sessionsDone, setSessionsDone] = useState(0);
   const [activeTask, setActiveTask] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
+  const [focusHistory, setFocusHistory] = useState([]);
   const intervalRef = useRef(null);
 
   const modeConfig = { work: { label: 'Focus', duration: POMODORO_WORK, color: '#ea580c', bg: '#fff7ed' },
     short: { label: 'Short Break', duration: POMODORO_BREAK, color: '#10b981', bg: '#f0fdf4' },
     long: { label: 'Long Break', duration: POMODORO_LONG, color: '#8b5cf6', bg: '#f5f3ff' } };
 
-  const stats = getSessionStats();
+  const stats = {
+    totalSessions: focusHistory.length,
+    todaySessions: focusHistory.filter(s => new Date(s.completedAt).toDateString() === new Date().toDateString()).length,
+    totalMinutes: focusHistory.reduce((sum, s) => sum + (s.duration || 25), 0),
+    streak: calcStreak(focusHistory),
+  };
 
-  // Load tasks
+  // Load tasks from localStorage (persisted locally)
   useEffect(() => {
-    const saved = getFromStorage('sms_focus_tasks', []);
+    const saved = JSON.parse(localStorage.getItem('sms_focus_tasks') || '[]');
     setTasks(saved);
-  }, []);
-
-  // Storage listener
-  useEffect(() => {
-    const handler = () => {
-      const saved = getFromStorage('sms_focus_tasks', []);
-      setTasks(saved);
-    };
-    window.addEventListener('sms_storage_changed', handler);
-    return () => window.removeEventListener('sms_storage_changed', handler);
+    const history = JSON.parse(localStorage.getItem('sms_focus_history') || '[]');
+    setFocusHistory(history);
   }, []);
 
   // Timer tick
@@ -210,15 +197,16 @@ export const FocusMode = ({ user, addToast }) => {
 
   const handleSessionComplete = () => {
     playBlip();
-    const history = getFromStorage('sms_focus_history', []);
-    history.unshift({
+    const session = {
       id: `session-${Date.now()}`,
       mode,
-      duration: Math.round((modeConfig[mode].duration - timeLeft) / 60) || modeConfig[mode].duration / 60,
+      duration: Math.round((modeConfig[mode].duration - timeLeft) / 60) || Math.round(modeConfig[mode].duration / 60),
       subject: activeTask?.subject || 'General',
       completedAt: new Date().toISOString(),
-    });
-    setToStorage('sms_focus_history', history.slice(0, 500));
+    };
+    const updatedHistory = [session, ...focusHistory].slice(0, 500);
+    setFocusHistory(updatedHistory);
+    localStorage.setItem('sms_focus_history', JSON.stringify(updatedHistory));
 
     if (mode === 'work') {
       setSessionsDone(s => {
@@ -254,14 +242,14 @@ export const FocusMode = ({ user, addToast }) => {
     playClick();
     const updated = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
     setTasks(updated);
-    setToStorage('sms_focus_tasks', updated);
+    localStorage.setItem('sms_focus_tasks', JSON.stringify(updated));
   };
 
   const deleteTask = (id) => {
     playClick();
     const updated = tasks.filter(t => t.id !== id);
     setTasks(updated);
-    setToStorage('sms_focus_tasks', updated);
+    localStorage.setItem('sms_focus_tasks', JSON.stringify(updated));
     if (activeTask?.id === id) setActiveTask(null);
   };
 
@@ -450,7 +438,7 @@ export const FocusMode = ({ user, addToast }) => {
             {showHistory && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
                 <div className="nova-card p-5 max-h-[320px] overflow-y-auto">
-                  <SessionHistory />
+                  <SessionHistory history={focusHistory} />
                 </div>
               </motion.div>
             )}

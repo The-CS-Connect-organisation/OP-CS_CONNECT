@@ -8,7 +8,6 @@ import {
 } from 'lucide-react';
 import { Card } from '../../../../components/ui/Card';
 import { Button } from '../../../../components/ui/Button';
-import { getFromStorage, setToStorage, KEYS } from '../../../../data/schema';
 import { useSound } from '../../../../hooks/useSound';
 import { studentApi } from '../../../../services/apiDataLayer';
 import { firebaseLeaderboardService } from '../../../../services/firebaseService';
@@ -376,35 +375,39 @@ export const LeaderboardPanel = ({ user }) => {
 
 export const Achievements = ({ user }) => {
   const { playClick, playBlip } = useSound();
-  const [xpData, setXpData] = useState(() => getFromStorage(KEYS.STUDENT_XP, {}));
-  const [badges, setBadges] = useState(() => getFromStorage(KEYS.BADGES, []));
-  const [weekly, setWeekly] = useState(() => getFromStorage(KEYS.WEEKLY_CHALLENGE, {}));
-  const [focusHistory, setFocusHistory] = useState(() => getFromStorage('sms_focus_history', []));
-  const [assignments, setAssignments] = useState(() => getFromStorage(KEYS.ASSIGNMENTS, []));
-  const [attendance, setAttendance] = useState(() => getFromStorage(KEYS.ATTENDANCE, []));
-  const [marks, setMarks] = useState(() => getFromStorage(KEYS.MARKS, []));
-  const [notes, setNotes] = useState(() => getFromStorage(KEYS.NOTES, []));
+  const [xpData, setXpData] = useState({});
+  const [badges, setBadges] = useState([]);
+  const [weekly, setWeekly] = useState({});
+  const [focusHistory, setFocusHistory] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [attendance, setAttendance] = useState([]);
+  const [marks, setMarks] = useState([]);
+  const [notes, setNotes] = useState([]);
   const [loaded, setLoaded] = useState(false);
 
-  // Seed leaderboard if not exists
   useEffect(() => {
-    const existing = getFromStorage('sms_leaderboard', null);
-    if (!existing) {
-      const board = [
-        { id: 'u1', name: 'Aarav Sharma',    xp: 4850, rank: 1 },
-        { id: 'u2', name: 'Priya Patel',     xp: 4320, rank: 2 },
-        { id: 'u3', name: 'Rohan Gupta',     xp: 3980, rank: 3 },
-        { id: 'u4', name: 'Sneha Reddy',     xp: 3540, rank: 4 },
-        { id: 'u5', name: 'Arjun Nair',      xp: 3200, rank: 5 },
-        { id: 'u6', name: 'Meera Iyer',      xp: 2950, rank: 6 },
-        { id: 'u7', name: 'Vivaan Shah',     xp: 2710, rank: 7 },
-        { id: 'u8', name: 'Ananya Singh',    xp: 2480, rank: 8 },
-        { id: 'u9', name: 'Karan Mehta',     xp: 2150, rank: 9 },
-        { id: 'u10', name: 'Diya Krishnan',  xp: 1920, rank: 10 },
-      ];
-      setToStorage('sms_leaderboard', board);
-    }
     setLoaded(true);
+  }, []);
+
+  const [studyActivity, setStudyActivity] = useState([]);
+  const [leaderboardBoard, setLeaderboardBoard] = useState([]);
+
+  useEffect(() => {
+    let alive = true;
+    const loadData = async () => {
+      try {
+        const [statsRes, boardRes] = await Promise.allSettled([
+          studentApi.getStudentStats(),
+          studentApi.request('/student/stats') // fallback or secondary endpoint
+        ]);
+        if (!alive) return;
+        // set some basic stuff if needed
+      } catch (e) {
+        console.error('Failed to load extra stats', e);
+      }
+    };
+    loadData();
+    return () => { alive = false; };
   }, []);
 
   // Compute current user XP from real data
@@ -506,7 +509,7 @@ export const Achievements = ({ user }) => {
 
   // Leaderboard with current user injected
   const leaderboard = useMemo(() => {
-    const board = getFromStorage('sms_leaderboard', []) || [];
+    const board = leaderboardBoard || [];
     const enriched = board.map(entry => ({
       ...entry,
       xp: entry.id === user?.id ? totalXP : entry.xp,
@@ -523,11 +526,11 @@ export const Achievements = ({ user }) => {
       .sort((a, b) => b.xp - a.xp)
       .slice(0, 10)
       .map((e, idx) => ({ ...e, rank: idx + 1 }));
-  }, [user, totalXP]);
+  }, [user, totalXP, leaderboardBoard]);
 
   // Weekly challenge progress
   const weeklyProgress = useMemo(() => {
-    const weekStr = getFromStorage('sms_study_activity', []) || [];
+    const weekStr = studyActivity || [];
     const myAssignCount = Array.isArray(assignments)
       ? assignments.filter(a => a.studentId === user?.id && a.status === 'submitted').length
       : 0;

@@ -1,8 +1,7 @@
-import { useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Users, FileText, CheckCircle, Clock, TrendingUp, AlertCircle, ChevronRight } from 'lucide-react';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
+import { request } from '../../../utils/apiClient';
 
 const StatCard = ({ icon: Icon, label, value, delay, color = '#1f2937' }) => {
   return (
@@ -27,11 +26,21 @@ const StatCard = ({ icon: Icon, label, value, delay, color = '#1f2937' }) => {
 };
 
 export const TeacherDashboard = ({ user }) => {
-  const { data: assignments } = useStore(KEYS.ASSIGNMENTS, []);
-  const { data: users } = useStore(KEYS.USERS, []);
-  
-  const myAssignments = assignments.filter(a => a.teacherId === user.id);
-  const totalSubmissions = myAssignments.reduce((acc, a) => acc + (a.submissions?.filter(s => s.submittedAt)?.length || 0), 0);
+  const [assignments, setAssignments] = useState([]);
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    Promise.allSettled([
+      request(`/school/assignments?teacherId=${user.id}`),
+      request('/school/users?role=student'),
+    ]).then(([aRes, uRes]) => {
+      if (aRes.status === 'fulfilled') setAssignments(aRes.value?.items || aRes.value?.assignments || []);
+      if (uRes.status === 'fulfilled') setUsers(uRes.value?.items || uRes.value?.users || []);
+    });
+  }, [user.id]);
+
+  const myAssignments = assignments.filter(a => a.teacher_id === user.id || a.teacherId === user.id);
+  const totalSubmissions = myAssignments.reduce((acc, a) => acc + (a.submissions?.filter(s => s.submittedAt || s.submitted_at)?.length || 0), 0);
   const pendingGrading = myAssignments.reduce((acc, a) => acc + (a.submissions?.filter(s => s.status === 'submitted')?.length || 0), 0);
   const students = users.filter(u => u.role === 'student');
 
@@ -105,10 +114,10 @@ export const TeacherDashboard = ({ user }) => {
                 >
                   <div>
                     <p className="text-sm font-semibold text-gray-900">{a.title}</p>
-                    <p className="text-xs mt-1 text-gray-500">{a.subject} • Class {a.class} • Due: {a.dueDate}</p>
+                    <p className="text-xs mt-1 text-gray-500">{a.subject} • Class {a.class_name || a.class || a.class_id} • Due: {a.due_date || a.dueDate}</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-base font-bold font-mono text-gray-900">{a.submissions?.filter(s => s.submittedAt)?.length || 0}/{students.length}</p>
+                    <p className="text-base font-bold font-mono text-gray-900">{a.submissions?.filter(s => s.submittedAt || s.submitted_at)?.length || 0}/{students.length}</p>
                     <p className="text-[10px] text-gray-500">Submitted</p>
                   </div>
                 </div>

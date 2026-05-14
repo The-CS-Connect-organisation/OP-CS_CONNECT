@@ -9,7 +9,6 @@ import { useSound } from '../../../hooks/useSound';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { request } from '../../../utils/apiClient';
-import { getFromStorage } from '../../../data/schema';
 
 export const Grades = ({ user }) => {
   const { playClick, playBlip } = useSound();
@@ -21,9 +20,6 @@ export const Grades = ({ user }) => {
     if (!user?.id) return;
     let alive = true;
     setLoading(true);
-    // Load local demo data first as fallback
-    const local = getFromStorage('sms_marks', []);
-    if (local.length > 0) setApiMarks(local);
     // Then try API using dedicated student endpoint
     request('/student/grades')
       .then(res => {

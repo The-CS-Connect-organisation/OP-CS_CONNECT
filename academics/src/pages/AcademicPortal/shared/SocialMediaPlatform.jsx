@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Users, 
-  MessageCircle, 
-  Plus, 
-  Search, 
-  Filter, 
-  Heart, 
-  MessageSquare, 
-  Share2, 
-  Edit, 
+import {
+  Users,
+  MessageCircle,
+  Plus,
+  Search,
+  Filter,
+  Heart,
+  MessageSquare,
+  Share2,
+  Edit,
   Trash2,
   UserPlus,
   Users2,
@@ -18,8 +18,7 @@ import {
   Eye,
   EyeOff
 } from 'lucide-react';
-import { useStore } from '../../../hooks/useStore';
-import { KEYS } from '../../../data/schema';
+import { request } from '../../../utils/apiClient';
 
 const PostCard = ({ post, user, onLike, onDelete, onComment }) => {
   const [showComments, setShowComments] = useState(false);
@@ -205,9 +204,21 @@ const GroupCard = ({ group, user, onJoin, onLeave }) => {
 };
 
 export const SocialMediaPlatform = ({ user }) => {
-  const { data: posts, create: createPost, update: updatePost, remove: deletePost } = useStore(KEYS.SOCIAL_POSTS, []);
-  const { data: groups, create: createGroup, update: updateGroup } = useStore(KEYS.SOCIAL_GROUPS, []);
-  const { data: users } = useStore(KEYS.USERS, []);
+  const [posts, setPosts] = useState([]);
+  const [groups, setGroups] = useState([]);
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    Promise.allSettled([
+      request('/school/social/posts'),
+      request('/school/social/groups'),
+      request('/school/users'),
+    ]).then(([pRes, gRes, uRes]) => {
+      if (pRes.status === 'fulfilled') setPosts(pRes.value?.posts || []);
+      if (gRes.status === 'fulfilled') setGroups(gRes.value?.groups || []);
+      if (uRes.status === 'fulfilled') setUsers(uRes.value?.items || uRes.value?.users || []);
+    });
+  }, []);
   
   const [activeTab, setActiveTab] = useState('feed');
   const [search, setSearch] = useState('');
@@ -220,49 +231,48 @@ export const SocialMediaPlatform = ({ user }) => {
   const handleLike = async (postId) => {
     const post = posts.find(p => p.id === postId);
     const likes = post.likes || [];
-    const newLikes = likes.includes(user.id) 
+    const newLikes = likes.includes(user.id)
       ? likes.filter(id => id !== user.id)
       : [...likes, user.id];
-    await updatePost(postId, { likes: newLikes });
+    try { await request(`/school/social/posts/${postId}`, { method: 'PATCH', body: JSON.stringify({ likes: newLikes }) }); } catch {}
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, likes: newLikes } : p));
   };
 
   const handleComment = async (postId, comment) => {
     const post = posts.find(p => p.id === postId);
     const comments = post.comments || [];
     const newComments = [...comments, { ...comment, authorName: user.name }];
-    await updatePost(postId, { comments: newComments });
+    try { await request(`/school/social/posts/${postId}`, { method: 'PATCH', body: JSON.stringify({ comments: newComments }) }); } catch {}
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: newComments } : p));
   };
 
   const handleJoinGroup = async (groupId) => {
     const group = groups.find(g => g.id === groupId);
-    const members = group.members || [];
-    await updateGroup(groupId, { members: [...members, user.id] });
+    const members = [...(group.members || []), user.id];
+    try { await request(`/school/social/groups/${groupId}`, { method: 'PATCH', body: JSON.stringify({ members }) }); } catch {}
+    setGroups(prev => prev.map(g => g.id === groupId ? { ...g, members } : g));
   };
 
   const handleLeaveGroup = async (groupId) => {
     const group = groups.find(g => g.id === groupId);
-    const members = group.members || [];
-    await updateGroup(groupId, { members: members.filter(id => id !== user.id) });
+    const members = (group.members || []).filter(id => id !== user.id);
+    try { await request(`/school/social/groups/${groupId}`, { method: 'PATCH', body: JSON.stringify({ members }) }); } catch {}
+    setGroups(prev => prev.map(g => g.id === groupId ? { ...g, members } : g));
   };
 
   const handleSubmitPost = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    
-    const post = {
-      id: Date.now().toString(),
+    const postData = {
       title: formData.get('title'),
       content: formData.get('content'),
-      authorId: user.id,
       authorName: user.name,
-      createdAt: new Date().toISOString(),
-      likes: [],
-      comments: [],
-      views: 0,
-      groupId: formData.get('groupId') || null
+      groupId: formData.get('groupId') || null,
     };
-
-    await createPost(post);
+    try {
+      const res = await request('/school/social/posts', { method: 'POST', body: JSON.stringify(postData) });
+      setPosts(prev => [res.post || { id: Date.now().toString(), ...postData, authorId: user.id, createdAt: new Date().toISOString(), likes: [], comments: [], views: 0 }, ...prev]);
+    } catch {}
     setShowCreatePost(false);
     e.target.reset();
   };
@@ -270,18 +280,15 @@ export const SocialMediaPlatform = ({ user }) => {
   const handleSubmitGroup = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    
-    const group = {
-      id: Date.now().toString(),
+    const groupData = {
       name: formData.get('name'),
       description: formData.get('description'),
       visibility: formData.get('visibility'),
-      createdBy: user.id,
-      createdAt: new Date().toISOString(),
-      members: [user.id]
     };
-
-    await createGroup(group);
+    try {
+      const res = await request('/school/social/groups', { method: 'POST', body: JSON.stringify(groupData) });
+      setGroups(prev => [...prev, res.group || { id: Date.now().toString(), ...groupData, createdBy: user.id, createdAt: new Date().toISOString(), members: [user.id] }]);
+    } catch {}
     setShowCreateGroup(false);
     e.target.reset();
   };
@@ -366,7 +373,10 @@ export const SocialMediaPlatform = ({ user }) => {
                 post={post}
                 user={user}
                 onLike={handleLike}
-                onDelete={deletePost}
+                onDelete={(id) => {
+                  request(`/school/social/posts/${id}`, { method: 'DELETE' }).catch(() => {});
+                  setPosts(prev => prev.filter(p => p.id !== id));
+                }}
                 onComment={handleComment}
               />
             ))

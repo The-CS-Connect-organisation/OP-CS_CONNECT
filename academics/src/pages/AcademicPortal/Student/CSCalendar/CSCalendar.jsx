@@ -9,7 +9,6 @@ import {
 import { Card } from '../../../../components/ui/Card';
 import { Badge } from '../../../../components/ui/Badge';
 import { Button } from '../../../../components/ui/Button';
-import { getFromStorage, setToStorage } from '../../../../data/schema';
 import { request } from '../../../../utils/apiClient';
 
 const HOURS = Array.from({ length: 14 }, (_, i) => {
@@ -33,37 +32,6 @@ const getEventStyle = (type) => EVENT_TYPES[type] || EVENT_TYPES.custom;
 const MEETING_TYPES = ['Study Group', 'Doubt Session', 'Teacher Consultation', 'Peer Review'];
 const DURATION_OPTIONS = ['15', '30', '45', '60'];
 
-function loadMeetingInvites() {
-  return getFromStorage('sms_meeting_invites', []);
-}
-
-function saveMeetingInvites(invites) {
-  setToStorage('sms_meeting_invites', invites);
-}
-
-const today = new Date();
-today.setHours(0, 0, 0, 0);
-
-function getWeekDates(weekStart) {
-  return Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(weekStart);
-    d.setDate(weekStart.getDate() + i);
-    return d;
-  });
-}
-
-function toDateStr(date) {
-  return date.toISOString().split('T')[0];
-}
-
-function loadEvents() {
-  return getFromStorage('sms_calendar_events', []);
-}
-
-function saveEvents(events) {
-  setToStorage('sms_calendar_events', events);
-}
-
 export const CSCalendar = ({ user, addToast }) => {
   const [weekStart, setWeekStart] = useState(() => {
     const d = new Date();
@@ -74,11 +42,13 @@ export const CSCalendar = ({ user, addToast }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showScheduleMeeting, setShowScheduleMeeting] = useState(false);
   const [editEvent, setEditEvent] = useState(null);
-  const [events, setEvents] = useState(loadEvents);
+  const [events, setEvents] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null);
-  const [meetingInvites, setMeetingInvites] = useState(loadMeetingInvites);
+  const [meetingInvites, setMeetingInvites] = useState([]);
   const [activeTab, setActiveTab] = useState('calendar'); // 'calendar' | 'invites'
   const [allUsers, setAllUsers] = useState([]);
+  const [assignments, setAssignments] = useState([]);
+  const [exams, setExams] = useState([]);
 
   const weekDates = useMemo(() => getWeekDates(weekStart), [weekStart]);
 
@@ -95,37 +65,32 @@ export const CSCalendar = ({ user, addToast }) => {
 
   // Handle meeting invite response
   const handleMeetingResponse = useCallback((inviteId, action) => {
-    const invites = loadMeetingInvites();
-    const updated = invites.map(inv => inv.id === inviteId ? { ...inv, status: action } : inv);
-    saveMeetingInvites(updated);
+    const updated = meetingInvites.map(inv => inv.id === inviteId ? { ...inv, status: action } : inv);
     setMeetingInvites(updated);
 
     if (action === 'accepted') {
-      const invite = invites.find(inv => inv.id === inviteId);
+      const invite = updated.find(inv => inv.id === inviteId);
       if (invite) {
-        const calEvents = getFromStorage('sms_calendar_events', []);
-        const [hour, min] = invite.time.split(':').map(Number);
-        const endHour = hour + Math.floor(invite.duration / 60);
+        const [hour, min] = String(invite.time || '09:00').split(':').map(Number);
+        const endHour = hour + Math.floor((invite.duration || 30) / 60);
         const newEvent = {
           id: `meeting-${Date.now()}`,
           title: invite.title,
           type: 'meeting',
           date: invite.date,
-          time: invite.time,
+          time: invite.time || '09:00',
           endTime: `${String(endHour).padStart(2, '0')}:${String(min).padStart(2, '0')}`,
-          subject: `${invite.meetingType} with ${invite.fromUserName}`,
+          subject: `${invite.meetingType || 'Meeting'} with ${invite.fromUserName || 'Unknown'}`,
           meetLink: invite.meetLink || null,
           inviteId: invite.id,
         };
-        calEvents.push(newEvent);
-        setToStorage('sms_calendar_events', calEvents);
-        setEvents(calEvents);
+        setEvents(prev => [...prev, newEvent]);
         addToast?.(`Meeting "${invite.title}" added to calendar`, 'success');
       }
     } else {
       addToast?.('Meeting invite declined', 'info');
     }
-  }, [addToast]);
+  }, [addToast, meetingInvites]);
 
   const navigateWeek = (dir) => {
     const next = new Date(weekStart);
@@ -140,10 +105,25 @@ export const CSCalendar = ({ user, addToast }) => {
     setWeekStart(d);
   };
 
-  // Load assignments and exams from localStorage
-  const assignments = getFromStorage('sms_assignments', []);
-  const exams = getFromStorage('sms_exams', []);
-  const focusTasks = getFromStorage('sms_focus_tasks', []);
+  // Load assignments and exams from API
+  useEffect(() => {
+    if (!user?.id) return;
+    Promise.allSettled([
+      request('/student/assignments'),
+      request('/exams'),
+    ]).then(([assignRes, examsRes]) => {
+      if (assignRes.status === 'fulfilled') {
+        const raw = assignRes.value?.assignments || assignRes.value?.items || [];
+        setAssignments(Array.isArray(raw) ? raw : []);
+      }
+      if (examsRes.status === 'fulfilled') {
+        const raw = examsRes.value?.exams || examsRes.value?.items || [];
+        setExams(Array.isArray(raw) ? raw : []);
+      }
+    }).catch(() => {});
+  }, [user?.id]);
+
+  const toDateStr = (date) => date.toISOString().split('T')[0];
 
   const assignmentsInRange = useMemo(() => {
     return assignments.filter(a => a.dueDate && weekDates.some(d => toDateStr(d) === a.dueDate));
@@ -152,10 +132,6 @@ export const CSCalendar = ({ user, addToast }) => {
   const examsInRange = useMemo(() => {
     return exams.filter(e => e.date && weekDates.some(d => toDateStr(d) === e.date));
   }, [exams, weekDates]);
-
-  const focusTasksInRange = useMemo(() => {
-    return focusTasks.filter(t => t.date && weekDates.some(d => toDateStr(d) === t.date));
-  }, [focusTasks, weekDates]);
 
   const allEvents = useMemo(() => {
     const evs = [...events];
