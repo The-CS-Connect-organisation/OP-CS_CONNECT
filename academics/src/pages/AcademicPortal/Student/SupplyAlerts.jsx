@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { RefreshCw, AlertTriangle, CheckCircle, Clock, X, FileText, Upload } from 'lucide-react';
-import { studentApi } from '../../services/apiDataLayer';
+import { studentApi } from '../../../services/apiDataLayer';
 
 export function SupplyAlerts({ user, addToast }) {
   const [alerts, setAlerts] = useState([]);
