@@ -53,13 +53,13 @@ const ROLE_NAV = {
     {
       section: 'Tools & Features',
       items: [
-        { title: 'Lost & Found', icon: Search, route: '/manager/lost-and-found' },
-        { title: 'Anonymous Report', icon: AlertTriangle, route: '/manager/anonymous-report' },
-        { title: 'School Clinic', icon: HeartPulse, route: '/manager/clinic' },
-        { title: 'E-Portfolio', icon: FileText, route: '/manager/portfolios' },
-        { title: 'IT Helpdesk', icon: Settings, route: '/manager/helpdesk' },
-        { title: 'Skip the Bus', icon: Bus, route: '/manager/skip-bus' },
-        { title: 'Fee Installments', icon: Banknote, route: '/manager/fees' },
+        { title: 'Lost & Found', icon: Search, route: '/admin/lost-and-found' },
+        { title: 'Anonymous Report', icon: AlertTriangle, route: '/admin/anonymous-report' },
+        { title: 'School Clinic', icon: HeartPulse, route: '/admin/clinic' },
+        { title: 'E-Portfolio', icon: FileText, route: '/admin/portfolios' },
+        { title: 'IT Helpdesk', icon: Settings, route: '/admin/helpdesk' },
+        { title: 'Skip the Bus', icon: Bus, route: '/admin/skip-bus' },
+        { title: 'Fee Installments', icon: Banknote, route: '/admin/fee-installments' },
       ]
     },
   ],
@@ -102,7 +102,7 @@ export const ManagementSidebar = ({ isMobile, isCollapsed, setCollapsed, onLogou
   const role = user?.role || 'admin';
   const navGroups = ROLE_NAV[role] || [];
   const roleColor = ROLE_COLOR[role] || ROLE_COLOR.admin;
-  
+
   useEffect(() => {
     if (isMobile) setCollapsed(true);
   }, [location.pathname, isMobile, setCollapsed]);
@@ -118,14 +118,14 @@ export const ManagementSidebar = ({ isMobile, isCollapsed, setCollapsed, onLogou
   return (
     <>
       {isMobile && !isCollapsed && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          className="fixed inset-0 z-40" 
+          className="fixed inset-0 z-40"
           style={{ background: 'rgba(0, 0, 0, 0.3)', backdropFilter: 'blur(4px)' }}
-          onClick={() => { playBlip(); setCollapsed(true); }} 
+          onClick={() => { playBlip(); setCollapsed(true); }}
         />
       )}
-      
+
       <motion.aside
         initial={false}
         animate={{ width: isCollapsed ? '72px' : '256px', x: isMobile && isCollapsed ? '-100%' : '0%' }}

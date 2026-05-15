@@ -88,6 +88,18 @@ const ROLE_NAV = {
         { title: 'Bus Assignment', icon: Bus, route: '/admin/bus-assignment' },
       ]
     },
+    {
+      section: 'Tools & Features',
+      items: [
+        { title: 'Lost & Found', icon: Search, route: '/admin/lost-and-found' },
+        { title: 'Anonymous Report', icon: AlertTriangle, route: '/admin/anonymous-report' },
+        { title: 'School Clinic', icon: HeartPulse, route: '/admin/clinic' },
+        { title: 'E-Portfolio', icon: FileText, route: '/admin/portfolios' },
+        { title: 'IT Helpdesk', icon: Settings, route: '/admin/helpdesk' },
+        { title: 'Skip the Bus', icon: Bus, route: '/admin/skip-bus' },
+        { title: 'Fee Installments', icon: Banknote, route: '/admin/fee-installments' },
+      ]
+    },
   ],
   student: [
     {
@@ -302,7 +314,6 @@ export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, 
             exit={{ opacity: 0, x: -12, transition: { duration: 0.1 } }}
             className="flex items-center gap-3.5 overflow-hidden whitespace-nowrap"
           >
-            {/* Logo mark */}
             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 shadow-lg"
               style={{
                 background: 'linear-gradient(135deg, #ea580c 0%, #f97316 100%)',
@@ -379,7 +390,6 @@ export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, 
                             background: 'linear-gradient(180deg, #ea580c, #f97316)',
                             boxShadow: '0 0 12px rgba(234, 88, 12, 0.4)',
                           }}
-                          transition={{ type: 'spring', damping: 28, stiffness: 320 }}
                         />
                       )}
 

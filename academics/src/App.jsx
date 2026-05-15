@@ -46,6 +46,13 @@ import AdminAccounts from './pages/AdminPortal/AdminAccounts';
 
 // Manager Portal Pages
 import ManagerDashboard from './pages/ManagerPortal/ManagerDashboard';
+import { LostAndFound } from './pages/ManagementPortal/LostAndFound';
+import { AnonymousReport } from './pages/ManagementPortal/AnonymousReport';
+import { SchoolClinic } from './pages/ManagementPortal/SchoolClinic';
+import { EPortfolio } from './pages/ManagementPortal/EPortfolio';
+import { Helpdesk } from './pages/ManagementPortal/Helpdesk';
+import { SkipBus } from './pages/ManagementPortal/SkipBus';
+import { FeeInstallments } from './pages/ManagementPortal/FeeInstallments';
 
 // Librarian Portal
 import LibraryManagement from './pages/LibrarianPortal/LibraryManagement';
@@ -85,6 +92,7 @@ const CommsPage = ({ user }) => {
     />
   );
 };
+
 import { ExamCenter } from './pages/AcademicPortal/shared/ExamCenter';
 import { NexusHub } from './pages/AcademicPortal/shared/NexusHub';
 import { CSCalendar } from './pages/AcademicPortal/Student/CSCalendar/CSCalendar';
@@ -93,13 +101,6 @@ import { FocusMode } from './pages/AcademicPortal/Student/FocusMode';
 
 
 // Teacher Portal Pages
-import { LostAndFound } from './pages/ManagementPortal/LostAndFound';
-import { AnonymousReport } from './pages/ManagementPortal/AnonymousReport';
-import { SchoolClinic } from './pages/ManagementPortal/SchoolClinic';
-import { EPortfolio } from './pages/ManagementPortal/EPortfolio';
-import { Helpdesk } from './pages/ManagementPortal/Helpdesk';
-import { SkipBus } from './pages/ManagementPortal/SkipBus';
-import { FeeInstallments } from './pages/ManagementPortal/FeeInstallments';
 import { TeacherDashboard } from './pages/TeacherPortal/TeacherDashboard';
 import { ManageAssignments } from './pages/TeacherPortal/ManageAssignments';
 import { GradeSubmissions } from './pages/TeacherPortal/GradeSubmissions';
@@ -141,7 +142,7 @@ const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  
+
   if (!ALLOWED_ROLES.includes(user.role)) {
     portalLogout();
     return <Navigate to="/login" replace />;
@@ -150,7 +151,7 @@ const ProtectedRoute = ({ user, children, requiredRole, portalLogout, ...props }
   if (requiredRole && user.role !== requiredRole) {
     return <Navigate to={`/${user.role}/dashboard`} replace />;
   }
-  
+
   return (
     <Layout user={user} {...props}>
       {children}
@@ -164,14 +165,14 @@ function App() {
   const { theme, toggleTheme } = useTheme();
   const { toasts, addToast, removeToast } = useToast();
   const [showSplash, setShowSplash] = useState(false);
-  
+
   const handleSplashComplete = useCallback(() => {
     sessionStorage.setItem('hasSeenSplash', 'true');
     setShowSplash(false);
   }, []);
-  
+
   const { data: notifications, update: updateNotification } = useStore(KEYS.NOTIFICATIONS, []);
-  
+
   const userNotifications = useMemo(() => {
     if (!user || !Array.isArray(notifications)) return [];
     return notifications
@@ -197,7 +198,7 @@ function App() {
     const params = new URLSearchParams(hash.split('?')[1]);
     const autologin = params.get('autologin');
     const pass = params.get('pass');
-    
+
     if (autologin && pass && !user) {
       // Clean URL immediately so it doesn't loop
       window.location.hash = window.location.hash.split('?')[0];
@@ -211,8 +212,8 @@ function App() {
         })
         .catch(() => {});
     }
-  // Only run once on mount
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Only run once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (showSplash) return <SplashScreen onComplete={handleSplashComplete} onLogin={login} />;
@@ -234,8 +235,8 @@ function App() {
       <Routes>
           {/* 🔐 Auth Gates */}
           <Route path="/login" element={
-            user && ALLOWED_ROLES.includes(user.role) 
-              ? <Navigate to={`/${user.role}/dashboard`} replace /> 
+            user && ALLOWED_ROLES.includes(user.role)
+              ? <Navigate to={`/${user.role}/dashboard`} replace />
               : <Login onLogin={login} onSwitch={() => navigate('/signup')} />
           } />
           <Route path="/signup" element={
@@ -440,7 +441,7 @@ function App() {
             </ProtectedRoute>
           } />
 
-          {/* �👨‍🏫 Teacher Portal */}
+          {/* 👨‍🏫 Teacher Portal */}
           <Route path="/teacher/dashboard" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
               <TeacherDashboard user={user} />
@@ -603,46 +604,83 @@ function App() {
               <CreateAccount user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
-<Route path="/manager/accounts" element={
-             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
-               <AdminAccounts user={user} addToast={addToast} />
-             </ProtectedRoute>
-           } />
-           <Route path="/manager/lost-and-found" element={
-             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
-               <LostAndFound user={user} addToast={addToast} />
-             </ProtectedRoute>
-           } />
-           <Route path="/manager/anonymous-report" element={
-             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
-               <AnonymousReport user={user} addToast={addToast} />
-             </ProtectedRoute>
-           } />
-           <Route path="/manager/clinic" element={
-             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
-               <SchoolClinic user={user} addToast={addToast} />
-             </ProtectedRoute>
-           } />
-           <Route path="/manager/portfolios" element={
-             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
-               <EPortfolio user={user} addToast={addToast} />
-             </ProtectedRoute>
-           } />
-           <Route path="/manager/helpdesk" element={
-             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
-               <Helpdesk user={user} addToast={addToast} />
-             </ProtectedRoute>
-           } />
-           <Route path="/manager/skip-bus" element={
-             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
-               <SkipBus user={user} addToast={addToast} />
-             </ProtectedRoute>
-           } />
-           <Route path="/manager/fees" element={
-             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
-               <FeeInstallments user={user} addToast={addToast} />
-             </ProtectedRoute>
-           } />
+          <Route path="/manager/accounts" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <AdminAccounts user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/lost-and-found" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <LostAndFound user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/anonymous-report" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <AnonymousReport user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/clinic" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <SchoolClinic user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/portfolios" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <EPortfolio user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/helpdesk" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <Helpdesk user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/skip-bus" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <SkipBus user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/manager/fee-installments" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+              <FeeInstallments user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+
+          {/* 👨‍💼 Admin - Tools & Features (Management features) */}
+          <Route path="/admin/lost-and-found" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <LostAndFound user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/anonymous-report" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <AnonymousReport user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/clinic" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <SchoolClinic user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/portfolios" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <EPortfolio user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/helpdesk" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <Helpdesk user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/skip-bus" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <SkipBus user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/fee-installments" element={
+            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+              <FeeInstallments user={user} addToast={addToast} />
+            </ProtectedRoute>
+          } />
 
           {/* 👨‍💼 Admin Portal */}
           <Route path="/admin/dashboard" element={
@@ -735,8 +773,8 @@ function App() {
 
           {/* 🏁 Terminal Entry/Exit */}
           <Route path="/" element={
-            user && ALLOWED_ROLES.includes(user.role) 
-              ? <Navigate to={`/${user.role}/dashboard`} replace /> 
+            user && ALLOWED_ROLES.includes(user.role)
+              ? <Navigate to={`/${user.role}/dashboard`} replace />
               : <Navigate to="/login" replace />
           } />
           <Route path="*" element={<NotFound user={user} />} />
