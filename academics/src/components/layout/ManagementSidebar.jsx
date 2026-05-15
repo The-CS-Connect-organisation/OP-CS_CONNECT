@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  LayoutDashboard, Users, Clock, Calendar, Banknote, 
+import {
+  LayoutDashboard, Users, Clock, Calendar, Banknote,
   ChevronLeft, ChevronRight, X, Bot,
   LogOut, Settings, MessageCircle, BarChart3, ChevronDown,
-  ClipboardList, Megaphone, Bus
+  ClipboardList, Megaphone, Bus, Search, AlertTriangle, HeartPulse,
+  FileText, GraduationCap, School, Bell, Activity, Shield, Plus
 } from 'lucide-react';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
@@ -47,6 +48,18 @@ const ROLE_NAV = {
       section: 'Transportation',
       items: [
         { title: 'Bus Assignment', icon: Bus, route: '/admin/bus-assignment' },
+      ]
+    },
+    {
+      section: 'Tools & Features',
+      items: [
+        { title: 'Lost & Found', icon: Search, route: '/manager/lost-and-found' },
+        { title: 'Anonymous Report', icon: AlertTriangle, route: '/manager/anonymous-report' },
+        { title: 'School Clinic', icon: HeartPulse, route: '/manager/clinic' },
+        { title: 'E-Portfolio', icon: FileText, route: '/manager/portfolios' },
+        { title: 'IT Helpdesk', icon: Settings, route: '/manager/helpdesk' },
+        { title: 'Skip the Bus', icon: Bus, route: '/manager/skip-bus' },
+        { title: 'Fee Installments', icon: Banknote, route: '/manager/fees' },
       ]
     },
   ],

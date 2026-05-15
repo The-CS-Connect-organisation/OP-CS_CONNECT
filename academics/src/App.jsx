@@ -93,6 +93,13 @@ import { FocusMode } from './pages/AcademicPortal/Student/FocusMode';
 
 
 // Teacher Portal Pages
+import { LostAndFound } from './pages/ManagementPortal/LostAndFound';
+import { AnonymousReport } from './pages/ManagementPortal/AnonymousReport';
+import { SchoolClinic } from './pages/ManagementPortal/SchoolClinic';
+import { EPortfolio } from './pages/ManagementPortal/EPortfolio';
+import { Helpdesk } from './pages/ManagementPortal/Helpdesk';
+import { SkipBus } from './pages/ManagementPortal/SkipBus';
+import { FeeInstallments } from './pages/ManagementPortal/FeeInstallments';
 import { TeacherDashboard } from './pages/TeacherPortal/TeacherDashboard';
 import { ManageAssignments } from './pages/TeacherPortal/ManageAssignments';
 import { GradeSubmissions } from './pages/TeacherPortal/GradeSubmissions';
@@ -596,11 +603,46 @@ function App() {
               <CreateAccount user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
-          <Route path="/manager/accounts" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
-              <AdminAccounts user={user} addToast={addToast} />
-            </ProtectedRoute>
-          } />
+<Route path="/manager/accounts" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+               <AdminAccounts user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
+           <Route path="/manager/lost-and-found" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+               <LostAndFound user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
+           <Route path="/manager/anonymous-report" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+               <AnonymousReport user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
+           <Route path="/manager/clinic" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+               <SchoolClinic user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
+           <Route path="/manager/portfolios" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+               <EPortfolio user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
+           <Route path="/manager/helpdesk" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+               <Helpdesk user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
+           <Route path="/manager/skip-bus" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+               <SkipBus user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
+           <Route path="/manager/fees" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="manager">
+               <FeeInstallments user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
 
           {/* 👨‍💼 Admin Portal */}
           <Route path="/admin/dashboard" element={
