@@ -70,6 +70,35 @@ const StatCard = ({ icon: Icon, label, value, trend, gradient, color, sublabel }
   </motion.div>
 );
 
+/* ── AI Tool Card ── */
+const AiToolCard = ({ tool, onClick }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.2 }}
+    onClick={() => onClick(tool)}
+    className="bg-white rounded-2xl border p-5 cursor-pointer hover:shadow-md transition-all hover:-translate-y-1"
+    style={{ borderColor: '#e5e7eb' }}
+  >
+    <div className="flex items-start justify-between mb-3">
+      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-sm ${
+        tool.gradient ? `bg-gradient-to-br ${tool.gradient}` : 'bg-gray-100'
+      }`}>
+        {(() => { const Icon = tool.icon || Bot; return <Icon size={20} className="text-white" />; })()}
+      </div>
+      <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+        tool.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+      }`}>{tool.status || 'active'}</span>
+    </div>
+    <h4 className="text-sm font-bold text-gray-900">{tool.name}</h4>
+    <p className="text-xs text-gray-500 mt-1 truncate">{tool.description || 'AI-powered tool'}</p>
+    <div className="flex items-center justify-between mt-3">
+      <span className="text-[10px] text-gray-400">{tool.usage?.toLocaleString() || 0} uses</span>
+      <span className="text-[10px] text-gray-400">{tool.dailyUsage ? `${tool.dailyUsage}/day` : '—'}</span>
+    </div>
+  </motion.div>
+);
+
 export const AdminAILab = ({ user, addToast }) => {
   const [stats, setStats] = useState(null);
   const [tools, setTools] = useState([]);

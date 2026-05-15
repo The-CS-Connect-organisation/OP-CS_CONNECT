@@ -138,17 +138,19 @@ async function performRequest(method, url, data, retries, timeout) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
+      const isFormData = typeof FormData !== 'undefined' && data instanceof FormData;
+
       const options = {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          ...(isFormData ? {} : { 'Content-Type': 'application/json' }), // Let browser set Content-Type for FormData
           'Authorization': `Bearer ${getAuthToken()}`,
         },
         signal: controller.signal,
       };
 
       if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
-        options.body = JSON.stringify(data);
+        options.body = isFormData ? data : JSON.stringify(data);
       }
 
       const response = await fetch(url, options);
@@ -648,8 +650,13 @@ export const studentAssistantApi = {
   async getAnswerAnalysisHistory(subject = null, page = 1, limit = 20) {
     let query = `?page=${page}&limit=${limit}`;
     if (subject) query += `&subject=${subject}`;
-    return makeRequest('GET', `/student-assistant/answer-history${query}`);
-  },
+return makeRequest('GET', `/student-assistant/answer-history${query}`);
+   },
+
+   // Notification Preferences
+   async getNotificationPrefs() { return makeRequest('GET', '/user-prefs/notification-settings'); },
+   async updateNotificationPrefs(prefs) { return makeRequest('PUT', '/user-prefs/notification-settings', prefs, { useCache: false }); },
+   async saveFCMToken(token) { return makeRequest('POST', '/user-prefs/fcm-token', { token }, { useCache: false }); },
 };
 
 // ============================================================================
@@ -664,7 +671,9 @@ export const authApi = {
     }, { useCache: false });
 
     if (response?.success && response?.token) {
-      localStorage.setItem('sms_auth_token', response.token);
+      // Use setAuthToken from utils/apiClient for consistent storage
+      const { setAuthToken } = await import('../utils/apiClient');
+      setAuthToken(response.token);
     }
 
     return response;
@@ -676,14 +685,16 @@ export const authApi = {
     });
 
     if (response?.success && response?.token) {
-      localStorage.setItem('sms_auth_token', response.token);
+      const { setAuthToken } = await import('../utils/apiClient');
+      setAuthToken(response.token);
     }
 
     return response;
   },
 
   async logout() {
-    localStorage.removeItem('sms_auth_token');
+    const { setAuthToken } = await import('../utils/apiClient');
+    setAuthToken(null);
     clearCache();
   },
 
@@ -705,8 +716,14 @@ export const apiUtils = {
   getCachedData,
   setCachedData,
   getAuthToken,
-  setAuthToken: (token) => localStorage.setItem('sms_auth_token', token),
-  removeAuthToken: () => localStorage.removeItem('sms_auth_token'),
+  setAuthToken: async (token) => {
+    const { setAuthToken } = await import('../utils/apiClient');
+    setAuthToken(token);
+  },
+  removeAuthToken: async () => {
+    const { setAuthToken } = await import('../utils/apiClient');
+    setAuthToken(null);
+  },
 };
 
 export default {

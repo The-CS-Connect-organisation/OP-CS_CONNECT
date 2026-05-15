@@ -12,67 +12,65 @@ import { KEYS } from '../../data/schema';
 import { useSound } from '../../hooks/useSound';
 
 const ROLE_NAV = {
-  admin: [
-    {
-      section: 'Overview',
-      items: [
-        { title: 'Dashboard', icon: LayoutDashboard, route: '/admin/dashboard' },
-        { title: 'Analytics', icon: BarChart3, route: '/admin/analytics' },
-      ]
-    },
-    {
-      section: 'Management',
-      items: [
-        { title: 'Users', icon: Users, route: '/admin/users' },
-        { title: 'Timetable', icon: Calendar, route: '/admin/timetable' },
-        { title: 'Announcements', icon: Megaphone, route: '/admin/announcements' },
-        { title: 'Payroll & HR', icon: Banknote, route: '/admin/payroll-hr' },
-      ]
-    },
-    {
-      section: 'Academic',
-      items: [
-        { title: 'Exams', icon: ClipboardList, route: '/admin/exams' },
-        { title: 'Fees & Billing', icon: Banknote, route: '/admin/fees' },
-      ]
-    },
-    {
-      section: 'Tools',
-      items: [
-        { title: 'AI Lab', icon: Bot, route: '/admin/ai-lab' },
-        { title: 'Comms Hub', icon: MessageCircle, route: '/admin/comms' },
-      ]
-    },
-    {
-      section: 'Transportation',
-      items: [
-        { title: 'Bus Assignment', icon: Bus, route: '/admin/bus-assignment' },
-      ]
-    },
-  ],
-  parent: [
-    {
-      section: 'Overview',
-      items: [
-        { title: 'Dashboard', icon: LayoutDashboard, route: '/parent/dashboard' },
-      ]
-    },
-    {
-      section: 'My Children',
-      items: [
-        { title: 'Attendance', icon: Users, route: '/parent/attendance' },
-        { title: 'Grades', icon: ClipboardList, route: '/parent/grades' },
-        { title: 'Fees', icon: Banknote, route: '/parent/fees' },
-      ]
-    },
-    {
-      section: 'Tools',
-      items: [
-        { title: 'Messages', icon: MessageCircle, route: '/parent/comms' },
-      ]
-    },
-  ],
-};
+   admin: [
+     {
+       section: 'Overview',
+       items: [
+         { title: 'Dashboard', icon: LayoutDashboard, route: '/admin/dashboard' },
+         { title: 'Analytics', icon: BarChart3, route: '/admin/analytics' },
+       ]
+     },
+     {
+       section: 'Management',
+       items: [
+         { title: 'Users', icon: Users, route: '/admin/users' },
+         { title: 'Timetable', icon: Calendar, route: '/admin/timetable' },
+         { title: 'Announcements', icon: Megaphone, route: '/admin/announcements' },
+         { title: 'Payroll & HR', icon: Banknote, route: '/admin/payroll-hr' },
+       ]
+     },
+     {
+       section: 'Academic',
+       items: [
+         { title: 'Exams', icon: ClipboardList, route: '/admin/exams' },
+         { title: 'Fees & Billing', icon: Banknote, route: '/admin/fees' },
+       ]
+     },
+     {
+       section: 'Tools & Features',
+       items: [
+         { title: 'AI Lab', icon: Bot, route: '/admin/ai-lab' },
+         { title: 'Comms Hub', icon: MessageCircle, route: '/admin/comms' },
+         { title: 'Bus Assignment', icon: Bus, route: '/admin/bus-assignment' },
+         { title: 'Uniform Schedule', icon: Calendar, route: '/admin/uniform-schedule' },
+       ]
+     },
+   ],
+   parent: [
+     {
+       section: 'Overview',
+       items: [
+         { title: 'Dashboard', icon: LayoutDashboard, route: '/parent/dashboard' },
+       ]
+     },
+     {
+       section: 'My Children',
+       items: [
+         { title: 'Attendance', icon: Users, route: '/parent/attendance' },
+         { title: 'Grades', icon: ClipboardList, route: '/parent/grades' },
+         { title: 'Fees', icon: Banknote, route: '/parent/fees' },
+         { title: 'Book Alerts', icon: Clock, route: '/parent/book-alerts' },
+       ]
+     },
+     {
+       section: 'Shared Tools',
+       items: [
+         { title: 'Messages', icon: MessageCircle, route: '/parent/comms' },
+         { title: 'Digital Fridge', icon: Banknote, route: '/parent/digital-fridge' },
+       ]
+     },
+   ],
+ };
 
 const ROLE_COLOR = {
   admin: { bg: '#111111', text: 'white', label: 'Admin' },

@@ -38,7 +38,7 @@ export const Layout = ({ children, user, logout, notifications = [], onMarkRead,
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 relative z-10" style={{ marginLeft: '256px' }}>
+      <div className="flex-1 flex flex-col min-w-0 relative z-10" style={{ marginLeft: isMobile ? '0px' : (isCollapsed ? '72px' : '256px'), transition: 'margin-left 0.3s ease' }}>
         <TopBar 
           user={user}
           isMobile={isMobile} 

@@ -74,12 +74,15 @@ import { DriverTracking } from './pages/AcademicPortal/Student/DriverTracking';
 import { Achievements } from './pages/AcademicPortal/Student/Achievements';
 import { Accolades } from './pages/AcademicPortal/Student/Accolades';
 import { DailyBriefing } from './pages/AcademicPortal/Student/DailyBriefing';
+import { SupplyAlerts } from './pages/AcademicPortal/Student/SupplyAlerts';
 
 // Academic Portal - Shared Features
 import { SettingsPanel } from './pages/AcademicPortal/shared/Settings';
 import { FeeManagement } from './pages/AcademicPortal/shared/FeeManagement';
 import { AILab } from './pages/AcademicPortal/shared/AILab';
 import { CommunicationHub } from './pages/AcademicPortal/shared/CommunicationHub';
+import { StationeryAlertCenter } from './pages/TeacherPortal/StationeryAlertCenter';
+import { UniformSchedule } from './pages/AdminPortal/UniformSchedule';
 
 // Wrapper that auto-opens the hub when the /comms route is visited
 const CommsPage = ({ user }) => {
@@ -537,11 +540,18 @@ function App() {
               <TeacherAILab user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
-          <Route path="/teacher/ai" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <TeacherAILab user={user} addToast={addToast} />
-            </ProtectedRoute>
-          } />
+<Route path="/teacher/ai" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+               <TeacherAILab user={user} addToast={addToast} />
+             </ProtectedRoute>
+           />
+
+           {/* Stationery Alert Center */}
+           <Route path="/teacher/stationery-alerts" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+               <StationeryAlertCenter user={user} addToast={addToast} />
+             </ProtectedRoute>
+           />
 
           {/* 👨‍💼 Manager Portal */}
           <Route path="/manager/dashboard" element={

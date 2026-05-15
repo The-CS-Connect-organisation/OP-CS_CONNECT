@@ -24,6 +24,8 @@ import { NotFound } from './pages/Common/NotFound';
 import { StudentDashboard } from './pages/AcademicPortal/Dashboard/StudentDashboard';
 import { ParentDashboard } from './pages/ManagementPortal/Parent/ParentDashboard';
 import { Profile as ParentProfile } from './pages/ManagementPortal/Parent/Profile';
+import { BookHeavyAlerts } from './pages/ManagementPortal/BookHeavyAlerts';
+import { DigitalFridge } from './pages/ManagementPortal/DigitalFridge';
 import { DriverDashboard } from './pages/DriverPortal/DriverDashboard';
 import { DriverProfile } from './pages/DriverPortal/DriverProfile';
 
@@ -42,6 +44,7 @@ import AdminBusAssignment from './pages/AdminPortal/AdminBusAssignment';
 import { Profile as AdminProfile } from './pages/AdminPortal/Profile';
 import { CreateAccount } from './pages/AdminPortal/CreateAccount';
 import AdminAccounts from './pages/AdminPortal/AdminAccounts';
+import AdminUniformSchedule from './pages/AdminPortal/UniformSchedule';
 
 // Academic Portal - Student Pages
 import { Timetable } from './pages/AcademicPortal/Student/Timetable';
@@ -80,6 +83,8 @@ import { QuickMessenger } from './pages/TeacherPortal/QuickMessenger';
 import { PerformanceReports } from './pages/TeacherPortal/PerformanceReports';
 import { ClassNotes } from './pages/TeacherPortal/ClassNotes';
 import { TeacherAILab } from './pages/TeacherPortal/TeacherAILab';
+import { StationeryAlertCenter } from './pages/TeacherPortal/StationeryAlertCenter';
+import { SupplyAlerts } from './pages/AcademicPortal/Student/SupplyAlerts';
 
 // Error Boundary Component
 class ErrorBoundary extends React.Component {
@@ -355,12 +360,17 @@ function App() {
               <SettingsPanel user={user} />
             </ProtectedRoute>
           } />
-          <Route path="/student/bus-tracking" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
-              <BusTracking user={user} />
-            </ProtectedRoute>
-          } />
-          <Route path="/driver-tracking" element={
+<Route path="/student/bus-tracking" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+               <BusTracking user={user} />
+             </ProtectedRoute>
+           } />
+           <Route path="/student/supply-alerts" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
+               <SupplyAlerts user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
+           <Route path="/student/driver-tracking" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="student">
               <DriverTracking />
             </ProtectedRoute>
@@ -407,18 +417,28 @@ function App() {
               <ParentProfile user={user} />
             </ProtectedRoute>
           } />
-          <Route path="/parent/notifications" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
-              <NotificationCenter user={user} addToast={addToast} />
-            </ProtectedRoute>
-          } />
-          <Route path="/parent/bus-tracking" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
-              <BusTracking user={user} />
-            </ProtectedRoute>
-          } />
+<Route path="/parent/notifications" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
+               <NotificationCenter user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
+           <Route path="/parent/bus-tracking" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
+               <BusTracking user={user} />
+             </ProtectedRoute>
+           } />
+           <Route path="/parent/book-alerts" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
+               <BookHeavyAlerts user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
+           <Route path="/parent/digital-fridge" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="parent">
+               <DigitalFridge user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
 
-          {/* Driver Portal */}
+           {/* Driver Portal */}
           <Route path="/driver/dashboard" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="driver">
               <DriverDashboard user={user} />
@@ -521,13 +541,18 @@ function App() {
               <TeacherAILab user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
-          <Route path="/teacher/ai" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
-              <TeacherAILab user={user} addToast={addToast} />
-            </ProtectedRoute>
-          } />
+<Route path="/teacher/ai" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+               <TeacherAILab user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
+           <Route path="/teacher/supply-analytics" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
+               <StationeryAlertCenter user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
 
-          {/* 👨‍💼 Admin Portal */}
+           {/* 👨‍💼 Admin Portal */}
           <Route path="/admin/dashboard" element={
             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
               <AdminDashboard user={user} addToast={addToast} />
@@ -593,13 +618,18 @@ function App() {
               <CreateAccount user={user} addToast={addToast} />
             </ProtectedRoute>
           } />
-          <Route path="/admin/accounts" element={
-            <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
-              <AdminAccounts user={user} addToast={addToast} />
-            </ProtectedRoute>
-          } />
+<Route path="/admin/accounts" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+               <AdminAccounts user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
+           <Route path="/admin/uniform-schedule" element={
+             <ProtectedRoute {...layoutProps} user={user} requiredRole="admin">
+               <AdminUniformSchedule user={user} addToast={addToast} />
+             </ProtectedRoute>
+           } />
 
-          {/* 🏁 Terminal Entry/Exit */}
+           {/* 🏁 Terminal Entry/Exit */}
           <Route path="/" element={
             user && ALLOWED_ROLES.includes(user.role) 
               ? <Navigate to={`/${user.role}/dashboard`} replace /> 

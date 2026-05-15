@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  LayoutDashboard, Users, BookOpen, Clock, Calendar, CheckCircle, Banknote, 
+import {
+  LayoutDashboard, Users, BookOpen, Clock, Calendar, CheckCircle, Banknote,
   Bell, ChevronLeft, ChevronRight, X, Sparkles, Bot,
   LogOut, Settings, MessageCircle, FileText, BarChart3, ChevronDown,
-  ClipboardList, UserCheck, PencilLine, Megaphone, Heart, Wallet, Bus
+  ClipboardList, UserCheck, PencilLine, Megaphone, Heart, Wallet, Bus,
+  Shield, AlertTriangle, Package, CalendarClock
 } from 'lucide-react';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
@@ -25,6 +26,7 @@ const ROLE_NAV = {
       items: [
         { title: 'Users', icon: Users, route: '/admin/users' },
         { title: 'Accounts', icon: Wallet, route: '/admin/accounts' },
+        { title: 'Create Account', icon: Shield, route: '/admin/create-account' },
         { title: 'Timetable', icon: Calendar, route: '/admin/timetable' },
         { title: 'Announcements', icon: Megaphone, route: '/admin/announcements' },
         { title: 'Payroll & HR', icon: Banknote, route: '/admin/payroll-hr' },
@@ -38,16 +40,13 @@ const ROLE_NAV = {
       ]
     },
     {
-      section: 'Tools',
+      section: 'Tools & Features',
       items: [
         { title: 'AI Lab', icon: Bot, route: '/admin/ai-lab' },
         { title: 'Comms Hub', icon: MessageCircle, route: '/admin/comms' },
-      ]
-    },
-    {
-      section: 'Transportation',
-      items: [
         { title: 'Bus Assignment', icon: Bus, route: '/admin/bus-assignment' },
+        { title: 'Uniform Schedule', icon: CalendarClock, route: '/admin/uniform-schedule' },
+        { title: 'Profile', icon: Users, route: '/admin/profile' },
       ]
     },
   ],
@@ -74,7 +73,8 @@ const ROLE_NAV = {
       items: [
         { title: 'Fees', icon: Banknote, route: '/student/fees' },
         { title: 'Exams', icon: ClipboardList, route: '/student/exams' },
-        { title: 'Bus Tracking', icon: Heart, route: '/student/bus-tracking' },
+        { title: 'Bus Tracking', icon: Bus, route: '/student/bus-tracking' },
+        { title: 'Supply Alerts', icon: Package, route: '/student/supply-alerts' },
       ]
     },
     {
@@ -84,6 +84,7 @@ const ROLE_NAV = {
         { title: 'Messages', icon: MessageCircle, route: '/student/comms' },
         { title: 'Nexus Hub', icon: Users, route: '/student/nexus' },
         { title: 'Profile', icon: Users, route: '/student/profile' },
+        { title: 'Settings', icon: Settings, route: '/student/settings' },
       ]
     },
   ],
@@ -100,6 +101,8 @@ const ROLE_NAV = {
         { title: 'Assignments', icon: FileText, route: '/teacher/assignments' },
         { title: 'Attendance', icon: UserCheck, route: '/teacher/attendance' },
         { title: 'Grading', icon: PencilLine, route: '/teacher/submissions' },
+        { title: 'Enter Grades', icon: PencilLine, route: '/teacher/grades' },
+        { title: 'Upload Notes', icon: BookOpen, route: '/teacher/notes' },
         { title: 'Class Notes', icon: BookOpen, route: '/teacher/class-notes' },
         { title: 'Exams', icon: ClipboardList, route: '/teacher/exams' },
       ]
@@ -124,6 +127,9 @@ const ROLE_NAV = {
       section: 'Tools',
       items: [
         { title: 'AI Lab', icon: Bot, route: '/teacher/ai-lab' },
+        { title: 'Supply Analytics', icon: BarChart3, route: '/teacher/supply-analytics' },
+        { title: 'Profile', icon: Users, route: '/teacher/profile' },
+        { title: 'Settings', icon: Settings, route: '/teacher/settings' },
       ]
     },
   ],
@@ -155,21 +161,24 @@ const ROLE_NAV = {
         { title: 'Grades', icon: CheckCircle, route: '/parent/grades' },
         { title: 'Timetable', icon: Clock, route: '/parent/timetable' },
         { title: 'Fees', icon: Banknote, route: '/parent/fees' },
+        { title: 'Book Alerts', icon: AlertTriangle, route: '/parent/book-alerts' },
       ]
     },
     {
-      section: 'Services',
+      section: 'Shared Tools',
       items: [
-        { title: 'Bus Tracking', icon: Heart, route: '/parent/bus-tracking' },
+        { title: 'Bus Tracking', icon: Bus, route: '/parent/bus-tracking' },
         { title: 'Notifications', icon: Bell, route: '/parent/notifications' },
+        { title: 'Digital Fridge', icon: Package, route: '/parent/digital-fridge' },
       ]
     },
     {
-      section: 'Tools',
+      section: 'Communication',
       items: [
         { title: 'Messages', icon: MessageCircle, route: '/parent/comms' },
         { title: 'Profile', icon: Users, route: '/parent/profile' },
-      ]
+        { title: 'Settings', icon: Settings, route: '/parent/settings' },
+      ],
     },
   ],
 };
@@ -179,6 +188,7 @@ const ROLE_COLOR = {
   teacher: { bg: '#a855f7', text: 'white', label: 'Teacher' },
   student: { bg: '#ff6b9d', text: 'white', label: 'Student' },
   parent: { bg: '#6366f1', text: 'white', label: 'Parent' },
+  driver: { bg: '#10b981', text: 'white', label: 'Driver' },
 };
 
 export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, onLogout }) => {
@@ -192,7 +202,7 @@ export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, 
   const role = user?.role || 'student';
   const navGroups = ROLE_NAV[role] || [];
   const roleColor = ROLE_COLOR[role] || ROLE_COLOR.student;
-  
+
   useEffect(() => {
     if (isMobile) setCollapsed(true);
   }, [location.pathname, isMobile, setCollapsed]);
@@ -206,20 +216,21 @@ export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, 
   return (
     <>
       {isMobile && !isCollapsed && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-40" 
+          className="fixed inset-0 z-40"
           style={{ background: 'rgba(0, 0, 0, 0.3)', backdropFilter: 'blur(4px)' }}
-          onClick={() => { playBlip(); setCollapsed(true); }} 
+          onClick={() => { playBlip(); setCollapsed(true); }}
         />
       )}
-      
+
       <motion.aside
         initial={false}
-        animate={{ 
-          width: '256px',
+        animate={{
+          width: isCollapsed ? '72px' : '256px',
+          x: isMobile && isCollapsed ? '-100%' : '0%',
         }}
         transition={{ type: 'spring', damping: 28, stiffness: 220 }}
         className="fixed top-0 left-0 h-screen z-50 flex flex-col overflow-hidden border-r"
@@ -230,7 +241,7 @@ export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, 
         }}
       >
         <div className="h-[64px] flex items-center justify-between px-4 border-b flex-shrink-0" style={{ borderColor: 'var(--border-default)' }}>
-          <motion.div 
+          <motion.div
             key="expanded"
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 1, x: 0 }}
@@ -239,15 +250,17 @@ export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, 
           >
             <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
               style={{ background: '#111111', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
-              <span className="text-[var(--text-primary)] font-bold text-sm">C</span>
+              <span className="text-white font-bold text-sm">CS</span>
             </div>
-            <div className="flex flex-col min-w-0">
-              <span className="font-bold tracking-tight text-sm" style={{ color: 'var(--text-primary)' }}>Cornerstone</span>
-              <span className="text-[10px] font-medium flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                SchoolSync
-              </span>
-            </div>
+            {!isCollapsed && (
+              <div className="flex flex-col min-w-0">
+                <span className="font-bold tracking-tight text-sm" style={{ color: 'var(--text-primary)' }}>Cornerstone</span>
+                <span className="text-[10px] font-medium flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  SchoolSync
+                </span>
+              </div>
+            )}
           </motion.div>
 
           {isMobile && !isCollapsed && (
@@ -268,10 +281,10 @@ export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, 
                 <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: 'var(--text-dim)' }}>
                   {group.section}
                 </span>
-                <ChevronDown 
-                  size={11} 
-                  className={`transition-transform duration-200`}
-                  style={{ 
+                <ChevronDown
+                  size={11}
+                  className="transition-transform duration-200"
+                  style={{
                     color: 'var(--text-dim)',
                     transform: collapsedSections[group.section] ? 'rotate(-90deg)' : 'rotate(0deg)'
                   }}
@@ -290,22 +303,22 @@ export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, 
                       onClick={() => { playBlip(); navigate(item.route); }}
                       onMouseEnter={playClick}
                       className="relative flex items-center gap-3 py-2 rounded-xl transition-all duration-150 w-full overflow-hidden px-3"
-                      style={{ 
+                      style={{
                         background: isActive ? 'rgba(0,0,0,0.07)' : 'transparent',
                         color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
                       }}
                     >
                       {isActive && (
-                        <motion.div 
-                          layoutId="sidebarIndicator" 
+                        <motion.div
+                          layoutId="sidebarIndicator"
                           className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full"
                           style={{ background: '#111111' }}
                           transition={{ type: 'spring', damping: 30, stiffness: 300 }}
                         />
                       )}
-                      
+
                       <item.icon size={17} className="shrink-0" />
-                      
+
                       <motion.span
                         className="text-sm font-medium whitespace-nowrap overflow-hidden"
                       >
@@ -321,12 +334,12 @@ export const Sidebar = ({ user: propsUser, isMobile, isCollapsed, setCollapsed, 
 
         {/* Footer */}
         <div className="border-t p-2 space-y-0.5" style={{ borderColor: 'var(--border-default)' }}>
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} 
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="mb-2 p-2 rounded-xl flex items-center gap-3"
             style={{ background: 'var(--bg-surface)', border: '1px solid var(--border-default)' }}
           >
-            <div 
+            <div
               className="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
               style={{ background: roleColor.bg, color: roleColor.text }}
             >

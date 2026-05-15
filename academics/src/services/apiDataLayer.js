@@ -221,7 +221,38 @@ export const teacherApi = {
     return makeRequest('POST', '/teacher/ai/generate-feedback', { submissionId, marks, maxMarks, rubric });
   },
 
-  // ── Lost & Found ──
+  // ── Library (Teacher can view) ──
+  async getLibraryBooks() { return makeRequest('GET', '/school/library/books', null, { cacheKey: 'library:books' }); },
+  async getLibraryTransactions() { return makeRequest('GET', '/school/library/transactions'); },
+
+  // ── Assignments with Supplies ──
+  async createAssignmentWithSupplies(data) { return makeRequest('POST', '/school/assignments-with-supplies', data, { useCache: false }); },
+  async updateAssignmentSupplies(assignmentId, data) { return makeRequest('PATCH', `/school/assignments/${assignmentId}/supplies`, data, { useCache: false }); },
+
+  // ── Book Heavy Day ──
+  async analyzeBookLoad(classId, date) { return makeRequest('GET', `/school/book-load/${classId}/${date}`); },
+  async sendBookHeavyAlert(data) { return makeRequest('POST', '/school/book-load-alert', data, { useCache: false }); },
+
+// ── Uniform Schedule ──
+   async createUniformSchedule(data) { return makeRequest('POST', '/school/uniform-schedules', data, { useCache: false }); },
+   async getUniformSchedule(classId, date) { return makeRequest('GET', `/school/uniform-schedules/${classId}/${date}`); },
+
+   // ── Parent Dashboard ──
+   async getParentDashboard() { return makeRequest('GET', '/parent/dashboard'); },
+
+   // ── Parent Book Heavy Alerts ──
+   async getBookHeavyAlerts() { return makeRequest('GET', '/parent/book-alerts'); },
+
+   // ── Supply Analytics (Teacher) ──
+   async getSupplyAnalytics() { return makeRequest('GET', '/teacher/supply-analytics'); },
+
+   // ── Student Supply Alerts ──
+   async getStudentSupplyAlerts() { return makeRequest('GET', '/student/supply-alerts'); },
+
+   // ── Bulk Parent Notification (Teacher/Admin) ──
+   async sendBulkParentNotification(data) { return makeRequest('POST', '/parent/send-bulk-notification', data, { useCache: false }); },
+
+   // ── Lost & Found ──
   async getLostItems(params = {}) {
     const qp = new URLSearchParams(params).toString();
     return makeRequest('GET', `/lost-and-found?${qp}`);
@@ -297,56 +328,74 @@ export const studentApi = {
     return makeRequest('GET', `/school/notes${query}`);
   },
   async getProgress() { return makeRequest('GET', '/student-assistant/analytics'); },
+
+  // ── Library (Student can view all, borrow/return) ──
+  async getLibraryBooks() { return makeRequest('GET', '/school/library/books', null, { cacheKey: 'library:books' }); },
+  async getLibraryTransactions() { return makeRequest('GET', '/school/library/transactions'); },
+  async borrowBook(txData) { return makeRequest('POST', '/school/library/transactions/borrow', txData, { useCache: false }); },
+  async returnBook(txId) { return makeRequest('POST', `/school/library/transactions/${txId}/return`, null, { useCache: false }); },
+
+  // ── Digital Fridge (Student side) ──
+  async createFridgeItem(data) { return makeRequest('POST', '/school/fridge-items', data, { useCache: false }); },
+  async getFridgeItems() { return makeRequest('GET', '/school/fridge-items'); },
+  async updateFridgeItem(itemId, data) { return makeRequest('PATCH', `/school/fridge-items/${itemId}`, data, { useCache: false }); },
+  async deleteFridgeItem(itemId) { return makeRequest('DELETE', `/school/fridge-items/${itemId}`, null, { useCache: false }); },
+
+  // ── Book Heavy Day (Student can check) ──
+  async checkBookLoad(classId, date) { return makeRequest('GET', `/school/book-load/${classId}/${date}`); },
+
+  // ── Uniform Schedule (Student can check) ──
+  async getUniformSchedule(classId, date) { return makeRequest('GET', `/school/uniform-schedules/${classId}/${date}`); },
+  async getTodaysUniform() { return makeRequest('GET', '/school/uniform-today'); },
 };
 
-// ── STUDENT ASSISTANT API ──
-export const studentAssistantApi = {
-  async resolveDoubt(question, subject = null, context = null, imageUrl = null) {
-    return makeRequest('POST', '/student-assistant/doubts/resolve', { question, subject, context, imageUrl }, { useCache: false });
+// ── PARENT API ──
+export const parentApi = {
+  async getProfile() { return makeRequest('GET', '/parent/profile', null, { cacheKey: 'parent:profile' }); },
+  async getChildren() { return makeRequest('GET', '/parent/children'); },
+
+  // ── Notifications (Parents receive many types) ──
+  async getNotifications() { return makeRequest('GET', '/parent/notifications', null, { useCache: false }); },
+  async markNotificationRead(notificationId) { return makeRequest('POST', `/parent/notifications/${notificationId}/read`, null, { useCache: false }); },
+
+  // ── Library (Parents can view transactions for their children) ──
+  async getLibraryTransactions() { return makeRequest('GET', '/school/library/transactions'); },
+
+  // ── Digital Fridge (Parent side) ──
+  async createFridgeItem(data) { return makeRequest('POST', '/school/fridge-items', data, { useCache: false }); },
+  async getFridgeItems() { return makeRequest('GET', '/school/fridge-items'); },
+  async updateFridgeItem(itemId, data) { return makeRequest('PATCH', `/school/fridge-items/${itemId}`, data, { useCache: false }); },
+  async deleteFridgeItem(itemId) { return makeRequest('DELETE', `/school/fridge-items/${itemId}`, null, { useCache: false }); },
+
+  // ── Book Heavy Day Alerts ──
+  async getBookHeavyAlerts() { return makeRequest('GET', '/parent/book-alerts'); },
+
+  // ── Stationery Alerts ──
+  async getStationeryAlerts() { return makeRequest('GET', '/parent/supply-alerts'); },
+
+  // ── Uniform Schedule ──
+  async getTodaysUniform() { return makeRequest('GET', '/school/uniform-today'); },
+  async getUniformSchedule(classId, date) { return makeRequest('GET', `/school/uniform-schedules/${classId}/${date}`); },
+
+  // ── Attendance & Grades ──
+  async getAttendance(startDate, endDate, subject) {
+    let query = '?';
+    if (startDate) query += `startDate=${startDate}&`;
+    if (endDate) query += `endDate=${endDate}&`;
+    if (subject) query += `subject=${subject}`;
+    return makeRequest('GET', `/parent/attendance${query}`);
   },
-  async getDoubtHistory(subject = null, page = 1, limit = 20) {
-    let query = `?page=${page}&limit=${limit}`;
-    if (subject) query += `&subject=${subject}`;
-    return makeRequest('GET', `/student-assistant/doubts/history${query}`);
+  async getGrades(subject, term) {
+    let query = '?';
+    if (subject) query += `subject=${subject}&`;
+    if (term) query += `term=${term}`;
+    return makeRequest('GET', `/parent/grades${query}`);
   },
-  async generateStudyPlan(days = 7, focusAreas = [], examDate = null) {
-    return makeRequest('POST', '/student-assistant/study-plan/generate', { days, focusAreas, examDate }, { useCache: false });
-  },
-  async getStudyPlan(planId) { return makeRequest('GET', `/student-assistant/study-plan/${planId}`); },
-  async updateStudyPlanProgress(planId, taskId, completed) {
-    return makeRequest('PATCH', `/student-assistant/study-plan/${planId}/progress`, { taskId, completed }, { useCache: false });
-  },
-  async generateFlashcards(text, subject, topic) {
-    return makeRequest('POST', '/student-assistant/flashcards/generate', { text, subject, topic }, { useCache: false });
-  },
-  async getFlashcards(subject = null) {
-    const query = subject ? `?subject=${subject}` : '';
-    return makeRequest('GET', `/student-assistant/flashcards${query}`);
-  },
-  async reviewFlashcard(setId, cardId, rating) {
-    return makeRequest('POST', '/student-assistant/flashcards/review', { setId, cardId, rating }, { useCache: false });
-  },
-  async generatePracticeTest(subject, topic, difficulty = 'medium', questionCount = 10, timeLimit = null) {
-    return makeRequest('POST', '/student-assistant/practice-tests/generate', { subject, topic, difficulty, questionCount, timeLimit }, { useCache: false });
-  },
-  async submitPracticeTest(testId, answers) {
-    return makeRequest('POST', `/student-assistant/practice-tests/${testId}/submit`, { answers }, { useCache: false });
-  },
-  async getPracticeTests(subject = null, status = 'all') {
-    let query = '';
-    if (subject) query += `?subject=${subject}`;
-    if (status !== 'all') query += `${query ? '&' : '?'}status=${status}`;
-    return makeRequest('GET', `/student-assistant/practice-tests${query}`);
-  },
-  async getStudyAnalytics(period = 30) { return makeRequest('GET', `/student-assistant/analytics?period=${period}`); },
-  async scoreAnswer(text, subject = 'english', questionPrompt = null, maxScore = 10, imageUrl = null) {
-    return makeRequest('POST', '/student-assistant/score-answer', { text, subject, questionPrompt, maxScore, imageUrl }, { useCache: false });
-  },
-  async getAnswerAnalysisHistory(subject = null, page = 1, limit = 20) {
-    let query = `?page=${page}&limit=${limit}`;
-    if (subject) query += `&subject=${subject}`;
-    return makeRequest('GET', `/student-assistant/answer-history${query}`);
-  },
+
+  async markNotificationRead(nId) { return makeRequest('POST', `/notifications/${nId}/read`); },
+
+  // ── Bus Tracking ──
+  async getBusTracking() { return makeRequest('GET', '/parent/bus-tracking'); },
 };
 
 // ── AUTH API ──
@@ -377,4 +426,4 @@ const httpMethods = {
   delete: (endpoint, options = {}) => makeRequest('DELETE', endpoint, null, options),
 };
 
-export default { ...httpMethods, teacherApi, studentApi, authApi, apiUtils };
+export default { ...httpMethods, teacherApi, studentApi, parentApi, authApi, apiUtils };
