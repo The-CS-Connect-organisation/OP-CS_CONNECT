@@ -544,14 +544,14 @@ function App() {
              <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
                <TeacherAILab user={user} addToast={addToast} />
              </ProtectedRoute>
-           />
+           } />
 
            {/* Stationery Alert Center */}
            <Route path="/teacher/stationery-alerts" element={
              <ProtectedRoute {...layoutProps} user={user} requiredRole="teacher">
                <StationeryAlertCenter user={user} addToast={addToast} />
              </ProtectedRoute>
-           />
+           } />
 
           {/* 👨‍💼 Manager Portal */}
           <Route path="/manager/dashboard" element={
