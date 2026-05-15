@@ -398,6 +398,17 @@ export const parentApi = {
   async getBusTracking() { return makeRequest('GET', '/parent/bus-tracking'); },
 };
 
+// ── LIBRARY API ──
+export const libraryApi = {
+  async getLibraryBooks() { return makeRequest('GET', '/school/library/books', null, { cacheKey: 'library:books' }); },
+  async getLibraryTransactions() { return makeRequest('GET', '/school/library/transactions'); },
+  async addBook(data) { return makeRequest('POST', '/school/library/books', data, { useCache: false }); },
+  async updateBook(bookId, data) { return makeRequest('PATCH', `/school/library/books/${bookId}`, data, { useCache: false }); },
+  async deleteBook(bookId) { return makeRequest('DELETE', `/school/library/books/${bookId}`, null, { useCache: false }); },
+  async issueBook(data) { return makeRequest('POST', '/school/library/transactions/borrow', data, { useCache: false }); },
+  async returnBook(txId) { return makeRequest('POST', `/school/library/transactions/${txId}/return`, null, { useCache: false }); },
+};
+
 // ── AUTH API ──
 export const authApi = {
   async login(email, password) {
