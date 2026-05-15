@@ -1,24 +1,60 @@
-import { useState, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, Brain, MessageSquare, TrendingUp, Users, Zap, Send, Loader2, BookOpen, CheckCircle2, AlertTriangle, X, ChevronDown, RotateCcw, FileText, ImageIcon, Star, Target, BarChart2, Clock, Plus } from 'lucide-react';
+import {
+  Send, Loader2, History, Trash2, Info, MessageSquare,
+  X, RotateCcw, Bot, BarChart2, TrendingUp, Target, Brain,
+  CheckCircle2, AlertTriangle, Plus, XCircle
+} from 'lucide-react';
 import { request } from '../../utils/apiClient';
 import { AnimatedAIInput } from '../../components/ui/AnimatedAIInput';
-import { Modal } from '../../components/ui/Modal';
 
 const DISCLAIMER = "CSAI can make mistakes. Verify important information.";
 
-const ADMIN_MODEL_CONFIG = {
-  'groq-llama-3.1-8b-instant': { id: 'groq-llama-3.1-8b-instant', name: 'Llama 3.1 8B', subtitle: 'Fast & Efficient', provider: 'Groq', icon: Bot, gradient: 'from-blue-500 to-sky-400', pill: 'bg-blue-50 text-blue-600 border-blue-200', dot: 'bg-blue-500', ring: 'focus-within:ring-blue-100', sendBg: 'from-blue-500 to-sky-400' },
-  'groq-llama-3.3-70b': { id: 'groq-llama-3.3-70b', name: 'Llama 3.3 70B', subtitle: 'Powerful', provider: 'Groq', icon: Brain, gradient: 'from-violet-600 to-purple-500', pill: 'bg-violet-50 text-violet-600 border-violet-200', dot: 'bg-violet-500', ring: 'focus-within:ring-violet-100', sendBg: 'from-violet-600 to-purple-500' },
-  'cerebras-qwen-3-235b': { id: 'cerebras-qwen-3-235b', name: 'Qwen 3 235B', subtitle: 'Deep Reasoning', provider: 'Cerebras', icon: Brain, gradient: 'from-orange-500 to-amber-600', pill: 'bg-orange-50 text-orange-600 border-orange-200', dot: 'bg-orange-500', ring: 'focus-within:ring-orange-100', sendBg: 'from-orange-500 to-amber-600' },
+/* ── Markdown-lite renderer ── */
+const MsgContent = ({ text }) => {
+  const blocks = text.split(/(```[\s\S]*?```)/g);
+  return (
+    <div className="space-y-2">
+      {blocks.map((block, bi) => {
+        if (block.startsWith('```')) {
+          const code = block.replace(/^```[^\n]*\n?/, '').replace(/```$/, '');
+          return (
+            <pre key={bi} className="bg-gray-100 border border-gray-200 rounded-xl p-3 text-xs font-mono overflow-x-auto text-gray-800 leading-relaxed">
+              {code}
+            </pre>
+          );
+        }
+        return (
+          <p key={bi} className="leading-relaxed">
+            {block.split('\n').map((line, li) => {
+              const parts = line.split(/(`[^`]+`|\*\*[^*]+\*\*)/g);
+              return (
+                <span key={li}>
+                  {parts.map((p, pi) => {
+                    if (p.startsWith('`') && p.endsWith('`'))
+                      return <code key={pi} className="bg-gray-100 text-violet-600 px-1.5 py-0.5 rounded text-xs font-mono border border-gray-200">{p.slice(1, -1)}</code>;
+                    if (p.startsWith('**') && p.endsWith('**'))
+                      return <strong key={pi} className="font-semibold text-gray-900">{p.slice(2, -2)}</strong>;
+                    return p;
+                  })}
+                  {li < block.split('\n').length - 1 && <br />}
+                </span>
+              );
+            })}
+          </p>
+        );
+      })}
+    </div>
+  );
 };
 
-const StatCard = ({ icon: Icon, label, value, trend, gradient, sublabel, color }) => (
+/* ── Stats Card ── */
+const StatCard = ({ icon: Icon, label, value, trend, gradient, color, sublabel }) => (
   <motion.div
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
     className="bg-white rounded-2xl p-5 border hover:shadow-md transition-all"
-    style={{ borderColor: color || '#e5e7eb' }}
+    style={{ borderColor: color === '#1c1917' ? '#e5e7eb' : color }}
   >
     <div className="flex items-start justify-between mb-3">
       <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-sm`}>
@@ -34,7 +70,7 @@ const StatCard = ({ icon: Icon, label, value, trend, gradient, sublabel, color }
   </motion.div>
 );
 
-const AdminAILab = ({ user, addToast }) => {
+export const AdminAILab = ({ user, addToast }) => {
   const [stats, setStats] = useState(null);
   const [tools, setTools] = useState([]);
   const [recentQueries, setRecentQueries] = useState([]);
@@ -44,6 +80,9 @@ const AdminAILab = ({ user, addToast }) => {
   const [chatMessages, setChatMessages] = useState([]);
   const [isSending, setIsSending] = useState(false);
   const [activeTab, setActiveTab] = useState('chat');
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
 
   useEffect(() => {
     loadDashboard();
@@ -61,14 +100,7 @@ const AdminAILab = ({ user, addToast }) => {
       if (statsRes.status === 'fulfilled' && statsRes.value?.success) {
         setStats(statsRes.value.stats);
       } else {
-        setStats({
-          totalQueries: 0,
-          activeUsers: 0,
-          avgResponseTime: '0ms',
-          accuracy: 0,
-          totalTokens: 0,
-          successRate: 0,
-        });
+        setStats({ totalQueries: 0, activeUsers: 0, avgResponseTime: '0ms', accuracy: 0, totalTokens: 0, successRate: 0 });
       }
 
       if (toolsRes.status === 'fulfilled' && toolsRes.value?.success) {
@@ -106,25 +138,42 @@ const AdminAILab = ({ user, addToast }) => {
     try {
       const response = await request('/ai/chat', {
         method: 'POST',
-        body: JSON.stringify({ message, model: model.id })
+        body: JSON.stringify({ message, model: model.id }),
       });
 
-      if (response.success) {
+      if (response?.success) {
         setChatMessages(prev => [...prev, {
           role: 'assistant',
-          content: response.reply,
+          content: response.reply || response.message,
           model: model.name,
-          provider: model.provider
+          provider: model.provider,
         }]);
       } else {
-        addToast?.('error', 'Failed to get AI response');
+        addToast?.(response?.message || 'Failed to get AI response', 'error');
       }
     } catch (err) {
-      addToast?.('error', 'AI request failed');
+      addToast?.('AI request failed', 'error');
+      setChatMessages(prev => prev.slice(0, -1));
     } finally {
       setIsSending(false);
     }
   };
+
+  const loadHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const data = await request('/ai/history');
+      if (data?.success) setHistory(data.history ?? []);
+    } catch (e) {
+      console.error('History load failed', e);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (showHistory) loadHistory();
+  }, [showHistory, loadHistory]);
 
   const formatResponseTime = (ms) => {
     if (ms < 1000) return `${ms}ms`;
@@ -147,8 +196,11 @@ const AdminAILab = ({ user, addToast }) => {
             <Bot size={48} className="text-gray-300 mb-4" />
             <h3 className="text-lg font-semibold text-gray-700">Welcome to AI Lab Chat</h3>
             <p className="text-sm text-gray-400 max-w-md mt-2">
-              Ask anything about your school data. Select a model below to get started.
+              Ask anything about your school data. Select a model using the dropdown below.
             </p>
+            <div className="text-xs text-gray-400 bg-white/50 px-3 py-2 rounded-lg mt-2">
+              {DISCLAIMER}
+            </div>
           </div>
         )}
         {chatMessages.map((msg, i) => (
@@ -196,53 +248,12 @@ const AdminAILab = ({ user, addToast }) => {
       className="space-y-4"
     >
       <div className="grid grid-cols-2 gap-4">
-        <StatCard
-          icon={MessageSquare}
-          label="Total Queries"
-          value={stats?.totalQueries?.toLocaleString() || '—'}
-          gradient="from-blue-500 to-indigo-500"
-          trend={stats?.queriesGrowth ? `+${stats.queriesGrowth}%` : null}
-          color="#3b82f6"
-        />
-        <StatCard
-          icon={Users}
-          label="Active Users"
-          value={stats?.activeUsers?.toLocaleString() || '—'}
-          gradient="from-emerald-500 to-teal-500"
-          sublabel={stats?.uniqueUsers ? `${stats.uniqueUsers.toLocaleString()} unique` : null}
-          color="#10b981"
-        />
-        <StatCard
-          icon={Zap}
-          label="Avg Response"
-          value={stats?.avgResponseTime ? formatResponseTime(stats.avgResponseTime) : '—'}
-          gradient="from-violet-500 to-purple-500"
-          sublabel={stats?.p95Response ? `p95: ${formatResponseTime(stats.p95Response)}` : null}
-          color="#8b5cf6"
-        />
-        <StatCard
-          icon={Target}
-          label="Accuracy"
-          value={stats?.accuracy ? `${stats.accuracy}%` : '—'}
-          gradient="from-amber-500 to-orange-500"
-          trend={stats?.accuracyDelta ? `${stats.accuracyDelta > 0 ? '+' : ''}${stats.accuracyDelta}%` : null}
-          color="#f59e0b"
-        />
-        <StatCard
-          icon={Brain}
-          label="Tokens Used"
-          value={stats?.totalTokens ? `${(stats.totalTokens / 1000000).toFixed(1)}M` : '—'}
-          gradient="from-pink-500 to-rose-500"
-          color="#ec4899"
-        />
-        <StatCard
-          icon={TrendingUp}
-          label="Success Rate"
-          value={stats?.successRate ? `${stats.successRate}%` : '—'}
-          gradient="from-cyan-500 to-blue-500"
-          sublabel={stats?.errorCount ? `${stats.errorCount} errors` : null}
-          color="#06b6d4"
-        />
+        <StatCard icon={MessageSquare} label="Total Queries" value={stats?.totalQueries?.toLocaleString() || '—'} gradient="from-blue-500 to-indigo-500" trend={stats?.queriesGrowth ? `+${stats.queriesGrowth}%` : null} color="#3b82f6" />
+        <StatCard icon={Users} label="Active Users" value={stats?.activeUsers?.toLocaleString() || '—'} gradient="from-emerald-500 to-teal-500" sublabel={stats?.uniqueUsers ? `${stats.uniqueUsers.toLocaleString()} unique` : null} color="#10b981" />
+        <StatCard icon={Zap} label="Avg Response" value={stats?.avgResponseTime ? formatResponseTime(stats.avgResponseTime) : '—'} gradient="from-violet-500 to-purple-500" sublabel={stats?.p95Response ? `p95: ${formatResponseTime(stats.p95Response)}` : null} color="#8b5cf6" />
+        <StatCard icon={Target} label="Accuracy" value={stats?.accuracy ? `${stats.accuracy}%` : '—'} gradient="from-amber-500 to-orange-500" trend={stats?.accuracyDelta ? `${stats.accuracyDelta > 0 ? '+' : ''}${stats.accuracyDelta}%` : null} color="#f59e0b" />
+        <StatCard icon={Brain} label="Tokens Used" value={stats?.totalTokens ? `${(stats.totalTokens / 1000000).toFixed(1)}M` : '—'} gradient="from-pink-500 to-rose-500" color="#ec4899" />
+        <StatCard icon={TrendingUp} label="Success Rate" value={stats?.successRate ? `${stats.successRate}%` : '—'} gradient="from-cyan-500 to-blue-500" sublabel={stats?.errorCount ? `${stats.errorCount} errors` : null} color="#06b6d4" />
       </div>
     </motion.div>
   );
@@ -257,9 +268,7 @@ const AdminAILab = ({ user, addToast }) => {
     >
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-48 bg-gray-50 rounded-2xl animate-pulse" />
-          ))}
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-48 bg-gray-50 rounded-2xl animate-pulse" />)}
         </div>
       ) : tools.length === 0 ? (
         <div className="py-16 text-center border-2 border-dashed rounded-2xl">
@@ -285,25 +294,25 @@ const AdminAILab = ({ user, addToast }) => {
       exit={{ opacity: 0, y: -10 }}
       transition={{ duration: 0.2 }}
     >
-      {recentQueries.length === 0 ? (
+      {history.length === 0 ? (
         <div className="py-8 text-center">
           <MessageSquare size={24} className="mx-auto mb-2 opacity-30" />
           <p className="text-xs text-gray-400">No recent queries</p>
         </div>
       ) : (
         <div className="space-y-3">
-          {recentQueries.map((q, i) => (
+          {history.map((item, i) => (
             <div key={i} className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-xs font-bold text-white shrink-0">
-                {q.mode?.[0]?.toUpperCase() || 'A'}
+                {item.mode?.[0]?.toUpperCase() || 'A'}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-gray-800 truncate">{q.prompt || q.query || 'Query'}</p>
-                <p className="text-[10px] text-gray-400 mt-0.5">{q.user?.name || 'User'} · {q.mode || 'balanced'}</p>
+                <p className="text-xs font-medium text-gray-800 truncate">{item.prompt || item.query || 'Query'}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{item.user?.name || 'User'} · {item.mode || 'balanced'}</p>
               </div>
               <div className="text-right shrink-0">
-                <p className="text-[10px] font-bold text-gray-500">{q.responseTime ? formatResponseTime(q.responseTime) : '—'}</p>
-                <p className="text-[10px] text-gray-400">{q.created_at ? new Date(q.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</p>
+                <p className="text-[10px] font-bold text-gray-500">{item.responseTime ? formatResponseTime(item.responseTime) : '—'}</p>
+                <p className="text-[10px] text-gray-400">{item.created_at ? new Date(item.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</p>
               </div>
             </div>
           ))}
@@ -352,8 +361,8 @@ const AdminAILab = ({ user, addToast }) => {
           {[
             { id: 'chat', label: 'Chat', icon: MessageSquare },
             { id: 'stats', label: 'Analytics', icon: BarChart2 },
-            { id: 'tools', label: 'AI Tools', icon: Zap },
-            { id: 'history', label: 'History', icon: Clock },
+            { id: 'tools', label: 'AI Tools', icon: TrendingUp },
+            { id: 'history', label: 'History', icon: History },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -380,7 +389,7 @@ const AdminAILab = ({ user, addToast }) => {
           </AnimatePresence>
         </div>
 
-        {/* Bottom Bar - Shared across all tabs */}
+        {/* Bottom Bar - Shared AnimatedAIInput across all tabs */}
         <div className="border-t px-6 py-4" style={{ borderColor: 'var(--border-color, #e5e7eb)' }}>
           <AnimatedAIInput
             onSend={handleSendChatMessage}
