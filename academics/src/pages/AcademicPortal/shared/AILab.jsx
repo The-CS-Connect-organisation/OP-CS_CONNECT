@@ -2,33 +2,12 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Send, Loader2, History, Trash2, Info, MessageSquare,
-  Zap, Brain, AlertTriangle, X, ChevronDown, RotateCcw, Paperclip, FileText, ImageIcon,
-  BookOpen, BrainCircuit, Sparkles
+  Bot, BarChart3, BookOpen, BrainCircuit, X, ChevronDown, RotateCcw
 } from 'lucide-react';
 import { request } from '../../../utils/apiClient';
-import { AnimatedText } from '../../../components/ui/AnimatedText';
 import { AnimatedAIInput } from '../../../components/ui/AnimatedAIInput';
 
-const DISCLAIMER = "CSAI can make mistakes. Verify important information.";
-
-const MODEL_CONFIG = {
-  'llama-3.1-8b-instant': { id: 'llama-3.1-8b-instant', name: 'Llama 3.1 8B', subtitle: 'Fast & Efficient', provider: 'Groq', icon: Zap, gradient: 'from-blue-500 to-sky-400', pill: 'bg-blue-50 text-blue-600 border-blue-200', dot: 'bg-blue-500', ring: 'focus-within:ring-blue-100', sendBg: 'from-blue-500 to-sky-400' },
-  'llama-3.3-70b-versatile': { id: 'llama-3.3-70b-versatile', name: 'Llama 3.3 70B', subtitle: 'Versatile', provider: 'Groq', icon: Brain, gradient: 'from-violet-600 to-purple-500', pill: 'bg-violet-50 text-violet-600 border-violet-200', dot: 'bg-violet-500', ring: 'focus-within:ring-violet-100', sendBg: 'from-violet-600 to-purple-500' },
-  'qwen-3-235b-a22b-instruct-2507': { id: 'qwen-3-235b-a22b-instruct-2507', name: 'Qwen-3 235B', subtitle: 'Deep Reasoning', provider: 'Cerebras', icon: BrainCircuit, gradient: 'from-orange-500 to-amber-600', pill: 'bg-orange-50 text-orange-600 border-orange-200', dot: 'bg-orange-500', ring: 'focus-within:ring-orange-100', sendBg: 'from-orange-500 to-amber-600' },
-  'llama3.1-8b': { id: 'llama3.1-8b', name: 'CS v2', subtitle: 'Fast & Efficient', provider: 'Cerebras', icon: Zap, gradient: 'from-blue-500 to-sky-400', pill: 'bg-blue-50 text-blue-600 border-blue-200', dot: 'bg-blue-500', ring: 'focus-within:ring-blue-100', sendBg: 'from-blue-500 to-sky-400' },
-  'allam-2-7b': { id: 'allam-2-7b', name: 'Allam 2 7B', subtitle: 'Arabic', provider: 'Groq', icon: Sparkles, gradient: 'from-emerald-500 to-teal-600', pill: 'bg-emerald-50 text-emerald-600 border-emerald-200', dot: 'bg-emerald-500', ring: 'focus-within:ring-emerald-100', sendBg: 'from-emerald-500 to-teal-600' },
-  'canopylabs/orpheus-arabic-saudi': { id: 'canopylabs/orpheus-arabic-saudi', name: 'Orpheus Arabic', subtitle: 'Saudi', provider: 'Groq', icon: Sparkles, gradient: 'from-teal-500 to-cyan-600', pill: 'bg-teal-50 text-teal-600 border-teal-200', dot: 'bg-teal-500', ring: 'focus-within:ring-teal-100', sendBg: 'from-teal-500 to-cyan-600' },
-  'canopylabs/orpheus-v1-english': { id: 'canopylabs/orpheus-v1-english', name: 'Orpheus English', subtitle: 'v1', provider: 'Groq', icon: Sparkles, gradient: 'from-cyan-500 to-sky-600', pill: 'bg-cyan-50 text-cyan-600 border-cyan-200', dot: 'bg-cyan-500', ring: 'focus-within:ring-cyan-100', sendBg: 'from-cyan-500 to-sky-600' },
-  'groq/compound': { id: 'groq/compound', name: 'Groq Compound', subtitle: 'Advanced', provider: 'Groq', icon: BrainCircuit, gradient: 'from-indigo-500 to-purple-600', pill: 'bg-indigo-50 text-indigo-600 border-indigo-200', dot: 'bg-indigo-500', ring: 'focus-within:ring-indigo-100', sendBg: 'from-indigo-500 to-purple-600' },
-  'groq/compound-mini': { id: 'groq/compound-mini', name: 'Groq Compound Mini', subtitle: 'Fast', provider: 'Groq', icon: Zap, gradient: 'from-pink-500 to-rose-600', pill: 'bg-pink-50 text-pink-600 border-pink-200', dot: 'bg-pink-500', ring: 'focus-within:ring-pink-100', sendBg: 'from-pink-500 to-rose-600' },
-  'meta-llama/llama-4-scout-17b-16e-instruct': { id: 'meta-llama/llama-4-scout-17b-16e-instruct', name: 'Llama 4 Scout', subtitle: '17B', provider: 'Groq', icon: Brain, gradient: 'from-purple-500 to-violet-600', pill: 'bg-purple-50 text-purple-600 border-purple-200', dot: 'bg-purple-500', ring: 'focus-within:ring-purple-100', sendBg: 'from-purple-500 to-violet-600' },
-  'meta-llama/llama-prompt-guard-2-22m': { id: 'meta-llama/llama-prompt-guard-2-22m', name: 'Prompt Guard 2', subtitle: '22M', provider: 'Groq', icon: AlertTriangle, gradient: 'from-amber-500 to-orange-600', pill: 'bg-amber-50 text-amber-600 border-amber-200', dot: 'bg-amber-500', ring: 'focus-within:ring-amber-100', sendBg: 'from-amber-500 to-orange-600' },
-  'meta-llama/llama-prompt-guard-2-86m': { id: 'meta-llama/llama-prompt-guard-2-86m', name: 'Prompt Guard 2', subtitle: '86M', provider: 'Groq', icon: AlertTriangle, gradient: 'from-amber-600 to-orange-700', pill: 'bg-amber-50 text-amber-600 border-amber-200', dot: 'bg-amber-600', ring: 'focus-within:ring-amber-100', sendBg: 'from-amber-600 to-orange-700' },
-  'openai/gpt-oss-120b': { id: 'openai/gpt-oss-120b', name: 'GPT OSS', subtitle: '120B', provider: 'Groq', icon: BrainCircuit, gradient: 'from-green-500 to-emerald-600', pill: 'bg-green-50 text-green-600 border-green-200', dot: 'bg-green-500', ring: 'focus-within:ring-green-100', sendBg: 'from-green-500 to-emerald-600' },
-  'openai/gpt-oss-20b': { id: 'openai/gpt-oss-20b', name: 'GPT OSS', subtitle: '20B', provider: 'Groq', icon: Zap, gradient: 'from-lime-500 to-green-600', pill: 'bg-lime-50 text-lime-600 border-lime-200', dot: 'bg-lime-500', ring: 'focus-within:ring-lime-100', sendBg: 'from-lime-500 to-green-600' },
-  'openai/gpt-oss-safeguard-20b': { id: 'openai/gpt-oss-safeguard-20b', name: 'GPT OSS Safeguard', subtitle: '20B', provider: 'Groq', icon: AlertTriangle, gradient: 'from-red-500 to-rose-600', pill: 'bg-red-50 text-red-600 border-red-200', dot: 'bg-red-500', ring: 'focus-within:ring-red-100', sendBg: 'from-red-500 to-rose-600' },
-  'qwen/qwen3-32b': { id: 'qwen/qwen3-32b', name: 'Qwen3 32B', subtitle: '32B', provider: 'Groq', icon: Brain, gradient: 'from-fuchsia-500 to-pink-600', pill: 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-200', dot: 'bg-fuchsia-500', ring: 'focus-within:ring-fuchsia-100', sendBg: 'from-fuchsia-500 to-pink-600' },
-};
+const DISCLAIMER = "CSAI can make mistakes. Verify important information";
 
 /* ── Markdown-lite renderer ── */
 const MsgContent = ({ text }) => {
@@ -128,146 +107,41 @@ const AdvancedWarningModal = ({ onConfirm, onCancel }) => (
   </motion.div>
 );
 
-/* ── Splash ── */
-const SplashScreen = ({ onEnter }) => {
-  return (
-    <motion.div
-      className="fixed inset-0 z-[100] flex items-center justify-center"
-      style={{ background: 'linear-gradient(135deg, #fef3c7 0%, #ffffff 50%, #f59e0b10 100%)' }}
-      exit={{ opacity: 0, scale: 1.03 }}
-      transition={{ duration: 0.5 }}
-    >
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {PARTICLES.map((p, i) => <Particle key={i} {...p} />)}
-        <motion.div className="absolute w-[600px] h-[600px] rounded-full bg-orange-100 blur-[120px] opacity-50"
-          animate={{ scale: [1, 1.12, 1], x: [0, 30, 0] }}
-          transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
-          style={{ top: '-10%', left: '-10%' }}
-        />
-        <motion.div className="absolute w-[500px] h-[500px] rounded-full bg-amber-100 blur-[120px] opacity-40"
-          animate={{ scale: [1, 1.15, 1], x: [0, -25, 0] }}
-          transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
-          style={{ bottom: '-10%', right: '-10%' }}
-        />
+/* ── Stats Card ── */
+const StatCard = ({ icon: Icon, label, value, trend, gradient, color }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="bg-white rounded-2xl p-5 border hover:shadow-md transition-all"
+    style={{ borderColor: '#e5e7eb' }}
+  >
+    <div className="flex items-start justify-between mb-3">
+      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-sm`}>
+        <Icon size={18} className="text-white" />
       </div>
-
-      <div className="relative flex flex-col items-center text-center px-6 w-full max-w-2xl">
-        {/* Logo — no box, just floating */}
-        <motion.div
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          className="mb-8 relative flex items-center justify-center"
-        >
-          <motion.div
-            className="absolute w-40 h-40 rounded-full bg-orange-200 blur-3xl opacity-40"
-            animate={{ scale: [1, 1.4, 1] }}
-            transition={{ duration: 3.5, repeat: Infinity, ease: 'easeInOut' }}
-          />
-          <motion.img
-            src="logo.png"
-            alt="Cornerstone School"
-            className="relative w-36 h-36 object-contain drop-shadow-2xl"
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-          />
-        </motion.div>
-
-        {/* Namaste World! */}
-        <motion.div
-          initial={{ y: 32, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.45, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="relative"
-        >
-          <motion.h1 
-            className="text-7xl md:text-8xl font-black tracking-tighter text-gray-900 leading-none select-none mb-2"
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-          >
-            Namaste<span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-600"> World!</span>
-          </motion.h1>
-          
-          {/* Underline effect */}
-          <motion.div
-            className="h-2 w-full bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 rounded-full mt-4"
-            initial={{ width: 0, x: '-50%' }}
-            animate={{ width: '100%', x: 0 }}
-            transition={{ delay: 0.9, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          />
-          
-          <p className="text-xl text-gray-600 font-bold mt-6 tracking-wide">
-            Designed by CSTians, for CSTians ✨
-          </p>
-        </motion.div>
-
-        {/* Model pills */}
-        <motion.div
-          initial={{ y: 24, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 1.2, duration: 0.6 }}
-          className="flex flex-wrap justify-center gap-3 mt-10"
-        >
-          <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-orange-50 border border-orange-200 shadow-lg">
-            <Zap size={14} className="text-orange-600" />
-            <span className="text-sm font-black text-orange-700">CS v2</span>
-          </div>
-          <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-violet-50 border border-violet-200 shadow-lg">
-            <Brain size={14} className="text-violet-600" />
-            <span className="text-sm font-black text-violet-700">Qwen-3 235B</span>
-          </div>
-          <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-blue-50 border border-blue-200 shadow-lg">
-            <Sparkles size={14} className="text-blue-600" />
-            <span className="text-sm font-black text-blue-700">Llama 3.1</span>
-          </div>
-        </motion.div>
-
-        {/* CTA */}
-        <motion.button
-          onClick={onEnter}
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.6, duration: 0.5 }}
-          whileHover={{ scale: 1.05, boxShadow: '0 28px 56px rgba(249,115,22,0.35)' }}
-          whileTap={{ scale: 0.96 }}
-          className="mt-12 px-20 py-5 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-600 text-white text-lg font-black tracking-widest shadow-2xl shadow-orange-300/50 transition-all"
-        >
-          Enter the Lab 🚀
-        </motion.button>
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2.2 }}
-          className="text-[12px] text-gray-400 mt-8 tracking-widest uppercase font-semibold"
-        >
-          Cornerstone International School · AI Studio
-        </motion.p>
-      </div>
-    </motion.div>
-  );
-};
+      {trend && (
+        <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-50 text-emerald-600">{trend}</span>
+      )}
+    </div>
+    <h3 className="text-2xl font-black" style={{ color: color || '#1c1917' }}>{value}</h3>
+    <p className="text-xs mt-0.5" style={{ color: '#a8a29e' }}>{label}</p>
+  </motion.div>
+);
 
 /* ── Main component ── */
 export const AILab = ({ user, addToast }) => {
   const [showSplash, setShowSplash] = useState(true);
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState('llama3.1-8b');
+  const [activeTab, setActiveTab] = useState('chat'); // chat, analytics, flashcards, quiz
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
+  const [stats, setStats] = useState(null);
   const [showAdvancedWarning, setShowAdvancedWarning] = useState(false);
-  const [showModelMenu, setShowModelMenu] = useState(false);
   const chatEndRef = useRef(null);
-  const textareaRef = useRef(null);
-  const fileInputRef = useRef(null);
-  const [attachments, setAttachments] = useState([]);
-  
-  // New features: Flashcards & Quiz Generation
-  const [activeTab, setActiveTab] = useState('chat'); // chat, flashcards, quiz
+
+  // Flashcards & Quiz state
   const [flashcards, setFlashcards] = useState([]);
   const [currentFlashcardIndex, setCurrentFlashcardIndex] = useState(0);
   const [showFlashcardAnswer, setShowFlashcardAnswer] = useState(false);
@@ -275,20 +149,18 @@ export const AILab = ({ user, addToast }) => {
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [quizScore, setQuizScore] = useState(0);
   const [quizComplete, setQuizComplete] = useState(false);
-  
-  const m = MODEL_CONFIG[mode];
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
 
-  // Close model menu on outside click
+  // Close advanced warning on outside click
   useEffect(() => {
-    if (!showModelMenu) return;
-    const handler = () => setShowModelMenu(false);
+    if (!showAdvancedWarning) return;
+    const handler = () => setShowAdvancedWarning(false);
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [showModelMenu]);
+  }, [showAdvancedWarning]);
 
   const loadHistory = useCallback(async () => {
     setHistoryLoading(true);
@@ -302,67 +174,326 @@ export const AILab = ({ user, addToast }) => {
     }
   }, []);
 
+  const loadStats = useCallback(async () => {
+    try {
+      const response = await request('/ai/stats');
+      if (response?.success) setStats(response.stats);
+    } catch (e) {
+      console.error('Stats load failed', e);
+    }
+  }, []);
+
   useEffect(() => {
     if (showHistory) loadHistory();
-  }, [showHistory, loadHistory]);
+    if (activeTab === 'analytics') loadStats();
+  }, [showHistory, loadHistory, activeTab, loadStats]);
 
-  const handleModeSelect = (id) => {
-    setShowModelMenu(false);
-    setMode(id);
-  };
+  const handleSendChatMessage = async (message, model) => {
+    if (!message.trim() || loading) return;
 
-  const handleSend = async () => {
-    if (!input.trim() && attachments.length === 0 || loading) return;
-    let content = input.trim();
-    if (attachments.length > 0) {
-      const fileNames = attachments.map(f => f.name).join(', ');
-      content = content ? `${content}\n\n[Attached: ${fileNames}]` : `[Attached: ${fileNames}]`;
-    }
-    const userMsg = { role: 'user', content, attachments: [...attachments] };
-    const newMessages = [...messages, userMsg];
-    setMessages(newMessages);
-    setInput('');
-    setAttachments([]);
-    if (textareaRef.current) { textareaRef.current.style.height = 'auto'; }
+    const userMessage = { role: 'user', content: message };
+    setMessages((prev) => [...prev, userMessage]);
     setLoading(true);
+
     try {
-      const data = await request('/ai/chat', {
+      const response = await request('/ai/chat', {
         method: 'POST',
         body: JSON.stringify({
-          messages: newMessages.map(x => ({ role: x.role, content: x.content })),
-          mode,
+          message,
+          model: model.id,
         }),
       });
-      if (data?.success) {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: data.answer,
-          provider: data.provider,
-        }]);
+
+      if (response?.success) {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: 'assistant',
+            content: response.answer || response.message,
+            provider: model.provider,
+          },
+        ]);
       }
     } catch (e) {
       addToast?.(e.message || 'CSAI is unavailable. Try again shortly.', 'error');
-      setMessages(prev => prev.slice(0, -1)); // remove optimistic user msg on error
+      setMessages((prev) => prev.slice(0, -1));
     } finally {
       setLoading(false);
-      textareaRef.current?.focus();
     }
   };
 
-  if (showSplash) {
-    return (
-      <AnimatePresence mode="wait">
-        <SplashScreen key="splash" onEnter={() => setShowSplash(false)} />
-      </AnimatePresence>
-    );
-  }
+  const clearChat = () => {
+    setMessages([]);
+  };
+
+  const formatResponseTime = (ms) => {
+    if (ms < 1000) return `${ms}ms`;
+    return `${(ms / 1000).toFixed(1)}s`;
+  };
+
+  const renderChatTab = () => (
+    <div className="flex-1 overflow-y-auto px-4 py-8" style={{ overflowX: 'hidden' }}>
+      <div className="max-w-2xl mx-auto space-y-6">
+        {messages.length === 0 && !loading && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex flex-col items-center justify-center text-center pt-16 pb-20"
+          >
+            <motion.div className="relative mb-6 flex items-center justify-center"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              <div className="absolute w-36 h-36 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 blur-3xl opacity-15"
+                animate={{ scale: [1, 1.3, 1] }}
+                transition={{ duration: 3, repeat: Infinity }}
+              />
+              <Bot size={56} className="text-gray-400" />
+            </motion.div>
+            <h2 className="text-2xl font-black text-gray-900 mb-2">Welcome to AI Lab</h2>
+            <p className="text-sm text-gray-400 max-w-xs leading-relaxed">
+              Ask me anything — academics, concepts, planning, or analysis.
+            </p>
+            <div className="text-[10px] text-gray-400 bg-white px-3 py-2 rounded-lg mt-3 border border-gray-100">
+              {DISCLAIMER}
+            </div>
+          </motion.div>
+        )}
+
+        {messages.map((msg, i) => (
+          <motion.div key={i}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.22 }}
+            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            {msg.role === 'user' ? (
+              <div className="max-w-[75%]">
+                <div className="bg-gray-900 text-white px-4 py-3 rounded-2xl rounded-tr-sm text-sm leading-relaxed font-medium shadow-sm">
+                  {msg.content}
+                </div>
+              </div>
+            ) : (
+              <div className="max-w-[85%] flex gap-3">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-sky-400 flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                  <Bot size={15} className="text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="bg-white border border-gray-200 px-4 py-3 rounded-2xl rounded-tl-sm text-sm text-gray-800 shadow-sm">
+                    <MsgContent text={msg.content} />
+                  </div>
+                  {msg.provider && (
+                    <p className="text-[10px] text-gray-400 mt-1.5 px-1 font-medium">via {msg.provider}</p>
+                  )}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        ))}
+
+        {loading && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-sky-400 flex items-center justify-center shrink-0 shadow-sm">
+              <Bot size={15} className="text-white" />
+            </div>
+            <div className="bg-white border border-gray-200 px-4 py-3.5 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-1.5">
+              {[0, 1, 2].map(i => (
+                <motion.div key={i} className="w-2 h-2 rounded-full bg-gray-300"
+                  animate={{ y: [0, -5, 0] }}
+                  transition={{ duration: 0.7, repeat: Infinity, delay: i * 0.15 }}
+                />
+              ))}
+            </div>
+          </motion.div>
+        )}
+        <div ref={chatEndRef} />
+      </div>
+    </div>
+  );
+
+  const renderAnalyticsTab = () => (
+    <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
+        <StatCard
+          icon={MessageSquare}
+          label="Total Queries"
+          value={stats?.totalQueries?.toLocaleString() || '—'}
+          gradient="from-blue-500 to-indigo-500"
+          trend={stats?.queriesGrowth ? `+${stats.queriesGrowth}%` : null}
+          color="#3b82f6"
+        />
+        <StatCard
+          icon={Users}
+          label="Active Users"
+          value={stats?.activeUsers?.toLocaleString() || '—'}
+          gradient="from-emerald-500 to-teal-500"
+          sublabel={stats?.uniqueUsers ? `${stats.uniqueUsers.toLocaleString()} unique` : null}
+          color="#10b981"
+        />
+        <StatCard
+          icon={Zap}
+          label="Avg Response"
+          value={stats?.avgResponseTime ? formatResponseTime(stats.avgResponseTime) : '—'}
+          gradient="from-violet-500 to-purple-500"
+          sublabel={stats?.p95Response ? `p95: ${formatResponseTime(stats.p95Response)}` : null}
+          color="#8b5cf6"
+        />
+        <StatCard
+          icon={Target}
+          label="Accuracy"
+          value={stats?.accuracy ? `${stats.accuracy}%` : '—'}
+          gradient="from-amber-500 to-orange-500"
+          trend={stats?.accuracyDelta ? `${stats.accuracyDelta > 0 ? '+' : ''}${stats.accuracyDelta}%` : null}
+          color="#f59e0b"
+        />
+        <StatCard
+          icon={Brain}
+          label="Tokens Used"
+          value={stats?.totalTokens ? `${(stats.totalTokens / 1000000).toFixed(1)}M` : '—'}
+          gradient="from-pink-500 to-rose-500"
+          color="#ec4899"
+        />
+        <StatCard
+          icon={BarChart3}
+          label="Success Rate"
+          value={stats?.successRate ? `${stats.successRate}%` : '—'}
+          gradient="from-cyan-500 to-blue-500"
+          sublabel={stats?.errorCount ? `${stats.errorCount} errors` : null}
+          color="#06b6d4"
+        />
+      </div>
+    </div>
+  );
+
+  const renderFlashcardsTab = () => (
+    <div className="flex-1 px-4 py-8 flex flex-col items-center justify-center" style={{ overflowY: 'auto' }}>
+      {flashcards.length === 0 ? (
+        <div className="text-center max-w-md">
+          <h2 className="text-3xl font-black text-gray-900">Flashcard Generator</h2>
+          <p className="text-sm text-gray-500 mt-8 mb-6">Enter a topic to generate flashcards!</p>
+          <AnimatedAIInput
+            onSend={(text, model) => {
+              const dummyCards = [
+                { question: `What is ${text}?`, answer: `A key concept in the subject!` },
+                { question: `Why is ${text} important?`, answer: `It's fundamental for further learning!` },
+                { question: `Give an example of ${text}`, answer: `A practical example that illustrates the concept!` },
+              ];
+              setFlashcards(dummyCards);
+              setCurrentFlashcardIndex(0);
+              setShowFlashcardAnswer(false);
+            }}
+          />
+        </div>
+      ) : (
+        <div className="w-full max-w-md">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm text-gray-500 font-semibold">
+              {currentFlashcardIndex + 1} of {flashcards.length}
+            </span>
+          </div>
+          <motion.div
+            key={currentFlashcardIndex}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3 }}
+            className="bg-white border border-gray-200 rounded-3xl p-8 shadow-xl cursor-pointer"
+            onClick={() => setShowFlashcardAnswer(v => !v)}
+          >
+            <div className="text-center">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                {showFlashcardAnswer ? 'Answer:' : 'Question:'}
+              </h3>
+              <p className="text-lg text-gray-700">
+                {showFlashcardAnswer
+                  ? flashcards[currentFlashcardIndex].answer
+                  : flashcards[currentFlashcardIndex].question}
+              </p>
+              <p className="text-xs text-gray-400 mt-6">Tap to flip</p>
+            </div>
+          </motion.div>
+          <div className="flex items-center justify-between mt-6">
+            <button
+              onClick={() => { setCurrentFlashcardIndex(Math.max(0, currentFlashcardIndex - 1)); setShowFlashcardAnswer(false); }}
+              disabled={currentFlashcardIndex === 0}
+              className="px-4 py-2 rounded-xl bg-gray-100 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-all font-semibold text-sm"
+            >Previous</button>
+            <button
+              onClick={() => { setCurrentFlashcardIndex(Math.min(flashcards.length - 1, currentFlashcardIndex + 1)); setShowFlashcardAnswer(false); }}
+              disabled={currentFlashcardIndex === flashcards.length - 1}
+              className="px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-all font-semibold text-sm"
+            >Next</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderQuizTab = () => (
+    <div className="flex-1 px-4 py-8 flex flex-col items-center justify-center" style={{ overflowY: 'auto' }}>
+      {quizQuestions.length === 0 ? (
+        <div className="text-center max-w-md">
+          <h2 className="text-3xl font-black text-gray-900">Quiz Generator</h2>
+          <p className="text-sm text-gray-500 mt-8 mb-6">Enter a topic to generate a quiz!</p>
+          <AnimatedAIInput
+            onSend={(text, model) => {
+              const dummyQuiz = [
+                { question: `What is ${text}?`, options: ['Option A', 'Option B', 'Option C', 'Option D'], correct: 0 },
+                { question: `Which of these is true about ${text}?`, options: ['True', 'False', 'Maybe', 'None'], correct: 1 },
+                { question: `Choose the best answer for ${text}`, options: ['First', 'Second', 'Third', 'Fourth'], correct: 2 },
+              ];
+              setQuizQuestions(dummyQuiz);
+              setCurrentQuizIndex(0);
+              setQuizScore(0);
+              setQuizComplete(false);
+            }}
+          />
+        </div>
+      ) : quizComplete ? (
+        <div className="text-center max-w-md">
+          <h2 className="text-3xl font-black text-gray-900">Quiz Complete!</h2>
+          <div className="mt-8 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-3xl p-8">
+            <p className="text-5xl font-black text-emerald-600 mb-2">{quizScore}/{quizQuestions.length}</p>
+            <p className="text-sm text-emerald-700 font-semibold">
+              {Math.round((quizScore / quizQuestions.length) * 100)}% Correct!
+            </p>
+          </div>
+          <button
+            onClick={() => { setQuizQuestions([]); setCurrentQuizIndex(0); setQuizScore(0); setQuizComplete(false); }}
+            className="mt-6 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold hover:opacity-90 transition-all"
+          >New Quiz</button>
+        </div>
+      ) : (
+        <div className="w-full max-w-md">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-sm text-gray-500 font-semibold">Question {currentQuizIndex + 1} of {quizQuestions.length}</span>
+            <span className="text-sm font-bold text-emerald-600">Score: {quizScore}</span>
+          </div>
+          <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-xl mb-6">
+            <p className="text-lg font-semibold text-gray-900">{quizQuestions[currentQuizIndex].question}</p>
+          </div>
+          <div className="space-y-3 w-full max-w-md">
+            {quizQuestions[currentQuizIndex].options.map((option, i) => (
+              <button key={i}
+                onClick={() => {
+                  if (i === quizQuestions[currentQuizIndex].correct) setQuizScore(s => s + 1);
+                  if (currentQuizIndex === quizQuestions.length - 1) setQuizComplete(true);
+                  else setCurrentQuizIndex(c => c + 1);
+                }}
+                className="w-full text-left px-4 py-4 rounded-xl border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all font-semibold text-sm"
+              >{option}</button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <div className="flex bg-gray-50" style={{ height: 'calc(100vh - 64px)', overflow: 'hidden', maxWidth: '100vw', position: 'relative' }}>
       <AnimatePresence>
         {showAdvancedWarning && (
           <AdvancedWarningModal
-            onConfirm={() => { setMode('advanced'); setShowAdvancedWarning(false); }}
+            onConfirm={() => setShowAdvancedWarning(false)}
             onCancel={() => setShowAdvancedWarning(false)}
           />
         )}
@@ -372,12 +503,9 @@ export const AILab = ({ user, addToast }) => {
       <AnimatePresence>
         {showHistory && (
           <motion.aside
-            initial={{ x: -300, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: -300, opacity: 0 }}
+            initial={{ x: -300, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: -300, opacity: 0 }}
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            className="w-72 border-r border-gray-200 flex flex-col bg-white shrink-0"
-            style={{ overflow: 'hidden' }}
+            className="w-72 border-r border-gray-200 flex flex-col bg-white shrink-0" style={{ overflow: 'hidden' }}
           >
             <div className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
@@ -387,22 +515,17 @@ export const AILab = ({ user, addToast }) => {
                 )}
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={loadHistory}
-                  className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-all"
-                  title="Refresh">
+                <button onClick={loadHistory} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-all" title="Refresh">
                   <RotateCcw size={13} className={historyLoading ? 'animate-spin' : ''} />
                 </button>
-                <button onClick={() => setShowHistory(false)}
-                  className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-all">
+                <button onClick={() => setShowHistory(false)} className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-700 transition-all">
                   <X size={15} />
                 </button>
               </div>
             </div>
             <div className="flex-1 p-3 space-y-1" style={{ overflowY: 'auto', overflowX: 'hidden' }}>
               {historyLoading ? (
-                <div className="flex items-center justify-center py-16">
-                  <Loader2 size={20} className="animate-spin text-gray-300" />
-                </div>
+                <div className="flex items-center justify-center py-16"><Loader2 size={20} className="animate-spin text-gray-300" /></div>
               ) : history.length === 0 ? (
                 <div className="text-center py-16 text-gray-300">
                   <MessageSquare size={28} className="mx-auto mb-3" />
@@ -411,16 +534,8 @@ export const AILab = ({ user, addToast }) => {
                 </div>
               ) : history.map((item, i) => (
                 <motion.button key={i}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                  onClick={() => {
-                    setMessages([
-                      { role: 'user', content: item.prompt },
-                      { role: 'assistant', content: item.response, provider: item.model },
-                    ]);
-                    setShowHistory(false);
-                  }}
+                  initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.03 }}
+                  onClick={() => { setMessages([{ role: 'user', content: item.prompt }, { role: 'assistant', content: item.response, provider: item.model }]); setShowHistory(false); }}
                   className="w-full text-left p-3 rounded-xl hover:bg-gray-50 transition-all border border-transparent hover:border-gray-200 group"
                 >
                   <p className="text-xs text-gray-700 truncate font-medium group-hover:text-gray-900">{item.prompt}</p>
@@ -438,7 +553,7 @@ export const AILab = ({ user, addToast }) => {
       {/* ── Main ── */}
       <div className="flex-1 flex flex-col min-w-0" style={{ overflow: 'hidden' }}>
 
-        {/* Top bar */}
+        {/* Top Bar */}
         <div className="h-14 border-b border-gray-200 flex items-center justify-between px-5 shrink-0 bg-white/90 backdrop-blur-xl shadow-sm">
           <div className="flex items-center gap-3">
             <button onClick={() => setShowHistory(v => !v)}
@@ -454,420 +569,58 @@ export const AILab = ({ user, addToast }) => {
             </div>
           </div>
 
-          {/* Tabs for new features */}
-          <div className="flex items-center gap-2">
-            <button onClick={() => setActiveTab('chat')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'chat' ? 'bg-gradient-to-r from-blue-500 to-violet-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-              <MessageSquare size={14} className="inline mr-1" />
-              Chat
-            </button>
-            <button onClick={() => setActiveTab('flashcards')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'flashcards' ? 'bg-gradient-to-r from-orange-500 to-amber-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-              <BookOpen size={14} className="inline mr-1" />
-              Flashcards
-            </button>
-            <button onClick={() => setActiveTab('quiz')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'quiz' ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-sm' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
-              <BrainCircuit size={14} className="inline mr-1" />
-              Quiz
-            </button>
+          {/* 4-Tab bar */}
+          <div className="flex items-center gap-1">
+            {[
+              { id: 'chat', label: 'Chat', icon: MessageSquare },
+              { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+              { id: 'flashcards', label: 'Flashcards', icon: BookOpen },
+              { id: 'quiz', label: 'Quiz', icon: BrainCircuit },
+            ].map((tab) => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold transition-all ${activeTab === tab.id
+                  ? 'bg-gradient-to-r from-blue-500 to-violet-600 text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              >
+                <tab.icon size={12} />
+                {tab.label}
+              </button>
+            ))}
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Model selector */}
-            <div className="relative" onMouseDown={e => e.stopPropagation()}>
-              <button onClick={() => setShowModelMenu(v => !v)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-sm ${m.pill}`}>
-                <motion.div className={`w-1.5 h-1.5 rounded-full ${m.dot}`}
-                  animate={{ scale: [1, 1.4, 1] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-                <m.icon size={13} />
-                {m.name}
-                <ChevronDown size={12} className={`transition-transform duration-200 ${showModelMenu ? 'rotate-180' : ''}`} />
-              </button>
-              <AnimatePresence>
-                {showModelMenu && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute right-0 top-full mt-2 w-64 bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-2xl z-50"
-                  >
-                    <div className="p-2">
-                      {Object.values(MODEL_CONFIG).map(cfg => (
-                        <button key={cfg.id} onClick={() => handleModeSelect(cfg.id)}
-                          className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 transition-all text-left ${mode === cfg.id ? 'bg-gray-50' : ''}`}
-                        >
-                          <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${cfg.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
-                            <cfg.icon size={16} className="text-white" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-bold text-gray-900">{cfg.name}</p>
-                            <p className="text-[10px] text-gray-400 truncate">{cfg.subtitle} · {cfg.provider}</p>
-                          </div>
-                          {mode === cfg.id && (
-                            <div className="w-2 h-2 rounded-full bg-gray-900 shrink-0" />
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="px-4 py-2.5 border-t border-gray-100 bg-gray-50">
-                      <p className="text-[10px] text-gray-400 leading-relaxed">Powered by Cerebras · Groq fallback</p>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
             <button onClick={() => {
-              if (activeTab === 'chat') setMessages([]);
+              if (activeTab === 'chat') clearChat();
               if (activeTab === 'flashcards') { setFlashcards([]); setCurrentFlashcardIndex(0); setShowFlashcardAnswer(false); }
               if (activeTab === 'quiz') { setQuizQuestions([]); setCurrentQuizIndex(0); setQuizScore(0); setQuizComplete(false); }
             }}
-              className="p-2 rounded-xl hover:bg-red-50 text-gray-300 hover:text-red-400 transition-all"
-              title="Clear current">
+              className="p-2 rounded-xl hover:bg-red-50 text-gray-300 hover:text-red-400 transition-all" title="Clear current">
               <Trash2 size={16} />
             </button>
           </div>
         </div>
 
-        {/* Tab Content */}
-        <div className="flex-1 flex flex-col min-w-0" style={{ overflow: 'hidden' }}>
-          {/* Chat Tab */}
-          {activeTab === 'chat' && (
-            <>
-              <div className="flex-1 px-4 py-8" style={{ overflowY: 'auto', overflowX: 'hidden' }}>
-                <div className="max-w-2xl mx-auto space-y-6">
-                  {messages.length === 0 && !loading && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex flex-col items-center justify-center text-center pt-16 pb-20"
-                    >
-                      <motion.div className="relative mb-6 flex items-center justify-center"
-                        animate={{ y: [0, -8, 0] }}
-                        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                      >
-                        <motion.div
-                          className={`absolute w-36 h-36 rounded-full bg-gradient-to-br ${m.gradient} blur-3xl opacity-15`}
-                          animate={{ scale: [1, 1.3, 1] }}
-                          transition={{ duration: 3, repeat: Infinity }}
-                        />
-                        <img src="logo.png" alt="CSAI" className="relative w-28 h-28 object-contain drop-shadow-xl" />
-                      </motion.div>
-                      <AnimatedText text="What can I help with?" textClassName="text-2xl font-black text-gray-900" />
-                      <p className="text-sm text-gray-400 max-w-xs leading-relaxed">
-                        Ask me anything — academics, concepts, planning, or analysis.
-                      </p>
-                      <div className={`mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold shadow-sm ${m.pill}`}>
-                        <m.icon size={12} />
-                        {m.name} · {m.subtitle}
-                      </div>
-                    </motion.div>
-                  )}
+        {/* Tab Content - uses AnimatePresence from framer-motion already imported */}
+        <AnimatePresence mode="wait">
+          <div key={activeTab} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2 }} className="flex-1 flex flex-col" style={{ overflow: 'hidden' }}>
+            {activeTab === 'chat' && renderChatTab()}
+            {activeTab === 'analytics' && renderAnalyticsTab()}
+            {activeTab === 'flashcards' && renderFlashcardsTab()}
+            {activeTab === 'quiz' && renderQuizTab()}
+          </div>
+        </AnimatePresence>
 
-                  {messages.map((msg, i) => (
-                    <motion.div key={i}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.22 }}
-                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      {msg.role === 'user' ? (
-                        <div className="max-w-[75%]">
-                          {msg.attachments?.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5 mb-2 justify-end">
-                              {msg.attachments.map((f, i) => (
-                                <div key={i} className="flex items-center gap-1.5 bg-gray-800 rounded-xl px-3 py-1.5 text-xs text-gray-300">
-                                  {f.type?.startsWith('image/') ? <ImageIcon size={11} /> : <FileText size={11} />}
-                                  <span className="max-w-[100px] truncate">{f.name}</span>
-                                </div>
-                              ))}
-                            </div>
-                          )}
-                          <div className="bg-gray-900 text-white px-4 py-3 rounded-2xl rounded-tr-sm text-sm leading-relaxed font-medium shadow-sm">
-                            {msg.content}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="max-w-[85%] flex gap-3">
-                          <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${m.gradient} flex items-center justify-center shrink-0 mt-0.5 shadow-sm`}>
-                            <m.icon size={15} className="text-white" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="bg-white border border-gray-200 px-4 py-3 rounded-2xl rounded-tl-sm text-sm text-gray-800 shadow-sm">
-                              <MsgContent text={msg.content} />
-                            </div>
-                            {msg.provider && (
-                              <p className="text-[10px] text-gray-400 mt-1.5 px-1 font-medium">via {msg.provider}</p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </motion.div>
-                  ))}
-
-                  {loading && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3">
-                      <div className={`w-8 h-8 rounded-xl bg-gradient-to-br ${m.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
-                        <m.icon size={15} className="text-white" />
-                      </div>
-                      <div className="bg-white border border-gray-200 px-4 py-3.5 rounded-2xl rounded-tl-sm shadow-sm flex items-center gap-1.5">
-                        {[0, 1, 2].map(i => (
-                          <motion.div key={i} className="w-2 h-2 rounded-full bg-gray-300"
-                            animate={{ y: [0, -5, 0] }}
-                            transition={{ duration: 0.7, repeat: Infinity, delay: i * 0.15 }}
-                          />
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                  <div ref={chatEndRef} />
-                </div>
-              </div>
-
-              {/* Input for Chat */}
-              <div className="px-4 py-4 border-t border-gray-200 bg-white/90 backdrop-blur-xl shrink-0">
-                <div className="max-w-2xl mx-auto">
-                  {/* Attachment previews */}
-                  {attachments.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-2">
-                      {attachments.map((file, i) => (
-                        <div key={i} className="flex items-center gap-1.5 bg-gray-100 border border-gray-200 rounded-xl px-3 py-1.5 text-xs text-gray-700 font-medium">
-                          {file.type.startsWith('image/') ? <ImageIcon size={12} className="text-blue-500" /> : <FileText size={12} className="text-violet-500" />}
-                          <span className="max-w-[120px] truncate">{file.name}</span>
-                          <button onClick={() => setAttachments(prev => prev.filter((_, j) => j !== i))}
-                            className="text-gray-400 hover:text-red-400 transition-colors ml-1">
-                            <X size={11} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className={`flex items-end gap-2 bg-white border border-gray-200 rounded-2xl px-3 py-3 shadow-sm transition-all ${m.ring} focus-within:ring-4 focus-within:border-gray-300`}>
-                    {/* Attach button */}
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all shrink-0 mb-0.5"
-                      title="Attach file"
-                    >
-                      <Paperclip size={17} />
-                    </button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      multiple
-                      accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xlsx"
-                      className="hidden"
-                      onChange={e => {
-                        const files = Array.from(e.target.files || []);
-                        setAttachments(prev => [...prev, ...files].slice(0, 5));
-                        e.target.value = '';
-                      }}
-                    />
-                    <textarea
-                      ref={textareaRef}
-                      value={input}
-                      onChange={e => {
-                        setInput(e.target.value);
-                        e.target.style.height = 'auto';
-                        e.target.style.height = Math.min(e.target.scrollHeight, 160) + 'px';
-                      }}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
-                      }}
-                      placeholder={`Message ${m.name}...`}
-                      rows={1}
-                      className="flex-1 bg-transparent text-sm text-gray-900 placeholder-gray-400 outline-none resize-none leading-relaxed"
-                      style={{ minHeight: '24px', maxHeight: '160px' }}
-                    />
-                    <motion.button
-                      onClick={handleSend}
-                      disabled={loading || (!input.trim() && attachments.length === 0)}
-                      whileTap={(input.trim() || attachments.length > 0) && !loading ? { scale: 0.92 } : {}}
-                      className={`p-2.5 rounded-xl transition-all shrink-0 mb-0.5 ${(input.trim() || attachments.length > 0) && !loading
-                        ? `bg-gradient-to-br ${m.sendBg} text-white shadow-md hover:opacity-90`
-                        : 'bg-gray-100 text-gray-300 cursor-not-allowed'}`}
-                    >
-                      {loading ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                    </motion.button>
-                  </div>
-                  <p className="text-center text-[10px] text-gray-400 mt-2 flex items-center justify-center gap-1.5">
-                    <Info size={10} />
-                    {DISCLAIMER}
-                  </p>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Flashcards Tab */}
-          {activeTab === 'flashcards' && (
-            <div className="flex-1 px-4 py-8 flex flex-col items-center justify-center" style={{ overflowY: 'auto' }}>
-              {flashcards.length === 0 ? (
-                <div className="text-center max-w-md">
-                  <AnimatedText text="Flashcard Generator" textClassName="text-3xl font-black text-gray-900" />
-                  <p className="text-sm text-gray-500 mt-8 mb-6">Enter a topic to generate flashcards!</p>
-                  <AnimatedAIInput 
-                    placeholder="Enter a topic (e.g., quadratic equations, cell division, etc.)"
-                    onSend={(topic) => {
-                      const dummyCards = [
-                        { question: `What is ${topic}?`, answer: `A key concept in the subject!` },
-                        { question: `Why is ${topic} important?`, answer: `It's fundamental for further learning!` },
-                        { question: `Give an example of ${topic}`, answer: `A practical example that illustrates the concept!` },
-                      ];
-                      setFlashcards(dummyCards);
-                      setCurrentFlashcardIndex(0);
-                      setShowFlashcardAnswer(false);
-                    }}
-                  />
-                </div>
-              ) : (
-                <div className="w-full max-w-md">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm text-gray-500 font-semibold">
-                      {currentFlashcardIndex + 1} of {flashcards.length}
-                    </span>
-                  </div>
-                  
-                  <motion.div
-                    key={currentFlashcardIndex}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="bg-white border border-gray-200 rounded-3xl p-8 shadow-xl cursor-pointer"
-                    onClick={() => setShowFlashcardAnswer(v => !v)}
-                  >
-                    <div className="text-center">
-                      <h3 className="text-xl font-bold text-gray-900 mb-4">
-                        {showFlashcardAnswer ? 'Answer:' : 'Question:'}
-                      </h3>
-                      <p className="text-lg text-gray-700">
-                        {showFlashcardAnswer 
-                          ? flashcards[currentFlashcardIndex].answer 
-                          : flashcards[currentFlashcardIndex].question}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-6">
-                        Tap to flip
-                      </p>
-                    </div>
-                  </motion.div>
-
-                  <div className="flex items-center justify-between mt-6">
-                    <button
-                      onClick={() => {
-                        setCurrentFlashcardIndex(Math.max(0, currentFlashcardIndex - 1));
-                        setShowFlashcardAnswer(false);
-                      }}
-                      disabled={currentFlashcardIndex === 0}
-                      className="px-4 py-2 rounded-xl bg-gray-100 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition-all font-semibold text-sm"
-                    >
-                      Previous
-                    </button>
-                    <button
-                      onClick={() => {
-                        setCurrentFlashcardIndex(Math.min(flashcards.length - 1, currentFlashcardIndex + 1));
-                        setShowFlashcardAnswer(false);
-                      }}
-                      disabled={currentFlashcardIndex === flashcards.length - 1}
-                      className="px-4 py-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-600 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:opacity-90 transition-all font-semibold text-sm"
-                    >
-                      Next
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Quiz Tab */}
-          {activeTab === 'quiz' && (
-            <div className="flex-1 px-4 py-8 flex flex-col items-center justify-center" style={{ overflowY: 'auto' }}>
-              {quizQuestions.length === 0 ? (
-                <div className="text-center max-w-md">
-                  <AnimatedText text="Quiz Generator" textClassName="text-3xl font-black text-gray-900" />
-                  <p className="text-sm text-gray-500 mt-8 mb-6">Enter a topic to generate a quiz!</p>
-                  <AnimatedAIInput 
-                    placeholder="Enter a topic (e.g., history of India, chemistry basics, etc.)"
-                    onSend={(topic) => {
-                      const dummyQuiz = [
-                        { question: `What is ${topic}?`, options: ['Option A', 'Option B', 'Option C', 'Option D'], correct: 0 },
-                        { question: `Which of these is true about ${topic}?`, options: ['True', 'False', 'Maybe', 'None'], correct: 1 },
-                        { question: `Choose the best answer for ${topic}`, options: ['First', 'Second', 'Third', 'Fourth'], correct: 2 },
-                      ];
-                      setQuizQuestions(dummyQuiz);
-                      setCurrentQuizIndex(0);
-                      setQuizScore(0);
-                      setQuizComplete(false);
-                    }}
-                  />
-                </div>
-              ) : quizComplete ? (
-                <div className="text-center max-w-md">
-                  <AnimatedText text="Quiz Complete!" textClassName="text-3xl font-black text-gray-900" />
-                  <div className="mt-8 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-3xl p-8">
-                    <p className="text-5xl font-black text-emerald-600 mb-2">
-                      {quizScore}/{quizQuestions.length}
-                    </p>
-                    <p className="text-sm text-emerald-700 font-semibold">
-                      {Math.round((quizScore / quizQuestions.length) * 100)}% Correct!
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setQuizQuestions([]);
-                      setCurrentQuizIndex(0);
-                      setQuizScore(0);
-                      setQuizComplete(false);
-                    }}
-                    className="mt-6 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold hover:opacity-90 transition-all"
-                  >
-                    New Quiz
-                  </button>
-                </div>
-              ) : (
-                <div className="w-full max-w-md">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm text-gray-500 font-semibold">
-                      Question {currentQuizIndex + 1} of {quizQuestions.length}
-                    </span>
-                    <span className="text-sm font-bold text-emerald-600">
-                      Score: {quizScore}
-                    </span>
-                  </div>
-
-                  <div className="bg-white border border-gray-200 rounded-3xl p-6 shadow-xl mb-6">
-                    <p className="text-lg font-semibold text-gray-900">
-                      {quizQuestions[currentQuizIndex].question}
-                    </p>
-                  </div>
-
-                  <div className="space-y-3">
-                    {quizQuestions[currentQuizIndex].options.map((option, i) => (
-                      <button
-                        key={i}
-                        onClick={() => {
-                          if (i === quizQuestions[currentQuizIndex].correct) {
-                            setQuizScore(s => s + 1);
-                          }
-                          if (currentQuizIndex === quizQuestions.length - 1) {
-                            setQuizComplete(true);
-                          } else {
-                            setCurrentQuizIndex(c => c + 1);
-                          }
-                        }}
-                        className="w-full text-left px-4 py-4 rounded-xl border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all font-semibold text-sm"
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
+        {/* Bottom Bar - Shared AnimatedAIInput */}
+        <div className="border-t border-gray-200 bg-white/90 backdrop-blur-xl px-6 py-4 shrink-0">
+          <AnimatedAIInput
+            onSend={handleSendChatMessage}
+            placeholder={
+              activeTab === 'chat' ? 'Ask about anything...'
+                : activeTab === 'flashcards' ? 'Enter a topic to generate flashcards...'
+                  : activeTab === 'quiz' ? 'Enter a topic to generate a quiz...'
+                    : 'Type your message...'
+            }
+          />
         </div>
       </div>
     </div>

@@ -1,449 +1,430 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, Brain, MessageSquare, TrendingUp, Users, Zap, Send, Loader2 } from 'lucide-react';
+import { Bot, Brain, MessageSquare, TrendingUp, Users, Zap, Send, Loader2, BookOpen, CheckCircle2, AlertTriangle, X, ChevronDown, RotateCcw, FileText, ImageIcon, Star, Target, BarChart2, Clock, Plus } from 'lucide-react';
+import { request } from '../../utils/apiClient';
 import { AnimatedAIInput } from '../../components/ui/AnimatedAIInput';
+import { Modal } from '../../components/ui/Modal';
+
+const DISCLAIMER = "CSAI can make mistakes. Verify important information.";
+
+const ADMIN_MODEL_CONFIG = {
+  'groq-llama-3.1-8b-instant': { id: 'groq-llama-3.1-8b-instant', name: 'Llama 3.1 8B', subtitle: 'Fast & Efficient', provider: 'Groq', icon: Bot, gradient: 'from-blue-500 to-sky-400', pill: 'bg-blue-50 text-blue-600 border-blue-200', dot: 'bg-blue-500', ring: 'focus-within:ring-blue-100', sendBg: 'from-blue-500 to-sky-400' },
+  'groq-llama-3.3-70b': { id: 'groq-llama-3.3-70b', name: 'Llama 3.3 70B', subtitle: 'Powerful', provider: 'Groq', icon: Brain, gradient: 'from-violet-600 to-purple-500', pill: 'bg-violet-50 text-violet-600 border-violet-200', dot: 'bg-violet-500', ring: 'focus-within:ring-violet-100', sendBg: 'from-violet-600 to-purple-500' },
+  'cerebras-qwen-3-235b': { id: 'cerebras-qwen-3-235b', name: 'Qwen 3 235B', subtitle: 'Deep Reasoning', provider: 'Cerebras', icon: Brain, gradient: 'from-orange-500 to-amber-600', pill: 'bg-orange-50 text-orange-600 border-orange-200', dot: 'bg-orange-500', ring: 'focus-within:ring-orange-100', sendBg: 'from-orange-500 to-amber-600' },
+};
+
+const StatCard = ({ icon: Icon, label, value, trend, gradient, sublabel, color }) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="bg-white rounded-2xl p-5 border hover:shadow-md transition-all"
+    style={{ borderColor: color || '#e5e7eb' }}
+  >
+    <div className="flex items-start justify-between mb-3">
+      <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center shadow-sm`}>
+        <Icon size={18} className="text-white" />
+      </div>
+      {trend && (
+        <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-emerald-50 text-emerald-600">{trend}</span>
+      )}
+    </div>
+    <h3 className="text-2xl font-black" style={{ color: color || '#1c1917' }}>{value}</h3>
+    <p className="text-xs mt-0.5" style={{ color: '#a8a29e' }}>{label}</p>
+    {sublabel && <p className="text-[10px]" style={{ color: '#a8a29e' }}>{sublabel}</p>}
+  </motion.div>
+);
 
 const AdminAILab = ({ user, addToast }) => {
-  const [stats] = useState({
-    totalQueries: 15420,
-    activeUsers: 892,
-    avgResponseTime: '1.2s',
-    accuracy: 94.5,
-  });
-
-  const [activeTab, setActiveTab] = useState('chat');
+  const [stats, setStats] = useState(null);
+  const [tools, setTools] = useState([]);
+  const [recentQueries, setRecentQueries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTool, setSelectedTool] = useState(null);
+  const [toolModalOpen, setToolModalOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
-  const [flashcards, setFlashcards] = useState([]);
-  const [quizQuestions, setQuizQuestions] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [flashcardIndex, setFlashcardIndex] = useState(0);
-  const [showFlashcardAnswer, setShowFlashcardAnswer] = useState(false);
-  const [quizIndex, setQuizIndex] = useState(0);
-  const [quizScore, setQuizScore] = useState(0);
-  const [quizComplete, setQuizComplete] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [activeTab, setActiveTab] = useState('chat');
 
-  const [aiTools] = useState([
-    { id: 1, name: 'Essay Scorer', description: 'AI-powered essay evaluation with detailed feedback', usage: 3420, status: 'active', icon: Brain },
-    { id: 2, name: 'Math Tutor', description: 'Step-by-step math problem solving assistant', usage: 2890, status: 'active', icon: Bot },
-    { id: 3, name: 'Language Partner', description: 'Conversational AI for language practice', usage: 1560, status: 'active', icon: MessageSquare },
-    { id: 4, name: 'Code Helper', description: 'Programming assistance and code review', usage: 980, status: 'beta', icon: Zap },
-  ]);
+  useEffect(() => {
+    loadDashboard();
+  }, []);
 
-  const handleSendMessage = async (message, model) => {
+  const loadDashboard = async () => {
+    setLoading(true);
+    try {
+      const [statsRes, toolsRes, queriesRes] = await Promise.allSettled([
+        request('/ai/stats'),
+        request('/ai/tools'),
+        request('/ai/recent-queries?limit=10'),
+      ]);
+
+      if (statsRes.status === 'fulfilled' && statsRes.value?.success) {
+        setStats(statsRes.value.stats);
+      } else {
+        setStats({
+          totalQueries: 0,
+          activeUsers: 0,
+          avgResponseTime: '0ms',
+          accuracy: 0,
+          totalTokens: 0,
+          successRate: 0,
+        });
+      }
+
+      if (toolsRes.status === 'fulfilled' && toolsRes.value?.success) {
+        setTools(toolsRes.value.tools.map((t, i) => ({
+          ...t,
+          icon: [Brain, Bot, MessageSquare, Zap, TrendingUp, Target][i % 6],
+          gradient: ['from-blue-500 to-indigo-500', 'from-violet-500 to-purple-500', 'from-emerald-500 to-teal-500', 'from-amber-500 to-orange-500', 'from-pink-500 to-rose-500', 'from-cyan-500 to-blue-500'][i % 6],
+        })));
+      } else {
+        setTools([]);
+      }
+
+      if (queriesRes.status === 'fulfilled' && queriesRes.value?.queries) {
+        setRecentQueries(queriesRes.value.queries);
+      }
+    } catch (err) {
+      console.error('Failed to load AI dashboard', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToolClick = (tool) => {
+    setSelectedTool(tool);
+    setToolModalOpen(true);
+  };
+
+  const handleSendChatMessage = async (message, model) => {
     if (!message.trim()) return;
 
-    setLoading(true);
-    const userMsg = { role: 'user', content: message, model: model.name };
-    setChatMessages(prev => [...prev, userMsg]);
+    const userMessage = { role: 'user', content: message, model: model.name };
+    setChatMessages(prev => [...prev, userMessage]);
+    setIsSending(true);
 
     try {
-      // Simulate API call - replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      const response = {
-        role: 'assistant',
-        content: `This is a simulated response from ${model.name}. In production, this would connect to the ${model.provider} API endpoint. The model processed your query: "${message}"`,
-        model: model.name,
-        provider: model.provider,
-      };
-      setChatMessages(prev => [...prev, response]);
+      const response = await request('/ai/chat', {
+        method: 'POST',
+        body: JSON.stringify({ message, model: model.id })
+      });
+
+      if (response.success) {
+        setChatMessages(prev => [...prev, {
+          role: 'assistant',
+          content: response.reply,
+          model: model.name,
+          provider: model.provider
+        }]);
+      } else {
+        addToast?.('error', 'Failed to get AI response');
+      }
     } catch (err) {
-      addToast?.('AI request failed', 'error');
+      addToast?.('error', 'AI request failed');
     } finally {
-      setLoading(false);
+      setIsSending(false);
     }
   };
 
-  const handleFlashcardGenerate = async (topic) => {
-    if (!topic.trim()) return;
-    setLoading(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const cards = [
-        { question: `What is ${topic}?`, answer: `A key concept in the subject area.` },
-        { question: `Why is ${topic} important?`, answer: `It's fundamental for further learning!` },
-        { question: `Give an example of ${topic}`, answer: `A practical illustration of the concept.` },
-        { question: `How does ${topic} relate to other concepts?`, answer: `It connects to broader principles in the field.` },
-      ];
-      setFlashcards(cards);
-      setFlashcardIndex(0);
-      setShowFlashcardAnswer(false);
-      setActiveTab('flashcards');
-    } catch (err) {
-      addToast?.('Failed to generate flashcards', 'error');
-    } finally {
-      setLoading(false);
-    }
+  const formatResponseTime = (ms) => {
+    if (ms < 1000) return `${ms}ms`;
+    return `${(ms / 1000).toFixed(1)}s`;
   };
 
-  const handleQuizGenerate = async (topic) => {
-    if (!topic.trim()) return;
-    setLoading(true);
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      const questions = [
-        { question: `What is ${topic}?`, options: ['Definition A', 'Definition B', 'Definition C', 'Definition D'], correct: 0 },
-        { question: `Which of these is true about ${topic}?`, options: ['True statement', 'False statement', 'Partially true', 'None'], correct: 1 },
-        { question: `Choose the best answer for ${topic}`, options: ['First', 'Second', 'Third', 'Fourth'], correct: 2 },
-        { question: `What is the key principle of ${topic}?`, options: ['Principle A', 'Principle B', 'Principle C', 'Principle D'], correct: 1 },
-      ];
-      setQuizQuestions(questions);
-      setQuizIndex(0);
-      setQuizScore(0);
-      setQuizComplete(false);
-      setActiveTab('quiz');
-    } catch (err) {
-      addToast?.('Failed to generate quiz', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const renderChatTab = () => (
+    <motion.div
+      key="chat"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.2 }}
+      className="space-y-4"
+    >
+      <div className="h-[450px] overflow-y-auto rounded-xl border p-4 space-y-4"
+        style={{ background: 'var(--bg-surface, #fafafa)' }}>
+        {chatMessages.length === 0 && !isSending && (
+          <div className="h-full flex flex-col items-center justify-center text-center">
+            <Bot size={48} className="text-gray-300 mb-4" />
+            <h3 className="text-lg font-semibold text-gray-700">Welcome to AI Lab Chat</h3>
+            <p className="text-sm text-gray-400 max-w-md mt-2">
+              Ask anything about your school data. Select a model below to get started.
+            </p>
+          </div>
+        )}
+        {chatMessages.map((msg, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+          >
+            <div
+              className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                msg.role === 'user'
+                  ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-br-none'
+                  : 'bg-white border border-gray-200 text-gray-900 rounded-bl-none shadow-sm'
+              }`}
+            >
+              <p className="text-sm leading-relaxed">{msg.content}</p>
+              {msg.provider && (
+                <p className="text-[10px] opacity-70 mt-1 flex items-center gap-1">
+                  <Bot size={10} /> via {msg.provider}
+                </p>
+              )}
+            </div>
+          </motion.div>
+        ))}
+        {isSending && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
+            <div className="bg-white border border-gray-200 rounded-2xl px-4 py-3 flex items-center gap-2 shadow-sm">
+              <Loader2 size={16} className="animate-spin text-gray-400" />
+              <span className="text-sm text-gray-500">AI is thinking...</span>
+            </div>
+          </motion.div>
+        )}
+      </div>
+    </motion.div>
+  );
 
-  const handleQuizAnswer = (selectedIndex) => {
-    if (selectedIndex === quizQuestions[quizIndex].correct) {
-      setQuizScore(prev => prev + 1);
-    }
-    if (quizIndex === quizQuestions.length - 1) {
-      setQuizComplete(true);
-    } else {
-      setQuizIndex(prev => prev + 1);
-    }
-  };
+  const renderStatsTab = () => (
+    <motion.div
+      key="stats"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.2 }}
+      className="space-y-4"
+    >
+      <div className="grid grid-cols-2 gap-4">
+        <StatCard
+          icon={MessageSquare}
+          label="Total Queries"
+          value={stats?.totalQueries?.toLocaleString() || '—'}
+          gradient="from-blue-500 to-indigo-500"
+          trend={stats?.queriesGrowth ? `+${stats.queriesGrowth}%` : null}
+          color="#3b82f6"
+        />
+        <StatCard
+          icon={Users}
+          label="Active Users"
+          value={stats?.activeUsers?.toLocaleString() || '—'}
+          gradient="from-emerald-500 to-teal-500"
+          sublabel={stats?.uniqueUsers ? `${stats.uniqueUsers.toLocaleString()} unique` : null}
+          color="#10b981"
+        />
+        <StatCard
+          icon={Zap}
+          label="Avg Response"
+          value={stats?.avgResponseTime ? formatResponseTime(stats.avgResponseTime) : '—'}
+          gradient="from-violet-500 to-purple-500"
+          sublabel={stats?.p95Response ? `p95: ${formatResponseTime(stats.p95Response)}` : null}
+          color="#8b5cf6"
+        />
+        <StatCard
+          icon={Target}
+          label="Accuracy"
+          value={stats?.accuracy ? `${stats.accuracy}%` : '—'}
+          gradient="from-amber-500 to-orange-500"
+          trend={stats?.accuracyDelta ? `${stats.accuracyDelta > 0 ? '+' : ''}${stats.accuracyDelta}%` : null}
+          color="#f59e0b"
+        />
+        <StatCard
+          icon={Brain}
+          label="Tokens Used"
+          value={stats?.totalTokens ? `${(stats.totalTokens / 1000000).toFixed(1)}M` : '—'}
+          gradient="from-pink-500 to-rose-500"
+          color="#ec4899"
+        />
+        <StatCard
+          icon={TrendingUp}
+          label="Success Rate"
+          value={stats?.successRate ? `${stats.successRate}%` : '—'}
+          gradient="from-cyan-500 to-blue-500"
+          sublabel={stats?.errorCount ? `${stats.errorCount} errors` : null}
+          color="#06b6d4"
+        />
+      </div>
+    </motion.div>
+  );
 
-  const resetQuiz = () => {
-    setQuizQuestions([]);
-    setQuizIndex(0);
-    setQuizScore(0);
-    setQuizComplete(false);
-    setActiveTab('chat');
-  };
+  const renderToolsTab = () => (
+    <motion.div
+      key="tools"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.2 }}
+    >
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <div key={i} className="h-48 bg-gray-50 rounded-2xl animate-pulse" />
+          ))}
+        </div>
+      ) : tools.length === 0 ? (
+        <div className="py-16 text-center border-2 border-dashed rounded-2xl">
+          <Bot size={40} className="mx-auto mb-3 text-gray-200" />
+          <p className="font-bold text-gray-500">No AI tools configured</p>
+          <p className="text-xs text-gray-400 mt-1">Add tools to start monitoring AI usage</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {tools.map((tool) => (
+            <AiToolCard key={tool.id || tool.name} tool={tool} onClick={() => handleToolClick(tool)} />
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
 
-  const resetFlashcards = () => {
-    setFlashcards([]);
-    setFlashcardIndex(0);
-    setShowFlashcardAnswer(false);
-    setActiveTab('chat');
-  };
+  const renderHistoryTab = () => (
+    <motion.div
+      key="history"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.2 }}
+    >
+      {recentQueries.length === 0 ? (
+        <div className="py-8 text-center">
+          <MessageSquare size={24} className="mx-auto mb-2 opacity-30" />
+          <p className="text-xs text-gray-400">No recent queries</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {recentQueries.map((q, i) => (
+            <div key={i} className="flex items-center gap-4 p-3 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-xs font-bold text-white shrink-0">
+                {q.mode?.[0]?.toUpperCase() || 'A'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-gray-800 truncate">{q.prompt || q.query || 'Query'}</p>
+                <p className="text-[10px] text-gray-400 mt-0.5">{q.user?.name || 'User'} · {q.mode || 'balanced'}</p>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="text-[10px] font-bold text-gray-500">{q.responseTime ? formatResponseTime(q.responseTime) : '—'}</p>
+                <p className="text-[10px] text-gray-400">{q.created_at ? new Date(q.created_at).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : ''}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-          <Bot className="inline mr-2" size={24} /> AI Lab
-        </h1>
-        <button className="px-4 py-2 rounded-xl text-white text-sm font-medium" style={{ background: 'var(--primary)' }}>
-          + Add AI Tool
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="px-3 py-1 bg-indigo-50 text-indigo-600 border border-indigo-100 rounded-full text-[10px] font-bold uppercase tracking-widest">
+              AI Infrastructure
+            </div>
+            {loading && <Loader2 size={12} className="animate-spin text-gray-400" />}
+          </div>
+          <h1 className="text-2xl font-black flex items-center gap-3">
+            AI Lab
+            <span className="text-[10px] bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded-full font-bold border border-emerald-100">Live</span>
+          </h1>
+        </div>
+        <button className="px-4 py-2 rounded-xl text-white text-sm font-bold shadow-lg flex items-center gap-2"
+          style={{ background: 'var(--primary)', color: 'white' }}>
+          <Plus size={16} /> Add AI Tool
         </button>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-2xl p-5" style={{ border: '1px solid var(--border-color)' }}>
-          <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center mb-3">
-            <MessageSquare size={20} className="text-white" />
-          </div>
-          <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{stats.totalQueries.toLocaleString()}</h3>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Total Queries</p>
-        </div>
-        <div className="bg-white rounded-2xl p-5" style={{ border: '1px solid var(--border-color)' }}>
-          <div className="w-10 h-10 rounded-xl bg-green-500 flex items-center justify-center mb-3">
-            <Users size={20} className="text-white" />
-          </div>
-          <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{stats.activeUsers}</h3>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Active Users</p>
-        </div>
-        <div className="bg-white rounded-2xl p-5" style={{ border: '1px solid var(--border-color)' }}>
-          <div className="w-10 h-10 rounded-xl bg-purple-500 flex items-center justify-center mb-3">
-            <TrendingUp size={20} className="text-white" />
-          </div>
-          <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{stats.avgResponseTime}</h3>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Avg Response</p>
-        </div>
-        <div className="bg-white rounded-2xl p-5" style={{ border: '1px solid var(--border-color)' }}>
-          <div className="w-10 h-10 rounded-xl bg-yellow-500 flex items-center justify-center mb-3">
-            <Bot size={20} className="text-white" />
-          </div>
-          <h3 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>{stats.accuracy}%</h3>
-          <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Accuracy Rate</p>
-        </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <StatCard icon={MessageSquare} label="Total Queries" value={stats?.totalQueries?.toLocaleString() || '—'} gradient="from-blue-500 to-indigo-500" trend={stats?.queriesGrowth ? `+${stats.queriesGrowth}%` : null} />
+        <StatCard icon={Users} label="Active Users" value={stats?.activeUsers?.toLocaleString() || '—'} gradient="from-emerald-500 to-teal-500" sublabel={stats?.uniqueUsers ? `${stats.uniqueUsers.toLocaleString()} unique` : null} />
+        <StatCard icon={Zap} label="Avg Response" value={stats?.avgResponseTime ? formatResponseTime(stats.avgResponseTime) : '—'} gradient="from-violet-500 to-purple-500" sublabel={stats?.p95Response ? `p95: ${formatResponseTime(stats.p95Response)}` : null} />
+        <StatCard icon={Target} label="Accuracy" value={stats?.accuracy ? `${stats.accuracy}%` : '—'} gradient="from-amber-500 to-orange-500" trend={stats?.accuracyDelta ? `${stats.accuracyDelta > 0 ? '+' : ''}${stats.accuracyDelta}%` : null} />
+        <StatCard icon={Brain} label="Tokens Used" value={stats?.totalTokens ? `${(stats.totalTokens / 1000000).toFixed(1)}M` : '—'} gradient="from-pink-500 to-rose-500" />
+        <StatCard icon={TrendingUp} label="Success Rate" value={stats?.successRate ? `${stats.successRate}%` : '—'} gradient="from-cyan-500 to-blue-500" sublabel={stats?.errorCount ? `${stats.errorCount} errors` : null} />
       </div>
 
-      {/* Main Content Area */}
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden" style={{ borderColor: 'var(--border-color)' }}>
+      {/* Main Content */}
+      <div className="bg-white rounded-2xl border overflow-hidden"
+        style={{ borderColor: 'var(--border-color, #e5e7eb)' }}>
         {/* Tab Bar */}
-        <div className="flex border-b" style={{ borderColor: 'var(--border-color)' }}>
-          <button
-            onClick={() => setActiveTab('chat')}
-            className={`flex-1 px-6 py-3 text-sm font-medium transition-all ${
-              activeTab === 'chat'
-                ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50/50'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <MessageSquare size={14} className="inline mr-2" />
-            Chat
-          </button>
-          <button
-            onClick={() => setActiveTab('flashcards')}
-            className={`flex-1 px-6 py-3 text-sm font-medium transition-all ${
-              activeTab === 'flashcards'
-                ? 'border-b-2 border-orange-500 text-orange-600 bg-orange-50/50'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <BookOpen size={14} className="inline mr-2" />
-            Flashcards
-          </button>
-          <button
-            onClick={() => setActiveTab('quiz')}
-            className={`flex-1 px-6 py-3 text-sm font-medium transition-all ${
-              activeTab === 'quiz'
-                ? 'border-b-2 border-emerald-500 text-emerald-600 bg-emerald-50/50'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-            }`}
-          >
-            <Brain size={14} className="inline mr-2" />
-            Quiz
-          </button>
+        <div className="flex border-b" style={{ borderColor: 'var(--border-color, #e5e7eb)' }}>
+          {[
+            { id: 'chat', label: 'Chat', icon: MessageSquare },
+            { id: 'stats', label: 'Analytics', icon: BarChart2 },
+            { id: 'tools', label: 'AI Tools', icon: Zap },
+            { id: 'history', label: 'History', icon: Clock },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex-1 px-6 py-3 text-sm font-medium transition-all flex items-center justify-center gap-2 ${
+                activeTab === tab.id
+                  ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50/50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              <tab.icon size={14} />
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {/* Tab Content */}
         <div className="p-6">
           <AnimatePresence mode="wait">
-            {/* Chat Tab */}
-            {activeTab === 'chat' && (
-              <motion.div
-                key="chat"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-4"
-              >
-                {/* Chat Messages */}
-                <div className="h-[400px] overflow-y-auto rounded-xl border mb-4 p-4 space-y-4" style={{ borderColor: 'var(--border-color)', background: 'var(--bg-surface)' }}>
-                  {chatMessages.length === 0 && !loading && (
-                    <div className="h-full flex flex-col items-center justify-center text-center">
-                      <Bot size={48} className="text-gray-300 mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-600">Welcome to AI Lab Chat</h3>
-                      <p className="text-sm text-gray-400 max-w-md">
-                        Ask questions about your school data, analytics, and more. Select a model below to start.
-                      </p>
-                    </div>
-                  )}
-                  {chatMessages.map((msg, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                          msg.role === 'user'
-                            ? 'bg-blue-500 text-white rounded-br-none'
-                            : 'bg-gray-100 text-gray-900 rounded-bl-none'
-                        }`}
-                      >
-                        <p className="text-sm leading-relaxed">{msg.content}</p>
-                        {msg.provider && (
-                          <p className="text-[10px] opacity-70 mt-1">via {msg.provider}</p>
-                        )}
-                      </div>
-                    </motion.div>
-                  ))}
-                  {loading && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex justify-start">
-                      <div className="bg-gray-100 rounded-2xl px-4 py-3 flex items-center gap-2">
-                        <Loader2 size={16} className="animate-spin text-gray-500" />
-                        <span className="text-sm text-gray-600">AI is thinking...</span>
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Flashcards Tab */}
-            {activeTab === 'flashcards' && (
-              <motion.div
-                key="flashcards"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-4"
-              >
-                {flashcards.length === 0 ? (
-                  <div className="text-center py-16">
-                    <BookOpen size={48} className="mx-auto text-gray-300 mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-600 mb-2">Flashcard Generator</h3>
-                    <p className="text-sm text-gray-400 max-w-md mx-auto mb-6">
-                      Enter a topic to generate interactive flashcards for studying.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="max-w-2xl mx-auto">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-sm text-gray-500">
-                        Card {flashcardIndex + 1} of {flashcards.length}
-                      </span>
-                    </div>
-                    <motion.div
-                      key={flashcardIndex}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-gray-200 rounded-2xl p-8 shadow-lg cursor-pointer"
-                      onClick={() => setShowFlashcardAnswer(!showFlashcardAnswer)}
-                    >
-                      <div className="text-center">
-                        <p className="text-sm text-gray-500 mb-2">
-                          {showFlashcardAnswer ? 'Tap to see question' : 'Tap to see answer'}
-                        </p>
-                        <h3 className="text-xl font-bold text-gray-900 mb-6">
-                          {showFlashcardAnswer
-                            ? flashcards[flashcardIndex].answer
-                            : flashcards[flashcardIndex].question}
-                        </h3>
-                      </div>
-                    </motion.div>
-                    <div className="flex items-center justify-between mt-6">
-                      <button
-                        onClick={() => setFlashcardIndex(i => Math.max(0, i - 1))}
-                        disabled={flashcardIndex === 0}
-                        className="px-4 py-2 rounded-lg bg-gray-100 text-gray-600 disabled:opacity-50 hover:bg-gray-200 transition-all font-medium text-sm"
-                      >
-                        ← Previous
-                      </button>
-                      <button
-                        onClick={() => setFlashcardIndex(i => Math.min(flashcards.length - 1, i + 1))}
-                        disabled={flashcardIndex === flashcards.length - 1}
-                        className="px-4 py-2 rounded-lg bg-blue-500 text-white disabled:opacity-50 hover:bg-blue-600 transition-all font-medium text-sm"
-                      >
-                        Next →
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            )}
-
-            {/* Quiz Tab */}
-            {activeTab === 'quiz' && (
-              <motion.div
-                key="quiz"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.2 }}
-                className="space-y-4"
-              >
-                {quizQuestions.length === 0 ? (
-                  <div className="text-center py-16">
-                    <Brain size={48} className="mx-auto text-gray-300 mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-600 mb-2">Quiz Generator</h3>
-                    <p className="text-sm text-gray-400 max-w-md mx-auto mb-6">
-                      Enter a topic to generate an interactive quiz and test your knowledge.
-                    </p>
-                  </div>
-                ) : quizComplete ? (
-                  <div className="text-center py-12">
-                    <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-200 rounded-3xl p-10 shadow-lg inline-block">
-                      <p className="text-6xl font-black text-emerald-600 mb-2">
-                        {quizScore}/{quizQuestions.length}
-                      </p>
-                      <p className="text-lg font-semibold text-emerald-700">
-                        {Math.round((quizScore / quizQuestions.length) * 100)}% Correct!
-                      </p>
-                    </div>
-                    <button
-                      onClick={resetQuiz}
-                      className="mt-6 px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-semibold hover:opacity-90 transition-all shadow-lg"
-                    >
-                      Try Again
-                    </button>
-                  </div>
-                ) : (
-                  <div className="max-w-2xl mx-auto">
-                    <div className="flex items-center justify-between mb-6">
-                      <span className="text-sm text-gray-500">
-                        Question {quizIndex + 1} of {quizQuestions.length}
-                      </span>
-                      <span className="text-sm font-bold text-emerald-600">
-                        Score: {quizScore}
-                      </span>
-                    </div>
-                    <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-6 shadow-sm">
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {quizQuestions[quizIndex].question}
-                      </h3>
-                    </div>
-                    <div className="space-y-3">
-                      {quizQuestions[quizIndex].options.map((option, i) => (
-                        <button
-                          key={i}
-                          onClick={() => handleQuizAnswer(i)}
-                          className="w-full text-left px-5 py-4 rounded-xl border border-gray-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all font-medium text-sm"
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            )}
+            {activeTab === 'chat' && renderChatTab()}
+            {activeTab === 'stats' && renderStatsTab()}
+            {activeTab === 'tools' && renderToolsTab()}
+            {activeTab === 'history' && renderHistoryTab()}
           </AnimatePresence>
         </div>
 
         {/* Bottom Bar - Shared across all tabs */}
-        <div className="border-t px-6 py-4" style={{ borderColor: 'var(--border-color)' }}>
-          {activeTab === 'chat' && (
-            <AnimatedAIInput
-              onSend={handleSendMessage}
-              placeholder="Ask about school data, analytics, or anything..."
-            />
-          )}
-          {activeTab === 'flashcards' && (
-            <AnimatedAIInput
-              onSend={handleFlashcardGenerate}
-              placeholder="Enter a topic to generate flashcards..."
-            />
-          )}
-          {activeTab === 'quiz' && (
-            <AnimatedAIInput
-              onSend={handleQuizGenerate}
-              placeholder="Enter a topic to generate a quiz..."
-            />
-          )}
+        <div className="border-t px-6 py-4" style={{ borderColor: 'var(--border-color, #e5e7eb)' }}>
+          <AnimatedAIInput
+            onSend={handleSendChatMessage}
+            placeholder={activeTab === 'chat' ? 'Ask about school data, analytics, or anything...' : 'Type your message...'}
+          />
         </div>
       </div>
 
-      {/* AI Tools */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-6" style={{ borderColor: 'var(--border-color)' }}>
-        <h2 className="text-lg font-semibold mb-4" style={{ color: 'var(--text-primary)' }}>AI Tools</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {aiTools.map((tool) => (
-            <div key={tool.id} className="p-4 rounded-xl border hover:shadow-md transition-shadow" style={{ borderColor: 'var(--border-color)' }}>
-              <div className="flex items-start gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-                  <tool.icon size={24} className="text-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{tool.name}</h3>
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${
-                      tool.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                    }`}>{tool.status}</span>
-                  </div>
-                  <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>{tool.description}</p>
-                  <p className="text-xs mt-2" style={{ color: 'var(--text-muted)' }}>{tool.usage.toLocaleString()} uses this month</p>
+      {/* Tool Detail Modal */}
+      <Modal isOpen={toolModalOpen} onClose={() => setToolModalOpen(false)} title={selectedTool?.name || 'AI Tool'} size="lg">
+        {selectedTool && (
+          <div className="space-y-6">
+            <div className="flex items-start gap-4">
+              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${selectedTool.gradient || 'from-blue-500 to-indigo-500'} flex items-center justify-center shadow-lg`}>
+                {(() => { const Icon = selectedTool.icon || Bot; return <Icon size={26} className="text-white" />; })()}
+              </div>
+              <div>
+                <p className="text-gray-600 text-sm leading-relaxed">{selectedTool.description}</p>
+                <div className="flex items-center gap-3 mt-3">
+                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                    selectedTool.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                  }`}>{selectedTool.status}</span>
+                  <span className="text-xs text-gray-400 font-medium">{selectedTool.usage?.toLocaleString() || 0} total uses</span>
                 </div>
               </div>
             </div>
-          ))}
-        </div>
-      </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-gray-50 rounded-xl">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Daily Uses</p>
+                <p className="text-xl font-black text-gray-900">{selectedTool.dailyUsage?.toLocaleString() || 0}</p>
+              </div>
+              <div className="p-4 bg-gray-50 rounded-xl">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Avg Latency</p>
+                <p className="text-xl font-black text-gray-900">{selectedTool.avgLatency ? formatResponseTime(selectedTool.avgLatency) : '—'}</p>
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end pt-4 border-t border-gray-100">
+              <button className="px-4 py-2 rounded-lg border border-gray-200 text-sm font-medium hover:bg-gray-50 transition-colors"
+                onClick={() => setToolModalOpen(false)}>Close</button>
+              <button className="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-medium hover:bg-gray-800 transition-colors">Configure Tool</button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
