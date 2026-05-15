@@ -22,14 +22,35 @@ jobs:
         with:
           node-version: 20
 
-      # Build landing page
+      # Build landing (if exists)
+      - name: Check landing directory
+        id: landing
+        run: |
+          if [ -d "academics/landing" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          elif [ -d "landing" ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install landing deps
-        run: npm install
-        working-directory: academics/landing
+        if: steps.landing.outputs.exists == 'true'
+        run: |
+          if [ -d "academics/landing" ]; then
+            cd academics/landing && npm install
+          else
+            cd landing && npm install
+          fi
 
       - name: Build landing
-        run: npm run build
-        working-directory: academics/landing
+        if: steps.landing.outputs.exists == 'true'
+        run: |
+          if [ -d "academics/landing" ]; then
+            cd academics/landing && npm run build
+          else
+            cd landing && npm run build
+          fi
 
       # Build academics portal
       - name: Install academics deps
@@ -42,14 +63,21 @@ jobs:
         env:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
-      # Deploy: landing at root, academics at /academics/
+      # Deploy: landing at root (if built), academics at /academics/
       - name: Prepare deploy folder
         run: |
           mkdir -p deploy/academics
           cp -r academics/dist/* deploy/academics/
           cp academics/dist/index.html deploy/academics/404.html
-          cp -r academics/landing/dist/* deploy/
-          cp academics/landing/dist/index.html deploy/404.html
+          if [ -d "academics/landing/dist" ]; then
+            cp -r academics/landing/dist/* deploy/
+            cp academics/landing/dist/index.html deploy/404.html
+          elif [ -d "landing/dist" ]; then
+            cp -r landing/dist/* deploy/
+            cp landing/dist/index.html deploy/404.html
+          else
+            cp academics/dist/index.html deploy/404.html
+          fi
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
