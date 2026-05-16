@@ -1,0 +1,51 @@
+[1mdiff --git a/src/services/apiDataLayer.js b/src/services/apiDataLayer.js[m
+[1mindex 8dbb088..4a08bea 100644[m
+[1m--- a/src/services/apiDataLayer.js[m
+[1m+++ b/src/services/apiDataLayer.js[m
+[36m@@ -449,6 +449,15 @@[m [mexport const teacherApi = {[m
+       rubric,[m
+     });[m
+   },[m
+[32m+[m
+[32m+[m[32m  // Uniform Schedule[m
+[32m+[m[32m  async getUniformSchedule(classId, date) {[m
+[32m+[m[32m    const query = `?date=${date}${classId ? `&classId=${classId}` : ''}`;[m
+[32m+[m[32m    return makeRequest('GET', `/school/uniform-schedule${query}`);[m
+[32m+[m[32m  },[m
+[32m+[m[32m  async createUniformSchedule(data) {[m
+[32m+[m[32m    return makeRequest('POST', '/school/uniform-schedule', data, { useCache: false });[m
+[32m+[m[32m  },[m
+ };[m
+ [m
+ // ============================================================================[m
+[36m@@ -544,6 +553,22 @@[m [mexport const studentApi = {[m
+   },[m
+ };[m
+ [m
+[32m+[m[32m// ============================================================================[m
+[32m+[m[32m// PARENT API[m
+[32m+[m[32m// ============================================================================[m
+[32m+[m
+[32m+[m[32mexport const parentApi = {[m
+[32m+[m[32m  // Dashboard[m
+[32m+[m[32m  async getDashboard() {[m
+[32m+[m[32m    return makeRequest('GET', '/parent/dashboard', null, { cacheKey: 'parent:dashboard' });[m
+[32m+[m[32m  },[m
+[32m+[m
+[32m+[m[32m  // Book Heavy Alerts[m
+[32m+[m[32m  async getBookHeavyAlerts() {[m
+[32m+[m[32m    return makeRequest('GET', '/parent/book-alerts');[m
+[32m+[m[32m  },[m
+[32m+[m[32m};[m
+[32m+[m
+ // ============================================================================[m
+ // STUDENT ASSISTANT API (AI-Powered Study Companion)[m
+ // ============================================================================[m
+[36m@@ -729,6 +754,7 @@[m [mexport const apiUtils = {[m
+ export default {[m
+   teacherApi,[m
+   studentApi,[m
+[32m+[m[32m  parentApi,[m
+   authApi,[m
+   apiUtils,[m
+ };[m

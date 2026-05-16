@@ -449,6 +449,15 @@ export const teacherApi = {
       rubric,
     });
   },
+
+  // Uniform Schedule
+  async getUniformSchedule(classId, date) {
+    const query = `?date=${date}${classId ? `&classId=${classId}` : ''}`;
+    return makeRequest('GET', `/school/uniform-schedule${query}`);
+  },
+  async createUniformSchedule(data) {
+    return makeRequest('POST', '/school/uniform-schedule', data, { useCache: false });
+  },
 };
 
 // ============================================================================
@@ -541,6 +550,22 @@ export const studentApi = {
   // Progress (from student-assistant)
   async getProgress() {
     return makeRequest('GET', '/student-assistant/analytics');
+  },
+};
+
+// ============================================================================
+// PARENT API
+// ============================================================================
+
+export const parentApi = {
+  // Dashboard
+  async getDashboard() {
+    return makeRequest('GET', '/parent/dashboard', null, { cacheKey: 'parent:dashboard' });
+  },
+
+  // Book Heavy Alerts
+  async getBookHeavyAlerts() {
+    return makeRequest('GET', '/parent/book-alerts');
   },
 };
 
@@ -729,6 +754,7 @@ export const apiUtils = {
 export default {
   teacherApi,
   studentApi,
+  parentApi,
   authApi,
   apiUtils,
 };
