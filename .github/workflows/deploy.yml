@@ -1,3 +1,4 @@
+
 name: Deploy to GitHub Pages
 
 on:
@@ -22,37 +23,7 @@ jobs:
         with:
           node-version: 20
 
-      # Build landing (if exists)
-      - name: Check landing directory
-        id: landing
-        run: |
-          if [ -d "academics/landing" ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          elif [ -d "landing" ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Install landing deps
-        if: steps.landing.outputs.exists == 'true'
-        run: |
-          if [ -d "academics/landing" ]; then
-            cd academics/landing && npm install
-          else
-            cd landing && npm install
-          fi
-
-      - name: Build landing
-        if: steps.landing.outputs.exists == 'true'
-        run: |
-          if [ -d "academics/landing" ]; then
-            cd academics/landing && npm run build
-          else
-            cd landing && npm run build
-          fi
-
-      # Build unified app (academics + management merged)
+      # Build academics app
       - name: Install app deps
         run: npm install
         working-directory: academics
@@ -63,21 +34,27 @@ jobs:
         env:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
 
-      # Deploy: landing at root (if built), app at /academics/
+      # Deploy: academics app at /academics/, root redirects to /academics/
       - name: Prepare deploy folder
         run: |
           mkdir -p deploy/academics
           cp -r academics/dist/* deploy/academics/
           cp academics/dist/index.html deploy/academics/404.html
-          if [ -d "academics/landing/dist" ]; then
-            cp -r academics/landing/dist/* deploy/
-            cp academics/landing/dist/index.html deploy/404.html
-          elif [ -d "landing/dist" ]; then
-            cp -r landing/dist/* deploy/
-            cp landing/dist/index.html deploy/404.html
-          else
-            cp academics/dist/index.html deploy/404.html
-          fi
+          # Create root index.html that redirects to /OP-CS_CONNECT/academics/
+          cat > deploy/index.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta http-equiv="refresh" content="0;url=/OP-CS_CONNECT/academics/">
+            <title>OP-CS CONNECT</title>
+          </head>
+          <body>
+            <p>Redirecting to <a href="/OP-CS_CONNECT/academics/">Academics Portal</a>...</p>
+          </body>
+          </html>
+          EOF
+          cp deploy/index.html deploy/404.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -99,3 +76,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
