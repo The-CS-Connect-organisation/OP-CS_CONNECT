@@ -5,7 +5,8 @@ import {
   LayoutDashboard, Users, BookOpen, Clock, Calendar, CheckCircle, Banknote,
   Bell, ChevronLeft, ChevronRight, X, Sparkles, Bot,
   LogOut, Settings, MessageCircle, FileText, BarChart3, ChevronDown,
-  ClipboardList, UserCheck, PencilLine, Megaphone, Heart, Wallet, Bus, Award, Zap, Trophy, Sunrise
+  ClipboardList, UserCheck, PencilLine, Megaphone, Heart, Wallet, Bus, Award, Zap, Trophy, Sunrise,
+  Search, AlertTriangle, HeartPulse
 } from 'lucide-react';
 import { useStore } from '../../hooks/useStore';
 import { KEYS } from '../../data/schema';
