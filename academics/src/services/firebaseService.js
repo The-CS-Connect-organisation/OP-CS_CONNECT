@@ -18,6 +18,7 @@ import {
   equalTo,
   limitToFirst,
   limitToLast,
+  push,
 } from 'firebase/database';
 
 // Initialize Firebase (use your config)
@@ -45,6 +46,24 @@ try {
   console.error('Firebase initialization failed:', err);
 }
 
+// Helper to check if database is available
+const checkDb = () => {
+  if (!database) {
+    console.warn('Firebase database not initialized. Check VITE_FIREBASE_* env vars.');
+    return false;
+  }
+  return true;
+};
+
+// Helper to validate required fields
+const validateRequired = (data, requiredFields) => {
+  const missing = requiredFields.filter(field => !data[field]);
+  if (missing.length > 0) {
+    throw new Error(`Missing required fields: ${missing.join(', ')}`);
+  }
+  return true;
+};
+
 // ============================================================================
 // USERS SERVICE
 // ============================================================================
@@ -54,6 +73,7 @@ export const firebaseUsersService = {
    * Get all users
    */
   async getAll() {
+    if (!checkDb()) return [];
     try {
       const snapshot = await get(ref(database, 'users'));
       if (!snapshot.exists()) return [];
@@ -69,6 +89,7 @@ export const firebaseUsersService = {
    * Get user by ID
    */
   async getById(userId) {
+    if (!checkDb()) return null;
     try {
       const snapshot = await get(ref(database, `users/${userId}`));
       if (!snapshot.exists()) return null;
@@ -205,14 +226,18 @@ export const firebaseAssignmentsService = {
    * Create assignment
    */
   async create(assignmentData) {
+    if (!checkDb()) throw new Error('Database not available');
+    validateRequired(assignmentData, ['title', 'classId']);
     try {
-      const newRef = ref(database, `assignments/${Date.now()}`);
+      const newRef = push(ref(database, 'assignments'));
+      const id = newRef.key;
       await set(newRef, {
         ...assignmentData,
+        id,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
-      return { id: Date.now().toString(), ...assignmentData };
+      return { id, ...assignmentData };
     } catch (error) {
       console.error('Error creating assignment:', error);
       throw error;
@@ -322,14 +347,18 @@ export const firebaseSubmissionsService = {
    * Create submission
    */
   async create(submissionData) {
+    if (!checkDb()) throw new Error('Database not available');
+    validateRequired(submissionData, ['assignmentId', 'studentId']);
     try {
-      const newRef = ref(database, `submissions/${Date.now()}`);
+      const newRef = push(ref(database, 'submissions'));
+      const id = newRef.key;
       await set(newRef, {
         ...submissionData,
+        id,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
-      return { id: Date.now().toString(), ...submissionData };
+      return { id, ...submissionData };
     } catch (error) {
       console.error('Error creating submission:', error);
       throw error;
@@ -427,13 +456,17 @@ export const firebaseAttendanceService = {
    * Create attendance record
    */
   async create(attendanceData) {
+    if (!checkDb()) throw new Error('Database not available');
+    validateRequired(attendanceData, ['studentId', 'date', 'status']);
     try {
-      const newRef = ref(database, `attendance_records/${Date.now()}`);
+      const newRef = push(ref(database, 'attendance_records'));
+      const id = newRef.key;
       await set(newRef, {
         ...attendanceData,
+        id,
         createdAt: new Date().toISOString(),
       });
-      return { id: Date.now().toString(), ...attendanceData };
+      return { id, ...attendanceData };
     } catch (error) {
       console.error('Error creating attendance:', error);
       throw error;
@@ -531,13 +564,17 @@ export const firebaseMarksService = {
    * Create mark record
    */
   async create(markData) {
+    if (!checkDb()) throw new Error('Database not available');
+    validateRequired(markData, ['studentId', 'subject', 'score']);
     try {
-      const newRef = ref(database, `marks/${Date.now()}`);
+      const newRef = push(ref(database, 'marks'));
+      const id = newRef.key;
       await set(newRef, {
         ...markData,
+        id,
         createdAt: new Date().toISOString(),
       });
-      return { id: Date.now().toString(), ...markData };
+      return { id, ...markData };
     } catch (error) {
       console.error('Error creating mark:', error);
       throw error;
@@ -810,14 +847,18 @@ export const firebaseNotificationsService = {
    * Create notification
    */
   async create(notificationData) {
+    if (!checkDb()) throw new Error('Database not available');
+    validateRequired(notificationData, ['userId', 'message']);
     try {
-      const newRef = ref(database, `notifications/${Date.now()}`);
+      const newRef = push(ref(database, 'notifications'));
+      const id = newRef.key;
       await set(newRef, {
         ...notificationData,
+        id,
         createdAt: new Date().toISOString(),
         read: false,
       });
-      return { id: Date.now().toString(), ...notificationData };
+      return { id, ...notificationData };
     } catch (error) {
       console.error('Error creating notification:', error);
       throw error;

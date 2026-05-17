@@ -4,6 +4,8 @@ import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { request } from '../../../utils/apiClient';
 import { useSound } from '../../../hooks/useSound';
+import { getFromStorage, setToStorage } from '../../../data/schema';
+import { KEYS } from '../../../data/schema';
 
 const calculateSummary = (recs) => {
   const present = recs.filter(r => r.status === 'present' || r.status === 'late').length;
@@ -14,16 +16,14 @@ const calculateSummary = (recs) => {
   return { total, present, absent, late, rate };
 };
 
-const LEAVE_STORAGE_KEY = 'sms_leave_requests';
+const LEAVE_STORAGE_KEY = KEYS.LEAVE_REQUESTS;
 
 const getLeaveRequests = () => {
-  try {
-    return JSON.parse(localStorage.getItem(LEAVE_STORAGE_KEY) || '[]');
-  } catch { return []; }
+  return getFromStorage(LEAVE_STORAGE_KEY, []);
 };
 
 const saveLeaveRequests = (requests) => {
-  localStorage.setItem(LEAVE_STORAGE_KEY, JSON.stringify(requests));
+  setToStorage(LEAVE_STORAGE_KEY, requests);
 };
 
 export const Attendance = ({ user }) => {
@@ -64,7 +64,7 @@ export const Attendance = ({ user }) => {
     fetchAttendance();
 
     // Load leave requests from localStorage
-    const stored = JSON.parse(localStorage.getItem('sms_leave_requests') || '[]');
+    const stored = getFromStorage(KEYS.LEAVE_REQUESTS, []);
     setLeaveRequests(stored.filter(r => r.studentId === user.id));
   }, [user?.id]);
 

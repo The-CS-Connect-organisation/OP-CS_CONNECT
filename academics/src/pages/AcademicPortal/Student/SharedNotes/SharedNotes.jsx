@@ -3,6 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, Search, X, Clock, User, StickyNote, ChevronRight, Tag, Pencil, Upload, Plus, FileText } from 'lucide-react';
 import { useSound } from '../../../../hooks/useSound';
 import { request } from '../../../../utils/apiClient';
+import { getFromStorage, setToStorage } from '../../../../data/schema';
+import { KEYS } from '../../../../data/schema';
 
 const SharedNotes = ({ user, addToast }) => {
   const [notes, setNotes] = useState([]);
@@ -38,7 +40,7 @@ const SharedNotes = ({ user, addToast }) => {
 
   useEffect(() => {
     fetchNotes();
-    const storedAnnotations = JSON.parse(localStorage.getItem('sms_annotations') || '{}');
+    const storedAnnotations = getFromStorage(KEYS.ANNOTATIONS, {});
     setAnnotations(storedAnnotations);
   }, []);
 
@@ -105,7 +107,7 @@ const SharedNotes = ({ user, addToast }) => {
       ],
     };
     setAnnotations(updated);
-    localStorage.setItem('sms_annotations', JSON.stringify(updated));
+    setToStorage(KEYS.ANNOTATIONS, updated);
     setAnnotationText('');
     addToast?.('Annotation added successfully!', 'success');
     playBlip();

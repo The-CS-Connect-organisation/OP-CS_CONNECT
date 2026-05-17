@@ -1,4 +1,5 @@
 import { KEYS, getFromStorage, setToStorage } from '../data/schema';
+import { generateId } from '../utils/helpers';
 
 const nowIso = () => new Date().toISOString();
 const nowDate = () => new Date().toISOString().split('T')[0];
@@ -240,7 +241,7 @@ export const localAuditRepo = {
   append: (entry) => {
     const all = getFromStorage('sms_audit_log', []);
     const next = Array.isArray(all) ? all : [];
-    const full = { id: `audit-${Date.now()}`, at: nowIso(), ...entry };
+    const full = { id: generateId(), at: nowIso(), ...entry };
     setToStorage('sms_audit_log', [full, ...next].slice(0, 5000));
     return full;
   },

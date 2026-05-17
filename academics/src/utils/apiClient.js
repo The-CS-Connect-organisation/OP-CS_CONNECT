@@ -1,11 +1,18 @@
-// API base URL from environment (for GitHub Pages deployment, .env values work at build time)
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://op-csconnect-backend-production.up.railway.app/api';
+// API base URL from environment
+import { API_BASE_URL } from '../config/api';
 
-// Keep-alive ping every 10 minutes to prevent cold starts
+// API configuration constants
+const API_TIMEOUT_MS = 60000; // 1 minute request timeout
+const KEEPALIVE_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+const KEEPALIVE_PING_INTERVAL_MS = 10 * 60 * 1000; // ping every 10 minutes
+const API_MAX_RETRIES = 3;
+const API_RETRY_DELAY_MS = 1000; // 1 second base delay
+
+// Keep-alive ping to prevent cold starts
 if (typeof window !== 'undefined') {
   const ping = () => fetch(`${API_BASE_URL}/health`, { method: 'GET' }).catch(() => {});
   ping(); // ping on load
-  setInterval(ping, 10 * 60 * 1000); // ping every 10 min
+  setInterval(ping, KEEPALIVE_PING_INTERVAL_MS);
 }
 
 // Initialize authToken from localStorage if available
@@ -49,10 +56,10 @@ export const setAuthToken = (token) => {
   }
 };
 
-export const request = async (path, options = {}) => {
+export const request = async (path, options = {}, retryCount = 0) => {
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 60000);
-  
+  const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
   let response;
   try {
     response = await fetch(buildUrl(path), {
@@ -64,8 +71,21 @@ export const request = async (path, options = {}) => {
       signal: controller.signal,
       ...options,
     });
+  } catch (error) {
+    // Network error - retry if possible
+    if (retryCount < API_MAX_RETRIES) {
+      await new Promise(r => setTimeout(r, API_RETRY_DELAY_MS * (retryCount + 1)));
+      return request(path, options, retryCount + 1);
+    }
+    throw new ApiClientError('Network error: ' + error.message, 0, null);
   } finally {
     clearTimeout(timeoutId);
+  }
+
+  // Retry on 5xx errors
+  if (response.status >= 500 && retryCount < API_MAX_RETRIES) {
+    await new Promise(r => setTimeout(r, API_RETRY_DELAY_MS * (retryCount + 1)));
+    return request(path, options, retryCount + 1);
   }
 
   let payload = null;

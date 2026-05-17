@@ -6,6 +6,8 @@ import {
   ChevronRight, Plus, Calendar, BookOpen, AlertCircle, Timer, Coffee as CoffeeIcon, X
 } from 'lucide-react';
 import { useSound } from '../../../../hooks/useSound';
+import { getFromStorage, setToStorage } from '../../../../data/schema';
+import { KEYS } from '../../../../data/schema';
 
 // ── Timer configs ─────────────────────────────────────────────────────────────
 const POMODORO_WORK = 25 * 60;
@@ -173,9 +175,9 @@ export const FocusMode = ({ user, addToast }) => {
 
   // Load tasks from localStorage (persisted locally)
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem('sms_focus_tasks') || '[]');
+    const saved = getFromStorage(KEYS.FOCUS_TASKS, []);
     setTasks(saved);
-    const history = JSON.parse(localStorage.getItem('sms_focus_history') || '[]');
+    const history = getFromStorage(KEYS.FOCUS_HISTORY, []);
     setFocusHistory(history);
   }, []);
 
@@ -206,7 +208,7 @@ export const FocusMode = ({ user, addToast }) => {
     };
     const updatedHistory = [session, ...focusHistory].slice(0, 500);
     setFocusHistory(updatedHistory);
-    localStorage.setItem('sms_focus_history', JSON.stringify(updatedHistory));
+    setToStorage(KEYS.FOCUS_HISTORY, updatedHistory);
 
     if (mode === 'work') {
       setSessionsDone(s => {
@@ -242,14 +244,14 @@ export const FocusMode = ({ user, addToast }) => {
     playClick();
     const updated = tasks.map(t => t.id === id ? { ...t, completed: !t.completed } : t);
     setTasks(updated);
-    localStorage.setItem('sms_focus_tasks', JSON.stringify(updated));
+    setToStorage(KEYS.FOCUS_TASKS, updated);
   };
 
   const deleteTask = (id) => {
     playClick();
     const updated = tasks.filter(t => t.id !== id);
     setTasks(updated);
-    localStorage.setItem('sms_focus_tasks', JSON.stringify(updated));
+    setToStorage(KEYS.FOCUS_TASKS, updated);
     if (activeTask?.id === id) setActiveTask(null);
   };
 

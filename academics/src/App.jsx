@@ -13,6 +13,7 @@ import { KEYS } from './data/schema';
 // Components
 import { Layout } from './components/layout/Layout';
 import { Toast } from './components/ui/Toast';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import SplashScreen from './components/SplashScreen';
 
 // Pages - Common
@@ -196,6 +197,7 @@ function App() {
   }, [user, logout, addToast]);
 
   // Auto-login from landing page URL hash
+  // SECURITY: Passing password in URL is a risk - prefer token-based auth in production
   useEffect(() => {
     const hash = window.location.hash;
     const params = new URLSearchParams(hash.split('?')[1]);
@@ -203,12 +205,11 @@ function App() {
     const pass = params.get('pass');
 
     if (autologin && pass && !user) {
-      // Clean URL immediately so it doesn't loop
+      // Clean URL immediately so it doesn't leak credentials
       window.location.hash = window.location.hash.split('?')[0];
       login(decodeURIComponent(autologin), decodeURIComponent(pass))
         .then((result) => {
           if (result?.success) {
-            // Ensure splash is dismissed after successful auto-login
             sessionStorage.setItem('hasSeenSplash', 'true');
             setShowSplash(false);
           }
@@ -235,7 +236,8 @@ function App() {
   return (
     <>
       <Toast toasts={toasts} removeToast={removeToast} />
-      <Routes>
+      <ErrorBoundary>
+        <Routes>
           {/* 🔐 Auth Gates */}
           <Route path="/login" element={
             user && ALLOWED_ROLES.includes(user.role)
@@ -789,6 +791,7 @@ function App() {
           } />
           <Route path="*" element={<NotFound user={user} />} />
         </Routes>
+      </ErrorBoundary>
     </>
   );
 }

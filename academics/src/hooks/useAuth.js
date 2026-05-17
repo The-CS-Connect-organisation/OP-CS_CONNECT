@@ -39,11 +39,17 @@ export const useAuth = () => {
         setUser(res.user);
         setError(null);
         navigate(`/${res.user.role}/dashboard`);
+        return { success: true, user: res.user };
       }
-      return res;
+      // Handle failed login
+      const errorMsg = res?.error || 'Login failed';
+      setError(errorMsg);
+      return { success: false, error: errorMsg };
     } catch (err) {
       console.error('Login error:', err);
-      return { success: false, error: err.message };
+      const errorMsg = err.message || 'Login failed';
+      setError(errorMsg);
+      return { success: false, error: errorMsg };
     }
   }, [navigate]);
 
@@ -57,11 +63,17 @@ export const useAuth = () => {
         setUser(res.user);
         setError(null);
         navigate(`/${res.user.role}/dashboard`);
+        return { success: true, user: res.user };
       }
-      return res;
+      // Handle failed signup
+      const errorMsg = res?.error || 'Signup failed';
+      setError(errorMsg);
+      return { success: false, error: errorMsg };
     } catch (err) {
       console.error('Signup error:', err);
-      return { success: false, error: err.message };
+      const errorMsg = err.message || 'Signup failed';
+      setError(errorMsg);
+      return { success: false, error: errorMsg };
     }
   }, [navigate]);
 

@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Bus, ToggleLeft, ToggleRight, RefreshCw, CheckCircle, XCircle, Info, AlertTriangle, Clock } from 'lucide-react';
 import { studentApi } from '../../services/apiDataLayer';
+import { API_BASE_URL } from '../../config/api';
+import { getFromStorage } from '../../data/schema';
+import { KEYS } from '../../data/schema';
 
 export function SkipBus({ user, addToast }) {
   const [busInfo, setBusInfo] = useState(null);
@@ -40,11 +43,11 @@ export function SkipBus({ user, addToast }) {
 
     try {
       // Use the bus tracking API endpoint
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://op-csconnect-backend-production.up.railway.app/api'}/bus/skip`, {
+      const res = await fetch(`${API_BASE_URL}/bus/skip`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('sms_auth_token')?.replace(/"/g, '')}`,
+          'Authorization': `Bearer ${getFromStorage(KEYS.AUTH_TOKEN)?.replace(/"/g, '')}`,
         },
         body: JSON.stringify({
           studentId: user?.id,
@@ -70,11 +73,11 @@ export function SkipBus({ user, addToast }) {
     if (!window.confirm('Revert today\'s bus skip? You will be marked as present on the bus.')) return;
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'https://op-csconnect-backend-production.up.railway.app/api'}/bus/unskip`, {
+      const res = await fetch(`${API_BASE_URL}/bus/unskip`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('sms_auth_token')?.replace(/"/g, '')}`,
+          'Authorization': `Bearer ${getFromStorage(KEYS.AUTH_TOKEN)?.replace(/"/g, '')}`,
         },
         body: JSON.stringify({
           studentId: user?.id,

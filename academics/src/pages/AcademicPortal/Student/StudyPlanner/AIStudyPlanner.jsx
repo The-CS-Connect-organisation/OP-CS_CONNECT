@@ -9,6 +9,8 @@ import { Card } from '../../../components/ui/Card';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
 import { useSound } from '../../../hooks/useSound';
+import { getFromStorage, setToStorage } from '../../../data/schema';
+import { KEYS } from '../../../data/schema';
 
 const SUBJECTS = [
   'Mathematics', 'Physics', 'Chemistry', 'Biology', 'English',
@@ -206,7 +208,7 @@ export const AIStudyPlanner = ({ user }) => {
   const handleAddToFocusMode = () => {
     if (!schedule) return;
     playBlip();
-    const existingTasks = JSON.parse(localStorage.getItem('sms_focus_tasks') || '[]');
+    const existingTasks = getFromStorage(KEYS.FOCUS_TASKS, []);
     const newTasks = [];
 
     schedule.schedule.forEach(week => {
@@ -229,7 +231,7 @@ export const AIStudyPlanner = ({ user }) => {
       });
     });
 
-    localStorage.setItem('sms_focus_tasks', JSON.stringify([...existingTasks, ...newTasks]));
+    setToStorage(KEYS.FOCUS_TASKS, [...existingTasks, ...newTasks]);
     // Dispatch event so Focus Mode picks up changes
     window.dispatchEvent(new CustomEvent('sms_storage_changed', { detail: { key: 'sms_focus_tasks' } }));
   };

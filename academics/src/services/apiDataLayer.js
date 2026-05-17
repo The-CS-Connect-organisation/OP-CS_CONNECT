@@ -4,7 +4,8 @@
  * Abstracts all HTTP calls to backend API
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://op-csconnect-backend-production.up.railway.app/api';
+import { API_BASE_URL } from '../config/api';
+
 const CACHE_DURATION = 5 * 60 * 1000;
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;

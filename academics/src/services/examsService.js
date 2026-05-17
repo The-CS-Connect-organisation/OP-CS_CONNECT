@@ -1,6 +1,7 @@
 import { getDataMode, DATA_MODES } from '../config/dataMode';
 import { apiRequest } from './apiClient';
 import { localAttemptsRepo, localAuditRepo, localExamsRepo, localQuestionBankRepo } from './localRepo';
+import { generateId } from '../utils/helpers';
 
 const nowIso = () => new Date().toISOString();
 
@@ -24,7 +25,7 @@ export const examsService = {
       return payload?.exam ?? payload;
     }
     const all = localExamsRepo.list();
-    const next = [{ ...exam, id: exam.id ?? `exam-${Date.now()}`, createdAt: nowIso(), createdBy: actor?.id ?? null }, ...all];
+    const next = [{ ...exam, id: exam.id ?? generateId(), createdAt: nowIso(), createdBy: actor?.id ?? null }, ...all];
     localExamsRepo.saveAll(next);
     localAuditRepo.append({ actorId: actor?.id, actorEmail: actor?.email, action: 'exams.create', mode: 'LOCAL_DEMO' });
     return next[0];
@@ -59,7 +60,7 @@ export const examsService = {
 
   async startAttempt({ examId, student, questionIds }) {
     const attempt = {
-      id: `att-${examId}-${student.id}-${Date.now()}`,
+      id: generateId(),
       examId,
       studentId: student.id,
       startedAt: nowIso(),

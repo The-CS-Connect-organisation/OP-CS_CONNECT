@@ -15,6 +15,8 @@ import {
 import { request } from '../../../../utils/apiClient';
 import { getSocket } from '../../../../utils/socketClient';
 import { isStreamChatAvailable, startStreamCall } from '../../../../services/streamChatService';
+import { getFromStorage, setToStorage } from '../../../../data/schema';
+import { KEYS } from '../../../../data/schema';
 
 // ── Role colours ──────────────────────────────────────────────────────────────
 const ROLE_COLOR = {
@@ -27,11 +29,16 @@ const ROLE_COLOR = {
 const rc = (role) => ROLE_COLOR[role] || '#6b7280';
 
 // Meeting invites storage keys
-const loadMeetingInvites = () => {
-  try { return JSON.parse(localStorage.getItem('sms_meeting_invites') || '[]'); } catch { return []; }
+const loadMeetingInvites = () => getFromStorage(KEYS.MEETING_INVITES, []);
+const saveMeetingInvites = (invites) => setToStorage(KEYS.MEETING_INVITES, invites);
+
+// Dynamic storage key helpers for user-specific data
+const getConversationsKey = (userId) => `sms_conversations_${userId}`;
+const loadUserConversations = (userId) => {
+  try { return JSON.parse(localStorage.getItem(getConversationsKey(userId)) || '[]'); } catch { return []; }
 };
-const saveMeetingInvites = (invites) => {
-  localStorage.setItem('sms_meeting_invites', JSON.stringify(invites));
+const saveUserConversations = (userId, convs) => {
+  try { localStorage.setItem(getConversationsKey(userId), JSON.stringify(convs)); } catch { /* ignore */ }
 };
 
 // ── Relative time ─────────────────────────────────────────────────────────────
@@ -130,13 +137,13 @@ export const Messages = ({ user, addToast }) => {
   // ── Load conversations from localStorage ───────────────────────────────────
   useEffect(() => {
     if (!user?.id) return;
-    const stored = JSON.parse(localStorage.getItem(`sms_conversations_${user.id}`) || '[]');
+    const stored = loadUserConversations(user.id);
     setConversations(stored);
   }, [user?.id]);
 
   // ── Save conversations ──────────────────────────────────────────────────────
   const saveConversations = useCallback((convs) => {
-    localStorage.setItem(`sms_conversations_${user.id}`, JSON.stringify(convs));
+    saveUserConversations(user.id, convs);
     setConversations(convs);
   }, [user?.id]);
 
@@ -347,7 +354,7 @@ export const Messages = ({ user, addToast }) => {
     if (action === 'accepted') {
       const invite = invites.find(inv => inv.id === inviteId);
       if (invite) {
-        const calEvents = JSON.parse(localStorage.getItem('sms_calendar_events') || '[]');
+        const calEvents = getFromStorage(KEYS.CALENDAR_EVENTS, []);
         const newEvent = {
           id: `meeting-${Date.now()}`,
           title: invite.title,
@@ -360,7 +367,7 @@ export const Messages = ({ user, addToast }) => {
           inviteId: invite.id,
         };
         calEvents.push(newEvent);
-        localStorage.setItem('sms_calendar_events', JSON.stringify(calEvents));
+        setToStorage(KEYS.CALENDAR_EVENTS, calEvents);
         addToast?.(`Meeting "${invite.title}" added to calendar`, 'success');
       }
     } else {

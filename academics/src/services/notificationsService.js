@@ -2,6 +2,7 @@ import { getDataMode, DATA_MODES } from '../config/dataMode';
 import { apiRequest } from './apiClient';
 import { KEYS, getFromStorage, setToStorage } from '../data/schema';
 import { localAuditRepo } from './localRepo';
+import { generateId } from '../utils/helpers';
 
 const nowIso = () => new Date().toISOString();
 
@@ -31,7 +32,7 @@ export const notificationsService = {
     }
 
     const next = [
-      { id: `ntf-${Date.now()}`, userId, message, type, meta, read: false, createdAt: nowIso() },
+      { id: generateId(), userId, message, type, meta, read: false, createdAt: nowIso() },
       ...readLocal(),
     ].slice(0, 500);
     writeLocal(next);
