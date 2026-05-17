@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
 import App from './App';
 import './index.css';
+import { seedIfNeeded } from './services/localRepo';
+
+// Seed demo data on first load
+seedIfNeeded();
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
