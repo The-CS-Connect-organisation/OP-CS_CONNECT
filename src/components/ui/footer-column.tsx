@@ -42,7 +42,7 @@ const data = {
     name: 'Cornerstone',
     description:
       'Building the future of education with AI-powered tools, real-time analytics, and seamless school management. Empowering students, teachers, and administrators.',
-    logo: '/logo.png',
+    logo: `${import.meta.env.BASE_URL}logo.png`,
   },
 };
 

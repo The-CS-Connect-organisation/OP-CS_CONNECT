@@ -13,8 +13,6 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { FeatureCard } from '@/components/ui/grid-feature-cards';
 import { LiquidButton } from '@/components/ui/liquid-glass-button';
 import Footer4Col from '@/components/ui/footer-column';
-import StarWarsToggle from '@/components/ui/star-wars-toggle-switch';
-
 const farewellImages = [
   '/farewell/IMG_3890.JPG', '/farewell/IMG_3900.JPG', '/farewell/IMG_3901.JPG',
   '/farewell/IMG_3902.JPG', '/farewell/IMG_3903.JPG', '/farewell/IMG_3904.JPG',
@@ -82,7 +80,7 @@ const farewellImages = [
   '/farewell/WhatsApp-Image-2023-12-11-at-9.42.20-PM.jpeg',
   '/farewell/a547a7_0800b1353b834b3fb9e6c3f47c553b6bmv2_d_3000_2000_s_2.jpg.jpeg',
   '/farewell/a547a7_76479b509f3d4e6f87b294bd44ee36famv2_d_2297_1557_s_2.jpg.jpeg',
-].map(src => ({ src, alt: 'Farewell memories' }));
+].map(src => ({ src: `${import.meta.env.BASE_URL}${src.slice(1)}`, alt: 'Farewell memories' }));
 
 const testimonials = [
   { name: 'Aarav S.', username: '@aarav', body: 'Cornerstone AI made studying so much easier!', img: 'https://randomuser.me/api/portraits/men/32.jpg', country: '🇮🇳 India' },
@@ -246,11 +244,6 @@ export default function LandingPage() {
   return (
     <main className="min-h-screen h-full w-full bg-gradient-to-br from-orange-50 via-white to-amber-50 text-gray-900">
       <Navbar />
-
-      {/* Star Wars BB8 Toggle - Dark mode switch */}
-      <div className="fixed top-20 right-4 z-50 scale-75">
-        <StarWarsToggle />
-      </div>
 
       {/* Hero Section - Orange Grid + ASCII Dots Background */}
       <section className="h-screen w-full relative bg-gradient-to-br from-orange-50 via-amber-50 to-white">

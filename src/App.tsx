@@ -1,7 +1,7 @@
 
 import { useState, useCallback, lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useAuthStore } from './lib/store'
+import { useAuthStore, useThemeStore } from './lib/store'
 import SplashScreen from './components/ui/SplashScreen'
 import Login from './pages/auth/LoginAnimated'
 import Landing from './pages/Landing'
@@ -20,6 +20,7 @@ import CoordinatorDashboard from './pages/coordinator/Dashboard'
 import DriverDashboard from './pages/driver/Dashboard'
 import DashboardLayout from './components/layout/DashboardLayout'
 import { NotFoundPage } from './components/ui/404-page-not-found'
+import StarWarsToggle from './components/ui/star-wars-toggle-switch'
 import GenericPage from './components/ui/GenericPage'
 import TeacherMarkAttendance from './pages/teacher/MarkAttendance'
 import TeacherGrading from './pages/teacher/Grading'
@@ -98,6 +99,7 @@ const GP = (title: string, description: string, icon: string, category: string, 
 
 function App() {
   const { isAuthenticated, user } = useAuthStore()
+  const { isDark, toggleTheme } = useThemeStore()
   const [showSplash, setShowSplash] = useState(() => {
     return !sessionStorage.getItem('eduvault-splash-shown')
   })
@@ -132,6 +134,10 @@ function App() {
     <>
       {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
       {!showSplash && (
+        <>
+        <div className="fixed top-4 right-4 z-[9999] scale-[0.4] origin-top-right">
+          <StarWarsToggle checked={isDark} onChange={() => toggleTheme()} />
+        </div>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/photos" element={<Photos />} />
@@ -273,7 +279,7 @@ function App() {
           <Route path="/404page" element={<NotFoundPage />} />
           <Route path="*" element={<Navigate to="/404page" replace />} />
         </Routes>
-      )}
+        </>)}
     </>
   )
 }
