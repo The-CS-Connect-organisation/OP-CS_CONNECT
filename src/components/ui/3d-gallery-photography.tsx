@@ -182,7 +182,9 @@ function GalleryScene({
     [images]
   );
 
-  const textures = useTexture(normalizedImages.map((img) => img.src));
+  const loadedImageCount = Math.min(normalizedImages.length, Math.max(visibleCount * 3, 15));
+  const textures = useTexture(normalizedImages.slice(0, loadedImageCount).map((img) => img.src));
+  const textureTotal = textures.length;
 
   const materials = useMemo(
     () => Array.from({ length: visibleCount }, () => createClothMaterial()),
@@ -203,14 +205,13 @@ function GalleryScene({
     return positions;
   }, [visibleCount]);
 
-  const totalImages = normalizedImages.length;
   const depthRange = DEFAULT_DEPTH_RANGE;
 
   const planesData = useRef<PlaneData[]>(
     Array.from({ length: visibleCount }, (_, i) => ({
       index: i,
       z: visibleCount > 0 ? ((depthRange / visibleCount) * i) % depthRange : 0,
-      imageIndex: totalImages > 0 ? i % totalImages : 0,
+      imageIndex: textureTotal > 0 ? i % textureTotal : 0,
       x: spatialPositions[i]?.x ?? 0,
       y: spatialPositions[i]?.y ?? 0,
     }))
@@ -220,11 +221,11 @@ function GalleryScene({
     planesData.current = Array.from({ length: visibleCount }, (_, i) => ({
       index: i,
       z: visibleCount > 0 ? ((depthRange / Math.max(visibleCount, 1)) * i) % depthRange : 0,
-      imageIndex: totalImages > 0 ? i % totalImages : 0,
+      imageIndex: textureTotal > 0 ? i % textureTotal : 0,
       x: spatialPositions[i]?.x ?? 0,
       y: spatialPositions[i]?.y ?? 0,
     }));
-  }, [depthRange, spatialPositions, totalImages, visibleCount]);
+  }, [depthRange, spatialPositions, textureTotal, visibleCount]);
 
   const handleWheel = useCallback(
     (event: WheelEvent) => {
@@ -341,9 +342,8 @@ function GalleryScene({
       }
     });
 
-    const imageAdvance = totalImages > 0 ? visibleCount % totalImages || totalImages : 0;
+    const imageAdvance = textureTotal > 0 ? visibleCount % textureTotal || textureTotal : 0;
     const totalRange = depthRange;
-    const halfRange = totalRange / 2;
 
     planesData.current.forEach((plane, i) => {
       let newZ = plane.z + velocityRef.current * delta * 10;
@@ -356,12 +356,12 @@ function GalleryScene({
         wrapsBackward = Math.ceil(-newZ / totalRange);
         newZ += totalRange * wrapsBackward;
       }
-      if (wrapsForward > 0 && imageAdvance > 0 && totalImages > 0) {
-        plane.imageIndex = (plane.imageIndex + wrapsForward * imageAdvance) % totalImages;
+      if (wrapsForward > 0 && imageAdvance > 0 && textureTotal > 0) {
+        plane.imageIndex = (plane.imageIndex + wrapsForward * imageAdvance) % textureTotal;
       }
-      if (wrapsBackward > 0 && imageAdvance > 0 && totalImages > 0) {
+      if (wrapsBackward > 0 && imageAdvance > 0 && textureTotal > 0) {
         const step = plane.imageIndex - wrapsBackward * imageAdvance;
-        plane.imageIndex = ((step % totalImages) + totalImages) % totalImages;
+        plane.imageIndex = ((step % textureTotal) + textureTotal) % textureTotal;
       }
       plane.z = ((newZ % totalRange) + totalRange) % totalRange;
       plane.x = spatialPositions[i]?.x ?? 0;
@@ -481,6 +481,8 @@ blurSettings = {
   blurOut: { start: 0.4, end: 0.43 },
   maxBlur: 8.0,
 },
+  visibleCount = 8,
+  zSpacing,
 }: InfiniteGalleryProps) {
   const [webglSupported, setWebglSupported] = useState(true);
 
@@ -512,6 +514,8 @@ blurSettings = {
         <GalleryScene
           images={images}
           speed={speed}
+          visibleCount={visibleCount}
+          zSpacing={zSpacing}
           fadeSettings={fadeSettings}
           blurSettings={blurSettings}
         />

@@ -273,7 +273,7 @@ export default function LandingPage() {
             <InfiniteGallery
               images={farewellImages}
               speed={0.8}
-              visibleCount={10}
+              visibleCount={5}
               className="h-full w-full"
               fadeSettings={{
                 fadeIn: { start: 0.05, end: 0.2 },
@@ -417,29 +417,19 @@ export default function LandingPage() {
                   </p>
                 </AnimatedContainer>
               </div>
-              <AnimatedContainer delay={0.3} className="border border-gray-200 rounded-lg relative flex h-96 w-full mx-auto flex-row items-center justify-center overflow-hidden gap-1.5 [perspective:300px]">
+              <AnimatedContainer delay={0.3} className="border border-gray-200 rounded-lg relative flex h-96 w-full mx-auto flex-row items-center justify-center overflow-hidden gap-1.5">
                 <div
-                  className="flex flex-row items-center gap-4"
+                  className="flex flex-row items-center gap-4 will-change-transform"
                   style={{
-                    transform: 'translateX(-100px) translateY(0px) translateZ(-100px) rotateX(20deg) rotateY(-10deg) rotateZ(20deg)',
+                    transform: 'translateX(-50px) rotateX(10deg) rotateY(-5deg) rotateZ(10deg)',
                   }}
                 >
-                  <Marquee vertical pauseOnHover repeat={3} className="[--duration:40s]">
+                  <Marquee vertical pauseOnHover repeat={2} className="[--duration:30s]">
                     {testimonials.map((review) => (
                       <TestimonialCard key={review.username} {...review} />
                     ))}
                   </Marquee>
-                  <Marquee vertical pauseOnHover reverse repeat={3} className="[--duration:40s]">
-                    {testimonials.map((review) => (
-                      <TestimonialCard key={review.username} {...review} />
-                    ))}
-                  </Marquee>
-                  <Marquee vertical pauseOnHover repeat={3} className="[--duration:40s]">
-                    {testimonials.map((review) => (
-                      <TestimonialCard key={review.username} {...review} />
-                    ))}
-                  </Marquee>
-                  <Marquee vertical pauseOnHover reverse repeat={3} className="[--duration:40s]">
+                  <Marquee vertical pauseOnHover reverse repeat={2} className="[--duration:30s]">
                     {testimonials.map((review) => (
                       <TestimonialCard key={review.username} {...review} />
                     ))}
