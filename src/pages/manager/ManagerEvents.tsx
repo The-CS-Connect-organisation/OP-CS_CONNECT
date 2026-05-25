@@ -1,0 +1,56 @@
+import { useState } from 'react';
+import { Card } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
+import { Badge } from '../../components/ui/Badge';
+import { Calendar, Plus, MapPin, Clock, Users } from 'lucide-react';
+
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  location: string;
+  attendees: number;
+  type: string;
+}
+
+const mockEvents: Event[] = [
+  { id: '1', title: 'Annual Day', description: 'School annual day celebration', date: '2026-06-15', time: '10:00 AM', location: 'Auditorium', attendees: 500, type: 'celebration' },
+  { id: '2', title: 'Parent-Teacher Meeting', description: 'Quarterly PTM', date: '2026-05-20', time: '2:00 PM', location: 'Classrooms', attendees: 200, type: 'meeting' },
+  { id: '3', title: 'Sports Day', description: 'Annual sports competition', date: '2026-07-01', time: '9:00 AM', location: 'Sports Ground', attendees: 300, type: 'sports' },
+];
+
+export default function ManagerEvents() {
+  const [events] = useState<Event[]>(mockEvents);
+
+  return (
+    <div className="p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Events</h1>
+          <p className="text-muted-foreground">School events</p>
+        </div>
+        <Button><Plus className="w-4 h-4 mr-2" />New Event</Button>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {events.map(event => (
+          <Card key={event.id} className="p-4">
+            <div className="flex items-start justify-between mb-3">
+              <Badge variant="secondary">{event.type}</Badge>
+            </div>
+            <h3 className="font-semibold text-lg mb-2">{event.title}</h3>
+            <p className="text-sm text-muted-foreground mb-3">{event.description}</p>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center gap-2 text-muted-foreground"><Calendar className="w-4 h-4" />{new Date(event.date).toLocaleDateString()}</div>
+              <div className="flex items-center gap-2 text-muted-foreground"><Clock className="w-4 h-4" />{event.time}</div>
+              <div className="flex items-center gap-2 text-muted-foreground"><MapPin className="w-4 h-4" />{event.location}</div>
+              <div className="flex items-center gap-2 text-muted-foreground"><Users className="w-4 h-4" />{event.attendees} attendees</div>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
