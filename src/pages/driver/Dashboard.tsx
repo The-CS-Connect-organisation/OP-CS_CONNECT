@@ -19,7 +19,11 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, LineChart, Line
 } from 'recharts'
-import { mockRoutes } from '@/lib/mock-data'
+import { getRoutes, getStudents } from '@/lib/api';
+import useSWR from 'swr';
+
+const { data: routes, error: routesError } = useSWR('routes', getRoutes);
+const { data: students, error: studentsError } = useSWR('students', () => getStudents());
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -30,31 +34,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 }
 
-const routeStops = [
-  { id: 1, name: 'School Main Gate', time: '07:30 AM', students: 0, status: 'start' },
-  { id: 2, name: 'Sector 5 Bus Stop', time: '07:42 AM', students: 8, status: 'completed' },
-  { id: 3, name: 'Metro Station Road', time: '07:50 AM', students: 5, status: 'completed' },
-  { id: 4, name: 'City Center Point', time: '08:00 AM', students: 6, status: 'current' },
-  { id: 5, name: 'Park Avenue Stop', time: '08:10 AM', students: 4, status: 'upcoming' },
-  { id: 6, name: 'Green Valley Gate', time: '08:18 AM', students: 5, status: 'upcoming' },
-  { id: 7, name: 'Sunrise Colony', time: '08:25 AM', students: 4, status: 'upcoming' },
-  { id: 8, name: 'School Main Gate', time: '08:35 AM', students: 0, status: 'end' },
-]
 
-const studentRoster = [
-  { id: 's1', name: 'Aarav Sharma', class: '10-A', pickup: 'Sector 5', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face', boarded: true },
-  { id: 's2', name: 'Priya Patel', class: '10-A', pickup: 'Metro Station', avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face', boarded: true },
-  { id: 's3', name: 'Rohan Kumar', class: '10-B', pickup: 'City Center', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face', boarded: false },
-  { id: 's4', name: 'Ananya Singh', class: '10-A', pickup: 'Park Avenue', avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face', boarded: false },
-  { id: 's5', name: 'Vikram Reddy', class: '9-A', pickup: 'Green Valley', avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face', boarded: false },
-]
-
-const fuelData = [
-  { week: 'W1', fuel: 45, distance: 120, efficiency: 2.67 },
-  { week: 'W2', fuel: 38, distance: 115, efficiency: 3.03 },
-  { week: 'W3', fuel: 42, distance: 125, efficiency: 2.98 },
-  { week: 'W4', fuel: 35, distance: 110, efficiency: 3.14 },
-]
 
 export default function DriverDashboard() {
   const { user } = useAuthStore()
@@ -71,8 +51,11 @@ export default function DriverDashboard() {
     })
   }
 
-  const totalStudents = studentRoster.length
-  const boardedCount = boardedStudents.size
+  if (!routes || !students) return <div>Loading...</div>;
+if (routesError || studentsError) return <div>Error loading data</div>;
+
+  const totalStudents = students.length;
+  const boardedCount = boardedStudents.size;
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
@@ -91,7 +74,7 @@ export default function DriverDashboard() {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mt-2 max-w-lg">
-                Currently at <span className="text-orange-500 font-medium">City Center Point</span>. {boardedCount}/{totalStudents} students boarded. Next stop: Park Avenue.
+                Currently at <span className="text-orange-500 font-medium">{routes[0].stops.find(s => s.status === 'current')?.name}</span>. {boardedCount}/{totalStudents} students boarded. Next stop: {routes[0].stops.find(s => s.status === 'upcoming')?.name}.
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -160,7 +143,7 @@ export default function DriverDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
-                  {routeStops.map((stop, i) => (
+                  {routes[0].stops.map((stop, i) => (
                     <motion.div
                       key={stop.id}
                       initial={{ opacity: 0, x: -10 }}
@@ -181,7 +164,7 @@ export default function DriverDashboard() {
                           stop.status === 'upcoming' && "bg-muted border-muted-foreground/30",
                           (stop.status === 'start' || stop.status === 'end') && "bg-orange-500 border-orange-500",
                         )} />
-                        {i < routeStops.length - 1 && <div className="w-0.5 h-6 bg-border" />}
+                        {i < routes[0].stops.length - 1 && <div className="w-0.5 h-6 bg-border" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className={cn("text-sm font-medium", stop.status === 'current' && "text-orange-500")}>{stop.name}</p>
@@ -210,7 +193,7 @@ export default function DriverDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {studentRoster.map((student) => (
+                  {students.map((student) => (
                     <motion.div
                       key={student.id}
                       whileHover={{ x: 2 }}

@@ -22,7 +22,8 @@ import {
   ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell,
   LineChart, Line
 } from 'recharts'
-import { mockStudents, mockTeachers, mockSchools, mockRevenueData } from '@/lib/mock-data'
+import { getAdminAnalytics } from '@/lib/api';
+const { data: adminAnalytics, error: adminAnalyticsError } = useSWR('adminAnalytics', getAdminAnalytics);
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -33,32 +34,9 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 }
 
-const enrollmentData = [
-  { month: 'Jun', students: 1200 },
-  { month: 'Jul', students: 1250 },
-  { month: 'Aug', students: 1380 },
-  { month: 'Sep', students: 1420 },
-  { month: 'Oct', students: 1450 },
-  { month: 'Nov', students: 1480 },
-  { month: 'Dec', students: 1500 },
-  { month: 'Jan', students: 1560 },
-]
 
-const departmentData = [
-  { name: 'Science', teachers: 12, color: '#8b5cf6' },
-  { name: 'Math', teachers: 10, color: '#3b82f6' },
-  { name: 'English', teachers: 8, color: '#f59e0b' },
-  { name: 'Arts', teachers: 6, color: '#ec4899' },
-  { name: 'Sports', teachers: 5, color: '#10b981' },
-]
 
-const recentActivities = [
-  { id: 1, action: 'New student enrolled', detail: 'Kavya Iyer - Class 9-A', time: '5 min ago', type: 'info' },
-  { id: 2, action: 'Fee payment received', detail: '₹25,000 - Aarav Sharma', time: '15 min ago', type: 'success' },
-  { id: 3, action: 'Teacher leave request', detail: 'Mr. Anil Desai - Jan 20', time: '1 hour ago', type: 'warning' },
-  { id: 4, action: 'Exam schedule published', detail: 'Mid-term Feb 2025', time: '2 hours ago', type: 'info' },
-  { id: 5, action: 'System backup completed', detail: 'Full backup - 2.4GB', time: '3 hours ago', type: 'success' },
-]
+
 
 export default function AdminDashboard() {
   const { user } = useAuthStore()
@@ -79,10 +57,8 @@ export default function AdminDashboard() {
     ])
   }, [])
 
-  const totalStudents = liveData.students || 1560
-  const totalTeachers = liveData.teachers || 125
-  const totalRevenue = 4580000
-  const attendanceRate = 92
+  if (!adminAnalytics) return <div>Loading...</div>;
+  if (adminAnalyticsError) return <div>Error loading data</div>;
 
   return (
     <>
@@ -126,10 +102,10 @@ export default function AdminDashboard() {
         {/* Stats Grid */}
         <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total Students', value: totalStudents.toLocaleString(), icon: GraduationCap, color: 'from-orange-500 to-red-500', change: '+60 this month', trend: 'up' },
-            { label: 'Total Teachers', value: totalTeachers.toString(), icon: Users, color: 'from-orange-600 to-amber-600', change: '5 on leave', trend: 'neutral' },
-            { label: 'Revenue', value: `₹${(totalRevenue / 100000).toFixed(1)}L`, icon: DollarSign, color: 'from-emerald-600 to-teal-600', change: '+12% YoY', trend: 'up' },
-            { label: 'Attendance', value: `${attendanceRate}%`, icon: Activity, color: 'from-amber-600 to-orange-600', change: 'School-wide', trend: 'up' },
+            { label: 'Total Students', value: adminAnalytics.totalStudents.toLocaleString(), icon: GraduationCap, color: 'from-orange-500 to-red-500', change: '+60 this month', trend: 'up' },
+            { label: 'Total Teachers', value: adminAnalytics.totalTeachers.toString(), icon: Users, color: 'from-orange-600 to-amber-600', change: '5 on leave', trend: 'neutral' },
+            { label: 'Revenue', value: `₹${(adminAnalytics.totalRevenue / 100000).toFixed(1)}L`, icon: DollarSign, color: 'from-emerald-600 to-teal-600', change: '+12% YoY', trend: 'up' },
+            { label: 'Attendance', value: `${adminAnalytics.attendanceRate}%`, icon: Activity, color: 'from-amber-600 to-orange-600', change: 'School-wide', trend: 'up' },
           ].map((stat) => (
             <motion.div key={stat.label} whileHover={{ y: -2, scale: 1.02 }}>
               <Card glow>
@@ -170,7 +146,7 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={mockRevenueData}>
+                    <AreaChart data={adminAnalytics.revenueOverTime}>
                       <defs>
                         <linearGradient id="revGradient" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
@@ -214,8 +190,8 @@ export default function AdminDashboard() {
                 <div className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={departmentData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="teachers" nameKey="name">
-                        {departmentData.map((entry, index) => (
+                      <Pie data={adminAnalytics.departmentDistribution} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="teachers" nameKey="name">
+                        {adminAnalytics.departmentDistribution.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
@@ -224,7 +200,7 @@ export default function AdminDashboard() {
                   </ResponsiveContainer>
                 </div>
                 <div className="space-y-2 mt-2">
-                  {departmentData.map(dept => (
+                  {adminAnalytics.departmentDistribution.map(dept => (
                     <div key={dept.name} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: dept.color }} />
@@ -253,7 +229,7 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={enrollmentData}>
+                    <LineChart data={adminAnalytics.enrollmentTrends}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                       <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} domain={[1100, 1600]} />
@@ -280,7 +256,7 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {recentActivities.map(activity => (
+                  {adminAnalytics.recentActivities.map(activity => (
                     <div key={activity.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors">
                       <div className={cn(
                         "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
