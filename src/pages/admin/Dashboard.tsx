@@ -1,6 +1,7 @@
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { api } from '@/lib/api'
 import AIChatPanel from '@/components/ai/AIChatPanel'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -62,9 +63,24 @@ const recentActivities = [
 export default function AdminDashboard() {
   const { user } = useAuthStore()
   const [showAI, setShowAI] = useState(false)
+  const [liveData, setLiveData] = useState({ invoices: 0, expenses: 0, staff: 0, books: 0, students: 0, teachers: 0 })
 
-  const totalStudents = 1560
-  const totalTeachers = 125
+  useEffect(() => {
+    Promise.allSettled([
+      api.getInvoices().then((d: any) => setLiveData(p => ({ ...p, invoices: Array.isArray(d) ? d.filter((i: any) => i.status === 'pending').length : 0 }))).catch(() => {}),
+      api.getExpenses().then((d: any) => setLiveData(p => ({ ...p, expenses: Array.isArray(d) ? d.filter((e: any) => e.status !== 'approved').length : 0 }))).catch(() => {}),
+      api.getStaffDirectory().then((d: any) => setLiveData(p => ({ ...p, staff: Array.isArray(d) ? d.length : 0 }))).catch(() => {}),
+      api.getLibraryCatalogue().then((d: any) => setLiveData(p => ({ ...p, books: Array.isArray(d) ? d.length : 0 }))).catch(() => {}),
+      api.getUsers().then((d: any) => {
+        if (Array.isArray(d)) {
+          setLiveData(p => ({ ...p, students: d.filter((u: any) => u.role === 'student').length, teachers: d.filter((u: any) => u.role === 'teacher').length }))
+        }
+      }).catch(() => {}),
+    ])
+  }, [])
+
+  const totalStudents = liveData.students || 1560
+  const totalTeachers = liveData.teachers || 125
   const totalRevenue = 4580000
   const attendanceRate = 92
 
@@ -86,7 +102,7 @@ export default function AdminDashboard() {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mt-2 max-w-lg">
-                School is running at <span className="text-emerald-500 font-medium">92% attendance</span>. <span className="text-amber-500 font-medium">3 leave requests</span> pending approval. Fee collection at 85% target.
+                <span className="text-emerald-500 font-medium">{liveData.students} students</span> enrolled. <span className="text-amber-500 font-medium">{liveData.invoices} pending invoices</span>. {liveData.expenses > 0 && <span className="text-red-500 font-medium">{liveData.expenses} unapproved expenses</span>}. {liveData.books} library books catalogued.
               </p>
             </div>
             <div className="flex items-center gap-3">
