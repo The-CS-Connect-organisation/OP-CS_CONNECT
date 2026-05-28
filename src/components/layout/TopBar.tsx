@@ -5,7 +5,7 @@ import { useAuthStore, useThemeStore, useNotificationStore, useSidebarStore } fr
 import { cn, getGreeting } from '@/lib/utils'
 import {
   Sun, Moon, Bell, Search, Menu, Sparkles, Bot,
-  ChevronDown, X, Check, AlertCircle, Info, CheckCircle2
+  ChevronDown, X, Check, AlertCircle, Info, CheckCircle2, GraduationCap
 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
@@ -35,12 +35,22 @@ export default function TopBar() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setMobileOpen(true)}
-            className="lg:hidden p-2 rounded-lg hover:bg-accent transition-colors"
+            className="lg:hidden p-2.5 rounded-xl bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 hover:from-orange-500/20 hover:to-amber-500/20 active:scale-95 transition-all"
+            aria-label="Open navigation menu"
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="w-5 h-5 text-orange-500" />
           </button>
 
-          <div className="hidden sm:block">
+          {/* Mobile branding */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-sm">
+              <GraduationCap className="w-4 h-4 text-white" />
+            </div>
+            <span className="font-bold text-sm bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-amber-500">School Sync</span>
+          </div>
+
+          {/* Desktop greeting */}
+          <div className="hidden lg:block">
             <h2 className="text-sm font-medium text-foreground">
               {getGreeting()}, <span className="font-semibold">{user.name.split(' ')[0]}</span> 👋
             </h2>

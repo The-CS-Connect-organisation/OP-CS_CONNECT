@@ -491,9 +491,11 @@ export default function Sidebar() {
       </AnimatePresence>
 
       {/* Desktop sidebar */}
-      <motion.aside animate={{ width: isCollapsed ? 64 : 240 }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="hidden lg:block h-screen sticky top-0 border-r border-border/50 bg-background overflow-hidden flex-shrink-0">
-        {sidebarContent}
-      </motion.aside>
+      <div className="hidden lg:block flex-shrink-0">
+        <motion.aside animate={{ width: isCollapsed ? 64 : 240 }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="h-screen sticky top-0 border-r border-border/50 bg-background overflow-hidden">
+          {sidebarContent}
+        </motion.aside>
+      </div>
     </>
   )
 }
