@@ -39,6 +39,7 @@ import StudyPlanner from './pages/student/StudyPlanner'
 import CSCalendar from './pages/student/CSCalendar'
 import FocusMode from './pages/student/FocusMode'
 import StudentExams from './pages/student/Exams'
+import StudentExamSyllabus from './pages/student/ExamSyllabus'
 import StudentBusTracking from './pages/student/BusTracking'
 import SocialClub from './pages/student/SocialClub'
 import Achievements from './pages/student/Achievements'
@@ -46,6 +47,7 @@ import Accolades from './pages/student/Accolades'
 import StudentProfile from './pages/student/Profile'
 import TeacherManageAssignments from './pages/teacher/ManageAssignments'
 import TeacherManageExams from './pages/teacher/ManageExams'
+import TeacherExamSyllabus from './pages/teacher/ExamSyllabus'
 import TeacherClassAnalytics from './pages/teacher/ClassAnalytics'
 import TeacherStudentProgress from './pages/teacher/StudentProgress'
 import TeacherPerformanceReports from './pages/teacher/PerformanceReports'
@@ -71,6 +73,7 @@ import ParentGrades from './pages/parent/ParentGrades'
 import ParentTimetable from './pages/parent/ParentTimetable'
 import ParentFees from './pages/parent/ParentFees'
 import ParentBusTracking from './pages/parent/ParentBusTracking'
+import ParentExamSyllabus from './pages/parent/ExamSyllabus'
 import ParentProfile from './pages/parent/ParentProfile'
 import DriverProfile from './pages/driver/DriverProfile'
 import LibrarianDashboard from './pages/librarian/LibrarianDashboard'
@@ -161,6 +164,7 @@ function App() {
             <Route path="focus-mode" element={<FocusMode />} />
             <Route path="fees" element={<StudentFees />} />
             <Route path="exams" element={<StudentExams />} />
+            <Route path="exam-syllabus" element={<StudentExamSyllabus />} />
             <Route path="bus-tracking" element={<StudentBusTracking />} />
             <Route path="ai" element={<AILab />} />
             <Route path="messages" element={<StudentMessages />} />
@@ -178,6 +182,7 @@ function App() {
             <Route path="grading" element={<TeacherGrading />} />
             <Route path="notes" element={<TeacherUploadNotes />} />
             <Route path="exams" element={<TeacherManageExams />} />
+            <Route path="exam-syllabus" element={<TeacherExamSyllabus />} />
             <Route path="report-cards" element={<ReportCards />} />
             <Route path="class-analytics" element={<TeacherClassAnalytics />} />
             <Route path="student-progress" element={<TeacherStudentProgress />} />
@@ -222,6 +227,7 @@ function App() {
             <Route path="fees" element={<ParentFees />} />
             <Route path="bus-tracking" element={<ParentBusTracking />} />
             <Route path="notifications" element={<NotificationCenter />} />
+            <Route path="exam-syllabus" element={<ParentExamSyllabus />} />
             <Route path="messages" element={<QuickMessenger />} />
             <Route path="profile" element={<ParentProfile />} />
           </Route>

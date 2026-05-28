@@ -38,6 +38,17 @@ export function generateId(): string {
   return Math.random().toString(36).substring(2, 15)
 }
 
+export function normalizeAcademicPercentage(value: number): number {
+  const numeric = Number(value || 0)
+  if (Number.isNaN(numeric)) return 0
+  if (numeric <= 4) return Math.round(Math.max(0, numeric) * 25)
+  return Math.round(Math.min(Math.max(numeric, 0), 100))
+}
+
+export function formatPercentage(value: number): string {
+  return `${normalizeAcademicPercentage(value)}%`
+}
+
 export function getGreeting(): string {
   const hour = new Date().getHours()
   if (hour < 12) return 'Good Morning'

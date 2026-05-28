@@ -23,6 +23,20 @@ export interface User {
   phone?: string;
   address?: string;
   dateOfBirth?: string;
+  admissionNo?: string;
+  rollNo?: string;
+  bloodGroup?: string;
+  aadharNo?: string;
+  penNo?: string;
+  apaarId?: string;
+  religion?: string;
+  nationality?: string;
+  schoolHouse?: string;
+  houseLocation?: string;
+  fatherName?: string;
+  fatherPhone?: string;
+  motherName?: string;
+  motherPhone?: string;
 }
 
 interface AuthState {

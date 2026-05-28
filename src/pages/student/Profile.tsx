@@ -10,7 +10,8 @@ import { Label } from '@/components/ui/Label'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog'
 import {
   User, Mail, Phone, MapPin, Calendar, Edit, Save, X, Camera,
-  GraduationCap, UserCheck, BookOpen, Award, TrendingUp
+  GraduationCap, UserCheck, BookOpen, Award, TrendingUp,
+  Home, CreditCard, ClipboardList, Hash, Globe, Flag
 } from 'lucide-react'
 
 export default function StudentProfile() {
@@ -24,6 +25,20 @@ export default function StudentProfile() {
     phone: user?.phone || '',
     address: user?.address || '',
     dateOfBirth: user?.dateOfBirth || '',
+    admissionNo: user?.admissionNo || '',
+    rollNo: user?.rollNo || '',
+    bloodGroup: user?.bloodGroup || '',
+    aadharNo: user?.aadharNo || '',
+    penNo: user?.penNo || '',
+    apaarId: user?.apaarId || '',
+    religion: user?.religion || '',
+    nationality: user?.nationality || '',
+    schoolHouse: user?.schoolHouse || '',
+    houseLocation: user?.houseLocation || '',
+    fatherName: user?.fatherName || '',
+    fatherPhone: user?.fatherPhone || '',
+    motherName: user?.motherName || '',
+    motherPhone: user?.motherPhone || '',
   })
 
   // Calculate GPA and attendance from actual data
@@ -37,6 +52,20 @@ export default function StudentProfile() {
       phone: user?.phone || '',
       address: user?.address || '',
       dateOfBirth: user?.dateOfBirth || '',
+      admissionNo: user?.admissionNo || '',
+      rollNo: user?.rollNo || '',
+      bloodGroup: user?.bloodGroup || '',
+      aadharNo: user?.aadharNo || '',
+      penNo: user?.penNo || '',
+      apaarId: user?.apaarId || '',
+      religion: user?.religion || '',
+      nationality: user?.nationality || '',
+      schoolHouse: user?.schoolHouse || '',
+      houseLocation: user?.houseLocation || '',
+      fatherName: user?.fatherName || '',
+      fatherPhone: user?.fatherPhone || '',
+      motherName: user?.motherName || '',
+      motherPhone: user?.motherPhone || '',
     })
   }, [user])
 
@@ -55,6 +84,20 @@ export default function StudentProfile() {
       phone: user?.phone || '',
       address: user?.address || '',
       dateOfBirth: user?.dateOfBirth || '',
+      admissionNo: user?.admissionNo || '',
+      rollNo: user?.rollNo || '',
+      bloodGroup: user?.bloodGroup || '',
+      aadharNo: user?.aadharNo || '',
+      penNo: user?.penNo || '',
+      apaarId: user?.apaarId || '',
+      religion: user?.religion || '',
+      nationality: user?.nationality || '',
+      schoolHouse: user?.schoolHouse || '',
+      houseLocation: user?.houseLocation || '',
+      fatherName: user?.fatherName || '',
+      fatherPhone: user?.fatherPhone || '',
+      motherName: user?.motherName || '',
+      motherPhone: user?.motherPhone || '',
     })
     setEditing(false)
   }
@@ -125,26 +168,90 @@ export default function StudentProfile() {
       <Card>
         <CardHeader><CardTitle>Personal Information</CardTitle></CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2"><User className="w-4 h-4 text-orange-500" />Full Name</Label>
-              {editing ? <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.name}</p>}
+          <div className="grid grid-cols-1 xl:grid-cols-[1.3fr_0.9fr] gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2"><User className="w-4 h-4 text-orange-500" />Full Name</Label>
+                {editing ? <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.name}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2"><BookOpen className="w-4 h-4 text-orange-500" />Admission No</Label>
+                {editing ? <Input value={form.admissionNo} onChange={e => setForm({ ...form, admissionNo: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.admissionNo || 'Not set'}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2"><UserCheck className="w-4 h-4 text-orange-500" />Roll No</Label>
+                {editing ? <Input value={form.rollNo} onChange={e => setForm({ ...form, rollNo: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.rollNo || 'Not set'}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2"><Calendar className="w-4 h-4 text-orange-500" />Date of Birth</Label>
+                {editing ? <Input type="date" value={form.dateOfBirth} onChange={e => setForm({ ...form, dateOfBirth: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString() : 'Not set'}</p>}
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label className="flex items-center gap-2"><MapPin className="w-4 h-4 text-orange-500" />Address</Label>
+                {editing ? <Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.address || 'Not set'}</p>}
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label className="flex items-center gap-2"><Home className="w-4 h-4 text-orange-500" />House Location</Label>
+                {editing ? <Input value={form.houseLocation} onChange={e => setForm({ ...form, houseLocation: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.houseLocation || 'Not set'}</p>}
+              </div>
+              <div className="space-y-2 sm:col-span-2">
+                <Label className="flex items-center gap-2"><Home className="w-4 h-4 text-orange-500" />School House</Label>
+                {editing ? <Input value={form.schoolHouse} onChange={e => setForm({ ...form, schoolHouse: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.schoolHouse || 'Not set'}</p>}
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2"><Mail className="w-4 h-4 text-orange-500" />Email</Label>
-              {editing ? <Input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.email}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2"><Phone className="w-4 h-4 text-orange-500" />Phone</Label>
-              {editing ? <Input type="tel" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.phone || 'Not set'}</p>}
-            </div>
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2"><Calendar className="w-4 h-4 text-orange-500" />Date of Birth</Label>
-              {editing ? <Input type="date" value={form.dateOfBirth} onChange={e => setForm({ ...form, dateOfBirth: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString() : 'Not set'}</p>}
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label className="flex items-center gap-2"><MapPin className="w-4 h-4 text-orange-500" />Address</Label>
-              {editing ? <Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.address || 'Not set'}</p>}
+
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2"><Award className="w-4 h-4 text-orange-500" />Blood Group</Label>
+                  {editing ? <Input value={form.bloodGroup} onChange={e => setForm({ ...form, bloodGroup: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.bloodGroup || 'Not set'}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2"><CreditCard className="w-4 h-4 text-orange-500" />Aadhar No</Label>
+                  {editing ? <Input value={form.aadharNo} onChange={e => setForm({ ...form, aadharNo: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.aadharNo || 'Not set'}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2"><ClipboardList className="w-4 h-4 text-orange-500" />PEN</Label>
+                  {editing ? <Input value={form.penNo} onChange={e => setForm({ ...form, penNo: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.penNo || 'Not set'}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2"><Hash className="w-4 h-4 text-orange-500" />Apaar ID</Label>
+                  {editing ? <Input value={form.apaarId} onChange={e => setForm({ ...form, apaarId: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.apaarId || 'Not set'}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2"><Globe className="w-4 h-4 text-orange-500" />Religion</Label>
+                  {editing ? <Input value={form.religion} onChange={e => setForm({ ...form, religion: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.religion || 'Not set'}</p>}
+                </div>
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2"><Flag className="w-4 h-4 text-orange-500" />Nationality</Label>
+                  {editing ? <Input value={form.nationality} onChange={e => setForm({ ...form, nationality: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.nationality || 'Not set'}</p>}
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-border/50 bg-background p-4 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-semibold">Parent / Guardian Info</h3>
+                  <Badge variant="secondary">Updated</Badge>
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2"><User className="w-4 h-4 text-orange-500" />Father's Name</Label>
+                    {editing ? <Input value={form.fatherName} onChange={e => setForm({ ...form, fatherName: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.fatherName || 'Not set'}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2"><Phone className="w-4 h-4 text-orange-500" />Father's Phone</Label>
+                    {editing ? <Input value={form.fatherPhone} onChange={e => setForm({ ...form, fatherPhone: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.fatherPhone || 'Not set'}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2"><User className="w-4 h-4 text-orange-500" />Mother's Name</Label>
+                    {editing ? <Input value={form.motherName} onChange={e => setForm({ ...form, motherName: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.motherName || 'Not set'}</p>}
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2"><Phone className="w-4 h-4 text-orange-500" />Mother's Phone</Label>
+                    {editing ? <Input value={form.motherPhone} onChange={e => setForm({ ...form, motherPhone: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.motherPhone || 'Not set'}</p>}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>
