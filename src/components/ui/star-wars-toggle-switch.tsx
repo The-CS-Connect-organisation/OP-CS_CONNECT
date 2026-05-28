@@ -4,11 +4,12 @@ import styled from 'styled-components';
 interface StarWarsToggleProps {
   checked?: boolean;
   onChange?: (checked: boolean) => void;
+  scale?: number;
 }
 
-const Switch: React.FC<StarWarsToggleProps> = ({ checked = false, onChange }) => {
+const Switch: React.FC<StarWarsToggleProps> = ({ checked = false, onChange, scale = 1 }) => {
   return (
-    <StyledWrapper>
+    <StyledWrapper $scale={scale}>
       <label className="bb8-toggle">
         <input
           className="bb8-toggle__checkbox"
@@ -51,7 +52,9 @@ const Switch: React.FC<StarWarsToggleProps> = ({ checked = false, onChange }) =>
   );
 }
 
-const StyledWrapper = styled.div`
+const StyledWrapper = styled.div<{ $scale?: number }>`
+  transform: scale(${p => p.$scale || 1});
+  transform-origin: center right;
   .bb8-toggle {
     --toggle-size: 16px;
     --toggle-width: 10.625em;

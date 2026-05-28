@@ -9,6 +9,8 @@ import {
   Check, X, Clock, ChevronLeft, ChevronRight, Users, Zap,
   Search, Loader2, CheckCircle2, AlertCircle
 } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar";
+import { getAvatarUrl, getInitials } from "@/lib/avatar";
 
 const statusConfig: Record<string, { icon: React.ElementType; color: string; activeColor: string; label: string }> = {
   present: { icon: Check, color: "text-slate-400", activeColor: "bg-emerald-600 text-white shadow-emerald-600/20", label: "Present" },
@@ -288,9 +290,12 @@ export default function MarkAttendance() {
                     transition={{ delay: idx * 0.03 }}
                   >
                     <Card className="flex items-center gap-4 p-3 hover:shadow-md transition-all group">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center text-orange-600 font-bold text-sm group-hover:from-orange-200 group-hover:to-amber-200 transition-all">
-                        {student.avatar || student.name?.charAt(0) || "?"}
-                      </div>
+                      <Avatar className="w-10 h-10 rounded-xl">
+                        <AvatarImage src={getAvatarUrl(student)} className="rounded-xl" />
+                        <AvatarFallback className="bg-gradient-to-br from-orange-100 to-amber-100 text-orange-600 font-bold text-sm rounded-xl group-hover:from-orange-200 group-hover:to-amber-200 transition-all">
+                          {getInitials(student.name)}
+                        </AvatarFallback>
+                      </Avatar>
                       <div className="flex-1 min-w-0">
                         <h4 className="text-sm font-semibold truncate">{student.name}</h4>
                         <p className="text-[9px] font-bold uppercase tracking-[0.15em] text-muted-foreground mt-0.5">

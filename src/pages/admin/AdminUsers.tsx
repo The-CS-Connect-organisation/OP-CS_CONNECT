@@ -4,7 +4,9 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { Users, Search, Plus, User, Mail, Phone, Edit, Trash2 } from 'lucide-react';
+import { Users, Search, Plus, Mail, Phone, Edit, Trash2 } from 'lucide-react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/Avatar';
+import { getAvatarUrl, getInitials, getAvatarGradient } from '@/lib/avatar';
 
 interface UserRecord {
   id: string;
@@ -92,9 +94,12 @@ export default function AdminUsers() {
             <Card key={user.id} className="p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                    <User className="w-5 h-5 text-orange-500" />
-                  </div>
+                  <Avatar className="w-10 h-10">
+                    <AvatarImage src={getAvatarUrl(user)} />
+                    <AvatarFallback className="bg-gradient-to-br from-orange-500 to-amber-600 text-white text-sm">
+                      {getInitials(user.name)}
+                    </AvatarFallback>
+                  </Avatar>
                   <div>
                     <h4 className="font-semibold">{user.name}</h4>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">

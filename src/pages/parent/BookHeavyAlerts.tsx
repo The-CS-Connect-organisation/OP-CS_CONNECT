@@ -25,7 +25,7 @@ export default function BookHeavyAlerts() {
       setIsLoading(false)
     }
     fetchAlerts()
-  }, [user])
+  }, [user?.id])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,17 +39,10 @@ export default function BookHeavyAlerts() {
     }
   }
 
-  const getWeightBadge = (weight: string) => {
-    const w = weight.toLowerCase()
-    if (w === 'heavy') return 'badge-error'
-    if (w === 'medium') return 'badge-warning'
-    return 'badge-success'
-  }
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)]" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
       </div>
     )
   }
@@ -59,30 +52,30 @@ export default function BookHeavyAlerts() {
       <motion.div variants={itemVariants} className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <AlertTriangle className="w-6 h-6 text-[var(--accent-pink)]" />
+            <AlertTriangle className="w-6 h-6 text-pink-500" />
             Book Heavy Alerts
           </h1>
-          <p className="text-[var(--text-muted)] text-sm mt-1">Track heavy book days for your child</p>
+          <p className="text-muted-foreground text-sm mt-1">Track heavy book days for your child</p>
         </div>
-        <button className="btn-primary flex items-center gap-2" onClick={() => setShowForm(true)}>
+        <button className="inline-flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 transition-colors" onClick={() => setShowForm(true)}>
           <Plus className="w-4 h-4" />
           New Alert
         </button>
       </motion.div>
 
       {showForm && (
-        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="nova-card p-6">
+        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-card border rounded-xl shadow-sm p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold">Create Book Alert</h2>
-            <button className="btn-ghost p-1" onClick={() => setShowForm(false)}>
+            <button className="hover:bg-accent rounded-lg p-1 transition-colors" onClick={() => setShowForm(false)}>
               <X className="w-5 h-5" />
             </button>
           </div>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-sm font-medium text-[var(--text-secondary)] mb-1 block">Book Name</label>
+              <label className="text-sm font-medium text-muted-foreground mb-1 block">Book Name</label>
               <input
-                className="input-field"
+                className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500"
                 placeholder="e.g. Physics Textbook"
                 value={formData.bookName}
                 onChange={e => setFormData(prev => ({ ...prev, bookName: e.target.value }))}
@@ -91,9 +84,9 @@ export default function BookHeavyAlerts() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-[var(--text-secondary)] mb-1 block">Weight</label>
+                <label className="text-sm font-medium text-muted-foreground mb-1 block">Weight</label>
                 <select
-                  className="input-field"
+                  className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500"
                   value={formData.weight}
                   onChange={e => setFormData(prev => ({ ...prev, weight: e.target.value }))}
                 >
@@ -103,9 +96,9 @@ export default function BookHeavyAlerts() {
                 </select>
               </div>
               <div>
-                <label className="text-sm font-medium text-[var(--text-secondary)] mb-1 block">Class</label>
+                <label className="text-sm font-medium text-muted-foreground mb-1 block">Class</label>
                 <input
-                  className="input-field"
+                  className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500"
                   placeholder="e.g. 10-A"
                   value={formData.className}
                   onChange={e => setFormData(prev => ({ ...prev, className: e.target.value }))}
@@ -114,9 +107,9 @@ export default function BookHeavyAlerts() {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium text-[var(--text-secondary)] mb-1 block">Date</label>
+              <label className="text-sm font-medium text-muted-foreground mb-1 block">Date</label>
               <input
-                className="input-field"
+                className="flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500"
                 type="date"
                 value={formData.date}
                 onChange={e => setFormData(prev => ({ ...prev, date: e.target.value }))}
@@ -124,8 +117,8 @@ export default function BookHeavyAlerts() {
               />
             </div>
             <div className="flex gap-3 pt-2">
-              <button type="button" className="btn-secondary flex-1" onClick={() => setShowForm(false)}>Cancel</button>
-              <button type="submit" className="btn-primary flex-1">Create Alert</button>
+              <button type="button" className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-accent transition-colors flex-1" onClick={() => setShowForm(false)}>Cancel</button>
+              <button type="submit" className="inline-flex items-center justify-center gap-2 rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white hover:bg-orange-600 transition-colors flex-1">Create Alert</button>
             </div>
           </form>
         </motion.div>
@@ -133,10 +126,10 @@ export default function BookHeavyAlerts() {
 
       {alerts.length === 0 ? (
         <motion.div variants={itemVariants}>
-          <div className="nova-card p-12 text-center">
-            <BookOpen className="w-12 h-12 mx-auto text-[var(--text-dim)] mb-4" />
-            <p className="text-[var(--text-secondary)]">No book alerts found</p>
-            <p className="text-[var(--text-muted)] text-sm mt-1">Create an alert when heavy books are scheduled</p>
+          <div className="bg-card border rounded-xl shadow-sm p-12 text-center">
+            <BookOpen className="w-12 h-12 mx-auto text-muted-foreground/60 mb-4" />
+            <p className="text-muted-foreground">No book alerts found</p>
+            <p className="text-muted-foreground text-sm mt-1">Create an alert when heavy books are scheduled</p>
           </div>
         </motion.div>
       ) : (
@@ -147,20 +140,20 @@ export default function BookHeavyAlerts() {
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.05 }}
-              className="nova-card p-4 flex items-center gap-4"
+              className="bg-card border rounded-xl shadow-sm p-4 flex items-center gap-4"
             >
-              <div className="w-10 h-10 rounded-xl bg-[rgba(239,68,68,0.10)] flex items-center justify-center flex-shrink-0">
-                <Weight className="w-5 h-5 text-[var(--semantic-error)]" />
+              <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center flex-shrink-0">
+                <Weight className="w-5 h-5 text-red-500" />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold">{alert.bookName || alert.book}</p>
-                <p className="text-xs text-[var(--text-muted)]">Class {alert.className || alert.class}</p>
+                <p className="text-xs text-muted-foreground">Class {alert.className || alert.class}</p>
               </div>
               <div className="flex items-center gap-2">
-                <span className={`badge ${getWeightBadge(alert.weight)}`}>
+                <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-secondary text-secondary-foreground">
                   {alert.weight}
                 </span>
-                <span className="flex items-center gap-1 text-xs text-[var(--text-muted)]">
+                <span className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Calendar className="w-3 h-3" />
                   {alert.date ? new Date(alert.date).toLocaleDateString() : 'N/A'}
                 </span>

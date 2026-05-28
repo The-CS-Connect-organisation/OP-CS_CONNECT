@@ -21,6 +21,17 @@ import {
   ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell
 } from 'recharts'
 
+function timeAgo(date: Date): string {
+  const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
+  if (seconds < 60) return 'just now'
+  const mins = Math.floor(seconds / 60)
+  if (mins < 60) return `${mins} hour${mins === 1 ? '' : 's'} ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`
+  const days = Math.floor(hours / 24)
+  return `${days} day${days === 1 ? '' : 's'} ago`
+}
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
@@ -30,28 +41,6 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 }
 
-const defaultClassPerformance = [
-  { class: '10-A', avg: 85, highest: 98, lowest: 45, students: 40 },
-  { class: '10-B', avg: 78, highest: 95, lowest: 38, students: 38 },
-  { class: '9-A', avg: 82, highest: 97, lowest: 42, students: 36 },
-]
-
-const weeklyAttendance = [
-  { day: 'Mon', present: 38, absent: 2 },
-  { day: 'Tue', present: 36, absent: 4 },
-  { day: 'Wed', present: 39, absent: 1 },
-  { day: 'Thu', present: 35, absent: 5 },
-  { day: 'Fri', present: 37, absent: 3 },
-]
-
-const gradingQueue = [
-  { id: 1, student: 'Aarav Sharma', subject: 'Mathematics', type: 'Essay', submitted: '2 hours ago', status: 'pending' },
-  { id: 2, student: 'Priya Patel', subject: 'Mathematics', type: 'Project', submitted: '5 hours ago', status: 'pending' },
-  { id: 3, student: 'Rohan Kumar', subject: 'Mathematics', type: 'Essay', submitted: '1 day ago', status: 'ai_graded' },
-  { id: 4, student: 'Ananya Singh', subject: 'Mathematics', type: 'Assignment', submitted: '1 day ago', status: 'ai_graded' },
-  { id: 5, student: 'Vikram Reddy', subject: 'Mathematics', type: 'Quiz', submitted: '2 days ago', status: 'graded' },
-]
-
 export default function TeacherDashboard() {
   const { user } = useAuthStore()
   const [showAI, setShowAI] = useState(false)
@@ -59,6 +48,9 @@ export default function TeacherDashboard() {
   const [selectedClass, setSelectedClass] = useState<string>('10-A')
   const [students, setStudents] = useState<any[]>([])
   const [assignments, setAssignments] = useState<any[]>([])
+  const [classPerformance, setClassPerformance] = useState<any[]>([])
+  const [weeklyAttendanceData, setWeeklyAttendanceData] = useState<any[]>([])
+  const [gradingQueue, setGradingQueue] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -94,15 +86,46 @@ export default function TeacherDashboard() {
     const loadClassData = async () => {
       try {
         setIsLoading(true)
-        const studentResults = await api.getStudents(selectedClass)
-        const assignmentResults = await api.getAssignments({ class: selectedClass })
+        const [studentResults, assignmentResults, attendanceResults, analyticsResults] = await Promise.all([
+          api.getStudents(selectedClass),
+          api.getAssignments({ class: selectedClass }),
+          api.getAttendance({ class: selectedClass }),
+          api.getClassAnalytics(selectedClass),
+        ])
 
         setStudents(Array.isArray(studentResults) ? studentResults : [])
         setAssignments(Array.isArray(assignmentResults) ? assignmentResults : [])
+
+        if (Array.isArray(attendanceResults) && attendanceResults.length > 0) {
+          setWeeklyAttendanceData(attendanceResults)
+        } else if (attendanceResults?.weekly) {
+          setWeeklyAttendanceData(attendanceResults.weekly)
+        }
+
+        if (analyticsResults?.classPerformance) {
+          setClassPerformance(analyticsResults.classPerformance)
+        } else if (Array.isArray(analyticsResults)) {
+          setClassPerformance(analyticsResults)
+        }
+
+        const pending = Array.isArray(assignmentResults)
+          ? assignmentResults.filter((a: any) => a.status === 'pending' || a.status === 'submitted' || a.status === 'ai_graded')
+          : []
+        setGradingQueue(pending.map((a: any, i: number) => ({
+          id: a.id || i + 1,
+          student: a.studentName || a.student || 'Unknown',
+          subject: a.subject || selectedClass,
+          type: a.type || a.assignmentType || 'Assignment',
+          submitted: a.submittedAt ? timeAgo(new Date(a.submittedAt)) : '—',
+          status: a.status === 'ai_graded' ? 'ai_graded' : a.status === 'graded' ? 'graded' : 'pending',
+        })))
       } catch (error) {
         console.error('Unable to load class dashboard data', error)
         setStudents([])
         setAssignments([])
+        setWeeklyAttendanceData([])
+        setClassPerformance([])
+        setGradingQueue([])
       } finally {
         setIsLoading(false)
       }
@@ -117,17 +140,8 @@ export default function TeacherDashboard() {
     ? Math.round(
         students.reduce((sum, student) => sum + (student.gpa || 0), 0) / students.length,
       )
-    : 82
-  const todaysClasses = classes.length || 3
-  const classPerformance = classes.length
-    ? classes.map((cls) => ({
-        class: cls.name || cls,
-        avg: cls.avg || 78,
-        highest: cls.highest || 98,
-        lowest: cls.lowest || 45,
-        students: cls.students || 30,
-      }))
-    : defaultClassPerformance
+    : 0
+  const todaysClasses = classes.length || 0
 
   return (
     <>
@@ -242,7 +256,7 @@ export default function TeacherDashboard() {
               <CardContent>
                 <div className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={weeklyAttendance}>
+                    <BarChart data={weeklyAttendanceData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                       <XAxis dataKey="day" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
@@ -255,9 +269,18 @@ export default function TeacherDashboard() {
                 <div className="mt-3 space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Today's Attendance</span>
-                    <span className="font-semibold text-emerald-500">95%</span>
+                    <span className="font-semibold text-emerald-500">
+                      {weeklyAttendanceData.length > 0
+                        ? `${Math.round((weeklyAttendanceData[weeklyAttendanceData.length - 1].present || 0) / ((weeklyAttendanceData[weeklyAttendanceData.length - 1].present || 0) + (weeklyAttendanceData[weeklyAttendanceData.length - 1].absent || 0)) * 100)}%`
+                        : '—'}
+                    </span>
                   </div>
-                  <Progress value={95} color="#10b981" />
+                  <Progress
+                    value={weeklyAttendanceData.length > 0
+                      ? Math.round((weeklyAttendanceData[weeklyAttendanceData.length - 1].present || 0) / ((weeklyAttendanceData[weeklyAttendanceData.length - 1].present || 0) + (weeklyAttendanceData[weeklyAttendanceData.length - 1].absent || 0)) * 100)
+                      : 0}
+                    color="#10b981"
+                  />
                 </div>
               </CardContent>
             </Card>

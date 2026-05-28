@@ -20,15 +20,26 @@ export default function ManagerDashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const [studentsRes, teachersRes] = await Promise.all([
+        const [studentsRes, teachersRes, feesRes, attendanceRes] = await Promise.all([
           apiFetch("/students"),
           apiFetch("/teachers"),
+          api.getFeeRecords(),
+          api.getAttendance(),
         ]);
         const studentCount = Array.isArray(studentsRes.data) ? studentsRes.data.length : 0;
         const teacherCount = Array.isArray(teachersRes.data) ? teachersRes.data.length : 0;
-        setStats({ students: studentCount, teachers: teacherCount, revenue: 850000, attendance: 91 });
+        const feeList = Array.isArray(feesRes) ? feesRes : [];
+        const totalRevenue = feeList.reduce((sum: number, f: any) => sum + (f.amount || f.paid || 0), 0);
+        const attList = Array.isArray(attendanceRes) ? attendanceRes : [];
+        const overallAttendance = attList.length > 0
+          ? Math.round(
+              attList.reduce((sum: number, r: any) => sum + (r.present || 0), 0) /
+              (attList.reduce((sum: number, r: any) => sum + (r.present || 0) + (r.absent || 0), 0) || 1) * 100
+            )
+          : 0;
+        setStats({ students: studentCount, teachers: teacherCount, revenue: totalRevenue, attendance: overallAttendance });
       } catch {
-        setStats({ students: 4, teachers: 2, revenue: 850000, attendance: 91 });
+        setStats({ students: 0, teachers: 0, revenue: 0, attendance: 0 });
       }
     })();
   }, []);

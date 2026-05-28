@@ -6,10 +6,12 @@ import { Badge } from "@/components/ui/Badge";
 import { useAuthStore } from "@/lib/store";
 import { api, apiFetch } from "@/lib/api";
 import {
-  MessageSquare, Send, Search, User, Loader2,
+  MessageSquare, Send, Search, Loader2,
   Phone, Video, MoreVertical, Check, CheckCheck,
   ArrowLeft, Circle
 } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar";
+import { getAvatarUrl, getInitials } from "@/lib/avatar";
 
 interface Contact {
   id: string;
@@ -171,9 +173,12 @@ export default function QuickMessenger() {
               }`}
             >
               <div className="relative">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white font-bold text-sm">
-                  {contact.avatar || contact.name.charAt(0)}
-                </div>
+                <Avatar className="w-10 h-10">
+                  <AvatarImage src={getAvatarUrl(contact)} />
+                  <AvatarFallback className="bg-gradient-to-br from-orange-400 to-amber-500 text-white font-bold text-sm">
+                    {getInitials(contact.name)}
+                  </AvatarFallback>
+                </Avatar>
                 {contact.online && (
                   <div className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 rounded-full border-2 border-background" />
                 )}
@@ -214,9 +219,12 @@ export default function QuickMessenger() {
                   <ArrowLeft className="w-4 h-4" />
                 </button>
                 <div className="relative">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white font-bold text-sm">
-                    {currentContact?.avatar || currentContact?.name.charAt(0)}
-                  </div>
+                  <Avatar className="w-9 h-9">
+                    <AvatarImage src={getAvatarUrl(currentContact || {})} />
+                    <AvatarFallback className="bg-gradient-to-br from-orange-400 to-amber-500 text-white font-bold text-sm">
+                      {getInitials(currentContact?.name || '')}
+                    </AvatarFallback>
+                  </Avatar>
                   {currentContact?.online && (
                     <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-background" />
                   )}

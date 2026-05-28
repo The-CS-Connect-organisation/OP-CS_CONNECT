@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuthStore } from '@/lib/store'
 import { api } from '@/lib/api'
 import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils'
+import { getAvatarUrl } from '@/lib/avatar'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -136,7 +137,7 @@ export default function StudentProfile() {
           <div className="flex flex-col sm:flex-row items-start gap-6">
             <div className="relative group">
               <Avatar className="w-24 h-24">
-                <AvatarImage src={user?.avatar || ''} />
+                <AvatarImage src={getAvatarUrl(user || {})} />
                 <AvatarFallback className="text-2xl bg-gradient-to-br from-orange-500 to-amber-600 text-white">
                   {user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                 </AvatarFallback>
@@ -265,7 +266,7 @@ export default function StudentProfile() {
           <div className="space-y-4 mt-4">
             <div className="flex justify-center">
               <Avatar className="w-24 h-24">
-                <AvatarImage src={avatarUrl || user?.avatar || ''} />
+                <AvatarImage src={avatarUrl || getAvatarUrl(user || {})} />
                 <AvatarFallback className="text-2xl bg-gradient-to-br from-orange-500 to-amber-600 text-white">
                   {user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                 </AvatarFallback>

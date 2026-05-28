@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -15,28 +15,34 @@ export default function FocusMode() {
   const focusDuration = 25 * 60;
   const breakDuration = 5 * 60;
 
+  const modeRef = useRef(mode);
+  const focusDurationRef = useRef(focusDuration);
+  const breakDurationRef = useRef(breakDuration);
+  modeRef.current = mode;
+  focusDurationRef.current = focusDuration;
+  breakDurationRef.current = breakDuration;
+
   useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isRunning && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            if (mode === 'focus') {
-              setSessions(s => s + 1);
-              setTotalFocusTime(t => t + focusDuration);
-              setMode('break');
-              return breakDuration;
-            } else {
-              setMode('focus');
-              return focusDuration;
-            }
+    if (!isRunning) return;
+    const interval = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          const currentMode = modeRef.current;
+          if (currentMode === 'focus') {
+            setSessions(s => s + 1);
+            setTotalFocusTime(t => t + focusDurationRef.current);
+            setMode('break');
+            return breakDurationRef.current;
+          } else {
+            setMode('focus');
+            return focusDurationRef.current;
           }
-          return prev - 1;
-        });
-      }, 1000);
-    }
+        }
+        return prev - 1;
+      });
+    }, 1000);
     return () => clearInterval(interval);
-  }, [isRunning, timeLeft, mode]);
+  }, [isRunning]);
 
   const toggleTimer = () => setIsRunning(!isRunning);
   const resetTimer = () => {
