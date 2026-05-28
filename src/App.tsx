@@ -113,6 +113,10 @@ import AdminHR from './pages/admin/AdminHR'
 import AdminLibrary from './pages/admin/AdminLibrary'
 import AdminERP from './pages/admin/AdminERP'
 import AdminComms from './pages/admin/AdminComms'
+import TeacherClassroom from './pages/teacher/TeacherClassroom'
+import TeacherExamResults from './pages/teacher/TeacherExamResults'
+import LibrarianManagement from './pages/librarian/LibrarianManagement'
+import StudentExercises from './pages/student/Exercises'
 
 const GP = (title: string, description: string, icon: string, category: string, role: string) => (
   <GenericPage title={title} description={description} icon={icon as any} category={category} role={role as any} />
@@ -190,6 +194,7 @@ function App() {
             <Route path="achievements" element={<Achievements />} />
             <Route path="accolades" element={<Accolades />} />
             <Route path="profile" element={<StudentProfile />} />
+            <Route path="exercises" element={<StudentExercises />} />
           </Route>
 
           {/* TEACHER */}
@@ -209,6 +214,8 @@ function App() {
             <Route path="notifications" element={<NotificationCenter />} />
             <Route path="comms-hub" element={<CommunicationHub />} />
             <Route path="ai" element={<AILab />} />
+            <Route path="classroom" element={<TeacherClassroom />} />
+            <Route path="exam-results" element={<TeacherExamResults />} />
           </Route>
 
           {/* ADMIN */}
@@ -270,6 +277,7 @@ function App() {
           <Route path="/librarian" element={roleGuard(['librarian'])}>
             <Route index element={<LibrarianDashboard />} />
             <Route path="profile" element={<LibrarianProfile />} />
+            <Route path="management" element={<LibrarianManagement />} />
           </Route>
 
           {/* COORDINATOR */}

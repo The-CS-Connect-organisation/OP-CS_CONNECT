@@ -63,6 +63,7 @@ const navSections: Record<UserRole, NavSection[]> = {
         { icon: StickyNote, label: 'Notes', path: '/student/notes' },
         { icon: Share2, label: 'Shared Notes', path: '/student/shared-notes' },
         { icon: Library, label: 'CS Library', path: '/cs-library' },
+        { icon: PenTool, label: 'Exercises', path: '/student/exercises' },
       ]
     },
     {
@@ -100,6 +101,8 @@ const navSections: Record<UserRole, NavSection[]> = {
         { icon: FileText, label: 'Exams', path: '/teacher/exams' },
         { icon: FileSpreadsheet, label: 'Exam Syllabus', path: '/teacher/exam-syllabus' },
         { icon: Cap, label: 'Report Cards', path: '/teacher/report-cards' },
+        { icon: BookOpen, label: 'Classroom', path: '/teacher/classroom' },
+        { icon: BarChart3, label: 'Exam Results', path: '/teacher/exam-results' },
       ]
     },
     {
@@ -255,8 +258,8 @@ const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Main',
       items: [
-        { icon: Library, label: 'Library', path: '/librarian' },
-        { icon: BookOpen, label: 'Books', path: '/librarian' },
+        { icon: Library, label: 'Dashboard', path: '/librarian' },
+        { icon: BookCopy, label: 'Management', path: '/librarian/management' },
         { icon: User, label: 'Profile', path: '/librarian/profile' },
       ]
     },
