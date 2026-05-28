@@ -102,12 +102,83 @@ interface PayrollEntry {
 
 export default function AdminHR() {
   const [activeTab, setActiveTab] = useState('staff-directory');
+  const [summary, setSummary] = useState({ teachers: 0, staff: 0, pendingLeaves: 0, attendancePresent: 0, attendanceTotal: 0 });
+  const [summaryLoading, setSummaryLoading] = useState(true);
+
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    Promise.allSettled([
+      api.getUsers(),
+      api.getStaffDirectory(),
+      api.getLeaveRequests(),
+      api.getTeacherAttendance(today),
+    ]).then(([usersResult, _staffResult, leavesResult, attendanceResult]) => {
+      const users = usersResult.status === 'fulfilled' ? (Array.isArray(usersResult.value) ? usersResult.value : []) : [];
+      const leaves = leavesResult.status === 'fulfilled' ? (Array.isArray(leavesResult.value) ? leavesResult.value : []) : [];
+      const attendance = attendanceResult.status === 'fulfilled' ? (Array.isArray(attendanceResult.value) ? attendanceResult.value : []) : [];
+      setSummary({
+        teachers: users.filter((u: any) => u.role === 'teacher').length,
+        staff: users.filter((u: any) => ['staff', 'admin', 'librarian', 'coordinator', 'manager'].includes(u.role)).length,
+        pendingLeaves: leaves.filter((l: any) => l.status === 'pending').length,
+        attendancePresent: attendance.filter((a: any) => a.status === 'present').length,
+        attendanceTotal: attendance.length,
+      });
+      setSummaryLoading(false);
+    });
+  }, []);
 
   return (
     <div className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Human Resources</h1>
         <p className="text-muted-foreground">Staff management, payroll, recruitment and more</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="p-4">
+          {summaryLoading ? <Skeleton className="h-16" /> : (
+            <div className="flex items-center gap-3">
+              <Users className="w-8 h-8 text-orange-500" />
+              <div>
+                <p className="text-2xl font-bold">{summary.teachers}</p>
+                <p className="text-sm text-muted-foreground">Teachers</p>
+              </div>
+            </div>
+          )}
+        </Card>
+        <Card className="p-4">
+          {summaryLoading ? <Skeleton className="h-16" /> : (
+            <div className="flex items-center gap-3">
+              <Users className="w-8 h-8 text-blue-500" />
+              <div>
+                <p className="text-2xl font-bold">{summary.staff}</p>
+                <p className="text-sm text-muted-foreground">Staff</p>
+              </div>
+            </div>
+          )}
+        </Card>
+        <Card className="p-4">
+          {summaryLoading ? <Skeleton className="h-16" /> : (
+            <div className="flex items-center gap-3">
+              <Calendar className="w-8 h-8 text-yellow-500" />
+              <div>
+                <p className="text-2xl font-bold">{summary.pendingLeaves}</p>
+                <p className="text-sm text-muted-foreground">Pending Leaves</p>
+              </div>
+            </div>
+          )}
+        </Card>
+        <Card className="p-4">
+          {summaryLoading ? <Skeleton className="h-16" /> : (
+            <div className="flex items-center gap-3">
+              <Clock className="w-8 h-8 text-green-500" />
+              <div>
+                <p className="text-2xl font-bold">{summary.attendancePresent}/{summary.attendanceTotal}</p>
+                <p className="text-sm text-muted-foreground">Present Today</p>
+              </div>
+            </div>
+          )}
+        </Card>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>

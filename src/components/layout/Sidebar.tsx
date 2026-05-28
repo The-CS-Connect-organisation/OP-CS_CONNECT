@@ -18,7 +18,10 @@ import {
   Stethoscope, HelpCircle, ThumbsUp, FolderOpen, Printer,
   FileSpreadsheet, Landmark, Banknote, UserPlus, CalendarDays,
   ListChecks, Gauge, Waypoints, Navigation, CircleUser, BookCopy,
-  ScanLine, Route, ChevronDown, Home, GraduationCap as Cap, Briefcase
+  ScanLine, Route, ChevronDown, Home, GraduationCap as Cap, Briefcase,
+  HeartPulse, Scale, Handshake, Trophy as TrophyIcon, Medal, GraduationCap as GradCap,
+  UtensilsCrossed, Truck, Building as BuildingIcon, Network, Workflow, Database,
+  ScrollText, Vote, Shirt, Dumbbell, Footprints, Cog
 } from 'lucide-react'
 
 interface NavItem {
@@ -200,12 +203,33 @@ const navSections: Record<UserRole, NavSection[]> = {
       ]
     },
     {
+      label: 'Student Services (P3)',
+      items: [
+        { icon: MessageSquare, label: 'Counselling', path: '/admin/counselling' },
+        { icon: HeartPulse, label: 'Health Services', path: '/admin/health' },
+        { icon: Scale, label: 'Discipline', path: '/admin/discipline' },
+        { icon: Trophy, label: 'Activities', path: '/admin/activities' },
+        { icon: FolderOpen, label: 'Portfolio', path: '/admin/portfolio' },
+        { icon: GraduationCap, label: 'Enrolment', path: '/admin/enrolment' },
+      ]
+    },
+    {
+      label: 'Facilities (P4)',
+      items: [
+        { icon: Building2, label: 'Facilities', path: '/admin/facilities' },
+        { icon: Truck, label: 'Transport', path: '/admin/transport' },
+        { icon: UtensilsCrossed, label: 'Food Service', path: '/admin/food-service' },
+        { icon: Dumbbell, label: 'Athletics', path: '/admin/athletics' },
+        { icon: Handshake, label: 'Alumni', path: '/admin/alumni' },
+        { icon: Cog, label: 'Platform', path: '/admin/platform' },
+      ]
+    },
+    {
       label: 'Services',
       items: [
         { icon: Search, label: 'Lost & Found', path: '/admin/lost-found' },
         { icon: AlertTriangle, label: 'Anonymous Report', path: '/admin/anonymous-report' },
         { icon: Stethoscope, label: 'School Clinic', path: '/admin/clinic' },
-        { icon: FolderOpen, label: 'E-Portfolio', path: '/admin/e-portfolio' },
         { icon: Headphones, label: 'IT Helpdesk', path: '/admin/it-helpdesk' },
         { icon: SkipForward, label: 'Skip the Bus', path: '/admin/skip-bus' },
         { icon: Receipt, label: 'Fee Installments', path: '/admin/fee-installments' },
@@ -373,6 +397,28 @@ const navSections: Record<UserRole, NavSection[]> = {
       ]
     },
     {
+      label: 'Student Services (P3)',
+      items: [
+        { icon: MessageSquare, label: 'Counselling', path: '/manager/counselling' },
+        { icon: HeartPulse, label: 'Health', path: '/manager/health' },
+        { icon: Scale, label: 'Discipline', path: '/manager/discipline' },
+        { icon: Trophy, label: 'Activities', path: '/manager/activities' },
+        { icon: FolderOpen, label: 'Portfolio', path: '/manager/portfolio' },
+        { icon: GradCap, label: 'Enrolment', path: '/manager/enrolment' },
+      ]
+    },
+    {
+      label: 'Facilities (P4)',
+      items: [
+        { icon: Building2, label: 'Facilities', path: '/manager/facilities' },
+        { icon: Truck, label: 'Transport', path: '/manager/transport' },
+        { icon: UtensilsCrossed, label: 'Food Service', path: '/manager/food-service' },
+        { icon: Dumbbell, label: 'Athletics', path: '/manager/athletics' },
+        { icon: Handshake, label: 'Alumni', path: '/manager/alumni' },
+        { icon: Cog, label: 'Platform', path: '/manager/platform' },
+      ]
+    },
+    {
       label: 'Admin',
       items: [
         { icon: Shield, label: 'Security', path: '/manager/security' },
@@ -458,7 +504,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
+      <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5 scrollbar-thin">
         {sections.map((section) => {
           const isSectionCollapsed = collapsedSections.has(section.label)
           return (
@@ -514,16 +560,11 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-border/50 p-2 space-y-1">
+      <div className="border-t border-border/50 p-2">
         <button onClick={handleLogout} className={cn("flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all w-full", isCollapsed && "justify-center px-2")}>
           <LogOut className="w-4 h-4 flex-shrink-0" />
           {!isCollapsed && <span>Logout</span>}
         </button>
-        {!isCollapsed && (
-          <button onClick={toggle} className="flex items-center justify-center w-full rounded-lg py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-all">
-            <ChevronLeft className="w-3.5 h-3.5" />
-          </button>
-        )}
       </div>
     </div>
   )
@@ -549,7 +590,7 @@ export default function Sidebar() {
 
       {/* Desktop sidebar */}
       <div className="hidden lg:block flex-shrink-0">
-        <motion.aside animate={{ width: isCollapsed ? 64 : 240 }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="h-screen sticky top-0 border-r border-border/50 bg-background overflow-hidden">
+        <motion.aside animate={{ width: isCollapsed ? 64 : 240 }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="h-full sticky top-0 border-r border-border/50 bg-background flex flex-col overflow-hidden">
           {sidebarContent}
         </motion.aside>
       </div>

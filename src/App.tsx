@@ -20,7 +20,7 @@ import CoordinatorDashboard from './pages/coordinator/Dashboard'
 import DriverDashboard from './pages/driver/Dashboard'
 import DashboardLayout from './components/layout/DashboardLayout'
 import { NotFoundPage } from './components/ui/404-page-not-found'
-import StarWarsToggle from './components/ui/star-wars-toggle-switch'
+
 import GenericPage from './components/ui/GenericPage'
 import TeacherMarkAttendance from './pages/teacher/MarkAttendance'
 import TeacherGrading from './pages/teacher/Grading'
@@ -63,7 +63,6 @@ import AdminBusAssignment from './pages/admin/AdminBusAssignment'
 import AdminLostFound from './pages/admin/AdminLostFound'
 import AdminAnonymousReports from './pages/admin/AdminAnonymousReports'
 import AdminClinic from './pages/admin/AdminClinic'
-import AdminEPortfolio from './pages/admin/AdminEPortfolio'
 import AdminITHelpdesk from './pages/admin/AdminITHelpdesk'
 import AdminSkipBus from './pages/admin/AdminSkipBus'
 import AdminFeeInstallments from './pages/admin/AdminFeeInstallments'
@@ -117,6 +116,34 @@ import TeacherClassroom from './pages/teacher/TeacherClassroom'
 import TeacherExamResults from './pages/teacher/TeacherExamResults'
 import LibrarianManagement from './pages/librarian/LibrarianManagement'
 import StudentExercises from './pages/student/Exercises'
+// Admin Phase 3
+import AdminCounselling from './pages/admin/AdminCounselling'
+import AdminHealth from './pages/admin/AdminHealth'
+import AdminDiscipline from './pages/admin/AdminDiscipline'
+import AdminActivities from './pages/admin/AdminActivities'
+import AdminPortfolio from './pages/admin/AdminPortfolio'
+import AdminEnrolment from './pages/admin/AdminEnrolment'
+// Admin Phase 4
+import AdminFacilities from './pages/admin/AdminFacilities'
+import AdminTransport from './pages/admin/AdminTransport'
+import AdminFoodService from './pages/admin/AdminFoodService'
+import AdminAthletics from './pages/admin/AdminAthletics'
+import AdminAlumni from './pages/admin/AdminAlumni'
+import AdminPlatform from './pages/admin/AdminPlatform'
+import CreateAccount from './pages/admin/CreateAccount'
+// Manager Phase 3
+import ManagerCounselling from './pages/manager/ManagerCounselling'
+import ManagerHealth from './pages/manager/ManagerHealth'
+import ManagerDiscipline from './pages/manager/ManagerDiscipline'
+import ManagerActivities from './pages/manager/ManagerActivities'
+import ManagerPortfolio from './pages/manager/ManagerPortfolio'
+import ManagerEnrolment from './pages/manager/ManagerEnrolment'
+// Manager Phase 4
+import ManagerFacilities from './pages/manager/ManagerFacilities'
+import ManagerFoodService from './pages/manager/ManagerFoodService'
+import ManagerAthletics from './pages/manager/ManagerAthletics'
+import ManagerAlumni from './pages/manager/ManagerAlumni'
+import ManagerPlatform from './pages/manager/ManagerPlatform'
 
 const GP = (title: string, description: string, icon: string, category: string, role: string) => (
   <GenericPage title={title} description={description} icon={icon as any} category={category} role={role as any} />
@@ -160,9 +187,6 @@ function App() {
       {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
       {!showSplash && (
         <>
-        <div className="fixed top-4 right-4 z-[9999] scale-[0.4] origin-top-right">
-          <StarWarsToggle checked={isDark} onChange={() => toggleTheme()} />
-        </div>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/photos" element={<Photos />} />
@@ -237,7 +261,7 @@ function App() {
             <Route path="lost-found" element={<AdminLostFound />} />
             <Route path="anonymous-report" element={<AdminAnonymousReports />} />
             <Route path="clinic" element={<AdminClinic />} />
-            <Route path="e-portfolio" element={<AdminEPortfolio />} />
+            <Route path="e-portfolio" element={<AdminPortfolio />} />
             <Route path="it-helpdesk" element={<AdminITHelpdesk />} />
             <Route path="skip-bus" element={<AdminSkipBus />} />
             <Route path="fee-installments" element={<AdminFeeInstallments />} />
@@ -251,6 +275,21 @@ function App() {
             <Route path="library" element={<AdminLibrary />} />
             <Route path="erp" element={<AdminERP />} />
             <Route path="comms" element={<AdminComms />} />
+            {/* Admin Phase 3 */}
+            <Route path="counselling" element={<AdminCounselling />} />
+            <Route path="health" element={<AdminHealth />} />
+            <Route path="discipline" element={<AdminDiscipline />} />
+            <Route path="activities" element={<AdminActivities />} />
+            <Route path="portfolio" element={<AdminPortfolio />} />
+            <Route path="enrolment" element={<AdminEnrolment />} />
+            {/* Admin Phase 4 */}
+            <Route path="facilities" element={<AdminFacilities />} />
+            <Route path="transport" element={<AdminTransport />} />
+            <Route path="food-service" element={<AdminFoodService />} />
+            <Route path="athletics" element={<AdminAthletics />} />
+            <Route path="alumni" element={<AdminAlumni />} />
+            <Route path="platform" element={<AdminPlatform />} />
+            <Route path="create-account" element={<CreateAccount />} />
           </Route>
 
           {/* PARENT */}
@@ -320,6 +359,20 @@ function App() {
             <Route path="library" element={<ManagerLibrary />} />
             <Route path="erp" element={<ManagerERP />} />
             <Route path="comms" element={<ManagerComms />} />
+            {/* Manager Phase 3 */}
+            <Route path="counselling" element={<ManagerCounselling />} />
+            <Route path="health" element={<ManagerHealth />} />
+            <Route path="discipline" element={<ManagerDiscipline />} />
+            <Route path="activities" element={<ManagerActivities />} />
+            <Route path="portfolio" element={<ManagerPortfolio />} />
+            <Route path="enrolment" element={<ManagerEnrolment />} />
+            {/* Manager Phase 4 */}
+            <Route path="facilities" element={<ManagerFacilities />} />
+            <Route path="transport" element={<ManagerTransport />} />
+            <Route path="food-service" element={<ManagerFoodService />} />
+            <Route path="athletics" element={<ManagerAthletics />} />
+            <Route path="alumni" element={<ManagerAlumni />} />
+            <Route path="platform" element={<ManagerPlatform />} />
           </Route>
 
           <Route path="/cs-library" element={

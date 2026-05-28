@@ -10,11 +10,11 @@ interface ResponsiveShellProps {
 
 export default function ResponsiveShell({ children }: ResponsiveShellProps) {
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="h-screen bg-background text-foreground overflow-hidden">
       <TopBar />
-      <div className="lg:flex lg:min-h-[calc(100vh-4rem)]">
+      <div className="flex h-[calc(100vh-4rem)]">
         <Sidebar />
-        <main className="flex-1 min-h-[calc(100vh-4rem)] overflow-y-auto px-4 pb-28 pt-4 lg:p-6 lg:pb-4">
+        <main className="flex-1 overflow-y-auto px-4 pb-24 pt-4 lg:p-6 lg:pb-4">
           {children || <Outlet />}
         </main>
       </div>

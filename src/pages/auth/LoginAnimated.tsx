@@ -277,7 +277,7 @@ function LoginPage() {
           </div>
         </div>
 
-        <div className="relative z-20 flex items-end flex-1 mt-auto">
+        <div className="relative z-20 flex items-end flex-1 min-h-0">
           {/* Cartoon Characters */}
           <div className="relative" style={{ width: '550px', height: '400px' }}>
             {/* Purple tall rectangle character */}
@@ -419,10 +419,12 @@ function LoginPage() {
           </div>
         </div>
 
-        <div className="relative z-20 flex items-center gap-8 text-sm text-primary-foreground/60 pt-8">
-          <a href="#" className="hover:text-primary-foreground transition-colors">Privacy Policy</a>
-          <a href="#" className="hover:text-primary-foreground transition-colors">Terms of Service</a>
-          <a href="#" className="hover:text-primary-foreground transition-colors">Contact</a>
+        <div className="relative z-20 flex items-center gap-4 text-xs text-primary-foreground/40 mt-auto pt-2 pb-1">
+          <a href="#" className="hover:text-primary-foreground/70 transition-colors">Privacy Policy</a>
+          <span className="text-primary-foreground/20">|</span>
+          <a href="#" className="hover:text-primary-foreground/70 transition-colors">Terms of Service</a>
+          <span className="text-primary-foreground/20">|</span>
+          <a href="#" className="hover:text-primary-foreground/70 transition-colors">Contact</a>
         </div>
 
         {/* Decorative elements */}

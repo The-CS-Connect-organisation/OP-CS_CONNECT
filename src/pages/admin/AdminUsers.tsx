@@ -64,7 +64,7 @@ export default function AdminUsers() {
           <h1 className="text-2xl font-bold">User Management</h1>
           <p className="text-muted-foreground">Manage all users</p>
         </div>
-        <Button><Plus className="w-4 h-4 mr-2" />Add User</Button>
+        <Button onClick={() => window.location.href = '/admin/create-account'}><Plus className="w-4 h-4 mr-2" />Add User</Button>
       </div>
 
       <div className="flex gap-4">
