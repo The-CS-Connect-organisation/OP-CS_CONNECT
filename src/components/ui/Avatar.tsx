@@ -24,26 +24,10 @@ const isLikelyImageSrc = (value?: string) => {
   return /^(https?:\/\/|\/|\.\/|\.\.\/|data:image\/|blob:)/i.test(trimmed)
 }
 
-const sendDebugLog = (runId: string, hypothesisId: string, location: string, message: string, data: Record<string, unknown>) => {
-  // #region agent log
-  fetch('http://127.0.0.1:7648/ingest/9083a094-cb0a-4860-b6f2-236bb876b0d0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6a311b'},body:JSON.stringify({sessionId:'6a311b',runId,hypothesisId,location,message,data,timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
-}
-
 const Avatar = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.Root>, AvatarProps>(({ className, src, alt, fallback, size = "md", ...props }, ref) => {
   const normalizedSrc = src?.trim() || ""
   const shouldRenderImage = isLikelyImageSrc(normalizedSrc)
   const fallbackText = fallback || toInitials(alt)
-
-  React.useEffect(() => {
-    // #region agent log
-    sendDebugLog("pre-fix", "H1", "Avatar.tsx:source-eval", "Evaluated avatar src for rendering", {
-      src: normalizedSrc,
-      shouldRenderImage,
-      hasFallback: Boolean(fallbackText),
-    })
-    // #endregion
-  }, [normalizedSrc, shouldRenderImage, fallbackText])
 
   return (
     <AvatarPrimitive.Root ref={ref} className={cn("relative flex shrink-0 overflow-hidden rounded-full", size === "sm" && "h-8 w-8", size === "md" && "h-10 w-10", size === "lg" && "h-12 w-12", className)} {...props}>
@@ -52,11 +36,6 @@ const Avatar = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.Root>, A
           src={normalizedSrc}
           alt={alt || ''}
           className="aspect-square h-full w-full"
-          onError={() => {
-            // #region agent log
-            sendDebugLog("pre-fix", "H2", "Avatar.tsx:image-error", "Avatar image failed to load", { src: normalizedSrc, alt: alt || "" })
-            // #endregion
-          }}
         />
       )}
       {fallbackText && <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted">{fallbackText}</AvatarPrimitive.Fallback>}
