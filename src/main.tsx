@@ -15,6 +15,13 @@ function ThemeInitializer() {
       document.documentElement.classList.remove('dark')
     }
   }, [isDark])
+
+  React.useEffect(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7648/ingest/9083a094-cb0a-4860-b6f2-236bb876b0d0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6a311b'},body:JSON.stringify({sessionId:'6a311b',runId:'pre-fix',hypothesisId:'H8',location:'src/main.tsx:theme-init',message:'frontend boot route info',data:{pathname:window.location.pathname,href:window.location.href,baseUrl:import.meta.env.BASE_URL,router:'BrowserRouter'},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
+  }, [])
+
   return null
 }
 

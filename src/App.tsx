@@ -149,6 +149,13 @@ const GP = (title: string, description: string, icon: string, category: string, 
   <GenericPage title={title} description={description} icon={icon as any} category={category} role={role as any} />
 )
 
+function RouteMissRedirect() {
+  // #region agent log
+  fetch('http://127.0.0.1:7648/ingest/9083a094-cb0a-4860-b6f2-236bb876b0d0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6a311b'},body:JSON.stringify({sessionId:'6a311b',runId:'pre-fix',hypothesisId:'H9',location:'src/App.tsx:route-miss',message:'react-router catch-all route hit',data:{pathname:window.location.pathname},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
+  return <Navigate to="/404page" replace />
+}
+
 function App() {
   const { isAuthenticated, user } = useAuthStore()
   const { isDark, toggleTheme } = useThemeStore()
@@ -380,7 +387,7 @@ function App() {
           } />
 
           <Route path="/404page" element={<NotFoundPage />} />
-          <Route path="*" element={<Navigate to="/404page" replace />} />
+          <Route path="*" element={<RouteMissRedirect />} />
         </Routes>
         </>)}
     </>
