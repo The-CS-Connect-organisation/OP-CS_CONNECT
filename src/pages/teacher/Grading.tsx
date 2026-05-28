@@ -9,6 +9,8 @@ import {
   FileCheck, Loader2, ChevronDown, Star, MessageSquare,
   Save, Eye, CheckCircle2, AlertTriangle, Filter
 } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar";
+import { getAvatarUrl, getInitials } from "@/lib/avatar";
 
 const CLASSES = ["10-A", "10-B"];
 
@@ -197,9 +199,12 @@ export default function Grading() {
             <motion.div key={student.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
               <Card className="p-5">
                 <div className="flex items-start gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white font-bold text-sm">
-                    {student.avatar || student.name?.charAt(0)}
-                  </div>
+                  <Avatar className="w-10 h-10 rounded-xl">
+                    <AvatarImage src={getAvatarUrl(student)} className="rounded-xl" />
+                    <AvatarFallback className="bg-gradient-to-br from-orange-400 to-amber-500 text-white font-bold text-sm rounded-xl">
+                      {getInitials(student.name)}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <h4 className="font-bold">{student.name}</h4>

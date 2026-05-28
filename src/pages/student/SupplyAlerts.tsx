@@ -29,7 +29,7 @@ export default function SupplyAlerts() {
       setIsLoading(false)
     }
     fetchAlerts()
-  }, [user])
+  }, [user?.id])
 
   const handleResolve = async (id: string) => {
     try {
@@ -41,18 +41,11 @@ export default function SupplyAlerts() {
     }
   }
 
-  const getPriorityBadge = (priority: string) => {
-    const p = priority.toLowerCase()
-    if (p === 'high') return 'badge-error'
-    if (p === 'medium') return 'badge-warning'
-    return 'badge-blue'
-  }
-
   const getPriorityIcon = (priority: string) => {
     const p = priority.toLowerCase()
-    if (p === 'high') return <AlertCircle className="w-4 h-4 text-[var(--semantic-error)]" />
-    if (p === 'medium') return <Info className="w-4 h-4 text-[var(--semantic-warning)]" />
-    return <Info className="w-4 h-4 text-[var(--accent-blue)]" />
+    if (p === 'high') return <AlertCircle className="w-4 h-4 text-red-500" />
+    if (p === 'medium') return <Info className="w-4 h-4 text-amber-500" />
+    return <Info className="w-4 h-4 text-blue-500" />
   }
 
   const filteredAlerts = filter === 'all' ? alerts : alerts.filter(a => a.priority?.toLowerCase() === filter)
@@ -60,7 +53,7 @@ export default function SupplyAlerts() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)]" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" />
       </div>
     )
   }
@@ -69,8 +62,8 @@ export default function SupplyAlerts() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
-          <AlertCircle className="w-12 h-12 mx-auto text-[var(--semantic-error)] mb-4" />
-          <p className="text-[var(--semantic-error)]">{error}</p>
+          <AlertCircle className="w-12 h-12 mx-auto text-red-500 mb-4" />
+          <p className="text-red-500">{error}</p>
         </div>
       </div>
     )
@@ -81,15 +74,15 @@ export default function SupplyAlerts() {
       <motion.div variants={itemVariants} className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Package className="w-6 h-6 text-[var(--accent-pink)]" />
+            <Package className="w-6 h-6 text-pink-500" />
             Supply Alerts
           </h1>
-          <p className="text-[var(--text-muted)] text-sm mt-1">
+          <p className="text-muted-foreground text-sm mt-1">
             Supplies needed for {user?.class || 'your'} class
           </p>
         </div>
         <div className="relative">
-          <button className="btn-secondary flex items-center gap-2" onClick={() => setShowFilter(!showFilter)}>
+          <button className="inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium hover:bg-accent transition-colors" onClick={() => setShowFilter(!showFilter)}>
             <Filter className="w-4 h-4" />
             Filter
           </button>
@@ -97,18 +90,18 @@ export default function SupplyAlerts() {
             <motion.div
               initial={{ opacity: 0, y: 4 }}
               animate={{ opacity: 1, y: 0 }}
-              className="absolute right-0 top-full mt-2 nova-card p-2 min-w-[160px] z-10"
+              className="absolute right-0 top-full mt-2 bg-card border rounded-xl shadow-sm p-2 min-w-[160px] z-10"
             >
-              <button className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-[var(--bg-surface)] transition-colors" onClick={() => { setFilter('all'); setShowFilter(false) }}>
+              <button className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-card transition-colors" onClick={() => { setFilter('all'); setShowFilter(false) }}>
                 All
               </button>
-              <button className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-[var(--bg-surface)] transition-colors" onClick={() => { setFilter('high'); setShowFilter(false) }}>
+              <button className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-card transition-colors" onClick={() => { setFilter('high'); setShowFilter(false) }}>
                 High Priority
               </button>
-              <button className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-[var(--bg-surface)] transition-colors" onClick={() => { setFilter('medium'); setShowFilter(false) }}>
+              <button className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-card transition-colors" onClick={() => { setFilter('medium'); setShowFilter(false) }}>
                 Medium Priority
               </button>
-              <button className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-[var(--bg-surface)] transition-colors" onClick={() => { setFilter('low'); setShowFilter(false) }}>
+              <button className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-card transition-colors" onClick={() => { setFilter('low'); setShowFilter(false) }}>
                 Low Priority
               </button>
             </motion.div>
@@ -118,44 +111,44 @@ export default function SupplyAlerts() {
 
       {filteredAlerts.length === 0 ? (
         <motion.div variants={itemVariants}>
-          <div className="nova-card p-12 text-center">
-            <Package className="w-12 h-12 mx-auto text-[var(--text-dim)] mb-4" />
-            <p className="text-[var(--text-secondary)]">No supply alerts found</p>
-            <p className="text-[var(--text-muted)] text-sm mt-1">All supplies are accounted for</p>
+          <div className="bg-card border rounded-xl shadow-sm p-12 text-center">
+            <Package className="w-12 h-12 mx-auto text-muted-foreground/60 mb-4" />
+            <p className="text-muted-foreground">No supply alerts found</p>
+            <p className="text-muted-foreground text-sm mt-1">All supplies are accounted for</p>
           </div>
         </motion.div>
       ) : (
         <>
           <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="nova-card nova-card-stat p-4">
+            <div className="bg-card border rounded-xl shadow-sm p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[rgba(239,68,68,0.10)] flex items-center justify-center">
-                  <AlertCircle className="w-5 h-5 text-[var(--semantic-error)]" />
+                <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center">
+                  <AlertCircle className="w-5 h-5 text-red-500" />
                 </div>
                 <div>
-                  <p className="text-xs text-[var(--text-muted)]">High Priority</p>
+                  <p className="text-xs text-muted-foreground">High Priority</p>
                   <p className="text-xl font-bold">{alerts.filter(a => a.priority?.toLowerCase() === 'high').length}</p>
                 </div>
               </div>
             </div>
-            <div className="nova-card nova-card-stat p-4">
+            <div className="bg-card border rounded-xl shadow-sm p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[rgba(245,158,11,0.10)] flex items-center justify-center">
-                  <Info className="w-5 h-5 text-[var(--semantic-warning)]" />
+                <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
+                  <Info className="w-5 h-5 text-amber-500" />
                 </div>
                 <div>
-                  <p className="text-xs text-[var(--text-muted)]">Medium Priority</p>
+                  <p className="text-xs text-muted-foreground">Medium Priority</p>
                   <p className="text-xl font-bold">{alerts.filter(a => a.priority?.toLowerCase() === 'medium').length}</p>
                 </div>
               </div>
             </div>
-            <div className="nova-card nova-card-stat p-4">
+            <div className="bg-card border rounded-xl shadow-sm p-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[rgba(16,185,129,0.10)] flex items-center justify-center">
-                  <CheckCircle2 className="w-5 h-5 text-[var(--semantic-success)]" />
+                <div className="w-10 h-10 rounded-xl bg-green-500/10 flex items-center justify-center">
+                  <CheckCircle2 className="w-5 h-5 text-green-500" />
                 </div>
                 <div>
-                  <p className="text-xs text-[var(--text-muted)]">Resolved</p>
+                  <p className="text-xs text-muted-foreground">Resolved</p>
                   <p className="text-xl font-bold">{alerts.filter(a => a.resolved).length}</p>
                 </div>
               </div>
@@ -169,30 +162,30 @@ export default function SupplyAlerts() {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.05 }}
-                className={`nova-card p-4 flex items-center gap-4 ${alert.resolved ? 'opacity-60' : ''}`}
+                className={`bg-card border rounded-xl shadow-sm p-4 flex items-center gap-4 ${alert.resolved ? 'opacity-60' : ''}`}
               >
                 <div className="flex-shrink-0">
                   {getPriorityIcon(alert.priority)}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold">{alert.item || alert.name || 'Supply Item'}</p>
-                  <p className="text-xs text-[var(--text-muted)]">
+                  <p className="text-xs text-muted-foreground">
                     {alert.quantity && `${alert.quantity}x `}
                     {alert.class && `Class ${alert.class}`}
                     {alert.dueDate && ` • Due ${new Date(alert.dueDate).toLocaleDateString()}`}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className={`badge ${getPriorityBadge(alert.priority)}`}>
+                  <span className="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium bg-secondary text-secondary-foreground">
                     {alert.priority || 'low'}
                   </span>
                   {alert.resolved ? (
-                    <span className="badge badge-success flex items-center gap-1">
+                    <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium bg-green-100 text-green-700">
                       <CheckCircle2 className="w-3 h-3" />
                       Resolved
                     </span>
                   ) : (
-                    <button className="btn-primary text-xs px-3 py-1" onClick={() => handleResolve(alert.id)}>
+                    <button className="inline-flex items-center justify-center rounded-lg bg-orange-500 px-3 py-1 text-xs font-medium text-white hover:bg-orange-600 transition-colors" onClick={() => handleResolve(alert.id)}>
                       Resolve
                     </button>
                   )}

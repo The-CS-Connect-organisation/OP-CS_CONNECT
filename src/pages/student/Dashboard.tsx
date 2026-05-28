@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import AIChatPanel from '@/components/ai/AIChatPanel'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -34,6 +35,7 @@ export default function StudentDashboard() {
   const { grades, attendance, assignments, subjects, fees, clubs, timetable, events, isLoading, fetchStudentData } = useDataStore()
   const [showAI, setShowAI] = useState(false)
   const [activeTab, setActiveTab] = useState<'overview' | 'academics' | 'schedule'>('overview')
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (user?.id) fetchStudentData(user.id)
@@ -72,7 +74,7 @@ export default function StudentDashboard() {
                 <Avatar src={user?.avatar} alt={user?.name || ''} size="lg" />
                 <div>
                   <h1 className="text-2xl font-bold">Welcome back, {user?.name?.split(' ')[0]}! 🎓</h1>
-                  <p className="text-muted-foreground text-sm">Class 10-A • Roll No: 001</p>
+                  <p className="text-muted-foreground text-sm">{user?.class ? `${user.class} •` : ''} Roll No: {user?.rollNo || '—'}</p>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mt-2 max-w-lg">
@@ -450,6 +452,7 @@ export default function StudentDashboard() {
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
+                        onClick={() => navigate('/student/fees')}
                         className="w-full py-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-600 text-white text-xs font-medium hover:shadow-lg hover:shadow-orange-500/25 transition-all"
                       >
                         Pay Now

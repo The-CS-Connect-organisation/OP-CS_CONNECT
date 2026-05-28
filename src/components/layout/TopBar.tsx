@@ -4,10 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuthStore, useThemeStore, useNotificationStore, useSidebarStore } from '@/lib/store'
 import { cn, getGreeting } from '@/lib/utils'
 import {
-  Sun, Moon, Bell, Search, Menu, Sparkles, Bot,
+  Bell, Search, Menu, Sparkles, Bot,
   ChevronDown, X, Check, AlertCircle, Info, CheckCircle2, GraduationCap
 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
+import StarWarsToggle from '@/components/ui/star-wars-toggle-switch'
 import { Badge } from '@/components/ui/Badge'
 
 export default function TopBar() {
@@ -101,25 +102,10 @@ export default function TopBar() {
             <span className="text-xs font-medium hidden sm:inline">AI</span>
           </motion.button>
 
-          {/* Theme Toggle */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={toggleTheme}
-            className="relative top-0.5 p-2.5 rounded-xl bg-secondary/60 border border-border/50 shadow-sm hover:bg-accent/80 transition-all duration-200"
-          >
-            <AnimatePresence mode="wait">
-              {isDark ? (
-                <motion.div key="sun" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                  <Sun className="w-5 h-5 text-amber-400" />
-                </motion.div>
-              ) : (
-                <motion.div key="moon" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} transition={{ duration: 0.2 }}>
-                  <Moon className="w-5 h-5 text-orange-400" />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.button>
+          {/* Theme Toggle - Star Wars BB-8 */}
+          <div className="flex items-center -mr-2">
+            <StarWarsToggle checked={isDark} onChange={toggleTheme} scale={0.55} />
+          </div>
 
           {/* Notifications */}
           <div className="relative">

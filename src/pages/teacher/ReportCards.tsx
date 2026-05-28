@@ -6,9 +6,11 @@ import { Badge } from "@/components/ui/Badge";
 import { useAuthStore } from "@/lib/store";
 import { api, apiFetch } from "@/lib/api";import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils';import {
   GraduationCap, Download, FileText, Loader2, Search,
-  ChevronDown, Printer, BarChart3, User, BookOpen, Star,
+  ChevronDown, Printer, BarChart3, BookOpen, Star,
   TrendingUp, TrendingDown, Minus, Eye, Filter
 } from "lucide-react";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar";
+import { getAvatarUrl, getInitials } from "@/lib/avatar";
 
 const CLASSES = ["10-A", "10-B"];
 const TERMS = ["Term 1", "Term 2", "Final"];
@@ -179,9 +181,12 @@ export default function ReportCards() {
                   <Card className={`p-4 cursor-pointer transition-all hover:shadow-lg ${isSelected ? "border-orange-500 border-2 bg-orange-50/30" : "hover:border-orange-200"}`}
                     onClick={() => setSelectedStudent(student.id)}>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white font-bold text-sm">
-                        {student.avatar || student.name?.charAt(0)}
-                      </div>
+                      <Avatar className="w-10 h-10 rounded-xl">
+                        <AvatarImage src={getAvatarUrl(student)} className="rounded-xl" />
+                        <AvatarFallback className="bg-gradient-to-br from-orange-400 to-amber-500 text-white font-bold text-sm rounded-xl">
+                          {getInitials(student.name)}
+                        </AvatarFallback>
+                      </Avatar>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-bold text-sm truncate">{student.name}</h4>
                         <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{student.class}</p>
@@ -245,9 +250,12 @@ export default function ReportCards() {
                 <div className="p-6 space-y-6">
                   {/* Student Info */}
                   <div className="flex items-center gap-4 p-4 bg-accent/50 rounded-xl">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white font-bold text-lg">
-                      {currentStudent?.avatar || currentStudent?.name?.charAt(0)}
-                    </div>
+                    <Avatar className="w-14 h-14 rounded-xl">
+                      <AvatarImage src={getAvatarUrl(currentStudent)} className="rounded-xl" />
+                      <AvatarFallback className="bg-gradient-to-br from-orange-400 to-amber-500 text-white font-bold text-lg rounded-xl">
+                        {getInitials(currentStudent?.name || '')}
+                      </AvatarFallback>
+                    </Avatar>
                     <div>
                       <h3 className="text-lg font-bold">{currentStudent?.name}</h3>
                       <div className="flex items-center gap-4 mt-1">
