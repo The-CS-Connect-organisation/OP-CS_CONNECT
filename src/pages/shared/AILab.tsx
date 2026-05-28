@@ -204,7 +204,11 @@ export default function AILab() {
     try {
       const systemPrompt = SYSTEM_PROMPTS[user?.role || "default"] || SYSTEM_PROMPTS.default;
       const res = await api.chatAI(newMessages.map((x) => ({ role: x.role, content: x.content })), mode, systemPrompt);
-      const responseText = res.response || "I could not generate a response. Please try again.";
+      const responseText =
+        res?.response ||
+        res?.message ||
+        res?.result ||
+        "I could not generate a response. Please try again.";
       setMessages((prev) => [...prev, {
         id: `msg${Date.now()}-ai`, role: "assistant", content: responseText,
         timestamp: new Date().toISOString(), model: mode, provider: m?.provider,

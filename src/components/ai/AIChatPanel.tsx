@@ -133,7 +133,12 @@ export default function AIChatPanel({ isOpen = true, onClose, context }: AIChatP
       const messages = chatHistory.map(m => ({ role: m.role, content: m.content }))
       messages.push({ role: 'user', content: message })
       const data = await api.chatAI(messages, modelId, systemPrompt)
-      addMessage('assistant', data.response)
+      const responseText =
+        data?.response ||
+        data?.message ||
+        data?.result ||
+        'I could not generate a response. Please try again.'
+      addMessage('assistant', responseText)
     } catch (err: any) {
       addMessage('assistant', 'Sorry, I encountered an error. Is the backend running? ' + (err.message || ''))
     } finally {
