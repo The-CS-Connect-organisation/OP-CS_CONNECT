@@ -14,7 +14,7 @@ export default function TopBar() {
   const { user } = useAuthStore()
   const { isDark, toggleTheme } = useThemeStore()
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationStore()
-  const { setMobileOpen } = useSidebarStore()
+  const { setMobileOpen, toggle } = useSidebarStore()
   const [showNotifications, setShowNotifications] = React.useState(false)
   const [showSearch, setShowSearch] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState('')
@@ -49,14 +49,24 @@ export default function TopBar() {
             <span className="font-bold text-sm bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-amber-500">School Sync</span>
           </div>
 
-          {/* Desktop greeting */}
-          <div className="hidden lg:block">
-            <h2 className="text-sm font-medium text-foreground">
-              {getGreeting()}, <span className="font-semibold">{user.name.split(' ')[0]}</span> 👋
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-            </p>
+          {/* Desktop collapse toggle + greeting */}
+          <div className="hidden lg:flex items-center gap-3">
+            <button
+              onClick={toggle}
+              className="p-2.5 rounded-xl bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 hover:from-orange-500/20 hover:to-amber-500/20 active:scale-95 transition-all"
+              aria-label="Toggle sidebar"
+              title="Toggle sidebar"
+            >
+              <Menu className="w-5 h-5 text-orange-500" />
+            </button>
+            <div>
+              <h2 className="text-sm font-medium text-foreground">
+                {getGreeting()}, <span className="font-semibold">{user.name.split(' ')[0]}</span> 👋
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              </p>
+            </div>
           </div>
         </div>
 
