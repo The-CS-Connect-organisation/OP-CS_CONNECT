@@ -158,7 +158,7 @@ export async function getSmartNotifications(context: {
   recentActivity: string[];
   performance: string;
 }): Promise<string> {
-  const prompt = `You are a smart notification system for a school ERP. Based on the user's context, suggest 3-5 important, actionable notifications.
+  const prompt = `You are a smart notification system for Cornerstone International School. Based on the user's context, suggest 3-5 important, actionable notifications.
 
 Context: ${JSON.stringify(context)}
 
@@ -214,7 +214,7 @@ Use data-driven insights. Be specific and actionable.`;
 }
 
 export async function chatAssistant(message: string, role: string, context?: string): Promise<string> {
-  const systemPrompt = `You are Cornerstone AI, an intelligent assistant for a school management ERP system. The user's role is: ${role}.
+  const systemPrompt = `You are Cornerstone AI, an intelligent assistant for Cornerstone International School. The user's role is: ${role}.
 
 You help with:
 - Academic queries and study help

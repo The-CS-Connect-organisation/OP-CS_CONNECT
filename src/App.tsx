@@ -95,6 +95,28 @@ import ManagerBusAssignment from './pages/manager/ManagerBusAssignment'
 import StudentDailyBriefing from './pages/student/DailyBriefing'
 import LibrarianProfile from './pages/librarian/LibrarianProfile'
 import CSLibrary from './pages/shared/CSLibrary'
+// Manager Phase 1+2
+import ManagerScheduling from './pages/manager/ManagerScheduling'
+import ManagerSIS from './pages/manager/ManagerSIS'
+import ManagerHR from './pages/manager/ManagerHR'
+import ManagerInvoicing from './pages/manager/ManagerInvoicing'
+import ManagerLibrary from './pages/manager/ManagerLibrary'
+import ManagerERP from './pages/manager/ManagerERP'
+import ManagerComms from './pages/manager/ManagerComms'
+// Admin Phase 1+2
+import AdminScheduling from './pages/admin/AdminScheduling'
+import AdminSIS from './pages/admin/AdminSIS'
+import AdminClassroom from './pages/admin/AdminClassroom'
+import AdminInvoicing from './pages/admin/AdminInvoicing'
+import AdminFinanceFull from './pages/admin/AdminFinanceFull'
+import AdminHR from './pages/admin/AdminHR'
+import AdminLibrary from './pages/admin/AdminLibrary'
+import AdminERP from './pages/admin/AdminERP'
+import AdminComms from './pages/admin/AdminComms'
+import TeacherClassroom from './pages/teacher/TeacherClassroom'
+import TeacherExamResults from './pages/teacher/TeacherExamResults'
+import LibrarianManagement from './pages/librarian/LibrarianManagement'
+import StudentExercises from './pages/student/Exercises'
 
 const GP = (title: string, description: string, icon: string, category: string, role: string) => (
   <GenericPage title={title} description={description} icon={icon as any} category={category} role={role as any} />
@@ -172,6 +194,7 @@ function App() {
             <Route path="achievements" element={<Achievements />} />
             <Route path="accolades" element={<Accolades />} />
             <Route path="profile" element={<StudentProfile />} />
+            <Route path="exercises" element={<StudentExercises />} />
           </Route>
 
           {/* TEACHER */}
@@ -191,6 +214,8 @@ function App() {
             <Route path="notifications" element={<NotificationCenter />} />
             <Route path="comms-hub" element={<CommunicationHub />} />
             <Route path="ai" element={<AILab />} />
+            <Route path="classroom" element={<TeacherClassroom />} />
+            <Route path="exam-results" element={<TeacherExamResults />} />
           </Route>
 
           {/* ADMIN */}
@@ -216,6 +241,16 @@ function App() {
             <Route path="it-helpdesk" element={<AdminITHelpdesk />} />
             <Route path="skip-bus" element={<AdminSkipBus />} />
             <Route path="fee-installments" element={<AdminFeeInstallments />} />
+            {/* Admin Phase 1+2 */}
+            <Route path="scheduling" element={<AdminScheduling />} />
+            <Route path="sis" element={<AdminSIS />} />
+            <Route path="classroom" element={<AdminClassroom />} />
+            <Route path="invoicing" element={<AdminInvoicing />} />
+            <Route path="finance-full" element={<AdminFinanceFull />} />
+            <Route path="hr" element={<AdminHR />} />
+            <Route path="library" element={<AdminLibrary />} />
+            <Route path="erp" element={<AdminERP />} />
+            <Route path="comms" element={<AdminComms />} />
           </Route>
 
           {/* PARENT */}
@@ -242,6 +277,7 @@ function App() {
           <Route path="/librarian" element={roleGuard(['librarian'])}>
             <Route index element={<LibrarianDashboard />} />
             <Route path="profile" element={<LibrarianProfile />} />
+            <Route path="management" element={<LibrarianManagement />} />
           </Route>
 
           {/* COORDINATOR */}
@@ -276,6 +312,14 @@ function App() {
             <Route path="notes" element={<TeacherUploadNotes />} />
             <Route path="fees" element={<ManagerFees />} />
             <Route path="bus-assignment" element={<ManagerBusAssignment />} />
+            {/* Manager Phase 1+2 */}
+            <Route path="scheduling" element={<ManagerScheduling />} />
+            <Route path="sis" element={<ManagerSIS />} />
+            <Route path="hr" element={<ManagerHR />} />
+            <Route path="invoicing" element={<ManagerInvoicing />} />
+            <Route path="library" element={<ManagerLibrary />} />
+            <Route path="erp" element={<ManagerERP />} />
+            <Route path="comms" element={<ManagerComms />} />
           </Route>
 
           <Route path="/cs-library" element={

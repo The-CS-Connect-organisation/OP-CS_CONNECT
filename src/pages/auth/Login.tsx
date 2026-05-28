@@ -22,7 +22,7 @@ const roles: Array<{
   { role: 'student', label: 'Student 2', icon: BookOpen, gradient: 'from-orange-400 to-yellow-500', bgGradient: 'from-orange-400/20 to-yellow-500/20', description: 'Priya Patel - 10-A', email: 'priya@eduvault.ai' },
   { role: 'teacher', label: 'Teacher', icon: Users, gradient: 'from-amber-600 to-orange-600', bgGradient: 'from-amber-500/20 to-orange-500/20', description: 'Math, Physics, CS', email: 'rajesh@eduvault.ai' },
   { role: 'teacher', label: 'Teacher 2', icon: Users, gradient: 'from-yellow-600 to-amber-600', bgGradient: 'from-yellow-500/20 to-amber-500/20', description: 'Chemistry, Biology, English', email: 'sunita@eduvault.ai' },
-  { role: 'admin', label: 'Admin', icon: Shield, gradient: 'from-orange-700 to-red-600', bgGradient: 'from-orange-700/20 to-red-500/20', description: 'Full school management', email: 'meera@eduvault.ai' },
+  { role: 'admin', label: 'Admin', icon: Shield, gradient: 'from-orange-700 to-red-600', bgGradient: 'from-orange-700/20 to-red-500/20', description: 'Full school administration', email: 'meera@eduvault.ai' },
   { role: 'coordinator', label: 'Coordinator', icon: Globe, gradient: 'from-amber-500 to-orange-500', bgGradient: 'from-amber-500/20 to-orange-500/20', description: 'Multi-school oversight', email: 'vikram@eduvault.ai' },
   { role: 'driver', label: 'Driver', icon: Bus, gradient: 'from-orange-600 to-yellow-600', bgGradient: 'from-orange-600/20 to-yellow-500/20', description: 'Route management', email: 'raju@eduvault.ai' },
   { role: 'manager', label: 'Manager', icon: Shield, gradient: 'from-orange-600 to-amber-600', bgGradient: 'from-orange-600/20 to-red-500/20', description: 'Full operations control', email: 'manager@eduvault.ai' },
@@ -146,7 +146,7 @@ export default function Login() {
             transition={{ delay: 0.3 }}
           >
             <Sparkles className="w-4 h-4 text-orange-500" />
-            <span className="text-xs font-medium text-orange-400">AI-Powered School Management</span>
+            <span className="text-xs font-medium text-orange-400">AI-Powered Learning Platform</span>
           </motion.div>
 
           <motion.h1
@@ -165,7 +165,7 @@ export default function Login() {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}
           >
-            Next-generation school ERP with AI at every step
+            Cornerstone International School — powered by AI
           </motion.p>
 
           {/* Feature pills */}

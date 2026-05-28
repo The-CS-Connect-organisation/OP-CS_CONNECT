@@ -102,7 +102,7 @@ export default function SplashScreen({ onComplete }: SplashScreenProps) {
                     className="flex items-center gap-2 mt-2"
                   >
                     <Sparkles className="w-4 h-4 text-orange-500" />
-                    <span className="text-sm text-muted-foreground">AI-Powered School Management</span>
+                    <span className="text-sm text-muted-foreground">AI-Powered Learning Platform</span>
                   </motion.div>
                 </motion.div>
               )}

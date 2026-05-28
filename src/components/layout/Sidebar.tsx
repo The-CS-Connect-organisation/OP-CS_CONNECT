@@ -63,6 +63,7 @@ const navSections: Record<UserRole, NavSection[]> = {
         { icon: StickyNote, label: 'Notes', path: '/student/notes' },
         { icon: Share2, label: 'Shared Notes', path: '/student/shared-notes' },
         { icon: Library, label: 'CS Library', path: '/cs-library' },
+        { icon: PenTool, label: 'Exercises', path: '/student/exercises' },
       ]
     },
     {
@@ -100,6 +101,8 @@ const navSections: Record<UserRole, NavSection[]> = {
         { icon: FileText, label: 'Exams', path: '/teacher/exams' },
         { icon: FileSpreadsheet, label: 'Exam Syllabus', path: '/teacher/exam-syllabus' },
         { icon: Cap, label: 'Report Cards', path: '/teacher/report-cards' },
+        { icon: BookOpen, label: 'Classroom', path: '/teacher/classroom' },
+        { icon: BarChart3, label: 'Exam Results', path: '/teacher/exam-results' },
       ]
     },
     {
@@ -149,11 +152,40 @@ const navSections: Record<UserRole, NavSection[]> = {
       items: [
         { icon: FileText, label: 'Exams', path: '/admin/exams' },
         { icon: CreditCard, label: 'Fees & Billing', path: '/admin/fees' },
+        { icon: Clock, label: 'Scheduling', path: '/admin/scheduling' },
+        { icon: BookOpen, label: 'SIS', path: '/admin/sis' },
+        { icon: ClipboardList, label: 'Classroom', path: '/admin/classroom' },
+      ]
+    },
+    {
+      label: 'Finance',
+      items: [
+        { icon: Receipt, label: 'Invoicing', path: '/admin/invoicing' },
+        { icon: DollarSign, label: 'Finance Suite', path: '/admin/finance-full' },
+      ]
+    },
+    {
+      label: 'HR & Staff',
+      items: [
+        { icon: Users, label: 'Human Resources', path: '/admin/hr' },
+      ]
+    },
+    {
+      label: 'Library',
+      items: [
+        { icon: BookCopy, label: 'Library Management', path: '/admin/library' },
+      ]
+    },
+    {
+      label: 'ERP & CRM',
+      items: [
+        { icon: Building2, label: 'ERP System', path: '/admin/erp' },
       ]
     },
     {
       label: 'Communications',
       items: [
+        { icon: RadioTower, label: 'Communications', path: '/admin/comms' },
         { icon: Sparkles, label: 'AI Lab', path: '/admin/ai' },
         { icon: Radio, label: 'Comms Hub', path: '/admin/comms-hub' },
         { icon: FileText, label: 'Circulars', path: '/admin/circulars' },
@@ -226,8 +258,8 @@ const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Main',
       items: [
-        { icon: Library, label: 'Library', path: '/librarian' },
-        { icon: BookOpen, label: 'Books', path: '/librarian' },
+        { icon: Library, label: 'Dashboard', path: '/librarian' },
+        { icon: BookCopy, label: 'Management', path: '/librarian/management' },
         { icon: User, label: 'Profile', path: '/librarian/profile' },
       ]
     },
@@ -277,6 +309,7 @@ const navSections: Record<UserRole, NavSection[]> = {
       items: [
         { icon: Users, label: 'User Management', path: '/manager/users' },
         { icon: Cap, label: 'Academics', path: '/manager/academics' },
+        { icon: Briefcase, label: 'HR', path: '/manager/hr' },
       ]
     },
     {
@@ -299,8 +332,29 @@ const navSections: Record<UserRole, NavSection[]> = {
       ]
     },
     {
+      label: 'Scheduling & SIS',
+      items: [
+        { icon: Calendar, label: 'Scheduling', path: '/manager/scheduling' },
+        { icon: BookOpen, label: 'SIS', path: '/manager/sis' },
+      ]
+    },
+    {
+      label: 'Finance & Invoicing',
+      items: [
+        { icon: Receipt, label: 'Invoicing', path: '/manager/invoicing' },
+        { icon: Building2, label: 'ERP', path: '/manager/erp' },
+      ]
+    },
+    {
+      label: 'Library',
+      items: [
+        { icon: BookCopy, label: 'Library Management', path: '/manager/library' },
+      ]
+    },
+    {
       label: 'Communications',
       items: [
+        { icon: RadioTower, label: 'Comms', path: '/manager/comms' },
         { icon: FileText, label: 'Circulars', path: '/manager/circulars' },
         { icon: Megaphone, label: 'Announcements', path: '/manager/announcements' },
         { icon: MessageSquare, label: 'Messages', path: '/manager/messages' },

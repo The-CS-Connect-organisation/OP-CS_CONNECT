@@ -86,7 +86,7 @@ const testimonials = [
   { name: 'Aarav S.', username: '@aarav', body: 'Cornerstone AI made studying so much easier!', img: 'https://randomuser.me/api/portraits/men/32.jpg', country: '🇮🇳 India' },
   { name: 'Priya P.', username: '@priya', body: 'The attendance tracking is a game changer!', img: 'https://randomuser.me/api/portraits/women/68.jpg', country: '🇮🇳 India' },
   { name: 'Rohan K.', username: '@rohan', body: 'AI study plans are incredibly helpful!', img: 'https://randomuser.me/api/portraits/men/51.jpg', country: '🇮🇳 India' },
-  { name: 'Ananya S.', username: '@ananya', body: 'Best school management platform!', img: 'https://randomuser.me/api/portraits/women/53.jpg', country: '🇮🇳 India' },
+  { name: 'Ananya S.', username: '@ananya', body: 'Best school platform ever!', img: 'https://randomuser.me/api/portraits/women/53.jpg', country: '🇮🇳 India' },
   { name: 'Dr. Gupta', username: '@gupta', body: 'Grading tools save me hours every week.', img: 'https://randomuser.me/api/portraits/men/33.jpg', country: '🇮🇳 India' },
   { name: 'Prof. Verma', username: '@verma', body: 'Analytics dashboard is very insightful.', img: 'https://randomuser.me/api/portraits/men/22.jpg', country: '🇮🇳 India' },
   { name: 'Haruto S.', username: '@haru', body: 'Impressive performance on mobile!', img: 'https://randomuser.me/api/portraits/men/85.jpg', country: '🇯🇵 Japan' },
@@ -318,7 +318,7 @@ export default function LandingPage() {
             style={{ writingMode: 'vertical-lr', textOrientation: 'mixed' }}
           >
             <p className="font-mono text-[10px] md:text-xs tracking-[0.4em] text-orange-800/20 uppercase select-none">
-              AI-Powered School Management
+              AI-Powered Learning Platform
             </p>
           </motion.div>
         </div>
