@@ -6,7 +6,11 @@ import { useAuthStore } from "@/lib/store";
 
 const navItems = ["About", "Features", "Story"];
 
-export default function MobileLanding() {
+interface Props {
+  showPrompt?: boolean;
+}
+
+export default function MobileLanding({ showPrompt }: Props) {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -61,9 +65,12 @@ export default function MobileLanding() {
   };
 
   const features = [
-    { icon: Cpu, label: "AI-Powered", desc: "Smart automation of school management tasks" },
-    { icon: Users, label: "All-in-One", desc: "Connects students, teachers, parents & admins" },
-    { icon: BadgeCheck, label: "Real-Time", desc: "Live updates for attendance, grades & more" },
+    { icon: Cpu, label: "AI-Powered Analytics", desc: "Predictive intelligence that forecasts student performance, identifies at-risk learners, and surfaces actionable insights before problems arise — powered by cutting-edge machine learning models trained on your school's unique data." },
+    { icon: Users, label: "Unified School Ecosystem", desc: "One seamless platform connecting students, teachers, parents, admin, management, drivers, and librarians — with role-based dashboards, real-time messaging, and cross-department collaboration baked into every workflow." },
+    { icon: BadgeCheck, label: "Real-Time Intelligence", desc: "Live attendance tracking, instant grade updates, automated fee reminders, and push notifications across every channel — SMS, email, and in-app — so no stakeholder ever misses a beat." },
+    { icon: School, label: "Smart Scheduling & Timetables", desc: "AI-driven timetable generation that optimizes teacher allocation, room utilization, and period distribution — resolving conflicts in seconds instead of hours." },
+    { icon: LayoutDashboard, label: "Executive Command Center", desc: "A centralized admin dashboard with live charts, attendance heatmaps, financial summaries, and custom reports — giving school leadership a panoramic view of operations at a glance." },
+    { icon: CircleUserRound, label: "Multi-Role Access Control", desc: "Granular permission system that ensures students see grades, teachers manage classes, admins control finance, and parents track progress — all within a single secure platform." },
   ];
 
   return (
@@ -71,7 +78,7 @@ export default function MobileLanding() {
       <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/loop2.0.m4a`} loop preload="auto" />
 
       {/* Navbar */}
-      <nav className="fixed inset-x-0 top-0 z-50 h-14 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4">
+      <nav className={`fixed inset-x-0 z-50 h-14 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 ${showPrompt ? "top-[68px]" : "top-0"}`}>
         <button onClick={() => navigate("/")} className="flex items-center gap-2">
           <img src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`} alt="CS Connect" className="w-6 h-6 object-contain" />
           <span className="font-zentry text-sm font-black uppercase tracking-wider text-gray-900">CS Connect</span>
@@ -135,7 +142,7 @@ export default function MobileLanding() {
         <div className="absolute inset-0 bg-black/30" />
         <div className="absolute inset-0 flex flex-col justify-center px-6">
           <h1 className="font-zentry text-5xl font-black uppercase tracking-wider text-white leading-tight">
-            CS C<b className="text-orange-400">O</b>NNECT
+            CS C<b className="text-white">O</b>NNECT
           </h1>
           <p className="mt-2 text-white/80 text-sm max-w-xs leading-relaxed">
             AI-Powered School Management for the Next Generation

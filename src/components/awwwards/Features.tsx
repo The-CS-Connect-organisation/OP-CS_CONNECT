@@ -123,7 +123,7 @@ const Features = () => (
               r<b>a</b>diant
             </>
           }
-          description="A cross-platform school management app, turning everyday academic tasks into a seamless educational experience."
+          description="A cross-platform school management ecosystem — turning everyday academic tasks into a seamless, intelligent educational experience. From automated attendance to AI-powered grade prediction, Radiant is the operating system for modern schools."
           isComingSoon
         />
       </BentoTilt>
@@ -137,7 +137,7 @@ const Features = () => (
                 z<b>i</b>gma
               </>
             }
-            description="An AI-powered analytics suite — turning data into actionable insights for educators and administrators."
+            description="An AI-powered analytics suite — predictive models forecast student outcomes, identify at-risk learners, and deliver actionable intelligence before problems arise. Transform raw data into strategic decisions."
             isComingSoon
           />
         </BentoTilt>
@@ -150,7 +150,7 @@ const Features = () => (
                 n<b>e</b>xus
               </>
             }
-            description="A collaborative hub connecting teachers, students, and parents in real-time."
+            description="A real-time collaboration hub linking teachers, students, parents, and staff — with instant messaging, shared calendars, automated notifications, and cross-department coordination baked into every interaction."
             isComingSoon
           />
         </BentoTilt>
@@ -163,7 +163,7 @@ const Features = () => (
                 az<b>u</b>l
               </>
             }
-            description="An AI teaching assistant — enhancing classroom productivity with intelligent automation."
+            description="An AI teaching assistant — automating lesson planning, generating quiz content, providing real-time classroom insights, and personalizing learning paths so every student gets the attention they deserve."
             isComingSoon
           />
         </BentoTilt>
