@@ -53,7 +53,7 @@ export default function TopBar() {
           <div className="hidden lg:flex items-center gap-3">
             <button
               onClick={toggle}
-              className="p-2.5 rounded-xl bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 hover:from-orange-500/20 hover:to-amber-500/20 active:scale-95 transition-all"
+              className="p-2.5 rounded-xl bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 shadow-sm hover:from-orange-500/20 hover:to-amber-500/20 active:scale-95 transition-all"
               aria-label="Toggle sidebar"
               title="Toggle sidebar"
             >
@@ -90,12 +90,12 @@ export default function TopBar() {
         </div>
 
         {/* Right section */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {/* AI Quick Access */}
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-orange-600/10 to-amber-600/10 border border-orange-500/20 text-orange-500 hover:from-orange-600/20 hover:to-amber-600/20 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-orange-600/15 to-amber-600/15 border border-orange-500/20 text-orange-500 shadow-sm hover:shadow-md hover:from-orange-600/25 hover:to-amber-600/25 transition-all duration-200"
           >
             <Sparkles className="w-4 h-4" />
             <span className="text-xs font-medium hidden sm:inline">AI</span>
@@ -106,7 +106,7 @@ export default function TopBar() {
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={toggleTheme}
-            className="p-2 rounded-xl hover:bg-accent transition-colors"
+            className="relative top-0.5 p-2.5 rounded-xl bg-secondary/60 border border-border/50 shadow-sm hover:bg-accent/80 transition-all duration-200"
           >
             <AnimatePresence mode="wait">
               {isDark ? (
@@ -127,7 +127,7 @@ export default function TopBar() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setShowNotifications(!showNotifications)}
-              className="p-2 rounded-xl hover:bg-accent transition-colors relative"
+              className="p-2.5 rounded-xl bg-secondary/60 border border-border/50 shadow-sm hover:bg-accent/80 transition-all duration-200 relative"
             >
               <Bell className="w-5 h-5" />
               {unreadCount > 0 && (
