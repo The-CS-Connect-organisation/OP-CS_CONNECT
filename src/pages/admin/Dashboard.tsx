@@ -22,7 +22,7 @@ import {
   ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell,
   LineChart, Line
 } from 'recharts'
-import { mockStudents, mockTeachers, mockSchools, mockRevenueData } from '@/lib/mock-data'
+
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -33,56 +33,49 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 }
 
-const enrollmentData = [
-  { month: 'Jun', students: 1200 },
-  { month: 'Jul', students: 1250 },
-  { month: 'Aug', students: 1380 },
-  { month: 'Sep', students: 1420 },
-  { month: 'Oct', students: 1450 },
-  { month: 'Nov', students: 1480 },
-  { month: 'Dec', students: 1500 },
-  { month: 'Jan', students: 1560 },
-]
 
-const departmentData = [
-  { name: 'Science', teachers: 12, color: '#8b5cf6' },
-  { name: 'Math', teachers: 10, color: '#3b82f6' },
-  { name: 'English', teachers: 8, color: '#f59e0b' },
-  { name: 'Arts', teachers: 6, color: '#ec4899' },
-  { name: 'Sports', teachers: 5, color: '#10b981' },
-]
-
-const recentActivities = [
-  { id: 1, action: 'New student enrolled', detail: 'Kavya Iyer - Class 9-A', time: '5 min ago', type: 'info' },
-  { id: 2, action: 'Fee payment received', detail: '₹25,000 - Aarav Sharma', time: '15 min ago', type: 'success' },
-  { id: 3, action: 'Teacher leave request', detail: 'Mr. Anil Desai - Jan 20', time: '1 hour ago', type: 'warning' },
-  { id: 4, action: 'Exam schedule published', detail: 'Mid-term Feb 2025', time: '2 hours ago', type: 'info' },
-  { id: 5, action: 'System backup completed', detail: 'Full backup - 2.4GB', time: '3 hours ago', type: 'success' },
-]
 
 export default function AdminDashboard() {
   const { user } = useAuthStore()
   const [showAI, setShowAI] = useState(false)
-  const [liveData, setLiveData] = useState({ invoices: 0, expenses: 0, staff: 0, books: 0, students: 0, teachers: 0 })
+  const [liveData, setLiveData] = useState<any>({
+    invoices: 0, expenses: 0, staff: 0, books: 0, students: 0, teachers: 0,
+    onLeave: 0, totalRevenue: 0, attendanceRate: 0,
+    departments: [], activities: [],
+  })
 
   useEffect(() => {
     Promise.allSettled([
-      api.getInvoices().then((d: any) => setLiveData(p => ({ ...p, invoices: Array.isArray(d) ? d.filter((i: any) => i.status === 'pending').length : 0 }))).catch(() => {}),
-      api.getExpenses().then((d: any) => setLiveData(p => ({ ...p, expenses: Array.isArray(d) ? d.filter((e: any) => e.status !== 'approved').length : 0 }))).catch(() => {}),
-      api.getStaffDirectory().then((d: any) => setLiveData(p => ({ ...p, staff: Array.isArray(d) ? d.length : 0 }))).catch(() => {}),
-      api.getLibraryCatalogue().then((d: any) => setLiveData(p => ({ ...p, books: Array.isArray(d) ? d.length : 0 }))).catch(() => {}),
+      api.getInvoices().then((d: any) => setLiveData((p: any) => ({ ...p, invoices: Array.isArray(d) ? d.filter((i: any) => i.status === 'pending').length : 0, totalRevenue: Array.isArray(d) ? d.reduce((s: number, i: any) => s + Number(i.amount || 0), 0) : 0 }))).catch(() => {}),
+      api.getExpenses().then((d: any) => setLiveData((p: any) => ({ ...p, expenses: Array.isArray(d) ? d.filter((e: any) => e.status !== 'approved').length : 0 }))).catch(() => {}),
+      api.getStaffDirectory().then((d: any) => setLiveData((p: any) => ({ ...p, staff: Array.isArray(d) ? d.length : 0 }))).catch(() => {}),
+      api.getLibraryCatalogue().then((d: any) => setLiveData((p: any) => ({ ...p, books: Array.isArray(d) ? d.length : 0 }))).catch(() => {}),
       api.getUsers().then((d: any) => {
         if (Array.isArray(d)) {
-          setLiveData(p => ({ ...p, students: d.filter((u: any) => u.role === 'student').length, teachers: d.filter((u: any) => u.role === 'teacher').length }))
+          const students = d.filter((u: any) => u.role === 'student').length
+          const teachers = d.filter((u: any) => u.role === 'teacher').length
+          const deptMap: Record<string, number> = {}
+          d.filter((u: any) => u.role === 'teacher').forEach((t: any) => { const dept = t.department || 'General'; deptMap[dept] = (deptMap[dept] || 0) + 1 })
+          const colors = ['#8b5cf6', '#3b82f6', '#f59e0b', '#ec4899', '#10b981', '#ef4444']
+          const departments = Object.entries(deptMap).map(([name, count], i: number) => ({ name, teachers: count, color: colors[i % colors.length] }))
+          setLiveData((p: any) => ({ ...p, students, teachers, departments: departments.length ? departments : p.departments }))
         }
       }).catch(() => {}),
+      api.getAttendance().then((d: any) => {
+        if (Array.isArray(d) && d.length > 0) setLiveData((p: any) => ({ ...p, attendanceRate: Math.round(d.filter((a: any) => a.status === 'present').length / d.length * 100) }))
+      }).catch(() => {}),
+      api.getLeaveRequests().then((d: any) => {
+        if (Array.isArray(d)) setLiveData((p: any) => ({ ...p, onLeave: d.filter((r: any) => r.status === 'approved').length }))
+      }).catch(() => {}),
+      Promise.allSettled([
+        api.getAnnouncements().then((d: any) => Array.isArray(d) ? d.slice(0, 3) : []).catch(() => []),
+      ]).then(([annRes]) => {
+        const ann = (annRes as any).value || []
+        const activities = ann.map((a: any, i: number) => ({ id: i + 1, action: a.title || 'Announcement', detail: a.content?.substring(0, 40) || '', time: new Date(a.createdAt || a.date || Date.now()).toLocaleDateString(), type: 'info' as const }))
+        if (activities.length) setLiveData((p: any) => ({ ...p, activities }))
+      }),
     ])
   }, [])
-
-  const totalStudents = liveData.students || 1560
-  const totalTeachers = liveData.teachers || 125
-  const totalRevenue = 4580000
-  const attendanceRate = 92
 
   return (
     <>
@@ -106,7 +99,7 @@ export default function AdminDashboard() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" className="gap-1.5">
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => window.location.href = '/admin/users'}>
                 <UserPlus className="w-4 h-4" />
                 Add User
               </Button>
@@ -126,10 +119,10 @@ export default function AdminDashboard() {
         {/* Stats Grid */}
         <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total Students', value: totalStudents.toLocaleString(), icon: GraduationCap, color: 'from-orange-500 to-red-500', change: '+60 this month', trend: 'up' },
-            { label: 'Total Teachers', value: totalTeachers.toString(), icon: Users, color: 'from-orange-600 to-amber-600', change: '5 on leave', trend: 'neutral' },
-            { label: 'Revenue', value: `₹${(totalRevenue / 100000).toFixed(1)}L`, icon: DollarSign, color: 'from-emerald-600 to-teal-600', change: '+12% YoY', trend: 'up' },
-            { label: 'Attendance', value: `${attendanceRate}%`, icon: Activity, color: 'from-amber-600 to-orange-600', change: 'School-wide', trend: 'up' },
+            { label: 'Total Students', value: liveData.students.toLocaleString(), icon: GraduationCap, color: 'from-orange-500 to-red-500', change: 'enrolled', trend: 'up' },
+            { label: 'Total Teachers', value: liveData.teachers.toString(), icon: Users, color: 'from-orange-600 to-amber-600', change: `${liveData.onLeave} on leave`, trend: 'neutral' },
+            { label: 'Revenue', value: `₹${((liveData.totalRevenue || 0) / 100000).toFixed(1)}L`, icon: DollarSign, color: 'from-emerald-600 to-teal-600', change: 'invoiced', trend: 'up' },
+            { label: 'Attendance', value: `${liveData.attendanceRate || 0}%`, icon: Activity, color: 'from-amber-600 to-orange-600', change: 'School-wide', trend: 'up' },
           ].map((stat) => (
             <motion.div key={stat.label} whileHover={{ y: -2, scale: 1.02 }}>
               <Card glow>
@@ -170,7 +163,7 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={mockRevenueData}>
+                    <AreaChart data={[{ month: 'Collected', collected: liveData.totalRevenue || 0, expenses: 0 }]}>
                       <defs>
                         <linearGradient id="revGradient" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
@@ -214,8 +207,8 @@ export default function AdminDashboard() {
                 <div className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={departmentData} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="teachers" nameKey="name">
-                        {departmentData.map((entry, index) => (
+                      <Pie data={liveData.departments.length ? liveData.departments : [{ name: 'No data', teachers: 1, color: '#6b7280' }]} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="teachers" nameKey="name">
+                        {(liveData.departments.length ? liveData.departments : [{ name: 'No data', teachers: 1, color: '#6b7280' }]).map((entry: any, index: number) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
@@ -224,7 +217,7 @@ export default function AdminDashboard() {
                   </ResponsiveContainer>
                 </div>
                 <div className="space-y-2 mt-2">
-                  {departmentData.map(dept => (
+                  {(liveData.departments.length ? liveData.departments : [{ name: 'No data', teachers: 0, color: '#6b7280' }]).map((dept: any) => (
                     <div key={dept.name} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: dept.color }} />
@@ -253,10 +246,10 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={enrollmentData}>
+                    <LineChart data={[{ month: 'Current', students: liveData.students }]}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                       <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} domain={[1100, 1600]} />
+                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', fontSize: '12px' }} />
                       <Line type="monotone" dataKey="students" stroke="#8b5cf6" strokeWidth={2} dot={{ fill: '#8b5cf6', r: 4 }} name="Students" />
                     </LineChart>
@@ -280,7 +273,7 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {recentActivities.map(activity => (
+                  {(liveData.activities.length ? liveData.activities : [{ id: 0, action: 'No recent activity', detail: 'Data will appear here', time: '', type: 'info' }]).map((activity: any) => (
                     <div key={activity.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors">
                       <div className={cn(
                         "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",
@@ -311,18 +304,19 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {[
-                  { label: 'Add Student', icon: UserPlus, color: 'from-orange-500 to-amber-600' },
-                  { label: 'Send Notice', icon: Bell, color: 'from-orange-600 to-amber-600' },
-                  { label: 'View Reports', icon: FileText, color: 'from-emerald-600 to-teal-600' },
-                  { label: 'System Settings', icon: Settings, color: 'from-amber-600 to-orange-600' },
-                ].map(action => (
-                  <motion.button
-                    key={action.label}
-                    whileHover={{ scale: 1.03, y: -2 }}
-                    whileTap={{ scale: 0.97 }}
-                    className="flex items-center gap-3 p-4 rounded-xl border border-border/50 hover:border-primary/30 bg-card/50 hover:bg-accent/50 transition-all"
-                  >
+                  {[
+                    { label: 'Add User', icon: UserPlus, color: 'from-orange-500 to-amber-600', href: '/admin/create-account' },
+                    { label: 'Send Notice', icon: Bell, color: 'from-orange-600 to-amber-600', href: '/admin/communication' },
+                    { label: 'View Reports', icon: FileText, color: 'from-emerald-600 to-teal-600', href: '/admin/analytics' },
+                    { label: 'System Settings', icon: Settings, color: 'from-amber-600 to-orange-600', href: '/admin/platform' },
+                  ].map(action => (
+                    <motion.button
+                      key={action.label}
+                      whileHover={{ scale: 1.03, y: -2 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => window.location.href = action.href}
+                      className="flex items-center gap-3 p-4 rounded-xl border border-border/50 hover:border-primary/30 bg-card/50 hover:bg-accent/50 transition-all"
+                    >
                     <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br", action.color)}>
                       <action.icon className="w-5 h-5 text-white" />
                     </div>

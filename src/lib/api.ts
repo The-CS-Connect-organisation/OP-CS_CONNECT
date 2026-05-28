@@ -86,7 +86,10 @@ export const api = {
   gradeAssignment: (id: string, data: any) => apiFetch(`/assignments/${id}/grade`, { method: 'POST', body: JSON.stringify(data) }),
 
   // Timetable
-  getTimetable: (className: string) => apiFetch(`/timetable/${className}`),
+  getTimetable: (className?: string) => {
+    const endpoint = className ? `/timetable/${className}` : '/timetable';
+    return apiFetch(endpoint);
+  },
   updateTimetable: (className: string, schedule: any) => apiFetch('/timetable', { method: 'POST', body: JSON.stringify({ className, schedule }) }),
 
   // Schools
@@ -632,6 +635,11 @@ export const api = {
     return apiFetch(`/attendance/reports/${className}${query}`);
   },
 
+  getAttendance: (params?: Record<string, string>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiFetch(`/attendance${query}`);
+  },
+
   // Absence Requests
   getAbsenceRequests: () => apiFetch('/attendance/absence-requests'),
   createAbsenceRequest: (data: any) => apiFetch('/attendance/absence-requests', { method: 'POST', body: JSON.stringify(data) }),
@@ -749,6 +757,9 @@ export const api = {
   // Classroom - Programs
   getPrograms: () => apiFetch('/classroom/programs'),
   createProgram: (data: any) => apiFetch('/classroom/programs', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Classroom - Rooms
+  getClassrooms: () => apiFetch('/classroom/rooms'),
 
   // Classroom - Courses
   getCourses: () => apiFetch('/classroom/courses'),

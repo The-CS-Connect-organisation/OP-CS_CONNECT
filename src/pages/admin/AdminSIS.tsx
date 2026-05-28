@@ -18,6 +18,9 @@ import {
   BookOpen,
   Check,
   X,
+  BarChart3,
+  Calendar,
+  Clipboard,
 } from 'lucide-react';
 
 interface CustomField {
@@ -88,7 +91,13 @@ interface TransferCertificate {
 
 export default function AdminSIS() {
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('fields');
+  const [activeTab, setActiveTab] = useState('overview');
+
+  // Overview data
+  const [students, setStudents] = useState<any[]>([]);
+  const [classesList, setClassesList] = useState<any[]>([]);
+  const [enrolments, setEnrolments] = useState<any[]>([]);
+  const [attendanceRecords, setAttendanceRecords] = useState<any[]>([]);
 
   // Custom Fields
   const [entityType, setEntityType] = useState('student');
@@ -135,27 +144,36 @@ export default function AdminSIS() {
   }, []);
 
   const loadInitial = async () => {
-    try {
-      setLoading(true);
-      const [fields, trans, fams, lks, proms, certs] = await Promise.all([
-        api.getCustomFields('student'),
-        api.getStudentTransfers(),
-        api.getFamilies(),
-        api.getLockers(),
-        api.getPromotions(),
-        api.getTransferCertificates(),
-      ]);
-      setCustomFields(Array.isArray(fields) ? fields : []);
-      setTransfers(Array.isArray(trans) ? trans : []);
-      setFamilies(Array.isArray(fams) ? fams : []);
-      setLockers(Array.isArray(lks) ? lks : []);
-      setPromotions(Array.isArray(proms) ? proms : []);
-      setTcs(Array.isArray(certs) ? certs : []);
-    } catch {
-      // error
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+    const safe = (p: Promise<any>) => p.then((r: any) => Array.isArray(r) ? r : []).catch(() => []);
+
+    const results = await Promise.allSettled([
+      safe(api.getUsers({ role: 'student' })),
+      safe(api.getCourses()),
+      safe(api.getEnrolmentApplications()),
+      safe((api as any).getAttendance()),
+      safe(api.getCustomFields('student')),
+      safe(api.getStudentTransfers()),
+      safe(api.getFamilies()),
+      safe(api.getLockers()),
+      safe(api.getPromotions()),
+      safe(api.getTransferCertificates()),
+    ]);
+
+    const getValue = (idx: number) =>
+      results[idx]?.status === 'fulfilled' ? results[idx].value : [];
+
+    setStudents(getValue(0));
+    setClassesList(getValue(1));
+    setEnrolments(getValue(2));
+    setAttendanceRecords(getValue(3));
+    setCustomFields(getValue(4));
+    setTransfers(getValue(5));
+    setFamilies(getValue(6));
+    setLockers(getValue(7));
+    setPromotions(getValue(8));
+    setTcs(getValue(9));
+    setLoading(false);
   };
 
   // Custom Fields
@@ -293,6 +311,20 @@ export default function AdminSIS() {
     }
   };
 
+  const totalStudents = students.length;
+  const totalClasses = classesList.length;
+  const totalEnrolments = enrolments.length;
+  const presentCount = attendanceRecords.filter((a: any) => a.status === 'present').length;
+  const attendanceRate = attendanceRecords.length > 0
+    ? Math.round((presentCount / attendanceRecords.length) * 100)
+    : 0;
+
+  const classBreakdown = students.reduce<Record<string, number>>((acc, s) => {
+    const cls = s.class || s.className || s.grade || 'Unassigned';
+    acc[cls] = (acc[cls] || 0) + 1;
+    return acc;
+  }, {});
+
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -302,6 +334,7 @@ export default function AdminSIS() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="flex flex-wrap">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="fields">Custom Fields</TabsTrigger>
           <TabsTrigger value="transfers">Transfers</TabsTrigger>
           <TabsTrigger value="families">Families</TabsTrigger>
@@ -311,6 +344,111 @@ export default function AdminSIS() {
           <TabsTrigger value="promotions">Promotions</TabsTrigger>
           <TabsTrigger value="tc">Transfer Certs</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="overview">
+          {loading ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
+              </div>
+              {[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Users className="w-8 h-8 text-blue-500" />
+                    <div>
+                      <p className="text-2xl font-bold">{totalStudents}</p>
+                      <p className="text-sm text-muted-foreground">Total Students</p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <BarChart3 className="w-8 h-8 text-orange-500" />
+                    <div>
+                      <p className="text-2xl font-bold">{totalClasses}</p>
+                      <p className="text-sm text-muted-foreground">Total Classes</p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <FileText className="w-8 h-8 text-green-500" />
+                    <div>
+                      <p className="text-2xl font-bold">{totalEnrolments}</p>
+                      <p className="text-sm text-muted-foreground">Enrolments</p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="p-4">
+                  <div className="flex items-center gap-3">
+                    <Calendar className="w-8 h-8 text-purple-500" />
+                    <div>
+                      <p className="text-2xl font-bold">{attendanceRecords.length > 0 ? `${attendanceRate}%` : 'No data'}</p>
+                      <p className="text-sm text-muted-foreground">Attendance Rate</p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <Card className="p-4 lg:col-span-2">
+                  <h3 className="font-semibold mb-4">Students ({totalStudents})</h3>
+                  {students.length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">No data</p>
+                  ) : (
+                    <div className="space-y-2 max-h-96 overflow-y-auto">
+                      <div className="grid grid-cols-12 gap-2 text-xs font-medium text-muted-foreground px-2 py-1">
+                        <div className="col-span-3">ID</div>
+                        <div className="col-span-4">Name</div>
+                        <div className="col-span-3">Class</div>
+                        <div className="col-span-2">Status</div>
+                      </div>
+                      {students.slice(0, 50).map((s: any) => (
+                        <div key={s.id} className="grid grid-cols-12 gap-2 items-center px-2 py-2 rounded-lg hover:bg-muted/50 text-sm">
+                          <div className="col-span-3 font-mono text-xs truncate">{s.id}</div>
+                          <div className="col-span-4 font-medium truncate">{s.name || s.firstName + ' ' + (s.lastName || '') || s.email || 'Unknown'}</div>
+                          <div className="col-span-3 truncate">{s.class || s.className || s.grade || '-'}</div>
+                          <div className="col-span-2">
+                            <Badge variant={s.status === 'active' ? 'success' : 'secondary'} className="text-[10px]">
+                              {s.status || 'active'}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                      {students.length > 50 && (
+                        <p className="text-xs text-muted-foreground text-center py-2">
+                          Showing 50 of {students.length} students
+                        </p>
+                      )}
+                    </div>
+                  )}
+                </Card>
+
+                <Card className="p-4">
+                  <h3 className="font-semibold mb-4">Classes</h3>
+                  {Object.keys(classBreakdown).length === 0 ? (
+                    <p className="text-muted-foreground text-center py-8">No data</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {Object.entries(classBreakdown)
+                        .sort(([a], [b]) => a.localeCompare(b))
+                        .map(([cls, count]) => (
+                          <div key={cls} className="flex items-center justify-between">
+                            <span className="text-sm">{cls}</span>
+                            <Badge variant="secondary">{count} student{count !== 1 ? 's' : ''}</Badge>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </Card>
+              </div>
+            </>
+          )}
+        </TabsContent>
 
         <TabsContent value="fields">
           <div className="flex items-center justify-between mb-4">

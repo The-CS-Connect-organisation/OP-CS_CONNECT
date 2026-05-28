@@ -504,7 +504,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5">
+      <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5 scrollbar-thin">
         {sections.map((section) => {
           const isSectionCollapsed = collapsedSections.has(section.label)
           return (
@@ -560,16 +560,11 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-border/50 p-2 space-y-1">
+      <div className="border-t border-border/50 p-2">
         <button onClick={handleLogout} className={cn("flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all w-full", isCollapsed && "justify-center px-2")}>
           <LogOut className="w-4 h-4 flex-shrink-0" />
           {!isCollapsed && <span>Logout</span>}
         </button>
-        {!isCollapsed && (
-          <button onClick={toggle} className="flex items-center justify-center w-full rounded-lg py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-foreground transition-all">
-            <ChevronLeft className="w-3.5 h-3.5" />
-          </button>
-        )}
       </div>
     </div>
   )
@@ -595,7 +590,7 @@ export default function Sidebar() {
 
       {/* Desktop sidebar */}
       <div className="hidden lg:block flex-shrink-0">
-        <motion.aside animate={{ width: isCollapsed ? 64 : 240 }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="h-screen sticky top-0 border-r border-border/50 bg-background overflow-hidden">
+        <motion.aside animate={{ width: isCollapsed ? 64 : 240 }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="h-full sticky top-0 border-r border-border/50 bg-background flex flex-col overflow-hidden">
           {sidebarContent}
         </motion.aside>
       </div>

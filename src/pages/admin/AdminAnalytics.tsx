@@ -1,10 +1,37 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils';
-import { BarChart3, Users, TrendingUp, DollarSign, GraduationCap, Bus, BookOpen, AlertCircle } from 'lucide-react';
+import { BarChart3, Users, TrendingUp, DollarSign, GraduationCap } from 'lucide-react';
+
+interface User {
+  role?: string;
+  class?: string;
+  className?: string;
+  grade?: number;
+  gpa?: number;
+  average?: number;
+}
+
+interface Invoice {
+  amount?: number;
+  status?: string;
+  paid?: boolean;
+}
+
+interface Payment {
+  amount?: number;
+}
+
+interface Expense {
+  amount?: number;
+}
+
+interface AttendanceRecord {
+  status?: string;
+  present?: boolean;
+}
 
 export default function AdminAnalytics() {
   const [loading, setLoading] = useState(true);
@@ -26,16 +53,99 @@ export default function AdminAnalytics() {
   }, []);
 
   const loadStats = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const data = await api.getAdminAnalytics();
-      if (data) setStats(data);
+      const results = await Promise.allSettled([
+        api.getUsers(),
+        api.getInvoices(),
+        api.getPayments(),
+        api.getExpenses(),
+        api.getAttendance(),
+        api.getLeaveRequests(),
+        api.getStaffDirectory(),
+        api.getLibraryCatalogue(),
+        api.getAnnouncements(),
+      ]);
+
+      const [
+        usersResult,
+        invoicesResult,
+        paymentsResult,
+        expensesResult,
+        attendanceResult,
+      ] = results;
+
+      const users: User[] = usersResult.status === 'fulfilled' ? usersResult.value : [];
+      const invoices: Invoice[] = invoicesResult.status === 'fulfilled' ? invoicesResult.value : [];
+      const payments: Payment[] = paymentsResult.status === 'fulfilled' ? paymentsResult.value : [];
+      const expenses: Expense[] = expensesResult.status === 'fulfilled' ? expensesResult.value : [];
+      const attendance: AttendanceRecord[] = attendanceResult.status === 'fulfilled' ? attendanceResult.value : [];
+
+      const students = users.filter(u => u.role?.toLowerCase() === 'student');
+      const teachers = users.filter(u => u.role?.toLowerCase() === 'teacher');
+
+      const totalStudents = students.length;
+      const totalTeachers = teachers.length;
+
+      const totalPayments = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
+      const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+
+      let collected = 0;
+      let pending = 0;
+      invoices.forEach(inv => {
+        if (inv.status?.toLowerCase() === 'paid' || inv.paid) {
+          collected += inv.amount || 0;
+        } else {
+          pending += inv.amount || 0;
+        }
+      });
+
+      let avgAttendance = 0;
+      if (attendance.length > 0) {
+        const present = attendance.filter(a => a.status?.toLowerCase() === 'present' || a.present).length;
+        avgAttendance = Math.round((present / attendance.length) * 100);
+      }
+
+      const classMap = new Map<string, number[]>();
+      students.forEach(s => {
+        const cls = s.class || s.className || '';
+        const score = s.gpa || s.average || s.grade || 0;
+        if (cls && score) {
+          if (!classMap.has(cls)) classMap.set(cls, []);
+          classMap.get(cls)!.push(Number(score));
+        }
+      });
+      const performanceByClass = Array.from(classMap.entries()).map(([cls, scores]) => ({
+        class: cls,
+        avg: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
+      }));
+
+      const avgGpa = performanceByClass.length > 0
+        ? Math.round(performanceByClass.reduce((s, c) => s + c.avg, 0) / performanceByClass.length)
+        : 0;
+
+      setStats({
+        totalStudents,
+        totalTeachers,
+        avgAttendance,
+        avgGpa,
+        revenue: totalPayments,
+        expenses: totalExpenses,
+        studentTrend: [],
+        performanceByClass,
+        attendanceTrend: [],
+        feeCollection: { collected, pending },
+      });
     } catch {
-      // error
+      // data remains 0s
     } finally {
       setLoading(false);
     }
   };
+
+  const totalFees = stats.feeCollection.collected + stats.feeCollection.pending;
+  const collectedPercent = totalFees > 0 ? (stats.feeCollection.collected / totalFees) * 100 : 0;
+  const pendingPercent = totalFees > 0 ? (stats.feeCollection.pending / totalFees) * 100 : 0;
 
   return (
     <div className="p-6 space-y-6">
@@ -113,43 +223,51 @@ export default function AdminAnalytics() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="p-4">
               <h3 className="font-semibold mb-4">Performance by Class</h3>
-              <div className="space-y-3">
-                {stats.performanceByClass.map(cls => (
-                  <div key={cls.class} className="flex items-center justify-between">
-                    <span className="text-sm">{cls.class}</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-32 h-2 bg-accent rounded-full">
-                        <div className="h-full bg-orange-500 rounded-full" style={{ width: `${cls.avg}%` }} />
+              {stats.performanceByClass.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No data</p>
+              ) : (
+                <div className="space-y-3">
+                  {stats.performanceByClass.map(cls => (
+                    <div key={cls.class} className="flex items-center justify-between">
+                      <span className="text-sm">{cls.class}</span>
+                      <div className="flex items-center gap-2">
+                        <div className="w-32 h-2 bg-accent rounded-full">
+                          <div className="h-full bg-orange-500 rounded-full" style={{ width: `${cls.avg}%` }} />
+                        </div>
+                        <span className="text-sm font-medium">{cls.avg}%</span>
                       </div>
-                      <span className="text-sm font-medium">{cls.avg}%</span>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </Card>
 
             <Card className="p-4">
               <h3 className="font-semibold mb-4">Fee Collection</h3>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Collected</span>
-                    <span className="font-medium text-green-500">${stats.feeCollection.collected.toLocaleString()}</span>
+              {totalFees === 0 ? (
+                <p className="text-sm text-muted-foreground">No data</p>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Collected</span>
+                      <span className="font-medium text-green-500">${stats.feeCollection.collected.toLocaleString()}</span>
+                    </div>
+                    <div className="w-full h-3 bg-accent rounded-full">
+                      <div className="h-full bg-green-500 rounded-full" style={{ width: `${collectedPercent}%` }} />
+                    </div>
                   </div>
-                  <div className="w-full h-3 bg-accent rounded-full">
-                    <div className="h-full bg-green-500 rounded-full" style={{ width: `${(stats.feeCollection.collected / (stats.feeCollection.collected + stats.feeCollection.pending)) * 100}%` }} />
+                  <div>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span>Pending</span>
+                      <span className="font-medium text-red-500">${stats.feeCollection.pending.toLocaleString()}</span>
+                    </div>
+                    <div className="w-full h-3 bg-accent rounded-full">
+                      <div className="h-full bg-red-500 rounded-full" style={{ width: `${pendingPercent}%` }} />
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Pending</span>
-                    <span className="font-medium text-red-500">${stats.feeCollection.pending.toLocaleString()}</span>
-                  </div>
-                  <div className="w-full h-3 bg-accent rounded-full">
-                    <div className="h-full bg-red-500 rounded-full" style={{ width: `${(stats.feeCollection.pending / (stats.feeCollection.collected + stats.feeCollection.pending)) * 100}%` }} />
-                  </div>
-                </div>
-              </div>
+              )}
             </Card>
           </div>
         </>

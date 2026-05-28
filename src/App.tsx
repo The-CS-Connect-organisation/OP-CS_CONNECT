@@ -20,7 +20,7 @@ import CoordinatorDashboard from './pages/coordinator/Dashboard'
 import DriverDashboard from './pages/driver/Dashboard'
 import DashboardLayout from './components/layout/DashboardLayout'
 import { NotFoundPage } from './components/ui/404-page-not-found'
-import StarWarsToggle from './components/ui/star-wars-toggle-switch'
+
 import GenericPage from './components/ui/GenericPage'
 import TeacherMarkAttendance from './pages/teacher/MarkAttendance'
 import TeacherGrading from './pages/teacher/Grading'
@@ -130,6 +130,7 @@ import AdminFoodService from './pages/admin/AdminFoodService'
 import AdminAthletics from './pages/admin/AdminAthletics'
 import AdminAlumni from './pages/admin/AdminAlumni'
 import AdminPlatform from './pages/admin/AdminPlatform'
+import CreateAccount from './pages/admin/CreateAccount'
 // Manager Phase 3
 import ManagerCounselling from './pages/manager/ManagerCounselling'
 import ManagerHealth from './pages/manager/ManagerHealth'
@@ -186,9 +187,6 @@ function App() {
       {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
       {!showSplash && (
         <>
-        <div className="fixed top-4 right-4 z-[9999] scale-[0.4] origin-top-right">
-          <StarWarsToggle checked={isDark} onChange={() => toggleTheme()} />
-        </div>
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/photos" element={<Photos />} />
@@ -291,6 +289,7 @@ function App() {
             <Route path="athletics" element={<AdminAthletics />} />
             <Route path="alumni" element={<AdminAlumni />} />
             <Route path="platform" element={<AdminPlatform />} />
+            <Route path="create-account" element={<CreateAccount />} />
           </Route>
 
           {/* PARENT */}
