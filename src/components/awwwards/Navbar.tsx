@@ -24,13 +24,21 @@ const NavBar = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
 
-  // Audio - element ready, Hero plays it when video starts
+  // Audio - play on first tap/click
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
     audio.loop = true;
     audio.volume = 1.0;
-    audio.load();
+
+    const start = () => {
+      audio.play().catch(() => {});
+      document.removeEventListener("click", start);
+      document.removeEventListener("touchstart", start);
+    };
+
+    document.addEventListener("click", start);
+    document.addEventListener("touchstart", start);
   }, []);
 
   // Navbar: visible on hero only, hides immediately when past hero,
@@ -85,7 +93,7 @@ const NavBar = () => {
 
   return (
     <>
-      <audio ref={audioRef} src="/audio/loop.mp3" loop preload="auto" />
+      <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/loop.mp3`} loop preload="auto" />
       <div
         ref={navRef}
         className="fixed inset-x-0 top-0 z-50 h-16 bg-white/10 backdrop-blur-md border-b border-transparent"
@@ -94,7 +102,7 @@ const NavBar = () => {
           <nav className="flex size-full items-center justify-between px-4 md:px-8">
             <div className="flex items-center gap-3">
               <button onClick={() => navigate("/")} className="flex items-center gap-3">
-                <img src="/img/csfeviconbgfreeedition.png" alt="CS Connect" className="w-7 h-7 md:w-8 md:h-8 object-contain" />
+                <img src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`} alt="CS Connect" className="w-7 h-7 md:w-8 md:h-8 object-contain" />
                 <span className="font-zentry text-base md:text-lg font-black uppercase tracking-wider text-white">
                   CS Connect
                 </span>

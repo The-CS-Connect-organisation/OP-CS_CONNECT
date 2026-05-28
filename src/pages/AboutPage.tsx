@@ -27,7 +27,7 @@ export default function AboutPage() {
         </button>
 
         <div className="flex items-center gap-4 mb-12">
-          <img src="/img/csfeviconbgfreeedition.png" alt="CS Connect" className="w-10 h-10" />
+          <img src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`} alt="CS Connect" className="w-10 h-10" />
           <div>
             <h1 className="font-zentry text-3xl font-black uppercase tracking-wider text-gray-900">
               CS Connect

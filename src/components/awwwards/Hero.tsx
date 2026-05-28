@@ -69,10 +69,6 @@ const Hero = () => {
             muted
             className="absolute left-0 top-0 size-full object-cover object-center"
             onLoadedData={handleVideoLoad}
-            onPlaying={() => {
-              const a = document.querySelector<HTMLAudioElement>('audio[loop]');
-              if (a) { a.volume = 1.0; a.play().catch(() => {}); }
-            }}
           />
 
           <h1 className="special-font hero-heading absolute bottom-5 right-5 z-40 text-blue-75">

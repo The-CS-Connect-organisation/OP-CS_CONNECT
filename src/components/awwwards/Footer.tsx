@@ -4,7 +4,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col items-center">
         <div className="flex items-center gap-3 mb-3">
           <img
-            src="/img/csfeviconbgfreeedition.png"
+            src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`}
             alt="Cornerstone School"
             className="h-10 w-10 object-contain brightness-0 invert"
           />
