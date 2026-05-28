@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import AIChatPanel from '@/components/ai/AIChatPanel'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/Progress'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { useAuthStore } from '@/lib/store'
+import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import {
   MapPin, Bus, Users, Fuel, Shield, Sparkles,
@@ -19,11 +20,6 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, LineChart, Line
 } from 'recharts'
-import { getRoutes, getStudents } from '@/lib/api';
-import useSWR from 'swr';
-
-const { data: routes, error: routesError } = useSWR('routes', getRoutes);
-const { data: students, error: studentsError } = useSWR('students', () => getStudents());
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -41,6 +37,16 @@ export default function DriverDashboard() {
   const [showAI, setShowAI] = useState(false)
   const [boardedStudents, setBoardedStudents] = useState<Set<string>>(new Set(['s1', 's2']))
   const [sosActive, setSosActive] = useState(false)
+  const [routes, setRoutes] = useState<any[]>([])
+  const [students, setStudents] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    Promise.allSettled([
+      api.getRoutes().then((d: any) => setRoutes(Array.isArray(d) ? d : [])).catch(() => {}),
+      api.getStudents().then((d: any) => setStudents(Array.isArray(d) ? d : [])).catch(() => {}),
+    ]).then(() => setLoading(false))
+  }, [])
 
   const toggleBoarded = (id: string) => {
     setBoardedStudents(prev => {
@@ -51,8 +57,17 @@ export default function DriverDashboard() {
     })
   }
 
-  if (!routes || !students) return <div>Loading...</div>;
-if (routesError || studentsError) return <div>Error loading data</div>;
+  const fuelData = [
+    { week: 'Mon', usage: 45, efficiency: 4.2 },
+    { week: 'Tue', usage: 52, efficiency: 3.8 },
+    { week: 'Wed', usage: 48, efficiency: 4.0 },
+    { week: 'Thu', usage: 38, efficiency: 4.5 },
+    { week: 'Fri', usage: 55, efficiency: 3.6 },
+    { week: 'Sat', usage: 42, efficiency: 4.1 },
+    { week: 'Sun', usage: 35, efficiency: 4.8 },
+  ]
+
+  if (loading) return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading dashboard...</p></div>;
 
   const totalStudents = students.length;
   const boardedCount = boardedStudents.size;
@@ -74,7 +89,7 @@ if (routesError || studentsError) return <div>Error loading data</div>;
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mt-2 max-w-lg">
-                Currently at <span className="text-orange-500 font-medium">{routes[0].stops.find(s => s.status === 'current')?.name}</span>. {boardedCount}/{totalStudents} students boarded. Next stop: {routes[0].stops.find(s => s.status === 'upcoming')?.name}.
+                Currently at <span className="text-orange-500 font-medium">{routes[0].stops.find((s: any) => s.status === 'current')?.name}</span>. {boardedCount}/{totalStudents} students boarded. Next stop: {routes[0].stops.find((s: any) => s.status === 'upcoming')?.name}.
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -143,7 +158,7 @@ if (routesError || studentsError) return <div>Error loading data</div>;
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
-                  {routes[0].stops.map((stop, i) => (
+                  {routes[0].stops.map((stop: any, i: number) => (
                     <motion.div
                       key={stop.id}
                       initial={{ opacity: 0, x: -10 }}
