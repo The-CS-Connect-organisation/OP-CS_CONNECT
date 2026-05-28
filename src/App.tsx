@@ -1,10 +1,10 @@
 
-import { useState, useCallback, lazy, Suspense } from 'react'
+import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore, useThemeStore } from './lib/store'
-import SplashScreen from './components/ui/SplashScreen'
 import Login from './pages/auth/LoginAnimated'
 import Landing from './pages/Landing'
+import AboutPage from './pages/AboutPage'
 import Photos from './pages/Photos'
 import StudentDashboard from './pages/student/Dashboard'
 import StudentAssignments from './pages/student/Assignments'
@@ -159,14 +159,6 @@ function RouteMissRedirect() {
 function App() {
   const { isAuthenticated, user } = useAuthStore()
   const { isDark, toggleTheme } = useThemeStore()
-  const [showSplash, setShowSplash] = useState(() => {
-    return !sessionStorage.getItem('eduvault-splash-shown')
-  })
-
-  const handleSplashComplete = useCallback(() => {
-    sessionStorage.setItem('eduvault-splash-shown', 'true')
-    setShowSplash(false)
-  }, [])
 
   const getDashboardRoute = () => {
     if (!user) return '/login'
@@ -191,11 +183,9 @@ function App() {
 
   return (
     <>
-      {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
-      {!showSplash && (
-        <>
-        <Routes>
-          <Route path="/" element={<Landing />} />
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/about" element={<AboutPage />} />
           <Route path="/photos" element={<Photos />} />
           <Route path="/login" element={
             isAuthenticated ? <Navigate to={getDashboardRoute()} replace /> : <Login />
@@ -389,7 +379,6 @@ function App() {
           <Route path="/404page" element={<NotFoundPage />} />
           <Route path="*" element={<RouteMissRedirect />} />
         </Routes>
-        </>)}
     </>
   )
 }
