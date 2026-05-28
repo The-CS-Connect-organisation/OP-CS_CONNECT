@@ -30,7 +30,6 @@ const NavBar = () => {
     if (!audio) return;
 
     audio.loop = true;
-    audio.muted = true;
     audio.volume = 1.0;
     audio.play().catch(() => {});
 
@@ -101,7 +100,10 @@ const NavBar = () => {
 
   return (
     <>
-      <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/loop2.0.m4a`} loop preload="auto" />
+      <audio ref={audioRef} loop muted preload="auto">
+        <source src={`${import.meta.env.BASE_URL}audio/loop2.0.m4a`} type="audio/mp4" />
+        <source src={`${import.meta.env.BASE_URL}audio/loop.mp3`} type="audio/mpeg" />
+      </audio>
       <div
         ref={navRef}
         className="fixed inset-x-0 top-0 z-50 h-16 bg-white/10 backdrop-blur-md border-b border-transparent"
