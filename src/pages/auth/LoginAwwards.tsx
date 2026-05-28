@@ -134,15 +134,15 @@ export default function Login() {
           <motion.div initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8 }} className="text-center">
             <motion.div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 mb-8 backdrop-blur-xl" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.3 }}>
               <Sparkles className="w-4 h-4 text-orange-500" />
-              <span className="text-xs font-medium text-orange-400">AI-Powered School Management</span>
+              <span className="text-xs font-medium text-orange-400">AI-Powered Learning Platform</span>
             </motion.div>
 
             <motion.h1 className="special-font hero-heading text-orange-400" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.8 }}>
-              EDU<b>V</b>AULT
+              C<b>o</b>rnerstone
             </motion.h1>
 
             <motion.p className="mt-4 max-w-64 font-robert-regular text-orange-200/60 text-lg" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}>
-              Redefining School ERP <br /> with AI at Every Step
+              Redefining Education <br /> with AI at Every Step
             </motion.p>
 
             <motion.div className="mt-8 flex items-center justify-center gap-3" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
@@ -183,7 +183,7 @@ export default function Login() {
         <div className="container mx-auto px-3 md:px-10">
           <div className="px-5 py-32">
             <p className="font-circular-web text-lg text-orange-400">Into the AI Layer</p>
-            <p className="max-w-md font-circular-web text-lg text-white/50">Immerse yourself in a rich ecosystem where AI powers every aspect of school management</p>
+            <p className="max-w-md font-circular-web text-lg text-white/50">Immerse yourself in a rich ecosystem where AI powers every aspect of school life</p>
           </div>
 
           <BentoTilt className="border-hsla relative mb-7 h-96 w-full overflow-hidden rounded-md md:h-[65vh]">
@@ -253,7 +253,7 @@ export default function Login() {
             choose your account
           </p>
 
-          <AnimatedTitle title="Sign in t<b>o</b> <br /> EduV<b>a</b>ult AI" containerClass="mt-5 pointer-events-none mix-blend-difference relative z-10" />
+          <AnimatedTitle title="Sign in t<b>o</b> <br /> C<b>o</b>rnerstone" containerClass="mt-5 pointer-events-none mix-blend-difference relative z-10" />
 
           <div className="mt-16 w-full max-w-4xl px-6">
             {/* Account cards grid */}

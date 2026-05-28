@@ -334,4 +334,380 @@ export const api = {
   createClubPost: (clubId: string, data: any) => apiFetch(`/clubs/${clubId}/posts`, { method: 'POST', body: JSON.stringify(data) }),
   toggleClubPostLike: (clubId: string, postId: string, userId: string) =>
     apiFetch(`/clubs/${clubId}/posts/${postId}/like`, { method: 'POST', body: JSON.stringify({ userId }) }),
+
+  // ========== PHASE 1 + 2 API METHODS ==========
+
+  // Period Attendance
+  markPeriodAttendance: (data: any) => apiFetch('/attendance/period/mark', { method: 'POST', body: JSON.stringify(data) }),
+  getPeriodAttendance: (className: string, date: string) => apiFetch(`/attendance/period/${className}/${date}`),
+  getPeriodAttendanceByPeriod: (className: string, date: string, period: string) => apiFetch(`/attendance/period/${className}/${date}/${period}`),
+
+  // Attendance Policies
+  getAttendancePolicies: () => apiFetch('/attendance/policies'),
+  createAttendancePolicy: (data: any) => apiFetch('/attendance/policies', { method: 'POST', body: JSON.stringify(data) }),
+  updateAttendancePolicy: (id: string, data: any) => apiFetch(`/attendance/policies/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // Teacher Attendance
+  markTeacherAttendance: (data: any) => apiFetch('/attendance/teacher/mark', { method: 'POST', body: JSON.stringify(data) }),
+  getTeacherAttendance: (date: string) => apiFetch(`/attendance/teacher/${date}`),
+  getTeacherAttendanceSummary: (teacherId: string) => apiFetch(`/attendance/teacher/summary/${teacherId}`),
+
+  // Attendance Reports
+  getAttendanceReport: (className: string, month?: string) => {
+    const query = month ? `?month=${month}` : '';
+    return apiFetch(`/attendance/reports/${className}${query}`);
+  },
+
+  // Absence Requests
+  getAbsenceRequests: () => apiFetch('/attendance/absence-requests'),
+  createAbsenceRequest: (data: any) => apiFetch('/attendance/absence-requests', { method: 'POST', body: JSON.stringify(data) }),
+  reviewAbsenceRequest: (id: string, action: 'approve' | 'reject', reviewedBy: string) =>
+    apiFetch(`/attendance/absence-requests/${id}/${action}`, { method: 'PUT', body: JSON.stringify({ reviewedBy }) }),
+
+  // Timetable Generator
+  generateTimetable: (data: any) => apiFetch('/scheduling/timetable/generate', { method: 'POST', body: JSON.stringify(data) }),
+  getGeneratedTimetable: (className: string) => apiFetch(`/scheduling/timetable/${className}`),
+  updateTimetableEntry: (className: string, day: string, periodIdx: number, data: any) =>
+    apiFetch(`/scheduling/timetable/${className}/${day}/${periodIdx}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // Room Booking
+  getRoomBookings: (date?: string) => {
+    const query = date ? `?date=${date}` : '';
+    return apiFetch(`/scheduling/rooms${query}`);
+  },
+  createRoomBooking: (data: any) => apiFetch('/scheduling/rooms', { method: 'POST', body: JSON.stringify(data) }),
+  updateRoomBooking: (id: string, data: any) => apiFetch(`/scheduling/rooms/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteRoomBooking: (id: string) => apiFetch(`/scheduling/rooms/${id}`, { method: 'DELETE' }),
+  getRooms: () => apiFetch('/scheduling/rooms/list'),
+
+  // Bell Schedules
+  getBellSchedules: () => apiFetch('/scheduling/bell-schedules'),
+  createBellSchedule: (data: any) => apiFetch('/scheduling/bell-schedules', { method: 'POST', body: JSON.stringify(data) }),
+  updateBellSchedule: (id: string, data: any) => apiFetch(`/scheduling/bell-schedules/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteBellSchedule: (id: string) => apiFetch(`/scheduling/bell-schedules/${id}`, { method: 'DELETE' }),
+
+  // Class Coverage
+  getCoverageRequests: () => apiFetch('/scheduling/coverage'),
+  createCoverageRequest: (data: any) => apiFetch('/scheduling/coverage', { method: 'POST', body: JSON.stringify(data) }),
+  updateCoverageRequest: (id: string, data: any) => apiFetch(`/scheduling/coverage/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // Subject Choices
+  getSubjectChoices: (studentId: string) => apiFetch(`/scheduling/subject-choices/${studentId}`),
+  setSubjectChoices: (studentId: string, data: any) => apiFetch(`/scheduling/subject-choices/${studentId}`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // Co-teaching
+  getCoTeaching: () => apiFetch('/scheduling/co-teaching'),
+  createCoTeaching: (data: any) => apiFetch('/scheduling/co-teaching', { method: 'POST', body: JSON.stringify(data) }),
+
+  // SIS - Custom Fields
+  getCustomFields: (entityType: string) => apiFetch(`/sis/custom-fields/${entityType}`),
+  setCustomFields: (entityType: string, data: any) => apiFetch(`/sis/custom-fields/${entityType}`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // SIS - Transfers
+  getStudentTransfers: () => apiFetch('/sis/transfers'),
+  createStudentTransfer: (data: any) => apiFetch('/sis/transfers', { method: 'POST', body: JSON.stringify(data) }),
+  updateStudentTransfer: (id: string, data: any) => apiFetch(`/sis/transfers/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // SIS - Families
+  getFamilies: () => apiFetch('/sis/families'),
+  createFamily: (data: any) => apiFetch('/sis/families', { method: 'POST', body: JSON.stringify(data) }),
+  updateFamily: (id: string, data: any) => apiFetch(`/sis/families/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // SIS - Lockers
+  getLockers: () => apiFetch('/sis/lockers'),
+  assignLocker: (data: any) => apiFetch('/sis/lockers', { method: 'POST', body: JSON.stringify(data) }),
+
+  // SIS - Student Notes
+  getStudentNotes: (studentId: string) => apiFetch(`/sis/student-notes/${studentId}`),
+  createStudentNote: (studentId: string, data: any) => apiFetch(`/sis/student-notes/${studentId}`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // SIS - Graduation / Promotions / TC
+  getGraduationStatus: (studentId: string) => apiFetch(`/sis/graduation/${studentId}`),
+  setGraduationStatus: (studentId: string, data: any) => apiFetch(`/sis/graduation/${studentId}`, { method: 'POST', body: JSON.stringify(data) }),
+  getPromotions: () => apiFetch('/sis/promotions'),
+  createPromotion: (data: any) => apiFetch('/sis/promotions', { method: 'POST', body: JSON.stringify(data) }),
+  getTransferCertificates: () => apiFetch('/sis/tc'),
+  issueTransferCertificate: (data: any) => apiFetch('/sis/tc', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Exams - Results Workflow
+  getExamResults: (examId: string) => apiFetch(`/exams/results/${examId}`),
+  enterExamResult: (examId: string, data: any) => apiFetch(`/exams/results/${examId}`, { method: 'POST', body: JSON.stringify(data) }),
+  publishExamResults: (examId: string) => apiFetch(`/exams/results/${examId}/publish`, { method: 'POST' }),
+
+  // Exams - Grace Marks
+  applyGraceMarks: (examId: string, data: any) => apiFetch(`/exams/grace/${examId}`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // Exams - Online Exams
+  createOnlineExam: (data: any) => apiFetch('/exams/online', { method: 'POST', body: JSON.stringify(data) }),
+  getOnlineExam: (id: string) => apiFetch(`/exams/online/${id}`),
+  submitOnlineExam: (id: string, data: any) => apiFetch(`/exams/online/${id}/submit`, { method: 'POST', body: JSON.stringify(data) }),
+  gradeOnlineExam: (id: string, studentId: string) => apiFetch(`/exams/online/${id}/grade/${studentId}`, { method: 'POST' }),
+
+  // Exams - Analytics
+  getExamAnalytics: (examId: string) => apiFetch(`/exams/analytics/${examId}`),
+
+  // Classroom - Lesson Plans
+  getLessonPlans: (classId?: string) => {
+    const query = classId ? `?class=${classId}` : '';
+    return apiFetch(`/classroom/lesson-plans${query}`);
+  },
+  createLessonPlan: (data: any) => apiFetch('/classroom/lesson-plans', { method: 'POST', body: JSON.stringify(data) }),
+  updateLessonPlan: (id: string, data: any) => apiFetch(`/classroom/lesson-plans/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteLessonPlan: (id: string) => apiFetch(`/classroom/lesson-plans/${id}`, { method: 'DELETE' }),
+
+  // Classroom - Rubrics
+  getRubrics: () => apiFetch('/classroom/rubrics'),
+  createRubric: (data: any) => apiFetch('/classroom/rubrics', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Classroom - Peer Review
+  getPeerReviews: (assignmentId: string) => apiFetch(`/classroom/peer-review/${assignmentId}`),
+  submitPeerReview: (assignmentId: string, data: any) => apiFetch(`/classroom/peer-review/${assignmentId}`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // Classroom - Hall Passes
+  getHallPasses: () => apiFetch('/classroom/hall-passes'),
+  createHallPass: (data: any) => apiFetch('/classroom/hall-passes', { method: 'POST', body: JSON.stringify(data) }),
+  endHallPass: (id: string) => apiFetch(`/classroom/hall-passes/${id}/end`, { method: 'PUT' }),
+
+  // Classroom - Progress Notes
+  getProgressNotes: (studentId: string) => apiFetch(`/classroom/progress-notes/${studentId}`),
+  createProgressNote: (studentId: string, data: any) => apiFetch(`/classroom/progress-notes/${studentId}`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // Classroom - Programs
+  getPrograms: () => apiFetch('/classroom/programs'),
+  createProgram: (data: any) => apiFetch('/classroom/programs', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Classroom - Courses
+  getCourses: () => apiFetch('/classroom/courses'),
+  createCourse: (data: any) => apiFetch('/classroom/courses', { method: 'POST', body: JSON.stringify(data) }),
+  updateCourse: (id: string, data: any) => apiFetch(`/classroom/courses/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // Classroom - Lessons
+  getLessons: (courseId: string) => apiFetch(`/classroom/lessons/${courseId}`),
+  createLesson: (courseId: string, data: any) => apiFetch(`/classroom/lessons/${courseId}`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // Classroom - Certificates
+  getCertificates: (studentId: string) => apiFetch(`/classroom/certificates/${studentId}`),
+  issueCertificate: (data: any) => apiFetch('/classroom/certificates', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Classroom - Exercises
+  getExercises: (subjectId?: string) => {
+    const query = subjectId ? `?subject=${subjectId}` : '';
+    return apiFetch(`/classroom/exercises${query}`);
+  },
+  createExercise: (data: any) => apiFetch('/classroom/exercises', { method: 'POST', body: JSON.stringify(data) }),
+  submitExercise: (id: string, data: any) => apiFetch(`/classroom/exercises/${id}/submit`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // Finance - Chart of Accounts
+  getChartOfAccounts: () => apiFetch('/finance/accounts'),
+  createAccount: (data: any) => apiFetch('/finance/accounts', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Finance - General Ledger
+  getJournalEntries: () => apiFetch('/finance/journal'),
+  createJournalEntry: (data: any) => apiFetch('/finance/journal', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Finance - Budgets
+  getBudgets: () => apiFetch('/finance/budgets'),
+  createBudget: (data: any) => apiFetch('/finance/budgets', { method: 'POST', body: JSON.stringify(data) }),
+  updateBudget: (id: string, data: any) => apiFetch(`/finance/budgets/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // Finance - Invoices
+  getInvoices: (studentId?: string) => {
+    const query = studentId ? `?studentId=${studentId}` : '';
+    return apiFetch(`/finance/invoices${query}`);
+  },
+  getInvoice: (id: string) => apiFetch(`/finance/invoices/${id}`),
+  createInvoice: (data: any) => apiFetch('/finance/invoices', { method: 'POST', body: JSON.stringify(data) }),
+  updateInvoice: (id: string, data: any) => apiFetch(`/finance/invoices/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteInvoice: (id: string) => apiFetch(`/finance/invoices/${id}`, { method: 'DELETE' }),
+  downloadInvoicePdf: (id: string) => `${API_BASE}/finance/invoices/${id}/pdf`,
+  sendInvoice: (id: string) => apiFetch(`/finance/invoices/${id}/send`, { method: 'POST' }),
+  recordInvoicePayment: (id: string, data: any) => apiFetch(`/finance/invoices/${id}/pay`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // Finance - Quotes
+  getQuotes: () => apiFetch('/finance/quotes'),
+  createQuote: (data: any) => apiFetch('/finance/quotes', { method: 'POST', body: JSON.stringify(data) }),
+  convertQuoteToInvoice: (id: string) => apiFetch(`/finance/quotes/${id}/convert`, { method: 'POST' }),
+
+  // Finance - Payments
+  getPayments: (params?: Record<string, string>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiFetch(`/finance/payments${query}`);
+  },
+  createPayment: (data: any) => apiFetch('/finance/payments', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Finance - Expenses
+  getExpenses: (params?: Record<string, string>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiFetch(`/finance/expenses${query}`);
+  },
+  createExpense: (data: any) => apiFetch('/finance/expenses', { method: 'POST', body: JSON.stringify(data) }),
+  updateExpense: (id: string, data: any) => apiFetch(`/finance/expenses/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  approveExpense: (id: string, approvedBy: string) => apiFetch(`/finance/expenses/${id}/approve`, { method: 'POST', body: JSON.stringify({ approvedBy }) }),
+
+  // Finance - Concessions
+  getConcessions: () => apiFetch('/finance/concessions'),
+  createConcession: (data: any) => apiFetch('/finance/concessions', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Finance - Payment Plans
+  getPaymentPlans: () => apiFetch('/finance/payment-plans'),
+  createPaymentPlan: (data: any) => apiFetch('/finance/payment-plans', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Finance - Financial Aid
+  getFinancialAid: () => apiFetch('/finance/financial-aid'),
+  createFinancialAid: (data: any) => apiFetch('/finance/financial-aid', { method: 'POST', body: JSON.stringify(data) }),
+  approveFinancialAid: (id: string, approvedBy: string) => apiFetch(`/finance/financial-aid/${id}/approve`, { method: 'POST', body: JSON.stringify({ approvedBy }) }),
+
+  // Finance - Late Fees
+  getLateFees: () => apiFetch('/finance/late-fees'),
+  createLateFee: (data: any) => apiFetch('/finance/late-fees', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Finance - Procurement
+  getProcurementOrders: () => apiFetch('/finance/procurement'),
+  createProcurementOrder: (data: any) => apiFetch('/finance/procurement', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Finance - Recurring Invoices
+  getRecurringInvoices: () => apiFetch('/finance/recurring'),
+  createRecurringInvoice: (data: any) => apiFetch('/finance/recurring', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Finance - Fee Automation
+  getFeeAutomation: () => apiFetch('/finance/fee-automation'),
+  createFeeAutomation: (data: any) => apiFetch('/finance/fee-automation', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Finance - Spending Analytics
+  getSpendingAnalytics: (month?: string) => {
+    const query = month ? `?month=${month}` : '';
+    return apiFetch(`/finance/spending-analytics${query}`);
+  },
+
+  // HR - Staff Directory
+  getStaffDirectory: () => apiFetch('/hr/staff'),
+  createStaff: (data: any) => apiFetch('/hr/staff', { method: 'POST', body: JSON.stringify(data) }),
+  updateStaff: (id: string, data: any) => apiFetch(`/hr/staff/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // HR - Positions
+  getStaffPositions: () => apiFetch('/hr/positions'),
+  createStaffPosition: (data: any) => apiFetch('/hr/positions', { method: 'POST', body: JSON.stringify(data) }),
+
+  // HR - Leave
+  getStaffLeave: (staffId?: string) => {
+    const query = staffId ? `?staffId=${staffId}` : '';
+    return apiFetch(`/hr/leave${query}`);
+  },
+  createStaffLeave: (data: any) => apiFetch('/hr/leave', { method: 'POST', body: JSON.stringify(data) }),
+  approveStaffLeave: (id: string, approvedBy: string) => apiFetch(`/hr/leave/${id}/approve`, { method: 'POST', body: JSON.stringify({ approvedBy }) }),
+
+  // HR - Certifications
+  getCertifications: (staffId: string) => apiFetch(`/hr/certifications/${staffId}`),
+  createCertification: (staffId: string, data: any) => apiFetch(`/hr/certifications/${staffId}`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // HR - Training
+  getTrainingSessions: () => apiFetch('/hr/training'),
+  createTrainingSession: (data: any) => apiFetch('/hr/training', { method: 'POST', body: JSON.stringify(data) }),
+
+  // HR - Appraisals
+  getAppraisals: (staffId: string) => apiFetch(`/hr/appraisals/${staffId}`),
+  createAppraisal: (staffId: string, data: any) => apiFetch(`/hr/appraisals/${staffId}`, { method: 'POST', body: JSON.stringify(data) }),
+
+  // HR - Recruitment
+  getRecruitments: () => apiFetch('/hr/recruitment'),
+  createRecruitment: (data: any) => apiFetch('/hr/recruitment', { method: 'POST', body: JSON.stringify(data) }),
+  updateRecruitment: (id: string, data: any) => apiFetch(`/hr/recruitment/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // HR - Onboarding
+  getOnboardingTasks: () => apiFetch('/hr/onboarding'),
+  createOnboardingTask: (data: any) => apiFetch('/hr/onboarding', { method: 'POST', body: JSON.stringify(data) }),
+
+  // HR - Payroll
+  getPayroll: (month?: string) => {
+    const query = month ? `?month=${month}` : '';
+    return apiFetch(`/hr/payroll${query}`);
+  },
+  createPayrollEntry: (data: any) => apiFetch('/hr/payroll', { method: 'POST', body: JSON.stringify(data) }),
+  processPayroll: (month: string) => apiFetch(`/hr/payroll/process/${month}`, { method: 'POST' }),
+
+  // Library - Catalogue
+  getLibraryCatalogue: () => apiFetch('/library/catalogue'),
+  createLibraryItem: (data: any) => apiFetch('/library/catalogue', { method: 'POST', body: JSON.stringify(data) }),
+  updateLibraryItem: (id: string, data: any) => apiFetch(`/library/catalogue/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteLibraryItem: (id: string) => apiFetch(`/library/catalogue/${id}`, { method: 'DELETE' }),
+
+  // Library - Holds
+  getHolds: () => apiFetch('/library/holds'),
+  createHold: (data: any) => apiFetch('/library/holds', { method: 'POST', body: JSON.stringify(data) }),
+  fulfillHold: (id: string) => apiFetch(`/library/holds/${id}/fulfill`, { method: 'POST' }),
+
+  // Library - Fines
+  getFines: () => apiFetch('/library/fines'),
+  createFine: (data: any) => apiFetch('/library/fines', { method: 'POST', body: JSON.stringify(data) }),
+  payFine: (id: string) => apiFetch(`/library/fines/${id}/pay`, { method: 'POST' }),
+
+  // Library - Class Sets
+  getClassSets: () => apiFetch('/library/class-sets'),
+  createClassSet: (data: any) => apiFetch('/library/class-sets', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Library - Reading Logs
+  getReadingLogs: (studentId: string) => apiFetch(`/library/reading-logs/${studentId}`),
+  createReadingLog: (data: any) => apiFetch('/library/reading-logs', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Library - Programmes
+  getReadingProgrammes: () => apiFetch('/library/programmes'),
+  createReadingProgramme: (data: any) => apiFetch('/library/programmes', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Library - Reviews
+  getBookReviews: (bookId: string) => apiFetch(`/library/reviews/${bookId}`),
+  createBookReview: (data: any) => apiFetch('/library/reviews', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Library - Interlibrary Loans
+  getInterlibraryLoans: () => apiFetch('/library/ill'),
+  createInterlibraryLoan: (data: any) => apiFetch('/library/ill', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Comms - Push
+  getPushNotifications: () => apiFetch('/comms/push'),
+  sendPushNotification: (data: any) => apiFetch('/comms/push', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Comms - Emergency Alerts
+  getEmergencyAlerts: () => apiFetch('/comms/emergency'),
+  createEmergencyAlert: (data: any) => apiFetch('/comms/emergency', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Comms - Moderation
+  getModerationQueue: () => apiFetch('/comms/moderation'),
+  moderateContent: (id: string, action: string, moderatedBy: string) =>
+    apiFetch(`/comms/moderation/${id}`, { method: 'PUT', body: JSON.stringify({ action, moderatedBy }) }),
+
+  // Comms - Email
+  getEmailLogs: () => apiFetch('/comms/email'),
+  sendEmail: (data: any) => apiFetch('/comms/email', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Comms - Translations
+  getTranslations: () => apiFetch('/comms/translations'),
+  createTranslation: (data: any) => apiFetch('/comms/translations', { method: 'POST', body: JSON.stringify(data) }),
+
+  // ERP - Clients
+  getClients: () => apiFetch('/erp/clients'),
+  createClient: (data: any) => apiFetch('/erp/clients', { method: 'POST', body: JSON.stringify(data) }),
+  updateClient: (id: string, data: any) => apiFetch(`/erp/clients/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteClient: (id: string) => apiFetch(`/erp/clients/${id}`, { method: 'DELETE' }),
+
+  // ERP - Leads
+  getLeads: () => apiFetch('/erp/leads'),
+  createLead: (data: any) => apiFetch('/erp/leads', { method: 'POST', body: JSON.stringify(data) }),
+  updateLead: (id: string, data: any) => apiFetch(`/erp/leads/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // ERP - Products
+  getProducts: () => apiFetch('/erp/products'),
+  createProduct: (data: any) => apiFetch('/erp/products', { method: 'POST', body: JSON.stringify(data) }),
+  updateProduct: (id: string, data: any) => apiFetch(`/erp/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // ERP - Orders
+  getOrders: () => apiFetch('/erp/orders'),
+  createOrder: (data: any) => apiFetch('/erp/orders', { method: 'POST', body: JSON.stringify(data) }),
+  updateOrder: (id: string, data: any) => apiFetch(`/erp/orders/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // ERP - Company Settings
+  getCompanySettings: () => apiFetch('/erp/company'),
+  updateCompanySettings: (data: any) => apiFetch('/erp/company', { method: 'PUT', body: JSON.stringify(data) }),
+
+  // ERP - Money Format
+  getMoneyFormat: () => apiFetch('/erp/money-format'),
+  updateMoneyFormat: (data: any) => apiFetch('/erp/money-format', { method: 'PUT', body: JSON.stringify(data) }),
 };

@@ -30,7 +30,7 @@ export function NotFoundPage() {
                 The page you're looking for either doesn't exist, got yeeted into the void, or your navigation skills need some work.
               </p>
               <p className="text-sm text-gray-400 mb-8 italic">
-                (this ain't some corporate ERP — we're students, we break things)
+                (this is Cornerstone — we're students, we build things)
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">

@@ -41,7 +41,7 @@ const data = {
   company: {
     name: 'Cornerstone',
     description:
-      'Building the future of education with AI-powered tools, real-time analytics, and seamless school management. Empowering students, teachers, and administrators.',
+      'Building the future of education with AI-powered tools, real-time analytics, and seamless learning. Empowering students, teachers, and administrators.',
     logo: `${import.meta.env.BASE_URL}logo.png`,
   },
 };

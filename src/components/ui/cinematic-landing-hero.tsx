@@ -161,7 +161,7 @@ export function CinematicHero({
   tagline1 = "Track the journey,",
   tagline2 = "not just the days.",
   cardHeading = "Education, redefined.",
-  cardDescription = <><span className="text-white font-semibold">Cornerstone</span> empowers students, teachers, and administrators with AI-powered tools, real-time analytics, and seamless school management.</>,
+  cardDescription = <><span className="text-white font-semibold">Cornerstone</span> empowers students, teachers, and administrators with AI-powered tools, real-time analytics, and a seamless learning experience.</>,
   metricValue = 365,
   metricLabel = "Days of Excellence",
   ctaHeading = "Start your journey.",
