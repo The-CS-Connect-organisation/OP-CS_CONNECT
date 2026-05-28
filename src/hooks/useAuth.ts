@@ -71,9 +71,9 @@ export const useAuth = (): UseAuthReturn => {
         navigate(`/${result.user.role}/dashboard`);
         return { success: true, user: result.user };
       }
-      return { success: false, error: 'Signup failed' };
+      return { success: false, error: result.message || 'Signup failed' };
     } catch (err: any) {
-      const message = err.message || 'Signup failed';
+      const message = err.message || 'An unexpected error occurred during signup.';
       setError(message);
       return { success: false, error: message };
     } finally {

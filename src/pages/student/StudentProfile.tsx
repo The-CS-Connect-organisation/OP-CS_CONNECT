@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Printer, RefreshCw, User, Mail, Phone, Book, MapPin, Award } from 'lucide-react';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/lib/store';
+import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils';
 
 export default function StudentProfile() {
   const { user } = useAuthStore();
@@ -104,8 +105,8 @@ export default function StudentProfile() {
                       <p className="text-[var(--text-primary)] font-bold">{profile?.class || '—'}</p>
                     </div>
                     <div>
-                      <p className="text-[var(--text-muted)] font-semibold">GPA</p>
-                      <p className="text-[var(--text-primary)] font-bold">{profile?.gpa?.toFixed(2) || '—'}</p>
+                      <p className="text-[var(--text-muted)] font-semibold">Academic %</p>
+                      <p className="text-[var(--text-primary)] font-bold">{profile?.gpa !== undefined ? formatPercentage(normalizeAcademicPercentage(profile.gpa)) : '—'}</p>
                     </div>
                   </div>
                 </div>

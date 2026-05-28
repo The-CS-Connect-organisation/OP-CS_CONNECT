@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import AIChatPanel from '@/components/ai/AIChatPanel'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -8,6 +8,8 @@ import { Progress } from '@/components/ui/Progress'
 import { Button } from '@/components/ui/Button'
 import { useAuthStore } from '@/lib/store'
 import { cn, formatCurrency } from '@/lib/utils'
+import { api } from '@/lib/api'
+import { Skeleton } from '@/components/ui/Skeleton'
 import {
   Building2, Globe, DollarSign, BarChart3, Users, Sparkles,
   TrendingUp, Brain, FileText, CheckCircle2, AlertCircle,
@@ -19,7 +21,6 @@ import {
   ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis,
   PolarRadiusAxis, Radar, Legend
 } from 'recharts'
-import { mockSchools } from '@/lib/mock-data'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -30,32 +31,51 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 }
 
-const comparisonData = [
-  { metric: 'Attendance', north: 92, south: 89, east: 94, west: 91 },
-  { metric: 'Fee Collection', north: 85, south: 91, east: 78, west: 88 },
-  { metric: 'Performance', north: 88, south: 85, east: 90, west: 87 },
-  { metric: 'Teacher Ratio', north: 75, south: 80, east: 82, west: 78 },
-  { metric: 'Infrastructure', north: 90, south: 85, east: 88, west: 92 },
-]
-
-const radarComparison = [
-  { subject: 'Attendance', North: 92, South: 89, East: 94, West: 91 },
-  { subject: 'Academics', North: 88, South: 85, East: 90, West: 87 },
-  { subject: 'Finance', North: 85, South: 91, East: 78, West: 88 },
-  { subject: 'Sports', North: 82, South: 78, East: 85, West: 80 },
-  { subject: 'Infrastructure', North: 90, South: 85, East: 88, West: 92 },
-  { subject: 'Safety', North: 95, South: 92, East: 93, West: 94 },
-]
-
 export default function CoordinatorDashboard() {
   const { user } = useAuthStore()
   const [showAI, setShowAI] = useState(false)
   const [selectedSchool, setSelectedSchool] = useState<string | null>(null)
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-  const totalStudents = mockSchools.reduce((a, s) => a + s.students, 0)
-  const totalTeachers = mockSchools.reduce((a, s) => a + s.teachers, 0)
-  const avgAttendance = Math.round(mockSchools.reduce((a, s) => a + s.attendance, 0) / mockSchools.length)
-  const avgFeeCollection = Math.round(mockSchools.reduce((a, s) => a + s.feeCollection, 0) / mockSchools.length)
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true)
+        const dashboardData = await api.getCoordinatorDashboard()
+        setData(dashboardData)
+        setError(null)
+      } catch (err: any) {
+        setError(err.message || 'Failed to fetch dashboard data.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-32" />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[1,2,3,4].map(i => <Skeleton key={i} className="h-24" />)}
+        </div>
+        <Skeleton className="h-64" />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Skeleton className="h-72" />
+          <Skeleton className="h-72" />
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return <div className="text-red-500 p-4 text-center">{error}</div>
+  }
+
+  const { summaryStats, schools, comparisonData, radarComparison, aiAnalysis } = data
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
@@ -70,11 +90,11 @@ export default function CoordinatorDashboard() {
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold">Multi-School Command Center 🌐</h1>
-                  <p className="text-muted-foreground text-sm">4 Schools Under Coordination • North Delhi Zone</p>
+                  <p className="text-muted-foreground text-sm">{summaryStats.schoolCount} Schools Under Coordination • {summaryStats.zone}</p>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mt-2 max-w-lg">
-                All schools performing above <span className="text-emerald-500 font-medium">85% benchmarks</span>. East school needs <span className="text-amber-500 font-medium">fee collection attention</span>.
+                All schools performing above <span className="text-emerald-500 font-medium">{summaryStats.benchmark}% benchmarks</span>. {aiAnalysis.needsAttention.school} needs <span className="text-amber-500 font-medium">{aiAnalysis.needsAttention.area} attention</span>.
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -94,10 +114,10 @@ export default function CoordinatorDashboard() {
         {/* Stats */}
         <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total Students', value: totalStudents.toLocaleString(), icon: GraduationCap, color: 'from-emerald-600 to-teal-600', change: '+120 this quarter' },
-            { label: 'Total Teachers', value: totalTeachers.toString(), icon: Users, color: 'from-orange-600 to-amber-600', change: '8 transfers pending' },
-            { label: 'Avg Attendance', value: `${avgAttendance}%`, icon: Activity, color: 'from-orange-500 to-amber-600', change: '+2% vs last month' },
-            { label: 'Fee Collection', value: `${avgFeeCollection}%`, icon: DollarSign, color: 'from-amber-600 to-orange-600', change: 'Target: 95%' },
+            { label: 'Total Students', value: summaryStats.totalStudents.toLocaleString(), icon: GraduationCap, color: 'from-emerald-600 to-teal-600', change: summaryStats.studentChange },
+            { label: 'Total Teachers', value: summaryStats.totalTeachers.toString(), icon: Users, color: 'from-orange-600 to-amber-600', change: summaryStats.teacherChange },
+            { label: 'Avg Attendance', value: `${summaryStats.avgAttendance}%`, icon: Activity, color: 'from-orange-500 to-amber-600', change: summaryStats.attendanceChange },
+            { label: 'Fee Collection', value: `${summaryStats.avgFeeCollection}%`, icon: DollarSign, color: 'from-amber-600 to-orange-600', change: `Target: ${summaryStats.feeTarget}%` },
           ].map((stat) => (
             <motion.div key={stat.label} whileHover={{ y: -2, scale: 1.02 }}>
               <Card glow>
@@ -125,13 +145,13 @@ export default function CoordinatorDashboard() {
             Schools Overview
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {mockSchools.map((school, i) => (
+            {schools.map((school: any, i: number) => (
               <motion.div key={school.id} whileHover={{ y: -3, scale: 1.02 }}>
                 <Card glow className="cursor-pointer" onClick={() => setSelectedSchool(school.id)}>
                   <CardContent className="p-4 space-y-3">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-sm">{school.name.split(' - ')[1]}</h3>
-                      <Badge variant="success">Active</Badge>
+                      <h3 className="font-semibold text-sm">{school.name}</h3>
+                      <Badge variant={school.status === 'Active' ? 'success' : 'warning'}>{school.status}</Badge>
                     </div>
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div className="p-2 rounded-lg bg-secondary/50">
@@ -238,10 +258,9 @@ export default function CoordinatorDashboard() {
                     <Badge variant="success">Live</Badge>
                   </h3>
                   <div className="mt-3 space-y-2 text-sm text-muted-foreground">
-                    <p>📊 <strong>East school</strong> has the lowest fee collection (78%). Recommend targeted parent outreach and flexible payment plans.</p>
-                    <p>🎓 <strong>East school</strong> leads in academic performance (90%). Their teaching methodology should be documented and shared across zone.</p>
-                    <p>👥 <strong>South school</strong> needs 3 more teachers for optimal student-teacher ratio. Transfer request pending.</p>
-                    <p>💰 Zone-wide revenue is <strong>₹1.2Cr</strong> above projections. Suggest infrastructure investment allocation.</p>
+                    {aiAnalysis.insights.map((insight: string, i: number) => (
+                      <p key={i} dangerouslySetInnerHTML={{ __html: insight }} />
+                    ))}
                   </div>
                   <Button variant="outline" size="sm" className="mt-3 gap-1.5" onClick={() => setShowAI(true)}>
                     <Sparkles className="w-3.5 h-3.5" />

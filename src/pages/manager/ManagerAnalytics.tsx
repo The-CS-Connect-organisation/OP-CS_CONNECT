@@ -3,6 +3,7 @@ import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils';
 import { BarChart3, Users, TrendingUp, DollarSign, GraduationCap, Bus } from 'lucide-react';
 
 export default function ManagerAnalytics() {
@@ -51,7 +52,7 @@ export default function ManagerAnalytics() {
             <Card className="p-4"><div className="flex items-center gap-3"><Users className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{stats.totalStudents}</p><p className="text-sm text-muted-foreground">Students</p></div></div></Card>
             <Card className="p-4"><div className="flex items-center gap-3"><GraduationCap className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{stats.totalTeachers}</p><p className="text-sm text-muted-foreground">Teachers</p></div></div></Card>
             <Card className="p-4"><div className="flex items-center gap-3"><TrendingUp className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{stats.avgAttendance}%</p><p className="text-sm text-muted-foreground">Attendance</p></div></div></Card>
-            <Card className="p-4"><div className="flex items-center gap-3"><BarChart3 className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{stats.avgGpa}</p><p className="text-sm text-muted-foreground">Avg GPA</p></div></div></Card>
+            <Card className="p-4"><div className="flex items-center gap-3"><BarChart3 className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{formatPercentage(normalizeAcademicPercentage(stats.avgGpa))}</p><p className="text-sm text-muted-foreground">Avg Academic %</p></div></div></Card>
             <Card className="p-4"><div className="flex items-center gap-3"><DollarSign className="w-8 h-8 text-green-500" /><div><p className="text-2xl font-bold">${stats.revenue.toLocaleString()}</p><p className="text-sm text-muted-foreground">Revenue</p></div></div></Card>
             <Card className="p-4"><div className="flex items-center gap-3"><DollarSign className="w-8 h-8 text-red-500" /><div><p className="text-2xl font-bold">${stats.expenses.toLocaleString()}</p><p className="text-sm text-muted-foreground">Expenses</p></div></div></Card>
           </div>

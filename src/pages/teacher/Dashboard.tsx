@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import AIChatPanel from '@/components/ai/AIChatPanel'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -8,7 +8,8 @@ import { Progress } from '@/components/ui/Progress'
 import { Avatar } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { useAuthStore } from '@/lib/store'
-import { cn } from '@/lib/utils'
+import { api } from '@/lib/api'
+import { cn, normalizeAcademicPercentage, formatPercentage } from '@/lib/utils'
 import {
   Users, ClipboardList, BarChart3, UserCheck, Sparkles,
   TrendingUp, Brain, FileText, Clock, CheckCircle2,
@@ -19,7 +20,6 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell
 } from 'recharts'
-import { mockStudents, mockSubjects, mockAssignments } from '@/lib/mock-data'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -30,7 +30,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 }
 
-const classPerformance = [
+const defaultClassPerformance = [
   { class: '10-A', avg: 85, highest: 98, lowest: 45, students: 40 },
   { class: '10-B', avg: 78, highest: 95, lowest: 38, students: 38 },
   { class: '9-A', avg: 82, highest: 97, lowest: 42, students: 36 },
@@ -55,6 +55,79 @@ const gradingQueue = [
 export default function TeacherDashboard() {
   const { user } = useAuthStore()
   const [showAI, setShowAI] = useState(false)
+  const [classes, setClasses] = useState<any[]>([])
+  const [selectedClass, setSelectedClass] = useState<string>('10-A')
+  const [students, setStudents] = useState<any[]>([])
+  const [assignments, setAssignments] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    if (!user?.id) {
+      return
+    }
+
+    const loadTeacherClasses = async () => {
+      try {
+        setIsLoading(true)
+        const teacherClasses = await api.getTeacherClasses(user.id)
+        const classList = Array.isArray(teacherClasses) ? teacherClasses : []
+        setClasses(classList)
+        if (classList.length > 0 && !classList.find((cls) => cls.name === selectedClass)) {
+          setSelectedClass(classList[0].name || classList[0])
+        }
+      } catch (error) {
+        console.error('Unable to load teacher classes', error)
+        setClasses([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadTeacherClasses()
+  }, [user?.id])
+
+  useEffect(() => {
+    if (!selectedClass) {
+      return
+    }
+
+    const loadClassData = async () => {
+      try {
+        setIsLoading(true)
+        const studentResults = await api.getStudents(selectedClass)
+        const assignmentResults = await api.getAssignments({ class: selectedClass })
+
+        setStudents(Array.isArray(studentResults) ? studentResults : [])
+        setAssignments(Array.isArray(assignmentResults) ? assignmentResults : [])
+      } catch (error) {
+        console.error('Unable to load class dashboard data', error)
+        setStudents([])
+        setAssignments([])
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadClassData()
+  }, [selectedClass])
+
+  const totalStudents = students.length
+  const pendingGrades = assignments.filter((item) => ['pending', 'submitted'].includes(item.status)).length
+  const avgPerformance = students.length
+    ? Math.round(
+        students.reduce((sum, student) => sum + (student.gpa || 0), 0) / students.length,
+      )
+    : 82
+  const todaysClasses = classes.length || 3
+  const classPerformance = classes.length
+    ? classes.map((cls) => ({
+        class: cls.name || cls,
+        avg: cls.avg || 78,
+        highest: cls.highest || 98,
+        lowest: cls.lowest || 45,
+        students: cls.students || 30,
+      }))
+    : defaultClassPerformance
 
   return (
     <>
@@ -92,10 +165,10 @@ export default function TeacherDashboard() {
         {/* Quick Stats */}
         <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'Total Students', value: '114', icon: Users, color: 'from-orange-600 to-amber-600', sub: '3 classes' },
-            { label: 'Avg Performance', value: '82%', icon: TrendingUp, color: 'from-emerald-600 to-teal-600', sub: '+3% this month' },
-            { label: 'Pending Grades', value: '2', icon: PenTool, color: 'from-amber-600 to-orange-600', sub: 'AI graded: 2' },
-            { label: "Today's Classes", value: '3', icon: Calendar, color: 'from-orange-500 to-amber-600', sub: 'Next: 10-A at 10:45' },
+            { label: 'Total Students', value: `${totalStudents}`, icon: Users, color: 'from-orange-600 to-amber-600', sub: `${classes.length || 1} class${classes.length === 1 ? '' : 'es'}` },
+            { label: 'Avg Performance', value: `${avgPerformance}%`, icon: TrendingUp, color: 'from-emerald-600 to-teal-600', sub: '+3% this month' },
+            { label: 'Pending Grades', value: `${pendingGrades}`, icon: PenTool, color: 'from-amber-600 to-orange-600', sub: 'AI graded: 2' },
+            { label: "Today's Classes", value: `${todaysClasses}`, icon: Calendar, color: 'from-orange-500 to-amber-600', sub: `Next: ${selectedClass} at 10:45` },
           ].map((stat) => (
             <motion.div key={stat.label} whileHover={{ y: -2, scale: 1.02 }}>
               <Card glow>
@@ -255,25 +328,25 @@ export default function TeacherDashboard() {
                     <Users className="w-5 h-5 text-orange-500" />
                     Student Roster
                   </CardTitle>
-                  <span className="text-xs text-muted-foreground">Class 10-A</span>
+                  <span className="text-xs text-muted-foreground">Class {selectedClass}</span>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  {mockStudents.filter(s => s.class === '10-A').map((student) => (
-                    <div key={student.id} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-accent/50 transition-colors">
+                  {students.slice(0, 8).map((student) => (
+                    <div key={student.id || student.name} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-accent/50 transition-colors">
                       <Avatar src={student.avatar} alt={student.name} size="sm" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{student.name}</p>
-                        <p className="text-xs text-muted-foreground">Roll: {student.rollNo}</p>
+                        <p className="text-sm font-medium truncate">{student.name || 'Student'}</p>
+                        <p className="text-xs text-muted-foreground">Roll: {student.rollNo || student.roll || '—'}</p>
                       </div>
                       <div className="text-right">
-                        <p className="text-sm font-semibold">{student.gpa}</p>
-                        <p className="text-xs text-muted-foreground">GPA</p>
+                        <p className="text-sm font-semibold">{student.gpa !== undefined ? formatPercentage(normalizeAcademicPercentage(student.gpa)) : 'N/A'}</p>
+                        <p className="text-xs text-muted-foreground">Academic %</p>
                       </div>
                       <div className="text-right">
-                        <p className={cn("text-sm font-semibold", student.attendance >= 90 ? "text-emerald-500" : student.attendance >= 75 ? "text-amber-500" : "text-red-500")}>
-                          {student.attendance}%
+                        <p className={cn("text-sm font-semibold", (student.attendance ?? 0) >= 90 ? "text-emerald-500" : (student.attendance ?? 0) >= 75 ? "text-amber-500" : "text-red-500")}>
+                          {student.attendance ?? 0}%
                         </p>
                         <p className="text-xs text-muted-foreground">Att.</p>
                       </div>

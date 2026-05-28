@@ -3,6 +3,7 @@ import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils';
 import { GraduationCap, Users, BarChart3, TrendingUp, BookOpen, Calendar } from 'lucide-react';
 
 export default function ManagerAcademics() {
@@ -50,7 +51,7 @@ export default function ManagerAcademics() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="p-4"><div className="flex items-center gap-3"><GraduationCap className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{stats.totalClasses}</p><p className="text-sm text-muted-foreground">Classes</p></div></div></Card>
             <Card className="p-4"><div className="flex items-center gap-3"><Users className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{stats.totalStudents}</p><p className="text-sm text-muted-foreground">Students</p></div></div></Card>
-            <Card className="p-4"><div className="flex items-center gap-3"><BarChart3 className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{stats.avgGpa}</p><p className="text-sm text-muted-foreground">Avg GPA</p></div></div></Card>
+            <Card className="p-4"><div className="flex items-center gap-3"><BarChart3 className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{formatPercentage(normalizeAcademicPercentage(stats.avgGpa))}</p><p className="text-sm text-muted-foreground">Avg Academic %</p></div></div></Card>
             <Card className="p-4"><div className="flex items-center gap-3"><TrendingUp className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{stats.attendanceRate}%</p><p className="text-sm text-muted-foreground">Attendance</p></div></div></Card>
           </div>
 

@@ -65,7 +65,7 @@ function getMockDataForPage(title: string, role: string, userId?: string) {
         { label: "Today's Classes", value: "5", icon: Calendar, color: "from-orange-500 to-amber-500" },
         { label: 'Pending Tasks', value: '3', icon: ClipboardList, color: 'from-orange-500 to-amber-500' },
         { label: 'Attendance', value: '92%', icon: UserCheck, color: 'from-emerald-500 to-teal-500' },
-        { label: 'GPA', value: '3.8', icon: BarChart3, color: 'from-purple-500 to-indigo-500' },
+        { label: 'Academic %', value: '92%', icon: BarChart3, color: 'from-purple-500 to-indigo-500' },
       ],
       schedule: [
         { time: '8:00 AM', subject: 'Mathematics', room: 'Room 201', status: 'upcoming' },
@@ -227,7 +227,7 @@ function getMockDataForPage(title: string, role: string, userId?: string) {
     return {
       profile: {
         name: 'Aarav Sharma', email: 'aarav@eduvault.ai', class: '10-A',
-        gpa: 3.8, attendance: 92, feesPaid: true, role: role,
+        gpa: 92, attendance: 92, feesPaid: true, role: role,
         joinDate: 'June 2025', phone: '+91-9876543210',
         address: '123, Sector 5, New Delhi',
         emergencyContact: 'Mr. Sharma (+91-9876543211)',
@@ -254,10 +254,10 @@ function getMockDataForPage(title: string, role: string, userId?: string) {
   if (t.includes('student progress')) {
     return {
       students: [
-        { name: 'Aarav Sharma', grade: 'A', trend: 'up', attendance: 92, gpa: 3.8 },
-        { name: 'Priya Patel', grade: 'A+', trend: 'up', attendance: 96, gpa: 3.9 },
-        { name: 'Rohan Kumar', grade: 'B+', trend: 'stable', attendance: 85, gpa: 3.5 },
-        { name: 'Ananya Singh', grade: 'A-', trend: 'up', attendance: 89, gpa: 3.7 },
+        { name: 'Aarav Sharma', grade: 'A', trend: 'up', attendance: 92, gpa: 92 },
+        { name: 'Priya Patel', grade: 'A+', trend: 'up', attendance: 96, gpa: 96 },
+        { name: 'Rohan Kumar', grade: 'B+', trend: 'stable', attendance: 85, gpa: 85 },
+        { name: 'Ananya Singh', grade: 'A-', trend: 'up', attendance: 89, gpa: 89 },
       ]
     }
   }
@@ -276,10 +276,10 @@ function getMockDataForPage(title: string, role: string, userId?: string) {
   if (t.includes('report card')) {
     return {
       students: [
-        { name: 'Aarav Sharma', class: '10-A', overall: 'A', gpa: 3.8, status: 'ready' },
-        { name: 'Priya Patel', class: '10-A', overall: 'A+', gpa: 3.9, status: 'ready' },
-        { name: 'Rohan Kumar', class: '10-B', overall: 'B+', gpa: 3.5, status: 'pending' },
-        { name: 'Ananya Singh', class: '10-B', overall: 'A-', gpa: 3.7, status: 'ready' },
+        { name: 'Aarav Sharma', class: '10-A', overall: 'A', gpa: 92, status: 'ready' },
+        { name: 'Priya Patel', class: '10-A', overall: 'A+', gpa: 96, status: 'ready' },
+        { name: 'Rohan Kumar', class: '10-B', overall: 'B+', gpa: 85, status: 'pending' },
+        { name: 'Ananya Singh', class: '10-B', overall: 'A-', gpa: 89, status: 'ready' },
       ]
     }
   }

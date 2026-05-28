@@ -4,8 +4,7 @@ import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { useAuthStore } from "@/lib/store";
-import { api, apiFetch } from "@/lib/api";
-import {
+import { api, apiFetch } from "@/lib/api";import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils';import {
   GraduationCap, Download, FileText, Loader2, Search,
   ChevronDown, Printer, BarChart3, User, BookOpen, Star,
   TrendingUp, TrendingDown, Minus, Eye, Filter
@@ -60,7 +59,7 @@ export default function ReportCards() {
     const g = grades[studentId] || [];
     if (g.length === 0) return 0;
     const total = g.reduce((sum: number, item: any) => sum + (item.marks || 0), 0);
-    return (total / g.length / 10).toFixed(1);
+    return normalizeAcademicPercentage(total / g.length);
   };
 
   const getStudentAttendance = (studentId: string) => {
@@ -89,13 +88,13 @@ export default function ReportCards() {
   const handleDownloadReport = (student: any) => {
     const studentGrades = grades[student.id] || [];
     const att = getStudentAttendance(student.id);
-    const gpa = getStudentGPA(student.id);
+    const score = getStudentGPA(student.id);
 
     let csv = "Subject,Grade,Marks\n";
     studentGrades.forEach((g: any) => {
       csv += `${g.subject},${g.grade || getGradeFromMarks(g.marks)},${g.marks}\n`;
     });
-    csv += `\nOverall GPA,${gpa}\n`;
+    csv += `\nOverall Percentage,${formatPercentage(score)}\n`;
     csv += `Attendance,${att}%\n`;
 
     const blob = new Blob([csv], { type: "text/csv" });
@@ -110,14 +109,14 @@ export default function ReportCards() {
   const handlePrintReport = (student: any) => {
     const studentGrades = grades[student.id] || [];
     const att = getStudentAttendance(student.id);
-    const gpa = getStudentGPA(student.id);
+    const score = getStudentGPA(student.id);
 
     const printContent = `
       <html><head><title>Report Card - ${student.name}</title>
       <style>body{font-family:system-ui;padding:40px}h1{color:#1a1a2e}table{width:100%;border-collapse:collapse;margin:20px 0}th,td{border:1px solid #ddd;padding:10px;text-align:left}th{background:#f5f5f5}.header{display:flex;justify-content:space-between;align-items:center;border-bottom:3px solid #1a1a2e;padding-bottom:20px;margin-bottom:30px}.stats{display:flex;gap:30px;margin:20px 0}</style></head>
       <body>
         <div class="header"><div><h1>Cornerstone International School</h1><p>Report Card - ${selectedTerm}</p></div><div><p style="text-align:right"><strong>${student.name}</strong><br/>Class: ${student.class || selectedClass}<br/>ID: ${student.id}</p></div></div>
-        <div class="stats"><div><strong>GPA:</strong> ${gpa}</div><div><strong>Attendance:</strong> ${att}%</div></div>
+        <div class="stats"><div><strong>Overall Percentage:</strong> ${formatPercentage(score)}</div><div><strong>Attendance:</strong> ${att}%</div></div>
         <table><tr><th>Subject</th><th>Grade</th><th>Marks</th></tr>
         ${studentGrades.map((g: any) => `<tr><td>${g.subject}</td><td>${g.grade || getGradeFromMarks(g.marks)}</td><td>${g.marks}</td></tr>`).join("")}
         </table>
@@ -189,8 +188,8 @@ export default function ReportCards() {
                       </div>
                       <div className="text-right flex items-center gap-3">
                         <div>
-                          <p className="text-lg font-bold">{gpa}</p>
-                          <p className="text-[9px] text-muted-foreground uppercase">GPA</p>
+                          <p className="text-lg font-bold">{formatPercentage(gpa)}</p>
+                          <p className="text-[9px] text-muted-foreground uppercase">Score</p>
                         </div>
                         {trend === "up" && <TrendingUp className="w-4 h-4 text-emerald-500" />}
                         {trend === "down" && <TrendingDown className="w-4 h-4 text-rose-500" />}
@@ -261,8 +260,8 @@ export default function ReportCards() {
                   {/* Stats Row */}
                   <div className="grid grid-cols-3 gap-4">
                     <div className="p-4 bg-orange-50 rounded-xl text-center">
-                      <p className="text-2xl font-bold text-orange-600">{getStudentGPA(selectedStudent)}</p>
-                      <p className="text-[10px] text-orange-500 uppercase tracking-widest font-bold mt-1">GPA</p>
+                      <p className="text-2xl font-bold text-orange-600">{formatPercentage(getStudentGPA(selectedStudent))}</p>
+                      <p className="text-[10px] text-orange-500 uppercase tracking-widest font-bold mt-1">Academic %</p>
                     </div>
                     <div className="p-4 bg-emerald-50 rounded-xl text-center">
                       <p className="text-2xl font-bold text-emerald-600">{getStudentAttendance(selectedStudent)}%</p>
@@ -326,10 +325,10 @@ export default function ReportCards() {
                   <div className="p-4 bg-accent/30 rounded-xl">
                     <h4 className="text-sm font-bold mb-2">Teacher Remarks</h4>
                     <p className="text-sm text-muted-foreground">
-                       {parseFloat(String(getStudentGPA(selectedStudent))) >= 3.5
+                       {getStudentGPA(selectedStudent) >= 90
                         ? "Excellent performance! Keep up the great work and continue to challenge yourself."
-                        : parseFloat(String(getStudentGPA(selectedStudent))) >= 3.0
-                          ? "Good performance overall. Focus on weaker subjects to improve your GPA."
+                        : getStudentGPA(selectedStudent) >= 75
+                          ? "Good performance overall. Focus on weaker subjects to improve your academic percentage."
                           : "Needs improvement. Please attend extra help sessions and focus on consistent study habits."}
                     </p>
                   </div>

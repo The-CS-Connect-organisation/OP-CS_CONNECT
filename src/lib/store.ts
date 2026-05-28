@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { api } from './api';
+import { normalizeAcademicPercentage } from './utils';
 
 export type UserRole = 'student' | 'teacher' | 'admin' | 'coordinator' | 'driver' | 'parent' | 'librarian' | 'manager';
 
@@ -369,12 +370,12 @@ export const useDataStore = create<DataState>()((set) => ({
       // Performance data for chart
       const performanceData = grades.map((g: any) => ({
         month: g.subject?.slice(0, 4) || '??',
-        gpa: g.overall / 25,
+        score: normalizeAcademicPercentage(g.overall || 0),
         attendance: attendancePercent,
       }));
 
       set({
-        students: [{ ...student, gpa: student.gpa || (grades.length ? grades.reduce((a: number, g: any) => a + g.overall, 0) / grades.length / 25 : 0), attendance: student.attendance || attendancePercent }],
+        students: [{ ...student, gpa: normalizeAcademicPercentage(student.gpa || (grades.length ? grades.reduce((a: number, g: any) => a + g.overall, 0) / grades.length : 0)), attendance: student.attendance || attendancePercent }],
         grades,
         attendance: [{ percentage: student.attendance || attendancePercent, month: 'Current' }],
         fees,

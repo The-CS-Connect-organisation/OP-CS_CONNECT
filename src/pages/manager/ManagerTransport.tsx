@@ -40,19 +40,19 @@ export default function ManagerTransport() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Card className="p-4"><div className="flex items-center gap-3"><Bus className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{stats.totalBuses}</p><p className="text-sm text-muted-foreground">Total Buses</p></div></div></Card>
             <Card className="p-4"><div className="flex items-center gap-3"><MapPin className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{stats.activeRoutes}</p><p className="text-sm text-muted-foreground">Active Routes</p></div></div></Card>
             <Card className="p-4"><div className="flex items-center gap-3"><Users className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{stats.totalStudents}</p><p className="text-sm text-muted-foreground">Students</p></div></div></Card>
             <Card className="p-4"><div className="flex items-center gap-3"><Clock className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{stats.onTimeRate}%</p><p className="text-sm text-muted-foreground">On-Time Rate</p></div></div></Card>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="p-4">
               <h3 className="font-semibold mb-4">Routes</h3>
               <div className="space-y-3">

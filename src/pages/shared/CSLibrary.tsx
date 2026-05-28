@@ -109,6 +109,9 @@ const CSLibrary = () => {
       }
 
       const data = await response.json()
+      if (data.error) {
+        throw new Error(data.error)
+      }
       setBooks(data.books || [])
       setTotalPages(data.totalPages || 0)
       setCurrentPage(page)
@@ -223,14 +226,15 @@ const CSLibrary = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by title, author, ISBN, or publisher..."
-              className="w-full pl-12 pr-32 py-4 rounded-2xl border border-border bg-white dark:bg-card focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-foreground placeholder:text-muted-foreground shadow-sm"
+              className="w-full pl-12 pr-14 sm:pr-32 py-4 rounded-2xl border border-border bg-white dark:bg-card focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 outline-none transition-all text-foreground placeholder:text-muted-foreground shadow-sm"
             />
             <button
               type="submit"
               disabled={loading || !searchQuery.trim()}
-              className="absolute right-2 top-1/2 -translate-y-1/2 px-6 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-medium hover:from-orange-600 hover:to-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md"
+              className="absolute right-2 top-1/2 -translate-y-1/2 h-12 w-12 sm:w-auto sm:px-6 sm:py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-medium hover:from-orange-600 hover:to-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-md flex items-center justify-center"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Search'}
+              <Search className="w-5 h-5 sm:hidden" />
+              <span className="hidden sm:inline">{loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Search'}</span>
             </button>
           </div>
         </form>
@@ -255,77 +259,77 @@ const CSLibrary = () => {
         )}
 
         {/* Filters Panel */}
-        {showFilters && (
-          <div className="mb-6 p-4 rounded-2xl border border-border bg-white dark:bg-card shadow-sm">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-foreground">Filters</h3>
-              <button onClick={clearFilters} className="text-sm text-muted-foreground hover:text-foreground">
-                Clear all
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">File Type</label>
-                <select
-                  value={filters.extension || ''}
-                  onChange={(e) => setFilters({ ...filters, extension: e.target.value || undefined })}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:border-orange-500 outline-none"
-                >
-                  <option value="">All formats</option>
-                  {EXTENSIONS.map(ext => (
-                    <option key={ext} value={ext}>{ext}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">Language</label>
-                <select
-                  value={filters.language || ''}
-                  onChange={(e) => setFilters({ ...filters, language: e.target.value || undefined })}
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:border-orange-500 outline-none"
-                >
-                  <option value="">All languages</option>
-                  {LANGUAGES.map(lang => (
-                    <option key={lang} value={lang}>{lang.charAt(0).toUpperCase() + lang.slice(1)}</option>
-                  ))}
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">From Year</label>
-                <input
-                  type="number"
-                  value={filters.fromYear || ''}
-                  onChange={(e) => setFilters({ ...filters, fromYear: e.target.value ? parseInt(e.target.value) : undefined })}
-                  placeholder="e.g. 2000"
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:border-orange-500 outline-none"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-muted-foreground mb-2">To Year</label>
-                <input
-                  type="number"
-                  value={filters.toYear || ''}
-                  onChange={(e) => setFilters({ ...filters, toYear: e.target.value ? parseInt(e.target.value) : undefined })}
-                  placeholder="e.g. 2024"
-                  className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:border-orange-500 outline-none"
-                />
-              </div>
-            </div>
-            
-            <div className="mt-4 flex justify-end">
-              <button
-                onClick={applyFilters}
-                className="px-6 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-medium hover:from-orange-600 hover:to-amber-600 transition-all"
+        <div className={`fixed inset-0 z-40 bg-black/50 transition-opacity ${showFilters ? 'opacity-100' : 'opacity-0 pointer-events-none'}`} onClick={() => setShowFilters(false)}></div>
+        <div className={`fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-card shadow-2xl z-50 transform transition-transform ${showFilters ? 'translate-x-0' : 'translate-x-full'} sm:max-w-sm`}>
+          <div className="p-4 border-b border-border flex items-center justify-between">
+            <h3 className="font-semibold text-foreground">Filters</h3>
+            <button onClick={() => setShowFilters(false)} className="p-2 rounded-lg hover:bg-muted">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="p-4 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-2">File Type</label>
+              <select
+                value={filters.extension || ''}
+                onChange={(e) => setFilters({ ...filters, extension: e.target.value || undefined })}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:border-orange-500 outline-none"
               >
-                Apply Filters
-              </button>
+                <option value="">All formats</option>
+                {EXTENSIONS.map(ext => (
+                  <option key={ext} value={ext}>{ext}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-2">Language</label>
+              <select
+                value={filters.language || ''}
+                onChange={(e) => setFilters({ ...filters, language: e.target.value || undefined })}
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:border-orange-500 outline-none"
+              >
+                <option value="">All languages</option>
+                {LANGUAGES.map(lang => (
+                  <option key={lang} value={lang}>{lang.charAt(0).toUpperCase() + lang.slice(1)}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-2">From Year</label>
+              <input
+                type="number"
+                value={filters.fromYear || ''}
+                onChange={(e) => setFilters({ ...filters, fromYear: e.target.value ? parseInt(e.target.value) : undefined })}
+                placeholder="e.g. 2000"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:border-orange-500 outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-muted-foreground mb-2">To Year</label>
+              <input
+                type="number"
+                value={filters.toYear || ''}
+                onChange={(e) => setFilters({ ...filters, toYear: e.target.value ? parseInt(e.target.value) : undefined })}
+                placeholder="e.g. 2024"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm focus:border-orange-500 outline-none"
+              />
             </div>
           </div>
-        )}
+          <div className="p-4 border-t border-border flex gap-2">
+            <button
+              onClick={clearFilters}
+              className="w-full px-6 py-2 border border-border text-foreground rounded-xl font-medium hover:bg-muted transition-all"
+            >
+              Clear
+            </button>
+            <button
+              onClick={applyFilters}
+              className="w-full px-6 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-medium hover:from-orange-600 hover:to-amber-600 transition-all"
+            >
+              Apply Filters
+            </button>
+          </div>
+        </div>
 
         {/* Error Message */}
         {error && (
@@ -480,12 +484,12 @@ const CSLibrary = () => {
 
       {/* Book Detail Modal */}
       {selectedBook && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedBook(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center sm:p-4 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedBook(null)}>
           <div
-            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-3xl border border-border bg-white dark:bg-card shadow-2xl"
+            className="w-full h-full sm:max-w-2xl sm:max-h-[90vh] sm:rounded-3xl border-t sm:border border-border bg-white dark:bg-card shadow-2xl flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 flex items-center justify-between p-4 border-b border-border bg-white/90 dark:bg-card/90 backdrop-blur-xl rounded-t-3xl">
+            <div className="sticky top-0 flex items-center justify-between p-4 border-b border-border bg-white/90 dark:bg-card/90 backdrop-blur-xl sm:rounded-t-3xl">
               <h2 className="text-lg font-bold text-foreground">Book Details</h2>
               <button
                 onClick={() => setSelectedBook(null)}
@@ -494,125 +498,88 @@ const CSLibrary = () => {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
-            <div className="p-6">
-              <div className="flex gap-6">
-                <div className="w-40 h-56 flex-shrink-0 rounded-xl overflow-hidden bg-muted shadow-lg">
-                  {selectedBook.cover ? (
-                    <img src={selectedBook.cover} alt={selectedBook.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <Book className="w-16 h-16 text-muted-foreground/50" />
-                    </div>
-                  )}
-                </div>
-                
-                <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-foreground mb-2">{selectedBook.name}</h3>
-                  <p className="text-muted-foreground mb-4">{getAuthorNames(selectedBook)}</p>
-                  
-                  {selectedBook.rating && (
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`w-5 h-5 ${i < getRatingStars(selectedBook.rating) ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'}`}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-sm text-muted-foreground">{selectedBook.rating}</span>
-                    </div>
-                  )}
-                  
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    {selectedBook.publisher && (
-                      <div className="p-3 rounded-lg bg-muted">
-                        <p className="text-xs text-muted-foreground">Publisher</p>
-                        <p className="text-sm font-medium text-foreground">{selectedBook.publisher}</p>
-                      </div>
-                    )}
-                    {selectedBook.year && (
-                      <div className="p-3 rounded-lg bg-muted">
-                        <p className="text-xs text-muted-foreground">Year</p>
-                        <p className="text-sm font-medium text-foreground">{selectedBook.year}</p>
-                      </div>
-                    )}
-                    {selectedBook.extension && (
-                      <div className="p-3 rounded-lg bg-muted">
-                        <p className="text-xs text-muted-foreground">Format</p>
-                        <p className="text-sm font-medium text-foreground">{selectedBook.extension}</p>
-                      </div>
-                    )}
-                    {selectedBook.size && (
-                      <div className="p-3 rounded-lg bg-muted">
-                        <p className="text-xs text-muted-foreground">Size</p>
-                        <p className="text-sm font-medium text-foreground">{selectedBook.size}</p>
-                      </div>
-                    )}
-                    {selectedBook.language && (
-                      <div className="p-3 rounded-lg bg-muted">
-                        <p className="text-xs text-muted-foreground">Language</p>
-                        <p className="text-sm font-medium text-foreground capitalize">{selectedBook.language}</p>
-                      </div>
-                    )}
-                    {selectedBook.edition && (
-                      <div className="p-3 rounded-lg bg-muted">
-                        <p className="text-xs text-muted-foreground">Edition</p>
-                        <p className="text-sm font-medium text-foreground">{selectedBook.edition}</p>
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="flex flex-col sm:flex-row gap-6">
+                <div className="w-full sm:w-1/3 flex-shrink-0">
+                  <div className="aspect-[3/4] rounded-xl overflow-hidden bg-muted shadow-md mx-auto max-w-[200px] sm:max-w-full">
+                    {selectedBook.cover ? (
+                      <img src={selectedBook.cover} alt={selectedBook.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Book className="w-12 h-12 text-muted-foreground/50" />
                       </div>
                     )}
                   </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-2xl font-bold text-foreground">{selectedBook.name}</h3>
+                  <p className="text-lg text-muted-foreground mt-1">{getAuthorNames(selectedBook)}</p>
                   
-                  {selectedBook.categories && (
-                    <div className="mb-4">
-                      <p className="text-xs text-muted-foreground mb-1">Categories</p>
-                      <p className="text-sm text-foreground">{selectedBook.categories}</p>
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {selectedBook.extension && (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-sm font-medium">
+                        {selectedBook.extension}
+                      </span>
+                    )}
+                    {selectedBook.year && (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-sm">
+                        {selectedBook.year}
+                      </span>
+                    )}
+                    {selectedBook.language && (
+                      <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-muted text-muted-foreground text-sm">
+                        {selectedBook.language}
+                      </span>
+                    )}
+                  </div>
+
+                  {selectedBook.rating && (
+                    <div className="flex items-center gap-1 mt-4">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-5 h-5 ${i < getRatingStars(selectedBook.rating) ? 'fill-amber-400 text-amber-400' : 'text-muted-foreground/30'}`}
+                        />
+                      ))}
+                      <span className="text-sm text-muted-foreground ml-1">{selectedBook.rating}</span>
                     </div>
                   )}
                 </div>
               </div>
-              
+
               {selectedBook.description && (
-                <div className="mt-6 pt-6 border-t border-border">
+                <div className="mt-6">
                   <h4 className="font-semibold text-foreground mb-2">Description</h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{selectedBook.description}</p>
+                  <div className="prose dark:prose-invert max-w-none text-muted-foreground" dangerouslySetInnerHTML={{ __html: selectedBook.description }} />
                 </div>
               )}
-              
-              <div className="mt-6 pt-6 border-t border-border flex gap-3">
-                {selectedBook.download_url && selectedBook.download_url !== 'Unavailable (use tor to download)' ? (
-                  <a
-                    href={selectedBook.download_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-medium hover:from-orange-600 hover:to-amber-600 transition-all shadow-sm hover:shadow-md"
-                  >
-                    <Download className="w-5 h-5" />
-                    Download
-                  </a>
-                ) : (
-                  <button
-                    disabled
-                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-muted text-muted-foreground rounded-xl font-medium cursor-not-allowed"
-                  >
-                    <Download className="w-5 h-5" />
-                    Unavailable
-                  </button>
-                )}
-                
-                {selectedBook.url && (
-                  <a
-                    href={selectedBook.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-center gap-2 px-6 py-3 border border-border rounded-xl font-medium text-foreground hover:bg-muted transition-colors"
-                  >
-                    <ExternalLink className="w-5 h-5" />
-                    View Online
-                  </a>
-                )}
+
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                {selectedBook.publisher && <p><span className="font-semibold text-foreground">Publisher:</span> {selectedBook.publisher}</p>}
+                {selectedBook.isbn && <p><span className="font-semibold text-foreground">ISBN:</span> {selectedBook.isbn}</p>}
+                {selectedBook.size && <p><span className="font-semibold text-foreground">Size:</span> {selectedBook.size}</p>}
+                {selectedBook.edition && <p><span className="font-semibold text-foreground">Edition:</span> {selectedBook.edition}</p>}
               </div>
+            </div>
+            <div className="p-4 border-t border-border flex flex-col sm:flex-row gap-3">
+              <a
+                href={selectedBook.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-border text-foreground rounded-xl font-medium hover:bg-muted transition-all"
+              >
+                <ExternalLink className="w-4 h-4" />
+                View Source
+              </a>
+              <a
+                href={selectedBook.download_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-medium hover:from-orange-600 hover:to-amber-600 transition-all"
+              >
+                <Download className="w-4 h-4" />
+                Download
+              </a>
             </div>
           </div>
         </div>

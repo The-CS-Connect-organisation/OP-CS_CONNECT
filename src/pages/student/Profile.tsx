@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuthStore } from '@/lib/store'
 import { api } from '@/lib/api'
+import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -41,8 +42,8 @@ export default function StudentProfile() {
     motherPhone: user?.motherPhone || '',
   })
 
-  // Calculate GPA and attendance from actual data
-  const gpa = user?.gpa || 0
+  // Calculate academic percentage and attendance from actual data
+  const gpa = normalizeAcademicPercentage(user?.gpa || 0)
   const attendance = user?.attendance || 0
 
   useEffect(() => {
@@ -158,7 +159,7 @@ export default function StudentProfile() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card><CardContent className="p-4 text-center"><GraduationCap className="w-8 h-8 mx-auto text-orange-500 mb-2" /><p className="text-2xl font-bold">{gpa.toFixed(1)}</p><p className="text-xs text-muted-foreground">GPA</p></CardContent></Card>
+        <Card><CardContent className="p-4 text-center"><GraduationCap className="w-8 h-8 mx-auto text-orange-500 mb-2" /><p className="text-2xl font-bold">{formatPercentage(gpa)}</p><p className="text-xs text-muted-foreground">Academic %</p></CardContent></Card>
         <Card><CardContent className="p-4 text-center"><UserCheck className="w-8 h-8 mx-auto text-green-500 mb-2" /><p className="text-2xl font-bold">{attendance}%</p><p className="text-xs text-muted-foreground">Attendance</p></CardContent></Card>
         <Card><CardContent className="p-4 text-center"><BookOpen className="w-8 h-8 mx-auto text-blue-500 mb-2" /><p className="text-2xl font-bold">{user?.subjects?.length || 0}</p><p className="text-xs text-muted-foreground">Subjects</p></CardContent></Card>
         <Card><CardContent className="p-4 text-center"><Award className="w-8 h-8 mx-auto text-purple-500 mb-2" /><p className="text-2xl font-bold">{user?.feesPaid ? 'Paid' : 'Due'}</p><p className="text-xs text-muted-foreground">Fee Status</p></CardContent></Card>

@@ -32,7 +32,7 @@ export async function chatWithCerebras(messages: AIMessage[], systemPrompt?: str
     return data.choices?.[0]?.message?.content || 'I apologize, I could not generate a response.';
   } catch (error) {
     console.error('Cerebras API error:', error);
-    return 'AI service is temporarily unavailable. Please try again.';
+    throw new Error('AI service is temporarily unavailable. Please try again.');
   }
 }
 

@@ -3,6 +3,7 @@ import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils';
 import { BarChart3, Users, TrendingUp, DollarSign, GraduationCap, Bus, BookOpen, AlertCircle } from 'lucide-react';
 
 export default function AdminAnalytics() {
@@ -81,8 +82,8 @@ export default function AdminAnalytics() {
               <div className="flex items-center gap-3">
                 <BarChart3 className="w-8 h-8 text-orange-500" />
                 <div>
-                  <p className="text-2xl font-bold">{stats.avgGpa}</p>
-                  <p className="text-sm text-muted-foreground">Avg GPA</p>
+                  <p className="text-2xl font-bold">{formatPercentage(normalizeAcademicPercentage(stats.avgGpa))}</p>
+                  <p className="text-sm text-muted-foreground">Avg Academic %</p>
                 </div>
               </div>
             </Card>

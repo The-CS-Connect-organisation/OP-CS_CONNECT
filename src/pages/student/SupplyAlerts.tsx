@@ -11,6 +11,7 @@ export default function SupplyAlerts() {
   const { user } = useAuthStore()
   const [alerts, setAlerts] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<string>('all')
   const [showFilter, setShowFilter] = useState(false)
 
@@ -21,7 +22,8 @@ export default function SupplyAlerts() {
         if (user?.class) params.class = user.class
         const data = await api.getSupplyAlerts(params)
         setAlerts(data)
-      } catch {
+      } catch (err: any) {
+        setError('Failed to fetch supply alerts. Please try again later.')
         setAlerts([])
       }
       setIsLoading(false)
@@ -33,8 +35,9 @@ export default function SupplyAlerts() {
     try {
       await api.updateSupplyAlert(id, { resolved: true })
       setAlerts(prev => prev.map(a => a.id === id ? { ...a, resolved: true } : a))
-    } catch {
-      console.error('Failed to resolve alert')
+    } catch (err) {
+      setError('Failed to resolve alert. Please try again.')
+      console.error('Failed to resolve alert', err)
     }
   }
 
@@ -58,6 +61,17 @@ export default function SupplyAlerts() {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent-primary)]" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 mx-auto text-[var(--semantic-error)] mb-4" />
+          <p className="text-[var(--semantic-error)]">{error}</p>
+        </div>
       </div>
     )
   }

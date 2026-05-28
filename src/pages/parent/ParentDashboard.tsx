@@ -4,6 +4,7 @@ import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils';
 import { LayoutDashboard, Users, BarChart3, Calendar, DollarSign, Bus, TrendingUp, AlertCircle } from 'lucide-react';
 
 export default function ParentDashboard() {
@@ -61,8 +62,8 @@ export default function ParentDashboard() {
               <div className="flex items-center gap-3">
                 <BarChart3 className="w-8 h-8 text-orange-500" />
                 <div>
-                  <p className="text-2xl font-bold">{dashboard.children[0]?.gpa || 'N/A'}</p>
-                  <p className="text-sm text-muted-foreground">Avg GPA</p>
+                  <p className="text-2xl font-bold">{dashboard.children[0]?.gpa !== undefined ? formatPercentage(normalizeAcademicPercentage(dashboard.children[0].gpa)) : 'N/A'}</p>
+                  <p className="text-sm text-muted-foreground">Avg Academic %</p>
                 </div>
               </div>
             </Card>
@@ -97,7 +98,7 @@ export default function ParentDashboard() {
                       <Badge variant="secondary">{child.class}</Badge>
                     </div>
                     <div className="flex items-center gap-4 text-sm">
-                      <span>GPA: {child.gpa}</span>
+                      <span>Academic %: {child.gpa !== undefined ? formatPercentage(normalizeAcademicPercentage(child.gpa)) : 'N/A'}</span>
                       <span>Attendance: {child.attendance}%</span>
                     </div>
                   </div>

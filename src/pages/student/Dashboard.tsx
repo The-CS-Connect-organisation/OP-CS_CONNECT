@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Progress } from '@/components/ui/Progress'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAuthStore, useDataStore } from '@/lib/store'
-import { cn, formatCurrency } from '@/lib/utils'
+import { cn, formatCurrency, normalizeAcademicPercentage, formatPercentage } from '@/lib/utils'
 import {
   BookOpen, ClipboardList, Calendar, BarChart3, UserCheck,
   CreditCard, Trophy, Sparkles, TrendingUp, TrendingDown,
@@ -42,7 +42,8 @@ export default function StudentDashboard() {
   const totalFees = fees.reduce((a: number, f: any) => a + (f.amount || 0), 0)
   const paidFees = fees.reduce((a: number, f: any) => a + (f.paid || 0), 0)
   const dueFees = fees.reduce((a: number, f: any) => a + (f.due || 0), 0)
-  const currentGPA = grades.length > 0 ? grades.reduce((a: number, g: any) => a + (g.overall || 0), 0) / grades.length / 25 : (user?.gpa || 0)
+  const currentGPA = grades.length > 0 ? grades.reduce((a: number, g: any) => a + (g.overall || 0), 0) / grades.length : (user?.gpa || 0)
+  const currentPercentage = normalizeAcademicPercentage(currentGPA)
   const attendancePercent = attendance.length > 0 && attendance[0]?.percentage ? attendance[0].percentage : (user?.attendance || 0)
 
   const radarData = grades.map((g: any) => ({ subject: g.subject?.slice(0, 4) || '??', score: g.overall || 0, fullMark: 100 }))
@@ -53,7 +54,7 @@ export default function StudentDashboard() {
 
   const performanceData = grades.map((g: any) => ({
     month: g.subject?.slice(0, 4) || '??',
-    gpa: (g.overall || 0) / 25,
+    score: normalizeAcademicPercentage(g.overall || 0),
     attendance: attendancePercent,
   }))
 
@@ -95,7 +96,7 @@ export default function StudentDashboard() {
         {/* Quick Stats */}
         <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: 'GPA', value: currentGPA.toFixed(1), icon: GraduationCap, change: '+0.3', trend: 'up', color: 'from-orange-500 to-amber-600', bgColor: 'bg-orange-500/10' },
+            { label: 'Academic %', value: formatPercentage(currentPercentage), icon: GraduationCap, change: '+0.3', trend: 'up', color: 'from-orange-500 to-amber-600', bgColor: 'bg-orange-500/10' },
             { label: 'Attendance', value: `${attendancePercent}%`, icon: UserCheck, change: '+2%', trend: 'up', color: 'from-emerald-600 to-teal-600', bgColor: 'bg-emerald-500/10' },
             { label: 'Assignments', value: `${upcomingAssignments.length}`, icon: ClipboardList, change: '3 due', trend: 'neutral', color: 'from-amber-600 to-orange-600', bgColor: 'bg-amber-500/10' },
             { label: 'Fees Due', value: formatCurrency(dueFees), icon: CreditCard, change: 'Term 3', trend: 'warning', color: 'from-red-600 to-pink-600', bgColor: 'bg-red-500/10' },
@@ -174,9 +175,8 @@ export default function StudentDashboard() {
                           fontSize: '12px',
                         }}
                       />
-                      <Area type="monotone" dataKey="gpa" stroke="#8b5cf6" fill="url(#gpaGradient)" strokeWidth={2} name="GPA" />
+                      <Area type="monotone" dataKey="score" stroke="#8b5cf6" fill="url(#gpaGradient)" strokeWidth={2} name="Score %" />
                       <Area type="monotone" dataKey="attendance" stroke="#10b981" fill="url(#attGradient)" strokeWidth={2} name="Attendance" />
-                      <Area type="monotone" dataKey="assignments" stroke="#f59e0b" fill="transparent" strokeWidth={2} strokeDasharray="5 5" name="Assignments" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -185,7 +185,7 @@ export default function StudentDashboard() {
                   <Sparkles className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-xs font-medium text-orange-500">AI Insight</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Your GPA is trending upward! Attendance dips in Dec correlated with lower scores. Stay consistent for even better results.</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Your academic percentage is trending upward! Attendance dips in Dec correlated with lower scores. Stay consistent for even better results.</p>
                   </div>
                 </div>
               </CardContent>

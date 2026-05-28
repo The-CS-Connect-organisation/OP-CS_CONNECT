@@ -98,7 +98,7 @@ export default function StudentBusTracking() {
                   <Badge className={getStatusColor(selectedBus.status)}>{selectedBus.status}</Badge>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                   <div className="p-3 bg-accent rounded-lg">
                     <p className="text-sm text-muted-foreground">Driver</p>
                     <p className="font-medium">{selectedBus.driverName}</p>

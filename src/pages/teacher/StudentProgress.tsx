@@ -3,6 +3,7 @@ import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils';
 import { User, TrendingUp, BookOpen, Calendar, BarChart3 } from 'lucide-react';
 
 interface StudentProgress {
@@ -73,7 +74,7 @@ export default function TeacherStudentProgress() {
                   <div className="flex-1">
                     <h4 className="font-medium">{student.name}</h4>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span>GPA: {student.gpa}</span>
+                      <span>Score: {formatPercentage(normalizeAcademicPercentage(student.gpa))}</span>
                       <span>•</span>
                       <span>{student.attendance}%</span>
                     </div>
@@ -99,10 +100,10 @@ export default function TeacherStudentProgress() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                   <div className="p-3 bg-accent rounded-lg text-center">
-                    <p className="text-2xl font-bold text-orange-500">{selected.gpa}</p>
-                    <p className="text-sm text-muted-foreground">GPA</p>
+                    <p className="text-2xl font-bold text-orange-500">{formatPercentage(normalizeAcademicPercentage(selected.gpa))}</p>
+                    <p className="text-sm text-muted-foreground">Academic %</p>
                   </div>
                   <div className="p-3 bg-accent rounded-lg text-center">
                     <p className="text-2xl font-bold text-orange-500">{selected.attendance}%</p>

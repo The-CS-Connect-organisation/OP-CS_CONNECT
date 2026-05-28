@@ -34,6 +34,7 @@ export default function Accolades() {
   const { user } = useAuthStore()
   const [accolades, setAccolades] = useState<Accolade[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [showApplyDialog, setShowApplyDialog] = useState(false)
   const [applyForm, setApplyForm] = useState({ title: '', description: '', category: 'academic', certificateUrl: '' })
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
@@ -45,9 +46,14 @@ export default function Accolades() {
   const loadAccolades = async () => {
     try {
       setLoading(true)
+      setError(null)
       const data = await api.getAccolades()
       setAccolades(Array.isArray(data) ? data : [])
-    } catch { /* error */ } finally { setLoading(false) }
+    } catch {
+      setError('Failed to load accolades.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   const filtered = accolades.filter(a => filter === 'all' || a.status === filter)
@@ -63,7 +69,9 @@ export default function Accolades() {
       setApplyForm({ title: '', description: '', category: 'academic', certificateUrl: '' })
       setShowApplyDialog(false)
       loadAccolades()
-    } catch { /* error */ }
+    } catch {
+      setError('Failed to submit accolade.')
+    }
   }
 
   const handleApprove = async (id: string) => {
@@ -71,14 +79,18 @@ export default function Accolades() {
     try {
       await api.approveAccolade(id, user.id)
       loadAccolades()
-    } catch { /* error */ }
+    } catch {
+      setError('Failed to approve accolade.')
+    }
   }
 
   const handleReject = async (id: string) => {
     try {
       await api.rejectAccolade(id, user?.id || '', 'Not approved')
       loadAccolades()
-    } catch { /* error */ }
+    } catch {
+      setError('Failed to reject accolade.')
+    }
   }
 
   const statusIcon = (status: string) => {
@@ -124,6 +136,13 @@ export default function Accolades() {
           </button>
         ))}
       </motion.div>
+
+      {error && (
+        <motion.div variants={itemVariants} className="nova-card bg-red-500/10 p-4 text-red-500 text-sm flex items-center gap-2">
+          <XCircle className="w-4 h-4" />
+          {error}
+        </motion.div>
+      )}
 
       {loading ? (
         <div className="space-y-4">{[1, 2, 3].map(i => <Skeleton key={i} className="h-28" />)}</div>

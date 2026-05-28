@@ -170,7 +170,7 @@ function MobileAppPreview() {
         </div>
         <div className="px-3 py-2 grid grid-cols-2 gap-2">
           {[
-            { label: 'GPA', value: '9.2', color: 'from-orange-400 to-amber-500' },
+            { label: 'Academic %', value: '95%', color: 'from-orange-400 to-amber-500' },
             { label: 'Attendance', value: '94%', color: 'from-emerald-400 to-teal-500' },
             { label: 'Assignments', value: '3 due', color: 'from-orange-400 to-amber-500' },
             { label: 'Fees', value: '₹12K', color: 'from-red-400 to-pink-500' },

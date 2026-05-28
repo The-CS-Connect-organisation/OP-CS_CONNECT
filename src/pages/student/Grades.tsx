@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Progress } from '@/components/ui/Progress'
 import { useAuthStore, useDataStore } from '@/lib/store'
-import { cn } from '@/lib/utils'
+import { cn, normalizeAcademicPercentage, formatPercentage } from '@/lib/utils'
 import { BarChart3, TrendingUp, TrendingDown, Zap, Award, Target } from 'lucide-react'
 import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts'
 
@@ -15,7 +15,8 @@ export default function GradesPage() {
   const { user } = useAuthStore()
   const { grades, isLoading } = useDataStore()
 
-  const currentGPA = grades.length > 0 ? grades.reduce((a: number, g: any) => a + (g.overall || 0), 0) / grades.length / 25 : 0
+  const currentGPA = grades.length > 0 ? grades.reduce((a: number, g: any) => a + (g.overall || 0), 0) / grades.length : 0
+  const currentPercentage = normalizeAcademicPercentage(currentGPA)
   const highestSubject = grades.length > 0 ? grades.reduce((best: any, g: any) => (g.overall > (best.overall || 0) ? g : best), grades[0]) : null
   const lowestSubject = grades.length > 0 ? grades.reduce((worst: any, g: any) => (g.overall < (worst.overall || 999) ? g : worst), grades[0]) : null
 
@@ -41,7 +42,7 @@ export default function GradesPage() {
                 <Card glow>
                   <CardContent className="p-5 flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center"><Award className="w-6 h-6 text-orange-500" /></div>
-                    <div><p className="text-sm text-muted-foreground">Current GPA</p><p className="text-2xl font-bold">{currentGPA.toFixed(1)}</p></div>
+                    <div><p className="text-sm text-muted-foreground">Current Percentage</p><p className="text-2xl font-bold">{formatPercentage(currentPercentage)}</p></div>
                   </CardContent>
                 </Card>
               </motion.div>

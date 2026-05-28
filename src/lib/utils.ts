@@ -49,6 +49,10 @@ export function formatPercentage(value: number): string {
   return `${normalizeAcademicPercentage(value)}%`
 }
 
+export function formatAcademicPercentage(value: number): string {
+  return formatPercentage(value)
+}
+
 export function getGreeting(): string {
   const hour = new Date().getHours()
   if (hour < 12) return 'Good Morning'

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuthStore, useDataStore } from '@/lib/store'
 import { api } from '@/lib/api'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
+import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { ScrollArea } from '@/components/ui/ScrollArea'
@@ -51,7 +52,7 @@ export default function StudentDailyBriefing() {
   const pendingAssignments = assignments.filter((a: any) => a.status === 'active' || a.studentStatus === 'pending')
   const overdueBooks = borrowedBooks.filter((b: any) => b.status === 'overdue')
   const attendancePercent = attendance.length > 0 ? attendance[0]?.percentage : (user?.attendance || 0)
-  const gpa = user?.gpa || 0
+  const gpa = normalizeAcademicPercentage(user?.gpa || 0)
 
   const upcomingExams = events.filter((e: any) => e.type === 'exam' || e.title.toLowerCase().includes('exam'))
     .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -76,7 +77,7 @@ export default function StudentDailyBriefing() {
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card><CardContent className="p-4"><div className="flex items-center gap-3"><TrendingUp className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{gpa.toFixed(1)}</p><p className="text-xs text-muted-foreground">GPA</p></div></div></CardContent></Card>
+        <Card><CardContent className="p-4"><div className="flex items-center gap-3"><TrendingUp className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{formatPercentage(gpa)}</p><p className="text-xs text-muted-foreground">Academic %</p></div></div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center gap-3"><CheckCircle className="w-8 h-8 text-green-500" /><div><p className="text-2xl font-bold">{attendancePercent}%</p><p className="text-xs text-muted-foreground">Attendance</p></div></div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center gap-3"><AlertCircle className="w-8 h-8 text-red-500" /><div><p className="text-2xl font-bold">{pendingAssignments.length}</p><p className="text-xs text-muted-foreground">Pending</p></div></div></CardContent></Card>
         <Card><CardContent className="p-4"><div className="flex items-center gap-3"><Bell className="w-8 h-8 text-blue-500" /><div><p className="text-2xl font-bold">{announcements.filter(a => a.pinned).length}</p><p className="text-xs text-muted-foreground">Pinned</p></div></div></CardContent></Card>
