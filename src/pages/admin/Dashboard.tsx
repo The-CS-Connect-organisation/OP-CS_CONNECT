@@ -22,7 +22,12 @@ import {
   ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell,
   LineChart, Line
 } from 'recharts'
+<<<<<<< HEAD
+import { getAdminAnalytics } from '@/lib/api';
+const { data: adminAnalytics, error: adminAnalyticsError } = useSWR('adminAnalytics', getAdminAnalytics);
+=======
 
+>>>>>>> bca81aed19d5067907b194e2a1fac6b8258cef36
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -34,6 +39,11 @@ const itemVariants = {
 }
 
 
+<<<<<<< HEAD
+
+
+=======
+>>>>>>> bca81aed19d5067907b194e2a1fac6b8258cef36
 
 export default function AdminDashboard() {
   const { user } = useAuthStore()
@@ -77,6 +87,12 @@ export default function AdminDashboard() {
     ])
   }, [])
 
+<<<<<<< HEAD
+  if (!adminAnalytics) return <div>Loading...</div>;
+  if (adminAnalyticsError) return <div>Error loading data</div>;
+
+=======
+>>>>>>> bca81aed19d5067907b194e2a1fac6b8258cef36
   return (
     <>
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
@@ -119,10 +135,17 @@ export default function AdminDashboard() {
         {/* Stats Grid */}
         <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
+<<<<<<< HEAD
+            { label: 'Total Students', value: adminAnalytics.totalStudents.toLocaleString(), icon: GraduationCap, color: 'from-orange-500 to-red-500', change: '+60 this month', trend: 'up' },
+            { label: 'Total Teachers', value: adminAnalytics.totalTeachers.toString(), icon: Users, color: 'from-orange-600 to-amber-600', change: '5 on leave', trend: 'neutral' },
+            { label: 'Revenue', value: `₹${(adminAnalytics.totalRevenue / 100000).toFixed(1)}L`, icon: DollarSign, color: 'from-emerald-600 to-teal-600', change: '+12% YoY', trend: 'up' },
+            { label: 'Attendance', value: `${adminAnalytics.attendanceRate}%`, icon: Activity, color: 'from-amber-600 to-orange-600', change: 'School-wide', trend: 'up' },
+=======
             { label: 'Total Students', value: liveData.students.toLocaleString(), icon: GraduationCap, color: 'from-orange-500 to-red-500', change: 'enrolled', trend: 'up' },
             { label: 'Total Teachers', value: liveData.teachers.toString(), icon: Users, color: 'from-orange-600 to-amber-600', change: `${liveData.onLeave} on leave`, trend: 'neutral' },
             { label: 'Revenue', value: `₹${((liveData.totalRevenue || 0) / 100000).toFixed(1)}L`, icon: DollarSign, color: 'from-emerald-600 to-teal-600', change: 'invoiced', trend: 'up' },
             { label: 'Attendance', value: `${liveData.attendanceRate || 0}%`, icon: Activity, color: 'from-amber-600 to-orange-600', change: 'School-wide', trend: 'up' },
+>>>>>>> bca81aed19d5067907b194e2a1fac6b8258cef36
           ].map((stat) => (
             <motion.div key={stat.label} whileHover={{ y: -2, scale: 1.02 }}>
               <Card glow>
@@ -163,7 +186,11 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
+<<<<<<< HEAD
+                    <AreaChart data={adminAnalytics.revenueOverTime}>
+=======
                     <AreaChart data={[{ month: 'Collected', collected: liveData.totalRevenue || 0, expenses: 0 }]}>
+>>>>>>> bca81aed19d5067907b194e2a1fac6b8258cef36
                       <defs>
                         <linearGradient id="revGradient" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
@@ -207,8 +234,13 @@ export default function AdminDashboard() {
                 <div className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
+<<<<<<< HEAD
+                      <Pie data={adminAnalytics.departmentDistribution} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="teachers" nameKey="name">
+                        {adminAnalytics.departmentDistribution.map((entry, index) => (
+=======
                       <Pie data={liveData.departments.length ? liveData.departments : [{ name: 'No data', teachers: 1, color: '#6b7280' }]} cx="50%" cy="50%" innerRadius={40} outerRadius={70} paddingAngle={3} dataKey="teachers" nameKey="name">
                         {(liveData.departments.length ? liveData.departments : [{ name: 'No data', teachers: 1, color: '#6b7280' }]).map((entry: any, index: number) => (
+>>>>>>> bca81aed19d5067907b194e2a1fac6b8258cef36
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
@@ -217,7 +249,11 @@ export default function AdminDashboard() {
                   </ResponsiveContainer>
                 </div>
                 <div className="space-y-2 mt-2">
+<<<<<<< HEAD
+                  {adminAnalytics.departmentDistribution.map(dept => (
+=======
                   {(liveData.departments.length ? liveData.departments : [{ name: 'No data', teachers: 0, color: '#6b7280' }]).map((dept: any) => (
+>>>>>>> bca81aed19d5067907b194e2a1fac6b8258cef36
                     <div key={dept.name} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: dept.color }} />
@@ -246,7 +282,11 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
+<<<<<<< HEAD
+                    <LineChart data={adminAnalytics.enrollmentTrends}>
+=======
                     <LineChart data={[{ month: 'Current', students: liveData.students }]}>
+>>>>>>> bca81aed19d5067907b194e2a1fac6b8258cef36
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                       <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
@@ -273,7 +313,11 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
+<<<<<<< HEAD
+                  {adminAnalytics.recentActivities.map(activity => (
+=======
                   {(liveData.activities.length ? liveData.activities : [{ id: 0, action: 'No recent activity', detail: 'Data will appear here', time: '', type: 'info' }]).map((activity: any) => (
+>>>>>>> bca81aed19d5067907b194e2a1fac6b8258cef36
                     <div key={activity.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors">
                       <div className={cn(
                         "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",

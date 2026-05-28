@@ -653,6 +653,39 @@ export const api = {
     apiFetch(`/scheduling/timetable/${className}/${day}/${periodIdx}`, { method: 'PUT', body: JSON.stringify(data) }),
 
   // Room Booking
+  getRoomBookings: () => apiFetch('/scheduling/rooms'),
+  createRoomBooking: (data: any) => apiFetch('/scheduling/rooms', { method: 'POST', body: JSON.stringify(data) }),
+  updateRoomBooking: (id: string, data: any) => apiFetch(`/scheduling/rooms/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteRoomBooking: (id: string) => apiFetch(`/scheduling/rooms/${id}`, { method: 'DELETE' }),
+
+  // Translation
+  translateContent: (data: any) => apiFetch('/comms/translations', { method: 'POST', body: JSON.stringify(data) }),
+
+  // ERP - Clients
+  getClients: () => apiFetch('/erp/clients'),
+  createClient: (data: any) => apiFetch('/erp/clients', { method: 'POST', body: JSON.stringify(data) }),
+  updateClient: (id: string, data: any) => apiFetch(`/erp/clients/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteClient: (id: string) => apiFetch(`/erp/clients/${id}`, { method: 'DELETE' }),
+
+  // ERP - Leads
+  getLeads: () => apiFetch('/erp/leads'),
+  createLead: (data: any) => apiFetch('/erp/leads', { method: 'POST', body: JSON.stringify(data) }),
+  updateLead: (id: string, data: any) => apiFetch(`/erp/leads/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // ERP - Products
+  getProducts: () => apiFetch('/erp/products'),
+  createProduct: (data: any) => apiFetch('/erp/products', { method: 'POST', body: JSON.stringify(data) }),
+  updateProduct: (id: string, data: any) => apiFetch(`/erp/products/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // ERP - Orders
+  getOrders: () => apiFetch('/erp/orders'),
+  createOrder: (data: any) => apiFetch('/erp/orders', { method: 'POST', body: JSON.stringify(data) }),
+  updateOrder: (id: string, data: any) => apiFetch(`/erp/orders/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // ERP - Company Settings
+  getCompanySettings: () => apiFetch('/erp/company'),
+  updateCompanySettings: (data: any) => apiFetch('/erp/company', { method: 'PUT', body: JSON.stringify(data) })
+};
   getRoomBookings: (date?: string) => {
     const query = date ? `?date=${date}` : '';
     return apiFetch(`/scheduling/rooms${query}`);
@@ -996,3 +1029,7 @@ export const api = {
   getMoneyFormat: () => apiFetch('/erp/money-format'),
   updateMoneyFormat: (data: any) => apiFetch('/erp/money-format', { method: 'PUT', body: JSON.stringify(data) }),
 };
+<<<<<<< HEAD
+>>>>>>> e10e214bd516108d0463f33fa51561cb3f3c1bfd
+=======
+>>>>>>> bca81aed19d5067907b194e2a1fac6b8258cef36
