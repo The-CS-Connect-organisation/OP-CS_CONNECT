@@ -18,7 +18,10 @@ import {
   Stethoscope, HelpCircle, ThumbsUp, FolderOpen, Printer,
   FileSpreadsheet, Landmark, Banknote, UserPlus, CalendarDays,
   ListChecks, Gauge, Waypoints, Navigation, CircleUser, BookCopy,
-  ScanLine, Route, ChevronDown, Home, GraduationCap as Cap, Briefcase
+  ScanLine, Route, ChevronDown, Home, GraduationCap as Cap, Briefcase,
+  HeartPulse, Scale, Handshake, Trophy as TrophyIcon, Medal, GraduationCap as GradCap,
+  UtensilsCrossed, Truck, Building as BuildingIcon, Network, Workflow, Database,
+  ScrollText, Vote, Shirt, Dumbbell, Footprints, Cog
 } from 'lucide-react'
 
 interface NavItem {
@@ -200,12 +203,33 @@ const navSections: Record<UserRole, NavSection[]> = {
       ]
     },
     {
+      label: 'Student Services (P3)',
+      items: [
+        { icon: MessageSquare, label: 'Counselling', path: '/admin/counselling' },
+        { icon: HeartPulse, label: 'Health Services', path: '/admin/health' },
+        { icon: Scale, label: 'Discipline', path: '/admin/discipline' },
+        { icon: Trophy, label: 'Activities', path: '/admin/activities' },
+        { icon: FolderOpen, label: 'Portfolio', path: '/admin/portfolio' },
+        { icon: GraduationCap, label: 'Enrolment', path: '/admin/enrolment' },
+      ]
+    },
+    {
+      label: 'Facilities (P4)',
+      items: [
+        { icon: Building2, label: 'Facilities', path: '/admin/facilities' },
+        { icon: Truck, label: 'Transport', path: '/admin/transport' },
+        { icon: UtensilsCrossed, label: 'Food Service', path: '/admin/food-service' },
+        { icon: Dumbbell, label: 'Athletics', path: '/admin/athletics' },
+        { icon: Handshake, label: 'Alumni', path: '/admin/alumni' },
+        { icon: Cog, label: 'Platform', path: '/admin/platform' },
+      ]
+    },
+    {
       label: 'Services',
       items: [
         { icon: Search, label: 'Lost & Found', path: '/admin/lost-found' },
         { icon: AlertTriangle, label: 'Anonymous Report', path: '/admin/anonymous-report' },
         { icon: Stethoscope, label: 'School Clinic', path: '/admin/clinic' },
-        { icon: FolderOpen, label: 'E-Portfolio', path: '/admin/e-portfolio' },
         { icon: Headphones, label: 'IT Helpdesk', path: '/admin/it-helpdesk' },
         { icon: SkipForward, label: 'Skip the Bus', path: '/admin/skip-bus' },
         { icon: Receipt, label: 'Fee Installments', path: '/admin/fee-installments' },
@@ -370,6 +394,28 @@ const navSections: Record<UserRole, NavSection[]> = {
         { icon: CreditCard, label: 'Fees', path: '/manager/fees' },
         { icon: Wallet, label: 'Payroll', path: '/manager/payroll' },
         { icon: Library, label: 'CS Library', path: '/cs-library' },
+      ]
+    },
+    {
+      label: 'Student Services (P3)',
+      items: [
+        { icon: MessageSquare, label: 'Counselling', path: '/manager/counselling' },
+        { icon: HeartPulse, label: 'Health', path: '/manager/health' },
+        { icon: Scale, label: 'Discipline', path: '/manager/discipline' },
+        { icon: Trophy, label: 'Activities', path: '/manager/activities' },
+        { icon: FolderOpen, label: 'Portfolio', path: '/manager/portfolio' },
+        { icon: GradCap, label: 'Enrolment', path: '/manager/enrolment' },
+      ]
+    },
+    {
+      label: 'Facilities (P4)',
+      items: [
+        { icon: Building2, label: 'Facilities', path: '/manager/facilities' },
+        { icon: Truck, label: 'Transport', path: '/manager/transport' },
+        { icon: UtensilsCrossed, label: 'Food Service', path: '/manager/food-service' },
+        { icon: Dumbbell, label: 'Athletics', path: '/manager/athletics' },
+        { icon: Handshake, label: 'Alumni', path: '/manager/alumni' },
+        { icon: Cog, label: 'Platform', path: '/manager/platform' },
       ]
     },
     {
