@@ -1,6 +1,6 @@
 import gsap from "gsap";
 import { useWindowScroll } from "react-use";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogIn, LogOut, LayoutDashboard, CircleUserRound, ChevronRight } from 'lucide-react';
 
@@ -19,33 +19,33 @@ const navItems = ["About", "Features", "Story"];
 const NavBar = () => {
   const navRef = useRef<HTMLDivElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const [audioStarted, setAudioStarted] = useState(false);
 
   const { y: currentScrollY } = useWindowScroll();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
 
-  // Audio - muted autoplay on load, unmute on first scroll/mousemove
+  // Audio - starts on first tap/click/scroll
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-
     audio.loop = true;
     audio.volume = 1.0;
-    audio.play().catch(() => {});
 
-    let unmuted = false;
-    const unmute = () => {
-      if (unmuted) return;
-      unmuted = true;
-      audio.muted = false;
-      document.removeEventListener("scroll", unmute, { capture: true });
-      document.removeEventListener("mousemove", unmute);
-      document.removeEventListener("touchstart", unmute);
+    let started = false;
+    const start = () => {
+      if (started) return;
+      started = true;
+      setAudioStarted(true);
+      audio.play().catch(() => {});
+      document.removeEventListener("click", start);
+      document.removeEventListener("touchstart", start);
+      document.removeEventListener("scroll", start, { capture: true });
     };
 
-    document.addEventListener("scroll", unmute, { capture: true });
-    document.addEventListener("mousemove", unmute);
-    document.addEventListener("touchstart", unmute);
+    document.addEventListener("click", start);
+    document.addEventListener("touchstart", start);
+    document.addEventListener("scroll", start, { capture: true });
   }, []);
 
   // Navbar: visible on hero only, hides immediately when past hero,
@@ -100,10 +100,7 @@ const NavBar = () => {
 
   return (
     <>
-      <audio ref={audioRef} loop muted preload="auto">
-        <source src={`${import.meta.env.BASE_URL}audio/loop2.0.m4a`} type="audio/mp4" />
-        <source src={`${import.meta.env.BASE_URL}audio/loop.mp3`} type="audio/mpeg" />
-      </audio>
+      <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/loop2.0.m4a`} loop preload="auto" />
       <div
         ref={navRef}
         className="fixed inset-x-0 top-0 z-50 h-16 bg-white/10 backdrop-blur-md border-b border-transparent"
@@ -182,6 +179,13 @@ const NavBar = () => {
             </div>
           </nav>
         </header>
+      </div>
+      <div
+        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/70 text-xs font-general uppercase tracking-wider transition-all duration-700 select-none ${
+          audioStarted ? "opacity-0 scale-90 pointer-events-none" : "opacity-100"
+        }`}
+      >
+        tap or scroll to start audio
       </div>
     </>
   );
