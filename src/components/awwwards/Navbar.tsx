@@ -24,21 +24,29 @@ const NavBar = () => {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
 
-  // Audio - play on first tap/click
+  // Audio - muted autoplay on load, unmute on first scroll/mousemove
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    audio.loop = true;
-    audio.volume = 1.0;
 
-    const start = () => {
-      audio.play().catch(() => {});
-      document.removeEventListener("click", start);
-      document.removeEventListener("touchstart", start);
+    audio.loop = true;
+    audio.muted = true;
+    audio.volume = 1.0;
+    audio.play().catch(() => {});
+
+    let unmuted = false;
+    const unmute = () => {
+      if (unmuted) return;
+      unmuted = true;
+      audio.muted = false;
+      document.removeEventListener("scroll", unmute, { capture: true });
+      document.removeEventListener("mousemove", unmute);
+      document.removeEventListener("touchstart", unmute);
     };
 
-    document.addEventListener("click", start);
-    document.addEventListener("touchstart", start);
+    document.addEventListener("scroll", unmute, { capture: true });
+    document.addEventListener("mousemove", unmute);
+    document.addEventListener("touchstart", unmute);
   }, []);
 
   // Navbar: visible on hero only, hides immediately when past hero,
@@ -93,7 +101,7 @@ const NavBar = () => {
 
   return (
     <>
-      <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/loop.mp3`} loop preload="auto" />
+      <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/loop2.0.m4a`} loop preload="auto" />
       <div
         ref={navRef}
         className="fixed inset-x-0 top-0 z-50 h-16 bg-white/10 backdrop-blur-md border-b border-transparent"
