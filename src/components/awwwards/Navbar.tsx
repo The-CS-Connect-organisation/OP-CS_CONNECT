@@ -181,7 +181,7 @@ const NavBar = () => {
         </header>
       </div>
       <div
-        className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/70 text-xs font-general uppercase tracking-wider transition-all duration-700 select-none ${
+        className={`fixed bottom-6 left-6 z-50 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/70 text-xs font-general uppercase tracking-wider transition-all duration-700 select-none ${
           audioStarted ? "opacity-0 scale-90 pointer-events-none" : "opacity-100"
         }`}
       >
