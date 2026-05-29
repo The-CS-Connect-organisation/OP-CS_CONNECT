@@ -4,7 +4,7 @@ import {
   RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer
 } from 'recharts';
 
-const SubjectRadarChart = ({ grades }) => {
+const SubjectRadarChart = ({ grades }: { grades: any[] }) => {
   const radarData = grades.map((g: any) => ({ 
     subject: g.subject?.slice(0, 4) || '??',
     score: g.overall || 0,

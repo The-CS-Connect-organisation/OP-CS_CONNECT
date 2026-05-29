@@ -6,7 +6,7 @@ import {
 } from 'recharts';
 import { normalizeAcademicPercentage } from '@/lib/utils';
 
-const PerformanceChart = ({ grades, attendancePercent }) => {
+const PerformanceChart = ({ grades, attendancePercent }: { grades: any[], attendancePercent: number }) => {
   const performanceData = grades.map((g: any) => ({
     month: g.subject?.slice(0, 4) || '??',
     score: normalizeAcademicPercentage(g.overall || 0),

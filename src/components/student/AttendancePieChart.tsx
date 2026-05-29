@@ -4,7 +4,7 @@ import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer
 } from 'recharts';
 
-const AttendancePieChart = ({ attendancePercent }) => {
+const AttendancePieChart = ({ attendancePercent }: { attendancePercent: number }) => {
   const pieData = [
     { name: 'Present', value: attendancePercent, color: '#10b981' },
     { name: 'Absent', value: 100 - attendancePercent, color: '#ef4444' },
