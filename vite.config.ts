@@ -4,7 +4,7 @@ import react from '@vitejs/plugin-react'
 import path from 'path'
 
 export default defineConfig({
-  base: './',
+  base: '/OP-CS_CONNECT/',
   plugins: [react()],
   resolve: {
     alias: {
