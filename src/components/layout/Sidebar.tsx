@@ -43,7 +43,7 @@ export default function Sidebar() {
         {!isCollapsed ? (
           <div className="flex items-center gap-3 w-full min-w-0">
             <Avatar className="w-9 h-9 ring-2 ring-orange-400/30 shrink-0">
-              <AvatarImage src={user.avatar || ''''''} />
+              <AvatarImage src={user.avatar || ''} />
               <AvatarFallback className={cn("text-xs font-bold bg-gradient-to-br text-white", gradient)}>
                 {user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
               </AvatarFallback>
@@ -55,7 +55,7 @@ export default function Sidebar() {
           </div>
         ) : (
           <Avatar className="w-8 h-8 ring-2 ring-orange-400/30 shrink-0">
-            <AvatarImage src={user.avatar || ''''''} />
+            <AvatarImage src={user.avatar || ''} />
             <AvatarFallback className={cn("text-xs font-bold bg-gradient-to-br text-white", gradient)}>
               {user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
             </AvatarFallback>
