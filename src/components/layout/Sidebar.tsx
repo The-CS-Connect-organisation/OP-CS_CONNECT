@@ -123,6 +123,18 @@ export default function Sidebar() {
 
       {/* Footer - collapse toggle + logout */}
       <div className="border-t border-border/20 px-3 py-3 shrink-0 space-y-1">
+        <button
+          onClick={toggle}
+          className={cn(
+            "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-all w-full",
+            "text-muted-foreground/50 hover:text-foreground hover:bg-accent/30",
+            isCollapsed && "justify-center px-2"
+          )}
+          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          {!isCollapsed && <span>Collapse</span>}
+        </button>
 
         <button
           onClick={handleLogout}
