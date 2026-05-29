@@ -259,7 +259,7 @@ interface DataState {
   clearData: () => void;
 }
 
-export const useDataStore = create<DataState>()((set) => ({
+export const useDataStore = create<DataState>()((set, get) => ({
   students: [],
   teachers: [],
   subjects: [],
@@ -278,28 +278,22 @@ export const useDataStore = create<DataState>()((set) => ({
   error: null,
 
   fetchStudentData: async (studentId: string) => {
+    const { students } = get();
+    if (students.find(s => s.id === studentId)) {
+      return; // Data already exists, no need to fetch again
+    }
+
     set({ isLoading: true, error: null });
     try {
-      const [student, rawGrades, rawAttendance, rawFees, subjects, events, rawClubs] = await Promise.all([
+      // Prioritize essential data for the initial view
+      const [student, rawGrades, rawAttendance, rawFees] = await Promise.all([
         api.getStudent(studentId),
         api.getStudentGrades(studentId),
         api.getStudentAttendance(studentId),
         api.getStudentFees(studentId),
-        api.getSubjects(),
-        api.getEvents(),
-        api.getClubs(),
-      ]);
-      const className = student.class || '10-A';
-      const [rawAssignments, rawTimetable] = await Promise.all([
-        api.getAssignments({ class: className, studentId }),
-        api.getTimetable(className),
-      ]);
-      const [messages, notifications] = await Promise.all([
-        api.getMessages(studentId),
-        api.getNotifications(studentId),
       ]);
 
-      // Transform grades: API gives { subject, grade, marks } → dashboard needs { subject, overall, midTerm, final, grade, trend }
+      // Transform and set essential data first
       const subjectColors: Record<string, string> = {
         'Math': '#8b5cf6', 'Physics': '#3b82f6', 'Chemistry': '#10b981',
         'English': '#f59e0b', 'CS': '#6366f1', 'Biology': '#ec4899',
@@ -315,19 +309,40 @@ export const useDataStore = create<DataState>()((set) => ({
         color: subjectColors[g.subject] || '#6366f1',
       }));
 
-      // Transform attendance: API gives [{ date, status }] → compute percentage + monthly data
       const presentCount = rawAttendance.filter((a: any) => a.status === 'present').length;
       const totalCount = rawAttendance.length || 1;
       const attendancePercent = Math.round((presentCount / totalCount) * 100);
-      const attendance = [{ percentage: attendancePercent, month: 'Current' }];
 
-      // Transform fees: API gives { term, amount, paid, date, status } → add due field
       const fees = rawFees.map((f: any) => ({
         ...f,
         due: f.amount - f.paid,
       }));
 
-      // Transform assignments: add subject name from subjectId
+      set({
+        students: [{ ...student, gpa: normalizeAcademicPercentage(student.gpa || (grades.length ? grades.reduce((a: number, g: any) => a + g.overall, 0) / grades.length : 0)), attendance: student.attendance || attendancePercent }],
+        grades,
+        attendance: [{ percentage: student.attendance || attendancePercent, month: 'Current' }],
+        fees,
+        isLoading: false, // Set isLoading to false after essential data is loaded
+      });
+
+      // Fetch non-essential data in the background
+      const [subjects, events, rawClubs] = await Promise.all([
+        api.getSubjects(),
+        api.getEvents(),
+        api.getClubs(),
+      ]);
+      const className = student.class || '10-A';
+      const [rawAssignments, rawTimetable] = await Promise.all([
+        api.getAssignments({ class: className, studentId }),
+        api.getTimetable(className),
+      ]);
+      const [messages, notifications] = await Promise.all([
+        api.getMessages(studentId),
+        api.getNotifications(studentId),
+      ]);
+
+      // Transform and set non-essential data
       const subjectMap: Record<string, string> = {};
       subjects.forEach((s: any) => { subjectMap[s.id] = s.name; });
       const assignments = rawAssignments.map((a: any) => ({
@@ -337,7 +352,6 @@ export const useDataStore = create<DataState>()((set) => ({
         maxMarks: 50,
       }));
 
-      // Transform timetable: API gives [{ day, periods: [{ time, subject }] }] → [{ time, monday: {...}, tuesday: {...}, ... }]
       const dayMap: Record<string, string> = { 'Monday': 'monday', 'Tuesday': 'tuesday', 'Wednesday': 'wednesday', 'Thursday': 'thursday', 'Friday': 'friday' };
       const periodTimes = ['8:00 - 8:45', '8:50 - 9:35', '9:45 - 10:30', '10:30 - 11:15', '11:30 - 12:15'];
       const timetable: any[] = periodTimes.map(time => {
@@ -359,7 +373,6 @@ export const useDataStore = create<DataState>()((set) => ({
         });
       });
 
-      // Transform clubs: API gives { id, name, members: [ids], lead } → add count, icon, color
       const clubIcons = ['💻', '🔬', '🎤', '🎨', '⚽', '📚', '🎭', '🎵'];
       const clubColors = ['#6366f1', '#10b981', '#8b5cf6', '#f59e0b', '#3b82f6', '#ec4899', '#64748b', '#f97316'];
       const clubs = rawClubs.map((c: any, i: number) => ({
@@ -371,18 +384,7 @@ export const useDataStore = create<DataState>()((set) => ({
         lead: c.lead,
       }));
 
-      // Performance data for chart
-      const performanceData = grades.map((g: any) => ({
-        month: g.subject?.slice(0, 4) || '??',
-        score: normalizeAcademicPercentage(g.overall || 0),
-        attendance: attendancePercent,
-      }));
-
       set({
-        students: [{ ...student, gpa: normalizeAcademicPercentage(student.gpa || (grades.length ? grades.reduce((a: number, g: any) => a + g.overall, 0) / grades.length : 0)), attendance: student.attendance || attendancePercent }],
-        grades,
-        attendance: [{ percentage: student.attendance || attendancePercent, month: 'Current' }],
-        fees,
         subjects,
         assignments,
         timetable,
@@ -390,8 +392,8 @@ export const useDataStore = create<DataState>()((set) => ({
         clubs,
         messages,
         notifications,
-        isLoading: false,
       });
+
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
     }
