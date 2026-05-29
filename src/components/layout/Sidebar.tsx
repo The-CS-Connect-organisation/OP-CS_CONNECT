@@ -1,456 +1,13 @@
 import React, { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useAuthStore, useSidebarStore, type UserRole } from '@/lib/store'
+import { useAuthStore, useSidebarStore } from '@/lib/store'
+import { navSections, roleGradients, roleLabels } from '@/lib/nav-config'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar'
 import {
-  LayoutDashboard, BookOpen, ClipboardList, Calendar, MessageSquare,
-  CreditCard, Trophy, Bell, Settings, LogOut, ChevronLeft, ChevronRight,
-  Users, BarChart3, School, DollarSign, Shield, MapPin, Bus,
-  FileText, UserCheck, Building2, Globe, Fuel,
-  Sparkles, Bot, X, GraduationCap, StickyNote, Share2, Megaphone,
-  Brain, Target, Award, Star, User, PenTool, FileCheck,
-  TrendingUp, Radio, Wrench, Search, Heart, Clock, Zap,
-  BookMarked, Library, Headphones, AlertTriangle, SkipForward,
-  Wallet, Receipt, BadgeCheck, BarChart2, PieChart, Activity,
-  Eye, Mail, Phone, Send, RadioTower, Siren, Package, Coffee,
-  Stethoscope, HelpCircle, ThumbsUp, FolderOpen, Printer,
-  FileSpreadsheet, Landmark, Banknote, UserPlus, CalendarDays,
-  ListChecks, Gauge, Waypoints, Navigation, CircleUser, BookCopy,
-  ScanLine, Route, ChevronDown, Home, GraduationCap as Cap, Briefcase,
-  HeartPulse, Scale, Handshake, Trophy as TrophyIcon, Medal, GraduationCap as GradCap,
-  UtensilsCrossed, Truck, Building as BuildingIcon, Network, Workflow, Database,
-  ScrollText, Vote, Shirt, Dumbbell, Footprints, Cog
+  LogOut, ChevronDown, ChevronLeft, ChevronRight, X, Menu
 } from 'lucide-react'
-
-interface NavItem {
-  icon: React.ElementType
-  label: string
-  path: string
-}
-
-interface NavSection {
-  label: string
-  items: NavItem[]
-}
-
-const navSections: Record<UserRole, NavSection[]> = {
-  student: [
-    {
-      label: 'Main',
-      items: [
-        { icon: Home, label: 'Dashboard', path: '/student' },
-        { icon: Zap, label: 'Daily Briefing', path: '/student/daily-briefing' },
-        { icon: CalendarDays, label: 'Calendar', path: '/student/cs-calendar' },
-      ]
-    },
-    {
-      label: 'Academics',
-      items: [
-        { icon: ClipboardList, label: 'Assignments', path: '/student/assignments' },
-        { icon: BarChart3, label: 'Grades', path: '/student/grades' },
-        { icon: Calendar, label: 'Timetable', path: '/student/timetable' },
-        { icon: UserCheck, label: 'Attendance', path: '/student/attendance' },
-        { icon: FileText, label: 'Exams', path: '/student/exams' },
-        { icon: FileSpreadsheet, label: 'Exam Syllabus', path: '/student/exam-syllabus' },
-        { icon: CreditCard, label: 'Fees', path: '/student/fees' },
-      ]
-    },
-    {
-      label: 'Tools',
-      items: [
-        { icon: Sparkles, label: 'AI Assistant', path: '/student/ai' },
-        { icon: Brain, label: 'Study Planner', path: '/student/study-planner' },
-        { icon: Target, label: 'Focus Mode', path: '/student/focus-mode' },
-        { icon: StickyNote, label: 'Notes', path: '/student/notes' },
-        { icon: Share2, label: 'Shared Notes', path: '/student/shared-notes' },
-        { icon: Library, label: 'CS Library', path: '/cs-library' },
-        { icon: PenTool, label: 'Exercises', path: '/student/exercises' },
-      ]
-    },
-    {
-      label: 'Community',
-      items: [
-        { icon: MessageSquare, label: 'Messages', path: '/student/messages' },
-        { icon: Globe, label: 'Social Club', path: '/student/social-club' },
-        { icon: Megaphone, label: 'Announcements', path: '/student/announcements' },
-        { icon: Bus, label: 'Bus Tracking', path: '/student/bus-tracking' },
-      ]
-    },
-    {
-      label: 'Profile',
-      items: [
-        { icon: Award, label: 'Achievements', path: '/student/achievements' },
-        { icon: Star, label: 'Accolades', path: '/student/accolades' },
-        { icon: User, label: 'Profile', path: '/student/profile' },
-      ]
-    },
-  ],
-  teacher: [
-    {
-      label: 'Main',
-      items: [
-        { icon: Home, label: 'Dashboard', path: '/teacher' },
-      ]
-    },
-    {
-      label: 'Teaching',
-      items: [
-        { icon: ClipboardList, label: 'Assignments', path: '/teacher/assignments' },
-        { icon: UserCheck, label: 'Attendance', path: '/teacher/attendance' },
-        { icon: FileCheck, label: 'Grading', path: '/teacher/grading' },
-        { icon: StickyNote, label: 'Class Notes', path: '/teacher/notes' },
-        { icon: FileText, label: 'Exams', path: '/teacher/exams' },
-        { icon: FileSpreadsheet, label: 'Exam Syllabus', path: '/teacher/exam-syllabus' },
-        { icon: Cap, label: 'Report Cards', path: '/teacher/report-cards' },
-        { icon: BookOpen, label: 'Classroom', path: '/teacher/classroom' },
-        { icon: BarChart3, label: 'Exam Results', path: '/teacher/exam-results' },
-      ]
-    },
-    {
-      label: 'Analytics',
-      items: [
-        { icon: BarChart3, label: 'Class Analytics', path: '/teacher/class-analytics' },
-        { icon: TrendingUp, label: 'Student Progress', path: '/teacher/student-progress' },
-        { icon: PieChart, label: 'Performance', path: '/teacher/performance-reports' },
-      ]
-    },
-    {
-      label: 'Communication',
-      items: [
-        { icon: MessageSquare, label: 'Messages', path: '/teacher/messages' },
-        { icon: Bell, label: 'Notifications', path: '/teacher/notifications' },
-        { icon: Radio, label: 'Comms Hub', path: '/teacher/comms-hub' },
-      ]
-    },
-    {
-      label: 'Tools',
-      items: [
-        { icon: Sparkles, label: 'AI Lab', path: '/teacher/ai' },
-        { icon: Library, label: 'CS Library', path: '/cs-library' },
-      ]
-    },
-  ],
-  admin: [
-    {
-      label: 'Main',
-      items: [
-        { icon: Home, label: 'Dashboard', path: '/admin' },
-        { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },
-      ]
-    },
-    {
-      label: 'Management',
-      items: [
-        { icon: Users, label: 'Users', path: '/admin/users' },
-        { icon: Landmark, label: 'Accounts', path: '/admin/accounts' },
-        { icon: Calendar, label: 'Timetable', path: '/admin/timetable' },
-        { icon: Megaphone, label: 'Announcements', path: '/admin/announcements' },
-        { icon: Wallet, label: 'Payroll & HR', path: '/admin/payroll' },
-      ]
-    },
-    {
-      label: 'Academic',
-      items: [
-        { icon: FileText, label: 'Exams', path: '/admin/exams' },
-        { icon: CreditCard, label: 'Fees & Billing', path: '/admin/fees' },
-        { icon: Clock, label: 'Scheduling', path: '/admin/scheduling' },
-        { icon: BookOpen, label: 'SIS', path: '/admin/sis' },
-        { icon: ClipboardList, label: 'Classroom', path: '/admin/classroom' },
-      ]
-    },
-    {
-      label: 'Finance',
-      items: [
-        { icon: Receipt, label: 'Invoicing', path: '/admin/invoicing' },
-        { icon: DollarSign, label: 'Finance Suite', path: '/admin/finance-full' },
-      ]
-    },
-    {
-      label: 'HR & Staff',
-      items: [
-        { icon: Users, label: 'Human Resources', path: '/admin/hr' },
-      ]
-    },
-    {
-      label: 'Library',
-      items: [
-        { icon: BookCopy, label: 'Library Management', path: '/admin/library' },
-      ]
-    },
-    {
-      label: 'ERP & CRM',
-      items: [
-        { icon: Building2, label: 'ERP System', path: '/admin/erp' },
-      ]
-    },
-    {
-      label: 'Communications',
-      items: [
-        { icon: RadioTower, label: 'Communications', path: '/admin/comms' },
-        { icon: Sparkles, label: 'AI Lab', path: '/admin/ai' },
-        { icon: Radio, label: 'Comms Hub', path: '/admin/comms-hub' },
-        { icon: FileText, label: 'Circulars', path: '/admin/circulars' },
-        { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
-        { icon: Library, label: 'CS Library', path: '/cs-library' },
-      ]
-    },
-    {
-      label: 'Transport',
-      items: [
-        { icon: Bus, label: 'Bus Assignment', path: '/admin/bus-assignment' },
-      ]
-    },
-    {
-      label: 'Student Services (P3)',
-      items: [
-        { icon: MessageSquare, label: 'Counselling', path: '/admin/counselling' },
-        { icon: HeartPulse, label: 'Health Services', path: '/admin/health' },
-        { icon: Scale, label: 'Discipline', path: '/admin/discipline' },
-        { icon: Trophy, label: 'Activities', path: '/admin/activities' },
-        { icon: FolderOpen, label: 'Portfolio', path: '/admin/portfolio' },
-        { icon: GraduationCap, label: 'Enrolment', path: '/admin/enrolment' },
-      ]
-    },
-    {
-      label: 'Facilities (P4)',
-      items: [
-        { icon: Building2, label: 'Facilities', path: '/admin/facilities' },
-        { icon: Truck, label: 'Transport', path: '/admin/transport' },
-        { icon: UtensilsCrossed, label: 'Food Service', path: '/admin/food-service' },
-        { icon: Dumbbell, label: 'Athletics', path: '/admin/athletics' },
-        { icon: Handshake, label: 'Alumni', path: '/admin/alumni' },
-        { icon: Cog, label: 'Platform', path: '/admin/platform' },
-      ]
-    },
-    {
-      label: 'Services',
-      items: [
-        { icon: Search, label: 'Lost & Found', path: '/admin/lost-found' },
-        { icon: AlertTriangle, label: 'Anonymous Report', path: '/admin/anonymous-report' },
-        { icon: Stethoscope, label: 'School Clinic', path: '/admin/clinic' },
-        { icon: Headphones, label: 'IT Helpdesk', path: '/admin/it-helpdesk' },
-        { icon: SkipForward, label: 'Skip the Bus', path: '/admin/skip-bus' },
-        { icon: Receipt, label: 'Fee Installments', path: '/admin/fee-installments' },
-      ]
-    },
-  ],
-  parent: [
-    {
-      label: 'Main',
-      items: [
-        { icon: Home, label: 'Dashboard', path: '/parent' },
-      ]
-    },
-    {
-      label: 'My Children',
-      items: [
-        { icon: UserCheck, label: 'Attendance', path: '/parent/attendance' },
-        { icon: BarChart3, label: 'Grades', path: '/parent/grades' },
-        { icon: FileSpreadsheet, label: 'Exam Syllabus', path: '/parent/exam-syllabus' },
-        { icon: Calendar, label: 'Timetable', path: '/parent/timetable' },
-        { icon: CreditCard, label: 'Fees', path: '/parent/fees' },
-      ]
-    },
-    {
-      label: 'Services',
-      items: [
-        { icon: Bus, label: 'Bus Tracking', path: '/parent/bus-tracking' },
-        { icon: Bell, label: 'Notifications', path: '/parent/notifications' },
-      ]
-    },
-    {
-      label: 'Tools',
-      items: [
-        { icon: MessageSquare, label: 'Messages', path: '/parent/messages' },
-        { icon: User, label: 'Profile', path: '/parent/profile' },
-      ]
-    },
-  ],
-  driver: [
-    {
-      label: 'Main',
-      items: [
-        { icon: Home, label: 'Dashboard', path: '/driver' },
-        { icon: MapPin, label: 'Route', path: '/driver/profile' },
-        { icon: User, label: 'Profile', path: '/driver/profile' },
-      ]
-    },
-  ],
-  librarian: [
-    {
-      label: 'Main',
-      items: [
-        { icon: Library, label: 'Dashboard', path: '/librarian' },
-        { icon: BookCopy, label: 'Management', path: '/librarian/management' },
-        { icon: User, label: 'Profile', path: '/librarian/profile' },
-      ]
-    },
-  ],
-  coordinator: [
-    {
-      label: 'Main',
-      items: [
-        { icon: Home, label: 'Dashboard', path: '/coordinator' },
-      ]
-    },
-    {
-      label: 'Management',
-      items: [
-        { icon: Building2, label: 'Schools', path: '/coordinator/schools' },
-        { icon: Users, label: 'Staff', path: '/coordinator/staff' },
-      ]
-    },
-    {
-      label: 'Analytics',
-      items: [
-        { icon: BarChart3, label: 'Analytics', path: '/coordinator/analytics' },
-      ]
-    },
-    {
-      label: 'Communication',
-      items: [
-        { icon: Radio, label: 'Broadcast', path: '/coordinator/broadcast' },
-      ]
-    },
-    {
-      label: 'Tools',
-      items: [
-        { icon: Sparkles, label: 'AI Reports', path: '/coordinator/ai' },
-      ]
-    },
-  ],
-  manager: [
-    {
-      label: 'Main',
-      items: [
-        { icon: Home, label: 'Dashboard', path: '/manager' },
-      ]
-    },
-    {
-      label: 'People',
-      items: [
-        { icon: Users, label: 'User Management', path: '/manager/users' },
-        { icon: Cap, label: 'Academics', path: '/manager/academics' },
-        { icon: Briefcase, label: 'HR', path: '/manager/hr' },
-      ]
-    },
-    {
-      label: 'Operations',
-      items: [
-        { icon: Wallet, label: 'Finance', path: '/manager/finance' },
-        { icon: Bus, label: 'Transport', path: '/manager/transport' },
-        { icon: Calendar, label: 'Events', path: '/manager/events' },
-        { icon: FileText, label: 'Exams', path: '/manager/exams' },
-        { icon: Clock, label: 'Timetable', path: '/manager/timetable' },
-      ]
-    },
-    {
-      label: 'Teaching',
-      items: [
-        { icon: UserCheck, label: 'Attendance', path: '/manager/attendance' },
-        { icon: FileCheck, label: 'Grading', path: '/manager/grading' },
-        { icon: StickyNote, label: 'Notes', path: '/manager/notes' },
-        { icon: Cap, label: 'Reports', path: '/manager/reports' },
-      ]
-    },
-    {
-      label: 'Scheduling & SIS',
-      items: [
-        { icon: Calendar, label: 'Scheduling', path: '/manager/scheduling' },
-        { icon: BookOpen, label: 'SIS', path: '/manager/sis' },
-      ]
-    },
-    {
-      label: 'Finance & Invoicing',
-      items: [
-        { icon: Receipt, label: 'Invoicing', path: '/manager/invoicing' },
-        { icon: Building2, label: 'ERP', path: '/manager/erp' },
-      ]
-    },
-    {
-      label: 'Library',
-      items: [
-        { icon: BookCopy, label: 'Library Management', path: '/manager/library' },
-      ]
-    },
-    {
-      label: 'Communications',
-      items: [
-        { icon: RadioTower, label: 'Comms', path: '/manager/comms' },
-        { icon: FileText, label: 'Circulars', path: '/manager/circulars' },
-        { icon: Megaphone, label: 'Announcements', path: '/manager/announcements' },
-        { icon: MessageSquare, label: 'Messages', path: '/manager/messages' },
-        { icon: Radio, label: 'Comms Hub', path: '/manager/comms-hub' },
-        { icon: Bell, label: 'Notifications', path: '/manager/notifications' },
-      ]
-    },
-    {
-      label: 'Analytics & Tools',
-      items: [
-        { icon: BarChart3, label: 'Analytics', path: '/manager/analytics' },
-        { icon: Sparkles, label: 'AI Lab', path: '/manager/ai' },
-        { icon: CreditCard, label: 'Fees', path: '/manager/fees' },
-        { icon: Wallet, label: 'Payroll', path: '/manager/payroll' },
-        { icon: Library, label: 'CS Library', path: '/cs-library' },
-      ]
-    },
-    {
-      label: 'Student Services (P3)',
-      items: [
-        { icon: MessageSquare, label: 'Counselling', path: '/manager/counselling' },
-        { icon: HeartPulse, label: 'Health', path: '/manager/health' },
-        { icon: Scale, label: 'Discipline', path: '/manager/discipline' },
-        { icon: Trophy, label: 'Activities', path: '/manager/activities' },
-        { icon: FolderOpen, label: 'Portfolio', path: '/manager/portfolio' },
-        { icon: GradCap, label: 'Enrolment', path: '/manager/enrolment' },
-      ]
-    },
-    {
-      label: 'Facilities (P4)',
-      items: [
-        { icon: Building2, label: 'Facilities', path: '/manager/facilities' },
-        { icon: Truck, label: 'Transport', path: '/manager/transport' },
-        { icon: UtensilsCrossed, label: 'Food Service', path: '/manager/food-service' },
-        { icon: Dumbbell, label: 'Athletics', path: '/manager/athletics' },
-        { icon: Handshake, label: 'Alumni', path: '/manager/alumni' },
-        { icon: Cog, label: 'Platform', path: '/manager/platform' },
-      ]
-    },
-    {
-      label: 'Admin',
-      items: [
-        { icon: Shield, label: 'Security', path: '/manager/security' },
-        { icon: Settings, label: 'Settings', path: '/manager/settings' },
-        { icon: Eye, label: 'Audit Log', path: '/manager/audit-log' },
-        { icon: Bus, label: 'Bus Assignment', path: '/manager/bus-assignment' },
-      ]
-    },
-  ],
-}
-
-const roleGradients: Record<UserRole, string> = {
-  student: 'from-orange-500 to-amber-500',
-  teacher: 'from-orange-600 to-amber-500',
-  admin: 'from-orange-500 to-red-500',
-  coordinator: 'from-amber-500 to-orange-600',
-  manager: 'from-orange-600 to-amber-600',
-  driver: 'from-orange-600 to-amber-500',
-  parent: 'from-orange-500 to-amber-600',
-  librarian: 'from-orange-500 to-amber-500',
-}
-
-const roleLabels: Record<UserRole, string> = {
-  student: 'Student',
-  teacher: 'Teacher',
-  admin: 'Admin',
-  coordinator: 'Coordinator',
-  manager: 'Manager',
-  driver: 'Driver',
-  parent: 'Parent',
-  librarian: 'Librarian',
-}
 
 export default function Sidebar() {
   const { user, logout } = useAuthStore()
@@ -478,50 +35,63 @@ export default function Sidebar() {
   }
 
   const sidebarContent = (
-    <div className="flex flex-col h-full">
-      {/* Header - Clean, with user avatar */}
-      <div className={cn("flex items-center gap-3 px-3 py-3 border-b border-border/50", isCollapsed && "justify-center px-2")}>
-        <AnimatePresence>
-          {!isCollapsed && (
-            <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} className="flex items-center gap-2.5 w-full">
-              <Avatar className="w-9 h-9 ring-2 ring-orange-500/20">
-                <AvatarImage src={user.avatar || ''} />
-                <AvatarFallback className={cn("text-xs font-bold bg-gradient-to-br text-white", gradient)}>{user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <h1 className="font-semibold text-sm leading-tight truncate">{user.name}</h1>
-                <p className="text-[10px] text-muted-foreground">{roleLabels[user.role]}</p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        {isCollapsed && (
-          <Avatar className="w-8 h-8 ring-2 ring-orange-500/20">
+    <div className="flex flex-col h-full bg-sidebar text-sidebar-foreground">
+      {/* Header - user profile */}
+      <div className={cn(
+        "flex items-center gap-3 px-4 py-4 border-b border-sidebar-border shrink-0",
+        isCollapsed && "justify-center px-2"
+      )}>
+        {!isCollapsed ? (
+          <div className="flex items-center gap-3 w-full min-w-0">
+            <Avatar className="w-9 h-9 ring-2 ring-sidebar-accent/30 shrink-0">
+              <AvatarImage src={user.avatar || ''} />
+              <AvatarFallback className={cn("text-xs font-bold bg-gradient-to-br text-white", gradient)}>
+                {user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold leading-tight truncate text-sidebar-foreground">{user.name}</p>
+              <p className="text-[11px] text-sidebar-foreground/50 font-medium">{roleLabels[user.role]}</p>
+            </div>
+          </div>
+        ) : (
+          <Avatar className="w-8 h-8 ring-2 ring-sidebar-accent/30 shrink-0">
             <AvatarImage src={user.avatar || ''} />
-            <AvatarFallback className={cn("text-xs font-bold bg-gradient-to-br text-white", gradient)}>{user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}</AvatarFallback>
+            <AvatarFallback className={cn("text-xs font-bold bg-gradient-to-br text-white", gradient)}>
+              {user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+            </AvatarFallback>
           </Avatar>
         )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto px-2 py-2 space-y-0.5 scrollbar-thin">
+      <nav className="flex-1 overflow-y-auto px-3 py-3 space-y-0.5 scrollbar-thin">
         {sections.map((section) => {
           const isSectionCollapsed = collapsedSections.has(section.label)
           return (
-            <div key={section.label} className="mb-1">
+            <div key={section.label} className="mb-1.5">
               {!isCollapsed && (
                 <button
                   onClick={() => toggleSection(section.label)}
-                  className="flex items-center justify-between w-full px-2 py-1.5 mb-0.5 rounded-md hover:bg-accent/30 transition-colors"
+                  className="flex items-center justify-between w-full px-2 py-1.5 rounded-md hover:bg-sidebar-muted/60 transition-colors group"
                 >
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">{section.label}</span>
-                  <ChevronDown className={cn("w-3 h-3 text-muted-foreground/30 transition-transform duration-200", isSectionCollapsed && "-rotate-90")} />
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-sidebar-foreground/40 group-hover:text-sidebar-foreground/60 transition-colors">{section.label}</span>
+                  <ChevronDown className={cn(
+                    "w-3 h-3 text-sidebar-foreground/30 transition-transform duration-200",
+                    isSectionCollapsed && "-rotate-90"
+                  )} />
                 </button>
               )}
 
               <AnimatePresence initial={false}>
                 {!isSectionCollapsed && (
-                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.15 }} className="overflow-hidden space-y-0.5">
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.15, ease: 'easeInOut' }}
+                    className="overflow-hidden space-y-0.5"
+                  >
                     {section.items.map((item) => (
                       <NavLink
                         key={item.path}
@@ -532,21 +102,25 @@ export default function Sidebar() {
                           "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-all duration-150 group relative",
                           isCollapsed && "justify-center px-2",
                           isActive
-                            ? "bg-gradient-to-r from-orange-500/10 to-amber-500/5 text-orange-600 dark:text-orange-400"
-                            : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+                            ? "bg-sidebar-accent/15 text-orange-400"
+                            : "text-sidebar-foreground/70 hover:bg-sidebar-muted/40 hover:text-sidebar-foreground"
                         )}
                       >
                         {({ isActive }) => (
                           <>
-                            {isActive && <motion.div layoutId="sidebar-active" className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-orange-500 rounded-r-full" />}
-                            <item.icon className={cn("w-4 h-4 flex-shrink-0 transition-colors", isActive ? "text-orange-500" : "text-muted-foreground group-hover:text-foreground")} />
-                            <AnimatePresence>
-                              {!isCollapsed && (
-                                <motion.span initial={{ opacity: 0, width: 0 }} animate={{ opacity: 1, width: 'auto' }} exit={{ opacity: 0, width: 0 }} className="whitespace-nowrap overflow-hidden text-[13px]">
-                                  {item.label}
-                                </motion.span>
-                              )}
-                            </AnimatePresence>
+                            {isActive && (
+                              <motion.div
+                                layoutId="sidebar-active"
+                                className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-orange-400 rounded-r-full shadow-sm shadow-orange-400/30"
+                              />
+                            )}
+                            <item.icon className={cn(
+                              "w-4 h-4 flex-shrink-0 transition-colors",
+                              isActive ? "text-orange-400" : "text-sidebar-foreground/50 group-hover:text-sidebar-foreground/80"
+                            )} />
+                            {!isCollapsed && (
+                              <span className="whitespace-nowrap overflow-hidden text-[13px]">{item.label}</span>
+                            )}
                           </>
                         )}
                       </NavLink>
@@ -559,9 +133,30 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="border-t border-border/50 p-2">
-        <button onClick={handleLogout} className={cn("flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all w-full", isCollapsed && "justify-center px-2")}>
+      {/* Footer - collapse toggle + logout */}
+      <div className="border-t border-sidebar-border px-3 py-3 shrink-0 space-y-1">
+        {/* Collapse toggle (desktop only, inside sidebar) */}
+        <button
+          onClick={toggle}
+          className={cn(
+            "hidden lg:flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-all w-full",
+            "text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-muted/40",
+            isCollapsed && "justify-center px-2"
+          )}
+          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          {!isCollapsed && <span>Collapse</span>}
+        </button>
+
+        <button
+          onClick={handleLogout}
+          className={cn(
+            "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-all w-full",
+            "text-sidebar-foreground/50 hover:text-red-400 hover:bg-red-500/10",
+            isCollapsed && "justify-center px-2"
+          )}
+        >
           <LogOut className="w-4 h-4 flex-shrink-0" />
           {!isCollapsed && <span>Logout</span>}
         </button>
@@ -574,15 +169,32 @@ export default function Sidebar() {
       {/* Mobile overlay */}
       <AnimatePresence>
         {isMobileOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden" onClick={() => setMobileOpen(false)} />
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
         )}
       </AnimatePresence>
 
       {/* Mobile sidebar */}
       <AnimatePresence>
         {isMobileOpen && (
-          <motion.aside initial={{ x: -280 }} animate={{ x: 0 }} exit={{ x: -280 }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="fixed left-0 top-0 z-50 h-full w-[280px] bg-background border-r border-border/50 lg:hidden">
-            <button onClick={() => setMobileOpen(false)} className="absolute top-3 right-3 p-1.5 rounded-lg hover:bg-accent"><X className="w-4 h-4" /></button>
+          <motion.aside
+            initial={{ x: -280 }}
+            animate={{ x: 0 }}
+            exit={{ x: -280 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed left-0 top-0 z-50 h-full w-[280px] lg:hidden"
+          >
+            <button
+              onClick={() => setMobileOpen(false)}
+              className="absolute top-3 right-3 z-10 p-1.5 rounded-lg text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-muted/60 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
             {sidebarContent}
           </motion.aside>
         )}
@@ -590,7 +202,11 @@ export default function Sidebar() {
 
       {/* Desktop sidebar */}
       <div className="hidden lg:block flex-shrink-0">
-        <motion.aside animate={{ width: isCollapsed ? 64 : 240 }} transition={{ type: 'spring', damping: 25, stiffness: 200 }} className="h-full sticky top-0 border-r border-border/50 bg-background flex flex-col overflow-hidden">
+        <motion.aside
+          animate={{ width: isCollapsed ? 64 : 256 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 200, mass: 0.8 }}
+          className="h-full sticky top-0 flex flex-col overflow-hidden"
+        >
           {sidebarContent}
         </motion.aside>
       </div>

@@ -3,11 +3,6 @@ const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const userId = localStorage.getItem('eduvault-user-id') || '';
-  if (endpoint === '/ai/chat') {
-    // #region agent log
-    fetch('http://127.0.0.1:7648/ingest/9083a094-cb0a-4860-b6f2-236bb876b0d0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6a311b'},body:JSON.stringify({sessionId:'6a311b',runId:'pre-fix',hypothesisId:'H6',location:'src/lib/api.ts:before-fetch',message:'frontend ai chat request target',data:{apiBase:API_BASE,endpoint,resolvedUrl:`${API_BASE}${endpoint}`},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-  }
   const res = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
     headers: {
@@ -21,12 +16,12 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     throw new Error(err.message || err.error || 'API Error');
   }
   const payload = await res.json();
-  if (endpoint === '/ai/chat') {
-    // #region agent log
-    fetch('http://127.0.0.1:7648/ingest/9083a094-cb0a-4860-b6f2-236bb876b0d0',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'6a311b'},body:JSON.stringify({sessionId:'6a311b',runId:'pre-fix',hypothesisId:'H7',location:'src/lib/api.ts:after-fetch',message:'frontend ai chat response payload',data:{keys:payload && typeof payload === 'object' ? Object.keys(payload) : [],message:payload?.message || '',hasResponse:Boolean(payload?.response)},timestamp:Date.now()})}).catch(()=>{});
-    // #endregion
-  }
   return payload;
+}
+
+export async function apiFetchPaginated(endpoint: string, page = 1, limit = 20, options: RequestInit = {}) {
+  const sep = endpoint.includes('?') ? '&' : '?';
+  return apiFetch(`${endpoint}${sep}page=${page}&limit=${limit}`, options);
 }
 
 export const api = {

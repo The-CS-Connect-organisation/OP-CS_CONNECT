@@ -3,11 +3,15 @@ import { useAuthStore } from '../../lib/store';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { User, Mail, Phone, MapPin, Edit, Save, X, Users } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Edit, Save, X, Users, Camera } from 'lucide-react';
+import { PeepAvatarMaker } from '@/components/ui/peep-avatar-maker';
+import { getAvatarUrl } from '@/lib/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar';
 
 export default function ParentProfile() {
   const { user, updateUser } = useAuthStore();
   const [editing, setEditing] = useState(false);
+  const [showAvatarDialog, setShowAvatarDialog] = useState(false);
   const [form, setForm] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -23,6 +27,14 @@ export default function ParentProfile() {
   const handleCancel = () => {
     setForm({ name: user?.name || '', email: user?.email || '', phone: user?.phone || '', address: user?.address || '' });
     setEditing(false);
+  };
+
+  const handleAvatarSave = async (newAvatarUrl: string) => {
+    if (!newAvatarUrl || !user?.id) return;
+    try {
+      updateUser({ avatar: newAvatarUrl });
+      setShowAvatarDialog(false);
+    } catch { /* error */ }
   };
 
   return (
@@ -44,8 +56,16 @@ export default function ParentProfile() {
 
       <Card className="p-6">
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center">
-            <User className="w-10 h-10 text-orange-500" />
+          <div className="relative group">
+            <Avatar className="w-20 h-20">
+              <AvatarImage src={getAvatarUrl(user || {})} />
+              <AvatarFallback className="text-2xl bg-gradient-to-br from-orange-500 to-amber-600 text-white">
+                {user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+            <button onClick={() => setShowAvatarDialog(true)} className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+              <Camera className="w-4 h-4" />
+            </button>
           </div>
           <div>
             <h2 className="text-xl font-bold">{user?.name}</h2>
@@ -96,6 +116,13 @@ export default function ParentProfile() {
           </div>
         </div>
       </Card>
+
+      <PeepAvatarMaker
+        open={showAvatarDialog}
+        onOpenChange={setShowAvatarDialog}
+        onSave={handleAvatarSave}
+        initialAvatar={user?.avatar}
+      />
     </div>
   );
 }

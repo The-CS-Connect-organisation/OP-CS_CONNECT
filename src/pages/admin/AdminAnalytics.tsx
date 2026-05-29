@@ -4,6 +4,8 @@ import { Card } from '../../components/ui/Card';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils';
 import { BarChart3, Users, TrendingUp, DollarSign, GraduationCap } from 'lucide-react';
+import { FinanceChart, AttendanceChart } from '../../components/ui/Charts';
+import { GenderBreakdownChart, DemographicPieChart } from '../../components/ui/RadialChart';
 
 interface User {
   role?: string;
@@ -42,10 +44,13 @@ export default function AdminAnalytics() {
     avgGpa: 0,
     revenue: 0,
     expenses: 0,
+    maleStudents: 0,
+    femaleStudents: 0,
     studentTrend: [] as { month: string; count: number }[],
     performanceByClass: [] as { class: string; avg: number }[],
-    attendanceTrend: [] as { month: string; rate: number }[],
+    attendanceTrend: [] as { name: string; present: number; absent: number }[],
     feeCollection: { collected: 0, pending: 0 },
+    financeData: [] as { name: string; income: number; expense: number }[],
   });
 
   useEffect(() => {
@@ -83,6 +88,8 @@ export default function AdminAnalytics() {
 
       const students = users.filter(u => u.role?.toLowerCase() === 'student');
       const teachers = users.filter(u => u.role?.toLowerCase() === 'teacher');
+      const maleStudents = users.filter(u => u.role?.toLowerCase() === 'student' && (u as any).gender?.toLowerCase() === 'male').length;
+      const femaleStudents = users.filter(u => u.role?.toLowerCase() === 'student' && (u as any).gender?.toLowerCase() === 'female').length;
 
       const totalStudents = students.length;
       const totalTeachers = teachers.length;
@@ -124,6 +131,24 @@ export default function AdminAnalytics() {
         ? Math.round(performanceByClass.reduce((s, c) => s + c.avg, 0) / performanceByClass.length)
         : 0;
 
+      // Mock Data for Charts
+      const financeData = [
+        { name: "Jan", income: 4000, expense: 2400 },
+        { name: "Feb", income: 3000, expense: 1398 },
+        { name: "Mar", income: 2000, expense: 9800 },
+        { name: "Apr", income: 2780, expense: 3908 },
+        { name: "May", income: 1890, expense: 4800 },
+        { name: "Jun", income: 2390, expense: 3800 },
+      ];
+
+      const attendanceData = [
+        { name: "Mon", present: 95, absent: 5 },
+        { name: "Tue", present: 92, absent: 8 },
+        { name: "Wed", present: 98, absent: 2 },
+        { name: "Thu", present: 90, absent: 10 },
+        { name: "Fri", present: 88, absent: 12 },
+      ];
+
       setStats({
         totalStudents,
         totalTeachers,
@@ -131,10 +156,13 @@ export default function AdminAnalytics() {
         avgGpa,
         revenue: totalPayments,
         expenses: totalExpenses,
+        maleStudents,
+        femaleStudents,
         studentTrend: [],
         performanceByClass,
-        attendanceTrend: [],
+        attendanceTrend: attendanceData as any,
         feeCollection: { collected, pending },
+        financeData: financeData as any,
       });
     } catch {
       // data remains 0s
@@ -221,6 +249,24 @@ export default function AdminAnalytics() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="h-[400px]">
+              <FinanceChart data={stats.financeData} />
+            </div>
+            <div className="h-[400px]">
+              <AttendanceChart data={stats.attendanceTrend} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="h-[350px]">
+              <GenderBreakdownChart male={stats.maleStudents} female={stats.femaleStudents} />
+            </div>
+            <div className="h-[350px]">
+              <DemographicPieChart
+                title="Class Performance Distribution"
+                data={stats.performanceByClass.map(c => ({ name: c.class, value: c.avg }))}
+              />
+            </div>
             <Card className="p-4">
               <h3 className="font-semibold mb-4">Performance by Class</h3>
               {stats.performanceByClass.length === 0 ? (

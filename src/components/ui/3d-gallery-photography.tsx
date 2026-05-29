@@ -27,6 +27,7 @@ interface InfiniteGalleryProps {
   blurSettings?: BlurSettings;
   className?: string;
   style?: React.CSSProperties;
+  disableScrollCapture?: boolean;
 }
 
 interface PlaneData {
@@ -37,7 +38,7 @@ interface PlaneData {
   y: number;
 }
 
-const DEFAULT_DEPTH_RANGE = 50;
+const DEFAULT_DEPTH_RANGE = 70;
 const MAX_HORIZONTAL_OFFSET = 8;
 const MAX_VERTICAL_OFFSET = 8;
 
@@ -167,7 +168,8 @@ function GalleryScene({
     blurOut: { start: 0.9, end: 1.0 },
     maxBlur: 3.0,
   },
-}: Omit<InfiniteGalleryProps, 'className' | 'style'>) {
+  disableScrollCapture = false,
+}: Omit<InfiniteGalleryProps, 'className' | 'style'> & { disableScrollCapture?: boolean }) {
   const [scrollVelocity, setScrollVelocity] = useState(0);
   const [autoPlay, setAutoPlay] = useState(true);
   const lastInteraction = useRef(Date.now());
@@ -182,7 +184,7 @@ function GalleryScene({
     [images]
   );
 
-  const loadedImageCount = Math.min(normalizedImages.length, Math.max(visibleCount * 3, 15));
+  const loadedImageCount = Math.min(normalizedImages.length, Math.max(visibleCount * 6, 30));
   const textures = useTexture(normalizedImages.slice(0, loadedImageCount).map((img) => img.src));
   const textureTotal = textures.length;
 
@@ -277,6 +279,8 @@ function GalleryScene({
   );
 
   useEffect(() => {
+    if (disableScrollCapture) return;
+
     const findAndAttach = () => {
       const canvas = document.querySelector('canvas');
       if (canvas) {
@@ -288,7 +292,6 @@ function GalleryScene({
       return false;
     };
 
-    // Always attach to document for reliable scroll & key capture
     document.addEventListener('wheel', handleWheel, { passive: false });
     document.addEventListener('keydown', handleKeyDown);
 
@@ -317,7 +320,7 @@ function GalleryScene({
       document.removeEventListener('wheel', handleWheel);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [handleWheel, handleKeyDown, handleTouchStart, handleTouchMove]);
+  }, [handleWheel, handleKeyDown, handleTouchStart, handleTouchMove, disableScrollCapture]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -483,6 +486,7 @@ blurSettings = {
 },
   visibleCount = 8,
   zSpacing,
+  disableScrollCapture = false,
 }: InfiniteGalleryProps) {
   const [webglSupported, setWebglSupported] = useState(true);
 
@@ -509,7 +513,7 @@ blurSettings = {
       <Canvas
         camera={{ position: [0, 0, 0], fov: 55 }}
         gl={{ antialias: true, alpha: true }}
-        style={{ touchAction: 'none' }}
+        style={disableScrollCapture ? undefined : { touchAction: 'none' }}
       >
         <GalleryScene
           images={images}
@@ -518,6 +522,7 @@ blurSettings = {
           zSpacing={zSpacing}
           fadeSettings={fadeSettings}
           blurSettings={blurSettings}
+          disableScrollCapture={disableScrollCapture}
         />
       </Canvas>
     </div>

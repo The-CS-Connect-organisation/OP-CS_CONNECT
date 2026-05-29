@@ -1,11 +1,11 @@
 
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
@@ -50,6 +50,38 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          muted: "hsl(var(--sidebar-muted))",
+          accent: "hsl(var(--sidebar-accent))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
+        },
+        blue: {
+          50: "#DFDFF0",
+          75: "#dfdff2",
+          100: "#F0F2FA",
+          200: "#010101",
+          300: "#4FB7DD",
+        },
+        orange: {
+          50: '#FFF7ED',
+          75: '#FFE8D6',
+          100: '#FFEDD5',
+          200: '#FED7AA',
+          300: '#FDBA74',
+          400: '#FB923C',
+          500: '#F97316',
+          600: '#EA580C',
+        },
+        violet: {
+          300: "#5724ff",
+        },
+        yellow: {
+          100: "#8e983f",
+          300: "#edff66",
         },
       },
       borderRadius: {
