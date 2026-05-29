@@ -1,5 +1,5 @@
 
-const API_BASE = import.meta.env.VITE_API_URL || 'https://op-csconnect-backend-production.up.railway.app/api';
+const API_BASE = import.meta.env.VITE_API_URL || 'https://op-csconnect-backend.onrender.com/api';
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const userId = localStorage.getItem('eduvault-user-id') || '';
