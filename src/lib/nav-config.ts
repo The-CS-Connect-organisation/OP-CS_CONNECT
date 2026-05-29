@@ -117,6 +117,8 @@ export const navSections: Record<UserRole, NavSection[]> = {
       label: 'Tools',
       items: [
         { icon: Sparkles, label: 'AI Lab', path: '/teacher/ai' },
+        { icon: CalendarDays, label: 'Room Booking', path: '/teacher/room-booking' },
+        { icon: Monitor, label: 'Asset Tracking', path: '/teacher/asset-tracking' },
         { icon: Library, label: 'CS Library', path: '/cs-library' },
       ]
     },

@@ -149,6 +149,8 @@ const AdminRoomBooking = lazy(() => import('./pages/admin/AdminRoomBooking'))
 const AdminAssetTracking = lazy(() => import('./pages/admin/AdminAssetTracking'))
 const ManagerRoomBooking = lazy(() => import('./pages/manager/ManagerRoomBooking'))
 const ManagerAssetTracking = lazy(() => import('./pages/manager/ManagerAssetTracking'))
+const TeacherRoomBooking = lazy(() => import('./pages/teacher/TeacherRoomBooking'))
+const TeacherAssetTracking = lazy(() => import('./pages/teacher/TeacherAssetTracking'))
 
 const GP = (title: string, description: string, icon: string, category: string, role: string) => (
   <GenericPage title={title} description={description} icon={icon as any} category={category} role={role as any} />
@@ -239,6 +241,8 @@ function App() {
             <Route path="ai" element={<AILab />} />
             <Route path="classroom" element={<TeacherClassroom />} />
             <Route path="exam-results" element={<TeacherExamResults />} />
+            <Route path="room-booking" element={<TeacherRoomBooking />} />
+            <Route path="asset-tracking" element={<TeacherAssetTracking />} />
           </Route>
 
           {/* ADMIN */}
