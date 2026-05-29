@@ -6,6 +6,29 @@ import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils';
 import { LayoutDashboard, Users, BarChart3, Calendar, DollarSign, Bus, TrendingUp, AlertCircle } from 'lucide-react';
+import { motion } from 'framer-motion';
+
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    y: 20,
+  },
+  in: {
+    opacity: 1,
+    y: 0,
+  },
+  out: {
+    opacity: 0,
+    y: -20,
+  },
+};
+
+const pageTransition = {
+  type: 'tween',
+  ease: 'anticipate',
+  duration: 0.5,
+};
+
 
 export default function ParentDashboard() {
   const { user } = useAuthStore();
@@ -36,7 +59,7 @@ export default function ParentDashboard() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="p-6 space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Parent Dashboard</h1>
         <p className="text-muted-foreground">Overview of your child's progress</p>
@@ -156,6 +179,6 @@ export default function ParentDashboard() {
           </div>
         </>
       )}
-    </div>
+    </motion.div>
   );
 }

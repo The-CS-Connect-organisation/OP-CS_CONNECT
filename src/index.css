@@ -63,6 +63,10 @@
     --sidebar-accent: 24 95% 53%;
     --sidebar-border: 217 33% 17%;
     --sidebar-ring: 24 95% 53%;
+
+    --aurora-1: #f97316;
+    --aurora-2: #ea580c;
+    --aurora-3: #fb923c;
   }
 
   .dark {
@@ -92,6 +96,10 @@
     --sidebar-accent: 24 95% 53%;
     --sidebar-border: 217 33% 12%;
     --sidebar-ring: 24 95% 53%;
+
+    --aurora-1: #f97316;
+    --aurora-2: #ea580c;
+    --aurora-3: #fb923c;
   }
 }
 
@@ -101,6 +109,13 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
+  }
+
+  .aurora-bg {
+    background: radial-gradient(ellipse at 50% 50%, var(--aurora-1) 0%, transparent 40%),
+                radial-gradient(ellipse at 0% 0%, var(--aurora-2) 0%, transparent 30%),
+                radial-gradient(ellipse at 100% 100%, var(--aurora-3) 0%, transparent 35%);
+    animation: aurora-bg 20s ease-in-out infinite;
   }
 }
 
@@ -235,6 +250,10 @@ html::-webkit-scrollbar {
   @apply backdrop-blur-xl bg-white/70 border border-gray-200/50;
 }
 
+.glass-topbar {
+    @apply backdrop-blur-lg bg-background/80 border-b border-border/50;
+}
+
 /* Gradient text */
 .gradient-text {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600;
@@ -251,6 +270,24 @@ html::-webkit-scrollbar {
 
 .glow-blue {
   box-shadow: 0 0 20px rgba(249, 115, 22, 0.3), 0 0 60px rgba(249, 115, 22, 0.1);
+}
+
+.glow-card::before {
+  content: "";
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  transform: translate(-50%, -50%);
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.2) 0%, transparent 80%);
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  pointer-events: none;
+}
+
+.glow-card:hover::before {
+  opacity: 1;
 }
 
 /* Skeleton loading */
@@ -560,6 +597,12 @@ input, textarea, [data-no-transition] {
   100% { background-position: 0% 50%; }
 }
 
+@keyframes aurora-bg {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 @keyframes shimmer {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
@@ -716,3 +759,32 @@ input, textarea, [data-no-transition] {
   0%, 100% { transform: translateY(0%) scale(1); opacity: 1; }
   50% { transform: translateY(66%) scale(0.65); opacity: 0.8; }
 }
+
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto;
+  gap: 1rem;
+  grid-template-areas:
+    "hero hero hero hero"
+    "stat1 stat2 stat3 stat4"
+    "perf perf perf attendance"
+    "perf perf perf radar"
+    "assign assign schedule schedule"
+    "grades grades grades clubs"
+    "fees fees fees clubs";
+}
+
+.hero-card { grid-area: hero; }
+.quick-stat-1 { grid-area: stat1; }
+.quick-stat-2 { grid-area: stat2; }
+.quick-stat-3 { grid-area: stat3; }
+.quick-stat-4 { grid-area: stat4; }
+.performance-chart { grid-area: perf; }
+.attendance-radar-grid { grid-area: attendance; }
+.subject-radar { grid-area: radar; }
+.upcoming-assignments { grid-area: assign; }
+.todays-schedule { grid-area: schedule; }
+.grade-analytics { grid-area: grades; }
+.clubs-activities { grid-area: clubs; }
+.fee-status { grid-area: fees; }

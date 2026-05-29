@@ -15,13 +15,34 @@ import {
   TrendingUp, Brain, FileText, Clock, CheckCircle2,
   AlertCircle, GraduationCap, MessageSquare, Calendar,
   BookOpen, Target, Zap, Settings, Bell, UserPlus,
-  Activity, PieChart as PieIcon
+  Activity, PieChart as PieIcon, ChevronLeft, ChevronRight
 } from 'lucide-react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell,
   LineChart, Line
 } from 'recharts'
+
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    y: 20,
+  },
+  in: {
+    opacity: 1,
+    y: 0,
+  },
+  out: {
+    opacity: 0,
+    y: -20,
+  },
+};
+
+const pageTransition = {
+  type: 'tween',
+  ease: 'anticipate',
+  duration: 0.5,
+};
 
 
 const containerVariants = {
@@ -43,6 +64,8 @@ export default function AdminDashboard() {
     onLeave: 0, totalRevenue: 0, attendanceRate: 0,
     departments: [], activities: [],
   })
+  const [activityPage, setActivityPage] = useState(0)
+  const activitiesPerPage = 3;
 
   useEffect(() => {
     Promise.allSettled([
@@ -77,9 +100,12 @@ export default function AdminDashboard() {
     ])
   }, [])
 
+  const paginatedActivities = liveData.activities.slice(activityPage * activitiesPerPage, (activityPage + 1) * activitiesPerPage);
+
+
   return (
     <>
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
+    <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="space-y-6">
         {/* Hero */}
         <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-600/10 via-red-600/5 to-transparent border border-orange-500/10 p-6 lg:p-8">
           <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full filter blur-[80px]" />
@@ -268,12 +294,20 @@ export default function AdminDashboard() {
                     <Activity className="w-5 h-5 text-amber-500" />
                     Recent Activity
                   </CardTitle>
-                  <Button variant="ghost" size="sm">View All</Button>
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => setActivityPage(p => Math.max(0, p - 1))} disabled={activityPage === 0}>
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    <span className="text-xs text-muted-foreground">Page {activityPage + 1} of {Math.ceil(liveData.activities.length / activitiesPerPage)}</span>
+                    <Button variant="ghost" size="sm" onClick={() => setActivityPage(p => Math.min(p + 1, Math.ceil(liveData.activities.length / activitiesPerPage) - 1))} disabled={(activityPage + 1) * activitiesPerPage >= liveData.activities.length}>
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {(liveData.activities.length ? liveData.activities : [{ id: 0, action: 'No recent activity', detail: 'Data will appear here', time: '', type: 'info' }]).map((activity: any) => (
+                  {(paginatedActivities.length ? paginatedActivities : [{ id: 0, action: 'No recent activity', detail: 'Data will appear here', time: '', type: 'info' }]).map((activity: any) => (
                     <div key={activity.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-accent/50 transition-colors">
                       <div className={cn(
                         "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0",

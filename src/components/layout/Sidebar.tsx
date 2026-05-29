@@ -1,18 +1,18 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore, useSidebarStore } from '@/lib/store'
 import { navSections, roleGradients, roleLabels } from '@/lib/nav-config'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar'
 import {
-  LogOut, ChevronDown, ChevronLeft, ChevronRight, X
+  LogOut, ChevronDown, X
 } from 'lucide-react'
 
 export default function Sidebar() {
   const { user, logout } = useAuthStore()
-  const { isCollapsed, isMobileOpen, toggle, setMobileOpen } = useSidebarStore()
+  const { isCollapsed, isMobileOpen, setMobileOpen } = useSidebarStore()
   const navigate = useNavigate()
-  const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set())
+  const [collapsedSections, setCollapsedSections] = React.useState<Set<string>>(new Set())
 
   if (!user) return null
 
@@ -49,7 +49,7 @@ export default function Sidebar() {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold leading-tight truncate">{user.name}</p>
+              <p className="text-sm font-semibold leading-tight truncate text-black">{user.name}</p>
               <p className="text-[11px] text-muted-foreground/60 font-medium">{roleLabels[user.role]}</p>
             </div>
           </div>
@@ -95,7 +95,7 @@ export default function Sidebar() {
                       isCollapsed && "justify-center px-2",
                       isActive
                         ? "bg-orange-500/10 text-orange-500"
-                        : "text-muted-foreground/70 hover:bg-accent/30 hover:text-foreground"
+                        : "text-black hover:bg-accent/30 hover:text-foreground"
                     )}
                   >
                     {({ isActive }) => (
@@ -121,21 +121,8 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Footer - collapse toggle + logout */}
+      {/* Footer - logout */}
       <div className="border-t border-border/20 px-3 py-3 shrink-0 space-y-1">
-        <button
-          onClick={toggle}
-          className={cn(
-            "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-all w-full",
-            "text-muted-foreground/50 hover:text-foreground hover:bg-accent/30",
-            isCollapsed && "justify-center px-2"
-          )}
-          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          {!isCollapsed && <span>Collapse</span>}
-        </button>
-
         <button
           onClick={handleLogout}
           className={cn(

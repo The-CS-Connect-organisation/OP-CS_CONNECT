@@ -1,12 +1,38 @@
 import { cn } from "@/lib/utils"
+import { motion, type HTMLMotionProps } from 'framer-motion';
+import React from 'react';
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface CardProps extends HTMLMotionProps<"div"> {
   glow?: boolean
 }
 
 function Card({ className, glow, ...props }: CardProps) {
-  return <div className={cn("rounded-lg border bg-card text-card-foreground shadow-sm", glow && "shadow-[0_0_15px_rgba(249,115,22,0.3)] border-orange-500/50", className)} {...props} />
+  const [isHovered, setIsHovered] = React.useState(false);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!glow) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    e.currentTarget.style.setProperty('--x', `${x}px`);
+    e.currentTarget.style.setProperty('--y', `${y}px`);
+  };
+
+  return (
+    <motion.div
+      onMouseMove={handleMouseMove}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className={cn(
+        "relative rounded-lg border bg-card text-card-foreground shadow-sm",
+        glow && "glow-card",
+        className
+      )}
+      {...props}
+    />
+  );
 }
+
 function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return <div className={cn("flex flex-col space-y-1.5 p-6", className)} {...props} />
 }

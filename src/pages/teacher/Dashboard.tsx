@@ -21,6 +21,27 @@ import {
   ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell
 } from 'recharts'
 
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    y: 20,
+  },
+  in: {
+    opacity: 1,
+    y: 0,
+  },
+  out: {
+    opacity: 0,
+    y: -20,
+  },
+};
+
+const pageTransition = {
+  type: 'tween',
+  ease: 'anticipate',
+  duration: 0.5,
+};
+
 function timeAgo(date: Date): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000)
   if (seconds < 60) return 'just now'
@@ -145,7 +166,7 @@ export default function TeacherDashboard() {
 
   return (
     <>
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
+    <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="space-y-6">
         {/* Hero */}
         <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600/10 via-cyan-600/5 to-transparent border border-orange-500/10 p-6 lg:p-8">
           <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full filter blur-[80px]" />

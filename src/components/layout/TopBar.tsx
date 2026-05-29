@@ -1,10 +1,9 @@
-
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuthStore, useThemeStore, useNotificationStore, useSidebarStore } from '@/lib/store'
 import { cn, getGreeting } from '@/lib/utils'
 import {
-  Bell, Search, Sparkles,
+  Bell, Search, Sparkles, Menu,
   X, Check, AlertCircle, Info, CheckCircle2, GraduationCap
 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
@@ -15,7 +14,7 @@ export default function TopBar() {
   const { user } = useAuthStore()
   const { isDark, toggleTheme } = useThemeStore()
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationStore()
-  const { setMobileOpen } = useSidebarStore()
+  const { toggle, setMobileOpen } = useSidebarStore()
   const [showNotifications, setShowNotifications] = React.useState(false)
   const [showSearch, setShowSearch] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState('')
@@ -30,10 +29,13 @@ export default function TopBar() {
   }
 
   return (
-    <header className="sticky top-0 z-30 border-b border-border/50 bg-background/80 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 glass-topbar">
       <div className="flex items-center justify-between h-16 px-4 lg:px-6">
         {/* Left section */}
         <div className="flex items-center gap-3">
+          <button onClick={toggle} className="p-2 rounded-md hover:bg-accent/50">
+            <Menu className="w-5 h-5" />
+          </button>
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-sm">
               <GraduationCap className="w-4 h-4 text-white" />
