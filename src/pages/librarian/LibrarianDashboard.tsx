@@ -50,29 +50,29 @@ export default function LibrarianDashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-4">
+        <Card className="p-4 card-hover">
           <div className="flex items-center gap-3">
             <Library className="w-8 h-8 text-orange-500" />
             <div>
-              <p className="text-2xl font-bold">{totalBooks}</p>
+              <p className="text-2xl font-bold stat-value">{totalBooks}</p>
               <p className="text-sm text-muted-foreground">Total Books</p>
             </div>
           </div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-4 card-hover">
           <div className="flex items-center gap-3">
             <BookOpen className="w-8 h-8 text-green-500" />
             <div>
-              <p className="text-2xl font-bold">{availableBooks}</p>
+              <p className="text-2xl font-bold stat-value">{availableBooks}</p>
               <p className="text-sm text-muted-foreground">Available</p>
             </div>
           </div>
         </Card>
-        <Card className="p-4">
+        <Card className="p-4 card-hover">
           <div className="flex items-center gap-3">
             <Users className="w-8 h-8 text-orange-500" />
             <div>
-              <p className="text-2xl font-bold">{totalBooks - availableBooks}</p>
+              <p className="text-2xl font-bold stat-value">{totalBooks - availableBooks}</p>
               <p className="text-sm text-muted-foreground">Borrowed</p>
             </div>
           </div>

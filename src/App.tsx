@@ -145,6 +145,10 @@ const ManagerFoodService = lazy(() => import('./pages/manager/ManagerFoodService
 const ManagerAthletics = lazy(() => import('./pages/manager/ManagerAthletics'))
 const ManagerAlumni = lazy(() => import('./pages/manager/ManagerAlumni'))
 const ManagerPlatform = lazy(() => import('./pages/manager/ManagerPlatform'))
+const AdminRoomBooking = lazy(() => import('./pages/admin/AdminRoomBooking'))
+const AdminAssetTracking = lazy(() => import('./pages/admin/AdminAssetTracking'))
+const ManagerRoomBooking = lazy(() => import('./pages/manager/ManagerRoomBooking'))
+const ManagerAssetTracking = lazy(() => import('./pages/manager/ManagerAssetTracking'))
 
 const GP = (title: string, description: string, icon: string, category: string, role: string) => (
   <GenericPage title={title} description={description} icon={icon as any} category={category} role={role as any} />
@@ -285,6 +289,8 @@ function App() {
             <Route path="athletics" element={<AdminAthletics />} />
             <Route path="alumni" element={<AdminAlumni />} />
             <Route path="platform" element={<AdminPlatform />} />
+            <Route path="room-booking" element={<AdminRoomBooking />} />
+            <Route path="asset-tracking" element={<AdminAssetTracking />} />
             <Route path="create-account" element={<CreateAccount />} />
           </Route>
 
@@ -368,6 +374,8 @@ function App() {
             <Route path="athletics" element={<ManagerAthletics />} />
             <Route path="alumni" element={<ManagerAlumni />} />
             <Route path="platform" element={<ManagerPlatform />} />
+            <Route path="room-booking" element={<ManagerRoomBooking />} />
+            <Route path="asset-tracking" element={<ManagerAssetTracking />} />
           </Route>
 
           <Route path="/cs-library" element={

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { DataTable } from "@/components/ui/DataTable";
 import { useAuthStore } from "@/lib/store";
 import { api, apiFetch } from "@/lib/api";import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils';import {
   GraduationCap, Download, FileText, Loader2, Search,
@@ -284,49 +285,43 @@ export default function ReportCards() {
                   {/* Grades Table */}
                   <div>
                     <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-3">Subject Grades</h4>
-                    <div className="border border-border rounded-xl overflow-x-auto">
-                      <table className="w-full min-w-[480px]">
-                        <thead>
-                          <tr className="bg-accent/50">
-                            <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Subject</th>
-                            <th className="text-center px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Marks</th>
-                            <th className="text-center px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Grade</th>
-                            <th className="text-center px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Performance</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {currentGrades.map((g: any, i: number) => (
-                            <tr key={i} className="border-t border-border">
-                              <td className="px-4 py-3 text-sm font-medium">{g.subject}</td>
-                              <td className="px-4 py-3 text-sm text-center font-bold">{g.marks}</td>
-                              <td className="px-4 py-3 text-center">
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
-                                  g.marks >= 90 ? "bg-emerald-100 text-emerald-700" :
-                                  g.marks >= 80 ? "bg-orange-100 text-blue-700" :
-                                  g.marks >= 70 ? "bg-amber-100 text-amber-700" :
-                                  g.marks >= 60 ? "bg-orange-100 text-orange-700" :
-                                  "bg-rose-100 text-rose-700"
-                                }`}>{g.grade || getGradeFromMarks(g.marks)}</span>
-                              </td>
-                              <td className="px-4 py-3">
-                                <div className="w-full bg-accent rounded-full h-2">
-                                  <div className={`h-2 rounded-full transition-all ${
-                                    g.marks >= 90 ? "bg-emerald-500" :
-                                    g.marks >= 80 ? "bg-orange-500" :
-                                    g.marks >= 70 ? "bg-amber-500" :
-                                    g.marks >= 60 ? "bg-orange-500" :
-                                    "bg-rose-500"
-                                  }`} style={{ width: `${g.marks}%` }} />
-                                </div>
-                              </td>
-                            </tr>
-                          ))}
-                          {currentGrades.length === 0 && (
-                            <tr><td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-foreground">No grades available</td></tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
+                    <DataTable
+                      columns={[
+                        { key: 'subject', header: 'Subject' },
+                        { key: 'marks', header: 'Marks' },
+                        { key: 'grade', header: 'Grade' },
+                        { key: 'performance', header: 'Performance' },
+                      ]}
+                      data={currentGrades}
+                      keyExtractor={(g: any) => g.subject}
+                      striped={false}
+                      renderRow={(g: any) => (
+                        <>
+                          <td className="px-4 py-3 text-sm font-medium">{g.subject}</td>
+                          <td className="px-4 py-3 text-sm text-center font-bold">{g.marks}</td>
+                          <td className="px-4 py-3 text-center">
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
+                              g.marks >= 90 ? "bg-emerald-100 text-emerald-700" :
+                              g.marks >= 80 ? "bg-orange-100 text-blue-700" :
+                              g.marks >= 70 ? "bg-amber-100 text-amber-700" :
+                              g.marks >= 60 ? "bg-orange-100 text-orange-700" :
+                              "bg-rose-100 text-rose-700"
+                            }`}>{g.grade || getGradeFromMarks(g.marks)}</span>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="w-full bg-accent rounded-full h-2">
+                              <div className={`h-2 rounded-full transition-all ${
+                                g.marks >= 90 ? "bg-emerald-500" :
+                                g.marks >= 80 ? "bg-orange-500" :
+                                g.marks >= 70 ? "bg-amber-500" :
+                                g.marks >= 60 ? "bg-orange-500" :
+                                "bg-rose-500"
+                              }`} style={{ width: `${g.marks}%` }} />
+                            </div>
+                          </td>
+                        </>
+                      )}
+                    />
                   </div>
 
                   {/* Remarks */}

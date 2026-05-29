@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Progress } from '@/components/ui/Progress'
+import { DataTable } from '@/components/ui/DataTable'
 import { useAuthStore, useDataStore } from '@/lib/store'
 import { cn, normalizeAcademicPercentage, formatPercentage } from '@/lib/utils'
 import { BarChart3, TrendingUp, TrendingDown, Zap, Award, Target } from 'lucide-react'
@@ -109,45 +110,45 @@ export default function GradesPage() {
               <Card glow>
                 <CardHeader className="pb-2"><CardTitle className="text-lg">Detailed Breakdown</CardTitle></CardHeader>
                 <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b border-border/50">
-                          <th className="text-left text-xs font-medium text-muted-foreground pb-3 pr-4">Subject</th>
-                          <th className="text-center text-xs font-medium text-muted-foreground pb-3 px-2">Mid Term</th>
-                          <th className="text-center text-xs font-medium text-muted-foreground pb-3 px-2">Final</th>
-                          <th className="text-center text-xs font-medium text-muted-foreground pb-3 px-2">Overall</th>
-                          <th className="text-center text-xs font-medium text-muted-foreground pb-3 px-2">Grade</th>
-                          <th className="text-center text-xs font-medium text-muted-foreground pb-3 px-2">Progress</th>
-                          <th className="text-center text-xs font-medium text-muted-foreground pb-3 pl-2">Trend</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {grades.map((grade: any) => (
-                          <tr key={grade.subject} className="border-b border-border/20 hover:bg-secondary/20 transition-colors">
-                            <td className="py-3 pr-4">
-                              <div className="flex items-center gap-2">
-                                <div className="w-2 h-8 rounded-full" style={{ backgroundColor: grade.color || '#6366f1' }} />
-                                <span className="text-sm font-medium">{grade.subject}</span>
-                              </div>
-                            </td>
-                            <td className="py-3 px-2 text-sm text-center">{grade.midTerm}</td>
-                            <td className="py-3 px-2 text-sm text-center">{grade.final}</td>
-                            <td className="py-3 px-2 text-center">
-                              <span className={cn("text-sm font-semibold", grade.overall >= 90 ? "text-emerald-500" : grade.overall >= 80 ? "text-orange-500" : "text-amber-500")}>{grade.overall}</span>
-                            </td>
-                            <td className="py-3 px-2 text-center"><Badge variant={grade.grade?.startsWith('A') ? 'success' : 'info'}>{grade.grade}</Badge></td>
-                            <td className="py-3 px-2"><Progress value={grade.overall} size="sm" className="w-20" /></td>
-                            <td className="py-3 pl-2 text-center">
-                              {grade.trend === 'up' && <TrendingUp className="w-4 h-4 text-emerald-500 mx-auto" />}
-                              {grade.trend === 'down' && <TrendingDown className="w-4 h-4 text-red-500 mx-auto" />}
-                              {grade.trend === 'stable' && <Zap className="w-4 h-4 text-amber-500 mx-auto" />}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <DataTable
+                    columns={[
+                      { key: 'subject', header: 'Subject', className: 'hidden md:table-cell' },
+                      { key: 'midTerm', header: 'Mid Term', className: 'hidden md:table-cell' },
+                      { key: 'final', header: 'Final', className: 'hidden md:table-cell' },
+                      { key: 'overall', header: 'Overall' },
+                      { key: 'grade', header: 'Grade' },
+                      { key: 'progress', header: 'Progress', className: 'hidden md:table-cell' },
+                      { key: 'trend', header: 'Trend' },
+                    ]}
+                    data={grades}
+                    keyExtractor={(g: any) => g.subject}
+                    searchable
+                    searchKeys={['subject']}
+                    pageSize={15}
+                    striped
+                    renderRow={(grade: any) => (
+                      <>
+                        <td className="py-3 pr-4">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-8 rounded-full shrink-0" style={{ backgroundColor: grade.color || '#6366f1' }} />
+                            <span className="text-sm font-medium">{grade.subject}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-2 text-sm text-center hidden md:table-cell">{grade.midTerm}</td>
+                        <td className="py-3 px-2 text-sm text-center hidden md:table-cell">{grade.final}</td>
+                        <td className="py-3 px-2 text-center">
+                          <span className={cn("text-sm font-semibold", grade.overall >= 90 ? "text-emerald-500" : grade.overall >= 80 ? "text-orange-500" : "text-amber-500")}>{grade.overall}</span>
+                        </td>
+                        <td className="py-3 px-2 text-center"><Badge variant={grade.grade?.startsWith('A') ? 'success' : 'info'}>{grade.grade}</Badge></td>
+                        <td className="py-3 px-2 hidden md:table-cell"><Progress value={grade.overall} size="sm" className="w-20" /></td>
+                        <td className="py-3 pl-2 text-center">
+                          {grade.trend === 'up' && <TrendingUp className="w-4 h-4 text-emerald-500 mx-auto" />}
+                          {grade.trend === 'down' && <TrendingDown className="w-4 h-4 text-red-500 mx-auto" />}
+                          {grade.trend === 'stable' && <Zap className="w-4 h-4 text-amber-500 mx-auto" />}
+                        </td>
+                      </>
+                    )}
+                  />
                 </CardContent>
               </Card>
             </motion.div>

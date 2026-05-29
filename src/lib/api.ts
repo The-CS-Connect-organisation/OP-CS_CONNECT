@@ -1,5 +1,5 @@
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const API_BASE = 'https://op-csconnect-backend-production.up.railway.app/api';
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   const userId = localStorage.getItem('eduvault-user-id') || '';
@@ -480,6 +480,12 @@ export const api = {
   logEmergencyDrill: (data: any) => apiFetch('/facilities/emergency-drills', { method: 'POST', body: JSON.stringify(data) }),
   getSafetyIncidents: () => apiFetch('/facilities/safety-incidents'),
   reportSafetyIncident: (data: any) => apiFetch('/facilities/safety-incidents', { method: 'POST', body: JSON.stringify(data) }),
+
+  // --- Asset Tracking ---
+  getAssets: () => apiFetch('/facilities/assets'),
+  createAsset: (data: any) => apiFetch('/facilities/assets', { method: 'POST', body: JSON.stringify(data) }),
+  updateAsset: (id: string, data: any) => apiFetch(`/facilities/assets/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteAsset: (id: string) => apiFetch(`/facilities/assets/${id}`, { method: 'DELETE' }),
 
   // --- Transport ---
   getTransportRoutes: () => apiFetch('/transport/routes'),

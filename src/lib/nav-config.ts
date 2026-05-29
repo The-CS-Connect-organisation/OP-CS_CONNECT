@@ -6,7 +6,7 @@ import {
   Award, Star, User, FileCheck, BookOpen, TrendingUp, PieChart, Bell,
   Radio, Users, Landmark, Wallet, Clock, Receipt, DollarSign, Building2,
   RadioTower, BookCopy, HeartPulse, Scale, Trophy, FolderOpen,
-  GraduationCap, Truck, UtensilsCrossed, Dumbbell, Handshake, Cog,
+  GraduationCap, Truck, UtensilsCrossed,   Dumbbell, Handshake, Cog, Monitor,
   Search, AlertTriangle, Stethoscope, Headphones, SkipForward,
   MapPin, Shield, Settings, Eye, Briefcase, BookMarked, HelpCircle,
   ThumbsUp, Printer, Gauge, Navigation, CircleUser, Route, ChevronDown,
@@ -206,6 +206,8 @@ export const navSections: Record<UserRole, NavSection[]> = {
       label: 'Facilities',
       items: [
         { icon: Building2, label: 'Facilities', path: '/admin/facilities' },
+        { icon: CalendarDays, label: 'Room Booking', path: '/admin/room-booking' },
+        { icon: Monitor, label: 'Asset Tracking', path: '/admin/asset-tracking' },
         { icon: Truck, label: 'Transport', path: '/admin/transport' },
         { icon: UtensilsCrossed, label: 'Food Service', path: '/admin/food-service' },
         { icon: Dumbbell, label: 'Athletics', path: '/admin/athletics' },
@@ -400,6 +402,8 @@ export const navSections: Record<UserRole, NavSection[]> = {
       label: 'Facilities',
       items: [
         { icon: Building2, label: 'Facilities', path: '/manager/facilities' },
+        { icon: CalendarDays, label: 'Room Booking', path: '/manager/room-booking' },
+        { icon: Monitor, label: 'Asset Tracking', path: '/manager/asset-tracking' },
         { icon: Truck, label: 'Transport', path: '/manager/transport' },
         { icon: UtensilsCrossed, label: 'Food Service', path: '/manager/food-service' },
         { icon: Dumbbell, label: 'Athletics', path: '/manager/athletics' },
