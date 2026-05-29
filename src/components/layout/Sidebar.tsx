@@ -5,12 +5,12 @@ import { navSections, roleGradients, roleLabels } from '@/lib/nav-config'
 import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar'
 import {
-  LogOut, ChevronDown, ChevronLeft, ChevronRight, X
+  LogOut, ChevronDown, X
 } from 'lucide-react'
 
 export default function Sidebar() {
   const { user, logout } = useAuthStore()
-  const { isCollapsed, isMobileOpen, toggle, setMobileOpen } = useSidebarStore()
+  const { isCollapsed, isMobileOpen, setMobileOpen } = useSidebarStore()
   const navigate = useNavigate()
   const [collapsedSections, setCollapsedSections] = React.useState<Set<string>>(new Set())
 
@@ -121,21 +121,8 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Footer - collapse toggle + logout */}
+      {/* Footer - logout */}
       <div className="border-t border-border/20 px-3 py-3 shrink-0 space-y-1">
-        <button
-          onClick={toggle}
-          className={cn(
-            "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm font-medium transition-all w-full",
-            "text-muted-foreground/50 hover:text-foreground hover:bg-accent/30",
-            isCollapsed && "justify-center px-2"
-          )}
-          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          {!isCollapsed && <span>Collapse</span>}
-        </button>
-
         <button
           onClick={handleLogout}
           className={cn(
