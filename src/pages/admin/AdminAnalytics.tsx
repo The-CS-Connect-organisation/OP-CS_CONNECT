@@ -5,6 +5,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils';
 import { BarChart3, Users, TrendingUp, DollarSign, GraduationCap } from 'lucide-react';
 import { FinanceChart, AttendanceChart } from '../../components/ui/Charts';
+import { GenderBreakdownChart, DemographicPieChart } from '../../components/ui/RadialChart';
 
 interface User {
   role?: string;
@@ -43,6 +44,8 @@ export default function AdminAnalytics() {
     avgGpa: 0,
     revenue: 0,
     expenses: 0,
+    maleStudents: 0,
+    femaleStudents: 0,
     studentTrend: [] as { month: string; count: number }[],
     performanceByClass: [] as { class: string; avg: number }[],
     attendanceTrend: [] as { name: string; present: number; absent: number }[],
@@ -85,6 +88,8 @@ export default function AdminAnalytics() {
 
       const students = users.filter(u => u.role?.toLowerCase() === 'student');
       const teachers = users.filter(u => u.role?.toLowerCase() === 'teacher');
+      const maleStudents = users.filter(u => u.role?.toLowerCase() === 'student' && (u as any).gender?.toLowerCase() === 'male').length;
+      const femaleStudents = users.filter(u => u.role?.toLowerCase() === 'student' && (u as any).gender?.toLowerCase() === 'female').length;
 
       const totalStudents = students.length;
       const totalTeachers = teachers.length;
@@ -151,6 +156,8 @@ export default function AdminAnalytics() {
         avgGpa,
         revenue: totalPayments,
         expenses: totalExpenses,
+        maleStudents,
+        femaleStudents,
         studentTrend: [],
         performanceByClass,
         attendanceTrend: attendanceData as any,
@@ -250,7 +257,16 @@ export default function AdminAnalytics() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="h-[350px]">
+              <GenderBreakdownChart male={stats.maleStudents} female={stats.femaleStudents} />
+            </div>
+            <div className="h-[350px]">
+              <DemographicPieChart
+                title="Class Performance Distribution"
+                data={stats.performanceByClass.map(c => ({ name: c.class, value: c.avg }))}
+              />
+            </div>
             <Card className="p-4">
               <h3 className="font-semibold mb-4">Performance by Class</h3>
               {stats.performanceByClass.length === 0 ? (

@@ -19,6 +19,11 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
   return payload;
 }
 
+export async function apiFetchPaginated(endpoint: string, page = 1, limit = 20, options: RequestInit = {}) {
+  const sep = endpoint.includes('?') ? '&' : '?';
+  return apiFetch(`${endpoint}${sep}page=${page}&limit=${limit}`, options);
+}
+
 export const api = {
   // Auth
   login: (email: string, password: string) =>

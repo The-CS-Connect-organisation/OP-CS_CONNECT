@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
-import Peep, {
+import PeepBase, {
   AccessoryType, FaceType, FacialHairType, HairType,
   BustPoseType, SittingPoseType, StandingPoseType
 } from 'react-peeps';
+const Peep = PeepBase as any;
 import { Button } from '@/components/ui/Button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog';
 import { ScrollArea } from '@/components/ui/ScrollArea';

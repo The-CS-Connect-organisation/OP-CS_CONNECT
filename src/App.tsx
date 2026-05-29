@@ -52,6 +52,7 @@ const TeacherClassAnalytics = lazy(() => import('./pages/teacher/ClassAnalytics'
 const TeacherStudentProgress = lazy(() => import('./pages/teacher/StudentProgress'))
 const TeacherPerformanceReports = lazy(() => import('./pages/teacher/PerformanceReports'))
 const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'))
+const AdminCalendar = lazy(() => import('./pages/admin/AdminCalendar'))
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'))
 const AdminAccounts = lazy(() => import('./pages/admin/AdminAccounts'))
 const AdminTimetable = lazy(() => import('./pages/admin/AdminTimetable'))
@@ -240,6 +241,7 @@ function App() {
           <Route path="/admin" element={roleGuard(['admin'])}>
             <Route index element={<AdminDashboard />} />
             <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="calendar" element={<AdminCalendar />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="accounts" element={<AdminAccounts />} />
             <Route path="timetable" element={<AdminTimetable />} />
