@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils"
-import { motion } from 'framer-motion';
+import { motion, type HTMLMotionProps } from 'framer-motion';
 import React from 'react';
 
-interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+interface CardProps extends HTMLMotionProps<"div"> {
   glow?: boolean
 }
 
@@ -32,6 +32,7 @@ function Card({ className, glow, ...props }: CardProps) {
     />
   );
 }
+
 function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return <div className={cn("flex flex-col space-y-1.5 p-6", className)} {...props} />
 }
