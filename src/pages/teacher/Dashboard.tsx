@@ -177,7 +177,7 @@ export default function TeacherDashboard() {
         </motion.div>
 
         {/* Quick Stats */}
-        <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Total Students', value: `${totalStudents}`, icon: Users, color: 'from-orange-600 to-amber-600', sub: `${classes.length || 1} class${classes.length === 1 ? '' : 'es'}` },
             { label: 'Avg Performance', value: `${avgPerformance}%`, icon: TrendingUp, color: 'from-emerald-600 to-teal-600', sub: '+3% this month' },
@@ -389,7 +389,7 @@ export default function TeacherDashboard() {
                 <Zap className="w-5 h-5 text-primary" />
                 <h3 className="font-semibold">Quick Actions</h3>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 {[
                   { label: 'Take Attendance', icon: UserCheck, color: 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20' },
                   { label: 'Create Assignment', icon: ClipboardList, color: 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20' },

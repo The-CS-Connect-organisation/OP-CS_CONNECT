@@ -117,7 +117,7 @@ export default function AdminDashboard() {
         </motion.div>
 
         {/* Stats Grid */}
-        <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Total Students', value: liveData.students.toLocaleString(), icon: GraduationCap, color: 'from-orange-500 to-red-500', change: 'enrolled', trend: 'up' },
             { label: 'Total Teachers', value: liveData.teachers.toString(), icon: Users, color: 'from-orange-600 to-amber-600', change: `${liveData.onLeave} on leave`, trend: 'neutral' },
@@ -303,7 +303,7 @@ export default function AdminDashboard() {
               <CardTitle className="text-lg">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                   {[
                     { label: 'Add User', icon: UserPlus, color: 'from-orange-500 to-amber-600', href: '/admin/create-account' },
                     { label: 'Send Notice', icon: Bell, color: 'from-orange-600 to-amber-600', href: '/admin/communication' },

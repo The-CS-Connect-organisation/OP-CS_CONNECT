@@ -266,7 +266,7 @@ export default function ReportCards() {
                   </div>
 
                   {/* Stats Row */}
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="p-4 bg-orange-50 rounded-xl text-center">
                       <p className="text-2xl font-bold text-orange-600">{formatPercentage(getStudentGPA(selectedStudent))}</p>
                       <p className="text-[10px] text-orange-500 uppercase tracking-widest font-bold mt-1">Academic %</p>
@@ -284,8 +284,8 @@ export default function ReportCards() {
                   {/* Grades Table */}
                   <div>
                     <h4 className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-3">Subject Grades</h4>
-                    <div className="border border-border rounded-xl overflow-hidden">
-                      <table className="w-full">
+                    <div className="border border-border rounded-xl overflow-x-auto">
+                      <table className="w-full min-w-[480px]">
                         <thead>
                           <tr className="bg-accent/50">
                             <th className="text-left px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Subject</th>
