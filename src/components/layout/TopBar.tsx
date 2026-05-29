@@ -4,8 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuthStore, useThemeStore, useNotificationStore, useSidebarStore } from '@/lib/store'
 import { cn, getGreeting } from '@/lib/utils'
 import {
-  Bell, Search, Menu, Sparkles, Bot,
-  ChevronDown, X, Check, AlertCircle, Info, CheckCircle2, GraduationCap
+  Bell, Search, Sparkles,
+  X, Check, AlertCircle, Info, CheckCircle2, GraduationCap
 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import StarWarsToggle from '@/components/ui/star-wars-toggle-switch'
@@ -15,7 +15,7 @@ export default function TopBar() {
   const { user } = useAuthStore()
   const { isDark, toggleTheme } = useThemeStore()
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationStore()
-  const { setMobileOpen, toggle } = useSidebarStore()
+  const { setMobileOpen } = useSidebarStore()
   const [showNotifications, setShowNotifications] = React.useState(false)
   const [showSearch, setShowSearch] = React.useState(false)
   const [searchQuery, setSearchQuery] = React.useState('')
@@ -34,40 +34,20 @@ export default function TopBar() {
       <div className="flex items-center justify-between h-16 px-4 lg:px-6">
         {/* Left section */}
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="lg:hidden p-2.5 rounded-xl bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 hover:from-orange-500/20 hover:to-amber-500/20 active:scale-95 transition-all"
-            aria-label="Open navigation menu"
-          >
-            <Menu className="w-5 h-5 text-orange-500" />
-          </button>
-
-          {/* Mobile branding */}
-          <div className="flex items-center gap-2 lg:hidden">
+          <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-sm">
               <GraduationCap className="w-4 h-4 text-white" />
             </div>
             <span className="font-bold text-sm bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-amber-500">School Sync</span>
           </div>
-
-          {/* Desktop collapse toggle + greeting */}
-          <div className="hidden lg:flex items-center gap-3">
-            <button
-              onClick={toggle}
-              className="p-2.5 rounded-xl bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 shadow-sm hover:from-orange-500/20 hover:to-amber-500/20 active:scale-95 transition-all"
-              aria-label="Toggle sidebar"
-              title="Toggle sidebar"
-            >
-              <Menu className="w-5 h-5 text-orange-500" />
-            </button>
-            <div>
-              <h2 className="text-sm font-medium text-foreground">
-                {getGreeting()}, <span className="font-semibold">{user.name.split(' ')[0]}</span> 👋
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-              </p>
-            </div>
+          <div className="hidden lg:block h-4 w-px bg-border/50" />
+          <div className="hidden lg:block">
+            <h2 className="text-sm font-medium text-foreground">
+              {getGreeting()}, <span className="font-semibold">{user.name.split(' ')[0]}</span> 👋
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              {new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+            </p>
           </div>
         </div>
 
@@ -104,7 +84,7 @@ export default function TopBar() {
 
           {/* Theme Toggle - Star Wars BB-8 */}
           <div className="flex items-center -mr-2">
-            <StarWarsToggle checked={isDark} onChange={toggleTheme} scale={0.55} />
+            <StarWarsToggle checked={isDark} onChange={toggleTheme} scale={0.15} />
           </div>
 
           {/* Notifications */}
