@@ -120,12 +120,12 @@ export default function CoordinatorDashboard() {
             { label: 'Fee Collection', value: `${summaryStats.avgFeeCollection}%`, icon: DollarSign, color: 'from-amber-600 to-orange-600', change: `Target: ${summaryStats.feeTarget}%` },
           ].map((stat) => (
             <motion.div key={stat.label} whileHover={{ y: -2, scale: 1.02 }}>
-              <Card glow>
+              <Card glow className="card-hover">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
-                      <p className="text-2xl font-bold mt-1">{stat.value}</p>
+                      <p className="text-2xl font-bold mt-1 stat-value">{stat.value}</p>
                       <p className="text-xs text-muted-foreground mt-1">{stat.change}</p>
                     </div>
                     <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br", stat.color)}>

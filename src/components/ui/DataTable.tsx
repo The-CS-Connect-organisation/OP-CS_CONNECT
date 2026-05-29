@@ -29,6 +29,10 @@ interface DataTableProps<T> {
     onPageSizeChange?: (size: number) => void;
   };
   keyExtractor: (item: T) => string;
+  /** Custom row renderer — when provided, columns only define the header, and each row is fully custom */
+  renderRow?: (item: T, index: number) => React.ReactNode;
+  /** Striped rows (even-indexed rows get a muted background) */
+  striped?: boolean;
 }
 
 export function DataTable<T extends Record<string, any>>({
@@ -42,6 +46,8 @@ export function DataTable<T extends Record<string, any>>({
   emptyMessage = 'No data found',
   serverPagination,
   keyExtractor,
+  renderRow,
+  striped = true,
 }: DataTableProps<T>) {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
@@ -132,11 +138,21 @@ export function DataTable<T extends Record<string, any>>({
                     {emptyMessage}
                   </td>
                 </tr>
-              ) : (
-                paginatedData.map(item => (
+              ) : renderRow ? (
+                paginatedData.map((item, i) => (
                   <tr
                     key={keyExtractor(item)}
-                    className={`transition-colors ${onRowClick ? 'cursor-pointer hover:bg-accent/50' : 'hover:bg-muted/30'}`}
+                    className={`transition-colors ${striped && i % 2 !== 0 ? 'bg-muted/30' : ''} ${onRowClick ? 'cursor-pointer hover:bg-accent/50' : 'hover:bg-muted/30'}`}
+                    onClick={() => onRowClick?.(item)}
+                  >
+                    {renderRow(item, i)}
+                  </tr>
+                ))
+              ) : (
+                paginatedData.map((item, i) => (
+                  <tr
+                    key={keyExtractor(item)}
+                    className={`transition-colors ${striped && i % 2 !== 0 ? 'bg-muted/30' : ''} ${onRowClick ? 'cursor-pointer hover:bg-accent/50' : 'hover:bg-muted/30'}`}
                     onClick={() => onRowClick?.(item)}
                   >
                     {columns.map(col => (

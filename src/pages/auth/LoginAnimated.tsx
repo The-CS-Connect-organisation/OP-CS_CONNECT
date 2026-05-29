@@ -265,9 +265,9 @@ function LoginPage() {
 
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
+    <div className="min-h-screen grid lg:grid-cols-2 bg-gradient-to-b from-primary via-primary/90 to-primary/70">
       {/* Left Content Section */}
-      <div className="relative hidden lg:flex flex-col bg-gradient-to-br from-primary/90 via-primary to-primary/80 p-12 text-primary-foreground">
+      <div className="relative hidden lg:flex flex-col p-12 text-primary-foreground">
         <div className="relative z-20">
           <div className="flex items-center gap-2 text-lg font-semibold">
             <div className="size-8 rounded-lg bg-primary-foreground/10 backdrop-blur-sm flex items-center justify-center">
@@ -434,7 +434,7 @@ function LoginPage() {
       </div>
 
       {/* Right Login Section */}
-      <div className="flex items-center justify-center p-8 bg-background">
+      <div className="flex items-start justify-center pt-24 lg:pt-32 p-8 bg-background/10 backdrop-blur-[2px]">
         <div className="w-full max-w-[420px]">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-2 text-lg font-semibold mb-12">
@@ -444,8 +444,8 @@ function LoginPage() {
             <span>Cornerstone AI</span>
           </div>
 
-          {/* Header */}
-          <div className="text-center mb-10">
+          {/* Header - moved down */}
+          <div className="text-center mb-10 mt-8 pt-4">
             <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome back!</h1>
             <p className="text-muted-foreground text-sm">Sign in to your Cornerstone account</p>
           </div>
@@ -464,7 +464,7 @@ function LoginPage() {
                 onFocus={() => setIsTyping(true)}
                 onBlur={() => setIsTyping(false)}
                 required
-                className="h-12 bg-background border-border/60 focus:border-primary"
+                className="h-12 bg-background/80 border-border/60 focus:border-primary"
               />
             </div>
             <div className="space-y-2">
@@ -477,7 +477,7 @@ function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="h-12 pr-10 bg-background border-border/60 focus:border-primary"
+                  className="h-12 pr-10 bg-background/80 border-border/60 focus:border-primary"
                 />
                 <button
                   type="button"
@@ -521,6 +521,9 @@ function LoginPage() {
           </div>
         </div>
       </div>
+
+      {/* Full-page orange gradient with scroll-fade */}
+      <div className="fixed inset-0 bg-gradient-to-b from-primary via-primary/90 to-primary/70 pointer-events-none -z-10" />
     </div>
   );
 }

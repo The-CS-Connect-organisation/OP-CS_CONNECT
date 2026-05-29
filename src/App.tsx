@@ -145,6 +145,12 @@ const ManagerFoodService = lazy(() => import('./pages/manager/ManagerFoodService
 const ManagerAthletics = lazy(() => import('./pages/manager/ManagerAthletics'))
 const ManagerAlumni = lazy(() => import('./pages/manager/ManagerAlumni'))
 const ManagerPlatform = lazy(() => import('./pages/manager/ManagerPlatform'))
+const AdminRoomBooking = lazy(() => import('./pages/admin/AdminRoomBooking'))
+const AdminAssetTracking = lazy(() => import('./pages/admin/AdminAssetTracking'))
+const ManagerRoomBooking = lazy(() => import('./pages/manager/ManagerRoomBooking'))
+const ManagerAssetTracking = lazy(() => import('./pages/manager/ManagerAssetTracking'))
+const TeacherRoomBooking = lazy(() => import('./pages/teacher/TeacherRoomBooking'))
+const TeacherAssetTracking = lazy(() => import('./pages/teacher/TeacherAssetTracking'))
 
 const GP = (title: string, description: string, icon: string, category: string, role: string) => (
   <GenericPage title={title} description={description} icon={icon as any} category={category} role={role as any} />
@@ -179,7 +185,7 @@ function App() {
   }
 
   return (
-    <div className="aurora-bg">
+    <div className="w-full h-full">
       <Suspense fallback={<div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-gray-900"><div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div></div>}>
         <Routes>
         <Route path="/" element={<Landing />} />
@@ -235,6 +241,8 @@ function App() {
             <Route path="ai" element={<AILab />} />
             <Route path="classroom" element={<TeacherClassroom />} />
             <Route path="exam-results" element={<TeacherExamResults />} />
+            <Route path="room-booking" element={<TeacherRoomBooking />} />
+            <Route path="asset-tracking" element={<TeacherAssetTracking />} />
           </Route>
 
           {/* ADMIN */}
@@ -285,6 +293,8 @@ function App() {
             <Route path="athletics" element={<AdminAthletics />} />
             <Route path="alumni" element={<AdminAlumni />} />
             <Route path="platform" element={<AdminPlatform />} />
+            <Route path="room-booking" element={<AdminRoomBooking />} />
+            <Route path="asset-tracking" element={<AdminAssetTracking />} />
             <Route path="create-account" element={<CreateAccount />} />
           </Route>
 
@@ -368,6 +378,8 @@ function App() {
             <Route path="athletics" element={<ManagerAthletics />} />
             <Route path="alumni" element={<ManagerAlumni />} />
             <Route path="platform" element={<ManagerPlatform />} />
+            <Route path="room-booking" element={<ManagerRoomBooking />} />
+            <Route path="asset-tracking" element={<ManagerAssetTracking />} />
           </Route>
 
           <Route path="/cs-library" element={

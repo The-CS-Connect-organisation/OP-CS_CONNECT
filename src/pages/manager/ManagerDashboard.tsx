@@ -90,14 +90,14 @@ export default function ManagerDashboard() {
           const Icon = stat.icon;
           return (
             <motion.div key={stat.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
-              <Card className="p-4 hover:shadow-lg transition-all">
+              <Card className="p-4 card-hover">
                 <div className="flex items-center justify-between mb-3">
                   <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center text-white`}>
                     <Icon className="w-5 h-5" />
                   </div>
                   <Badge variant="outline" className="text-[10px] text-emerald-600 border-emerald-200">{stat.change}</Badge>
                 </div>
-                <p className="text-2xl font-bold">{stat.value}</p>
+                <p className="text-2xl font-bold stat-value">{stat.value}</p>
                 <p className="text-[10px] text-muted-foreground uppercase tracking-widest mt-1">{stat.label}</p>
               </Card>
             </motion.div>
