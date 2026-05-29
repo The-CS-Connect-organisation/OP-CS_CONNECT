@@ -468,10 +468,11 @@ export default function StudentDashboard() {
               </CardContent>
             </Card>
           </motion.div>
-        </motion.div>
+        </div>
+      </motion.div>
 
-        {/* AI Chat Panel */}
-        <AIChatPanel isOpen={showAI} onClose={() => setShowAI(false)} context="Student dashboard - viewing grades, assignments, and schedule" />
+      {/* AI Chat Panel */}
+      <AIChatPanel isOpen={showAI} onClose={() => setShowAI(false)} context="Student dashboard - viewing grades, assignments, and schedule" />
     </>
   )
 }
