@@ -21,6 +21,27 @@ import {
   PolarRadiusAxis, Radar, PieChart, Pie, Cell
 } from 'recharts'
 
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    y: 20,
+  },
+  in: {
+    opacity: 1,
+    y: 0,
+  },
+  out: {
+    opacity: 0,
+    y: -20,
+  },
+};
+
+const pageTransition = {
+  type: 'tween',
+  ease: 'anticipate',
+  duration: 0.5,
+};
+
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
@@ -64,9 +85,9 @@ export default function StudentDashboard() {
 
   return (
     <>
-    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
+    <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="space-y-6 bento-grid">
         {/* Hero Section */}
-        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-600/10 via-amber-600/5 to-transparent border border-orange-500/10 p-6 lg:p-8">
+        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-600/10 via-amber-600/5 to-transparent border border-orange-500/10 p-6 lg:p-8 hero-card">
           <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full filter blur-[80px]" />
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <div>
@@ -96,7 +117,7 @@ export default function StudentDashboard() {
         </motion.div>
 
         {/* Quick Stats */}
-        <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="quick-stats-grid">
           {[
             { label: 'Academic %', value: formatPercentage(currentPercentage), icon: GraduationCap, change: '+0.3', trend: 'up', color: 'from-orange-500 to-amber-600', bgColor: 'bg-orange-500/10' },
             { label: 'Attendance', value: `${attendancePercent}%`, icon: UserCheck, change: '+2%', trend: 'up', color: 'from-emerald-600 to-teal-600', bgColor: 'bg-emerald-500/10' },
@@ -106,8 +127,8 @@ export default function StudentDashboard() {
             <motion.div
               key={stat.label}
               whileHover={{ y: -2, scale: 1.02 }}
-              transition={{ duration: 0.2 }}
-            >
+              transition={{ duration:.2 }}
+              className={`quick-stat-${i+1}`}>
               <Card glow className="relative overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
@@ -133,12 +154,12 @@ export default function StudentDashboard() {
               </Card>
             </motion.div>
           ))}
-        </motion.div>
+        </div>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="main-content-grid">
           {/* Performance Chart */}
-          <motion.div variants={itemVariants} className="lg:col-span-2">
+          <motion.div variants={itemVariants} className="performance-chart">
             <Card glow>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -178,7 +199,7 @@ export default function StudentDashboard() {
                         }}
                       />
                       <Area type="monotone" dataKey="score" stroke="#8b5cf6" fill="url(#gpaGradient)" strokeWidth={2} name="Score %" />
-                      <Area type="monotone" dataKey="attendance" stroke="#10b981" fill="url(#attGradient)" strokeWidth={2} name="Attendance" />
+                      <Area type="monotone" dataKey="attendance" stroke="#10b9.81" fill="url(#attGradient)" strokeWidth={2} name="Attendance" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -195,7 +216,7 @@ export default function StudentDashboard() {
           </motion.div>
 
           {/* Attendance & Radar */}
-          <motion.div variants={itemVariants} className="space-y-6">
+          <motion.div variants={itemVariants} className="attendance-radar-grid">
             <Card glow>
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -246,9 +267,9 @@ export default function StudentDashboard() {
         </div>
 
         {/* Assignments & Schedule Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="assignments-schedule-grid">
           {/* Upcoming Assignments */}
-          <motion.div variants={itemVariants}>
+          <motion.div variants={itemVariants} className="upcoming-assignments">
             <Card glow>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -293,7 +314,7 @@ export default function StudentDashboard() {
           </motion.div>
 
           {/* Today's Schedule */}
-          <motion.div variants={itemVariants}>
+          <motion.div variants={itemVariants} className="todays-schedule">
             <Card glow>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -330,9 +351,9 @@ export default function StudentDashboard() {
         </div>
 
         {/* Grades Table & Activities */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grades-activities-grid">
           {/* Grade Analytics */}
-          <motion.div variants={itemVariants} className="lg:col-span-2">
+          <motion.div variants={itemVariants} className="grade-analytics">
             <Card glow>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
@@ -389,7 +410,7 @@ export default function StudentDashboard() {
           </motion.div>
 
           {/* Clubs & Activities */}
-          <motion.div variants={itemVariants}>
+          <motion.div variants={itemVariants} className="clubs-activities">
             <Card glow>
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -416,7 +437,7 @@ export default function StudentDashboard() {
         </div>
 
         {/* Fee Status */}
-        <motion.div variants={itemVariants}>
+        <motion.div variants={itemVariants} className="fee-status">
           <Card glow>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
@@ -467,7 +488,7 @@ export default function StudentDashboard() {
       </motion.div>
 
       {/* AI Chat Panel */}
-      <AIChatPanel isOpen={showAI} onClose={() => setShowAI(false)} context="Student dashboard - viewing grades, assignments, and schedule" />
+      <AIChatPanel isOpen={.showAI} onClose={() => setShowAI(false)} context="Student dashboard - viewing grades, assignments, and schedule" />
     </>
   )
 }

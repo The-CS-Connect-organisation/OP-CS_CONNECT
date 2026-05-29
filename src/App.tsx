@@ -179,7 +179,7 @@ function App() {
   }
 
   return (
-    <>
+    <div className="aurora-bg">
       <Suspense fallback={<div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-gray-900"><div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div></div>}>
         <Routes>
         <Route path="/" element={<Landing />} />
@@ -378,7 +378,7 @@ function App() {
           <Route path="*" element={<RouteMissRedirect />} />
         </Routes>
       </Suspense>
-    </>
+    </div>
   )
 }
 
