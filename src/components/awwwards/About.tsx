@@ -20,15 +20,15 @@ const About = () => {
     });
 
     clipAnimation.to(".mask-clip-path", {
-      width: "100vw",
-      height: "100vh",
+      width: "100%",
+      height: "100%",
       borderRadius: 0,
     });
   });
 
   return (
     <div id="about" className="min-h-screen w-screen bg-white">
-      <div className="relative mb-8 mt-36 flex flex-col items-center gap-5">
+      <div className="relative mb-8 pt-36 flex flex-col items-center gap-5">
         <p className="font-general text-xl uppercase md:text-[30px]">
           Welcome to CS Connect
         </p>
