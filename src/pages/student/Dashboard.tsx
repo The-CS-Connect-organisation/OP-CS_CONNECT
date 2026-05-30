@@ -8,9 +8,17 @@ import { Progress } from '@/components/ui/Progress'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAuthStore, useDataStore } from '@/lib/store'
 import { cn, formatCurrency, normalizeAcademicPercentage, formatPercentage } from '@/lib/utils'
-const OverviewTab = lazy(() => import('@/components/dashboard/student/OverviewTab'))
-const AcademicsTab = lazy(() => import('@/components/dashboard/student/AcademicsTab'))
-const ScheduleTab = lazy(() => import('@/components/dashboard/student/ScheduleTab'))
+import {
+  BookOpen, ClipboardList, Calendar, BarChart3, UserCheck,
+  CreditCard, Trophy, Sparkles, TrendingUp, TrendingDown,
+  Clock, AlertCircle, CheckCircle2, ArrowUpRight, Brain,
+  Target, Zap, GraduationCap, Star, Loader2
+} from 'lucide-react'
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis,
+  PolarRadiusAxis, Radar, PieChart, Pie, Cell
+} from 'recharts'
 
 const pageVariants = {
   initial: {
