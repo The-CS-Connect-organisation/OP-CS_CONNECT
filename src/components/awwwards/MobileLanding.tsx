@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogIn, LogOut, LayoutDashboard, CircleUserRound, School, Cpu, Users, BadgeCheck, ChevronRight } from 'lucide-react';
 import { TiLocationArrow } from "react-icons/ti";
 import { useAuthStore } from "@/lib/store";
+import useAudioAutoplay from "@/hooks/useAudioAutoplay";
 
 const navItems = ["About", "Features", "Story"];
 
@@ -13,38 +14,11 @@ interface Props {
 export default function MobileLanding({ showPrompt }: Props) {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [audioStarted, setAudioStarted] = useState(false);
+  const { audioRef, audioStarted } = useAudioAutoplay(`${import.meta.env.BASE_URL}audio/loop2.0.m4a`);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.classList.remove("dark");
-  }, []);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.loop = true;
-    audio.volume = 1.0;
-
-    let started = false;
-    const start = () => {
-      if (started) return;
-      started = true;
-      setAudioStarted(true);
-      audio.play().catch(() => {});
-      document.removeEventListener("click", start);
-      document.removeEventListener("touchstart", start);
-      document.removeEventListener("pointerdown", start);
-      document.removeEventListener("wheel", start);
-      document.removeEventListener("scroll", start, { capture: true });
-    };
-
-    document.addEventListener("click", start);
-    document.addEventListener("touchstart", start);
-    document.addEventListener("pointerdown", start);
-    document.addEventListener("wheel", start);
-    document.addEventListener("scroll", start, { capture: true });
   }, []);
 
   const getDashboardRoute = () => {

@@ -13,44 +13,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/DropdownMenu";
 import { useAuthStore } from "@/lib/store";
+import useAudioAutoplay from "@/hooks/useAudioAutoplay";
 
 const navItems = ["About", "Features", "Story"];
 
 const NavBar = () => {
   const navRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [audioStarted, setAudioStarted] = useState(false);
+  const { audioRef, audioStarted } = useAudioAutoplay(`${import.meta.env.BASE_URL}audio/loop2.0.m4a`);
 
   const { y: currentScrollY } = useWindowScroll();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
-
-  // Audio - starts on first tap/click/scroll
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.loop = true;
-    audio.volume = 1.0;
-
-    let started = false;
-    const start = () => {
-      if (started) return;
-      started = true;
-      setAudioStarted(true);
-      audio.play().catch(() => {});
-      document.removeEventListener("click", start);
-      document.removeEventListener("touchstart", start);
-      document.removeEventListener("pointerdown", start);
-      document.removeEventListener("wheel", start);
-      document.removeEventListener("scroll", start, { capture: true });
-    };
-
-    document.addEventListener("click", start);
-    document.addEventListener("touchstart", start);
-    document.addEventListener("pointerdown", start);
-    document.addEventListener("wheel", start);
-    document.addEventListener("scroll", start, { capture: true });
-  }, []);
 
   // Navbar: visible on hero only, hides immediately when past hero,
   // reappears only when mouse hovers near top edge
