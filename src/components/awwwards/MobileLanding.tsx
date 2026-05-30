@@ -35,11 +35,15 @@ export default function MobileLanding({ showPrompt }: Props) {
       audio.play().catch(() => {});
       document.removeEventListener("click", start);
       document.removeEventListener("touchstart", start);
+      document.removeEventListener("pointerdown", start);
+      document.removeEventListener("wheel", start);
       document.removeEventListener("scroll", start, { capture: true });
     };
 
     document.addEventListener("click", start);
     document.addEventListener("touchstart", start);
+    document.addEventListener("pointerdown", start);
+    document.addEventListener("wheel", start);
     document.addEventListener("scroll", start, { capture: true });
   }, []);
 
