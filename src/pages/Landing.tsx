@@ -52,7 +52,7 @@ export default function LandingPage() {
   }
 
   return (
-    <main className="relative min-h-screen w-full overflow-x-hidden page-enter">
+    <main className="relative min-h-screen w-full overflow-x-hidden page-enter bg-white">
       <NavBar />
       <Hero />
       <About />
