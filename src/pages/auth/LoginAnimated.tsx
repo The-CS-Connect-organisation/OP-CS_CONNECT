@@ -446,7 +446,7 @@ function LoginPage() {
 
           {/* Header - moved down */}
           <div className="text-center mb-10 mt-8 pt-4">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome back!</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome back! (v2)</h1>
             <p className="text-muted-foreground text-sm">Sign in to your Cornerstone account</p>
           </div>
 

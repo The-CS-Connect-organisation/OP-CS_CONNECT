@@ -322,7 +322,7 @@ export default function Login() {
                       <Loader2 className="w-5 h-5 animate-spin" />
                     ) : (
                       <>
-                        Login v2
+                        Enter Cornerstone
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
