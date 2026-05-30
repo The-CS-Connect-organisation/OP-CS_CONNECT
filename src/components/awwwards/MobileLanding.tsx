@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { LogIn, LogOut, LayoutDashboard, CircleUserRound, School, Cpu, Users, BadgeCheck, ChevronRight } from 'lucide-react';
 import { TiLocationArrow } from "react-icons/ti";
 import { useAuthStore } from "@/lib/store";
-import useAudioAutoplay from "@/hooks/useAudioAutoplay";
 
 const navItems = ["About", "Features", "Story"];
 
@@ -14,7 +13,6 @@ interface Props {
 export default function MobileLanding({ showPrompt }: Props) {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
-  const { audioRef, audioStarted } = useAudioAutoplay(`${import.meta.env.BASE_URL}audio/loop2.0.m4a`);
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -53,8 +51,6 @@ export default function MobileLanding({ showPrompt }: Props) {
 
   return (
     <main className="min-h-screen bg-white text-gray-900 font-circular-web page-enter">
-      <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/loop2.0.m4a`} loop preload="auto" />
-
       {/* Navbar */}
       <nav className={`fixed inset-x-0 z-50 h-14 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 ${showPrompt ? "top-[68px]" : "top-0"}`}>
         <button onClick={() => navigate("/")} className="flex items-center gap-2">
@@ -246,14 +242,6 @@ export default function MobileLanding({ showPrompt }: Props) {
         </div>
       </footer>
 
-      {/* Audio prompt */}
-      <div
-        className={`fixed bottom-4 left-4 z-50 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/70 text-[10px] font-general uppercase tracking-wider transition-all duration-700 select-none ${
-          audioStarted ? "opacity-0 scale-90 pointer-events-none" : "opacity-100"
-        }`}
-      >
-        tap or scroll to start audio
-      </div>
     </main>
   );
 }

@@ -1,6 +1,6 @@
 import gsap from "gsap";
 import { useWindowScroll } from "react-use";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogIn, LogOut, LayoutDashboard, CircleUserRound, ChevronRight } from 'lucide-react';
 
@@ -13,20 +13,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/DropdownMenu";
 import { useAuthStore } from "@/lib/store";
-import useAudioAutoplay from "@/hooks/useAudioAutoplay";
 
 const navItems = ["About", "Features", "Story"];
 
 const NavBar = () => {
   const navRef = useRef<HTMLDivElement>(null);
-  const { audioRef, audioStarted } = useAudioAutoplay(`${import.meta.env.BASE_URL}audio/loop2.0.m4a`);
 
   const { y: currentScrollY } = useWindowScroll();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuthStore();
 
-  // Navbar: visible on hero only, hides immediately when past hero,
-  // reappears only when mouse hovers near top edge
   useEffect(() => {
     const el = navRef.current;
     if (!el) return;
@@ -76,95 +72,85 @@ const NavBar = () => {
   };
 
   return (
-    <>
-      <audio ref={audioRef} src={`${import.meta.env.BASE_URL}audio/loop2.0.m4a`} loop preload="auto" />
-      <div
-        ref={navRef}
-        className="fixed inset-x-0 top-0 z-50 h-16 bg-white/10 backdrop-blur-md border-b border-transparent"
-      >
-        <header className="absolute top-1/2 w-full -translate-y-1/2">
-          <nav className="flex size-full items-center justify-between px-4 md:px-8">
-            <div className="flex items-center gap-3">
-              <button onClick={() => navigate("/")} className="flex items-center gap-3">
-                <img src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`} alt="CS Connect" className="w-7 h-7 md:w-8 md:h-8 object-contain" />
-                <span className="font-zentry text-base md:text-lg font-black uppercase tracking-wider text-white">
-                  CS Connect
-                </span>
-              </button>
-            </div>
+    <div
+      ref={navRef}
+      className="fixed inset-x-0 top-0 z-50 h-16 bg-white/10 backdrop-blur-md border-b border-transparent"
+    >
+      <header className="absolute top-1/2 w-full -translate-y-1/2">
+        <nav className="flex size-full items-center justify-between px-4 md:px-8">
+          <div className="flex items-center gap-3">
+            <button onClick={() => navigate("/")} className="flex items-center gap-3">
+              <img src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`} alt="CS Connect" className="w-7 h-7 md:w-8 md:h-8 object-contain" />
+              <span className="font-zentry text-base md:text-lg font-black uppercase tracking-wider text-white">
+                CS Connect
+              </span>
+            </button>
+          </div>
 
-            <div className="flex h-full items-center gap-1 md:gap-3">
-              <div className="hidden md:flex items-center gap-1">
-                {navItems.map((item, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleNavClick(item)}
-                    className="relative px-3 py-1.5 font-general text-xs uppercase tracking-wide rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
-
-              {isAuthenticated && user ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors p-1">
-                      <CircleUserRound className="w-6 h-6" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="min-w-56">
-                    <DropdownMenuLabel className="flex items-start gap-3 p-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-orange-600 font-bold text-base shrink-0">
-                        {user.name.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex min-w-0 flex-col">
-                        <span className="truncate text-sm font-medium text-gray-900">
-                          {user.name}
-                        </span>
-                        {user.class && (
-                          <span className="truncate text-xs text-gray-400">
-                            Class {user.class}
-                          </span>
-                        )}
-                        <span className="truncate text-xs text-gray-400">
-                          {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                        </span>
-                      </div>
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => navigate(getDashboardRoute())}>
-                      <LayoutDashboard className="w-4 h-4 text-gray-400" />
-                      <span>Dashboard</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => { useAuthStore.getState().logout(); navigate("/"); }}>
-                      <LogOut className="w-4 h-4 text-gray-400" />
-                      <span>Logout</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : (
+          <div className="flex h-full items-center gap-1 md:gap-3">
+            <div className="hidden md:flex items-center gap-1">
+              {navItems.map((item, index) => (
                 <button
-                  onClick={() => navigate("/login")}
-                  className="flex items-center gap-1.5 px-3 py-1.5 font-general text-xs uppercase tracking-wide rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                  key={index}
+                  onClick={() => handleNavClick(item)}
+                  className="relative px-3 py-1.5 font-general text-xs uppercase tracking-wide rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
                 >
-                  <LogIn className="w-4 h-4" />
-                  <span>Login</span>
+                  {item}
                 </button>
-              )}
+              ))}
             </div>
-          </nav>
-        </header>
-      </div>
-      <div
-        className={`fixed bottom-6 left-6 z-50 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/70 text-xs font-general uppercase tracking-wider transition-all duration-700 select-none ${
-          audioStarted ? "opacity-0 scale-90 pointer-events-none" : "opacity-100"
-        }`}
-      >
-        tap or scroll to start audio
-      </div>
-    </>
+
+            {isAuthenticated && user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="rounded-full text-white/80 hover:text-white hover:bg-white/10 transition-colors p-1">
+                    <CircleUserRound className="w-6 h-6" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-56">
+                  <DropdownMenuLabel className="flex items-start gap-3 p-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-orange-100 text-orange-600 font-bold text-base shrink-0">
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex min-w-0 flex-col">
+                      <span className="truncate text-sm font-medium text-gray-900">
+                        {user.name}
+                      </span>
+                      {user.class && (
+                        <span className="truncate text-xs text-gray-400">
+                          Class {user.class}
+                        </span>
+                      )}
+                      <span className="truncate text-xs text-gray-400">
+                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                      </span>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate(getDashboardRoute())}>
+                    <LayoutDashboard className="w-4 h-4 text-gray-400" />
+                    <span>Dashboard</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => { useAuthStore.getState().logout(); navigate("/"); }}>
+                    <LogOut className="w-4 h-4 text-gray-400" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <button
+                onClick={() => navigate("/login")}
+                className="flex items-center gap-1.5 px-3 py-1.5 font-general text-xs uppercase tracking-wide rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                <LogIn className="w-4 h-4" />
+                <span>Login</span>
+              </button>
+            )}
+          </div>
+        </nav>
+      </header>
+    </div>
   );
 };
 
