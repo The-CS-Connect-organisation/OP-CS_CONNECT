@@ -116,7 +116,7 @@ export default function AdminScheduling() {
   const loadAll = async () => {
     try {
       setLoading(true);
-      const [tt, bks, bells, cov, sc, coteach] = await Promise.all([
+      const raw = await Promise.allSettled([
         api.getGeneratedTimetable('10-A'),
         api.getRoomBookings(),
         api.getBellSchedules(),
@@ -124,14 +124,14 @@ export default function AdminScheduling() {
         api.getSubjectChoices('all'),
         api.getCoTeaching(),
       ]);
+      const [tt, bks, bells, cov, sc, coteach] = raw.map(r => r.status === 'fulfilled' ? r.value : []);
       setTtEntries(Array.isArray(tt) ? tt : []);
       setBookings(Array.isArray(bks) ? bks : []);
       setBellSchedules(Array.isArray(bells) ? bells : []);
       setCoverage(Array.isArray(cov) ? cov : []);
       setSubjectChoices(Array.isArray(sc) ? sc : []);
       setCoTeaching(Array.isArray(coteach) ? coteach : []);
-      const roomData = await api.getRooms();
-      setRooms(Array.isArray(roomData) ? roomData : []);
+      try { const roomData = await api.getRooms(); setRooms(Array.isArray(roomData) ? roomData : []); } catch {}
     } catch {
       // error
     } finally {

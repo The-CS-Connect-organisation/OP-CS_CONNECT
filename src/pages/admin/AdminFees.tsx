@@ -41,7 +41,10 @@ export default function AdminFees() {
 
   const filteredFees = fees.filter(fee => {
     const matchesFilter = filter === 'all' || fee.status === filter;
-    const matchesSearch = fee.studentName.toLowerCase().includes(searchQuery.toLowerCase()) || fee.class.toLowerCase().includes(searchQuery.toLowerCase());
+    const s = (fee.studentName || '').toLowerCase();
+    const c = (fee.class || '').toLowerCase();
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = !q || s.includes(q) || c.includes(q);
     return matchesFilter && matchesSearch;
   });
 

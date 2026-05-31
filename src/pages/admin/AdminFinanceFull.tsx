@@ -609,7 +609,7 @@ function ProcurementTab() {
     finally { setLoading(false); }
   };
 
-  const getTotal = () => formData.items.reduce((s, i) => s + (i.qty * i.price), 0);
+  const getTotal = () => formData.items.reduce((s, i) => s + ((Number(i.qty) || 0) * (Number(i.price) || 0)), 0);
 
   const handleCreate = async () => {
     try {
@@ -895,7 +895,8 @@ function SpendingAnalyticsTab() {
     finally { setLoading(false); }
   };
 
-  const maxAmount = Math.max(...data.map(d => d.amount), 1);
+  const amounts = data.map(d => Number(d.amount)).filter(n => !isNaN(n));
+  const maxAmount = amounts.length > 0 ? Math.max(...amounts) : 1;
 
   if (loading) return <div className="space-y-4">{[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}</div>;
 

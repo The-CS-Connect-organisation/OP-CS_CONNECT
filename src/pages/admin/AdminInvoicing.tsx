@@ -187,8 +187,8 @@ function InvoicesTab() {
   };
 
   const filtered = invoices.filter(i =>
-    i.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    i.studentName.toLowerCase().includes(searchQuery.toLowerCase())
+    (i.invoiceNumber || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (i.studentName || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const getStatusBadge = (s: string) => {
@@ -384,7 +384,7 @@ function QuotesTab() {
     try {
       setError('');
       const items = formData.items.filter(i => i.description);
-      const total = items.reduce((s, i) => s + i.amount, 0);
+      const total = items.reduce((s, i) => s + (Number(i.amount) || 0), 0);
       await api.createQuote({ client: formData.client, items, total });
       setShowCreate(false);
       setFormData({ client: '', items: [{ description: '', amount: 0 }] });
@@ -489,7 +489,7 @@ function PaymentsTab() {
   };
 
   const filtered = payments.filter(p => {
-    const m = p.studentName.toLowerCase().includes(searchQuery.toLowerCase());
+    const m = (p.studentName || '').toLowerCase().includes(searchQuery.toLowerCase());
     const f = !methodFilter || p.method === methodFilter;
     return m && f;
   });
