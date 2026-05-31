@@ -3,6 +3,7 @@ import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { formatCurrency } from '../../lib/utils';
 import { Landmark, TrendingUp, TrendingDown, Calendar, Search } from 'lucide-react';
 
 interface AccountRecord {
@@ -91,9 +92,10 @@ export default function AdminAccounts() {
     return matchesSearch && matchesType;
   });
 
-  const totalIncome = records.filter(r => r.type === 'income').reduce((sum, r) => sum + r.amount, 0);
+  const totalReceived = records.filter(r => r.type === 'income' && r.status === 'completed').reduce((sum, r) => sum + r.amount, 0);
+  const totalOutstanding = records.filter(r => r.type === 'income' && r.status === 'pending').reduce((sum, r) => sum + r.amount, 0);
   const totalExpense = records.filter(r => r.type === 'expense').reduce((sum, r) => sum + r.amount, 0);
-  const balance = totalIncome - totalExpense;
+  const balance = totalReceived - totalExpense;
 
   return (
     <div className="p-6 space-y-6">
@@ -102,13 +104,22 @@ export default function AdminAccounts() {
         <p className="text-muted-foreground">Account management</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="p-4">
           <div className="flex items-center gap-3">
             <TrendingUp className="w-8 h-8 text-green-500" />
             <div>
-              <p className="text-2xl font-bold">${totalIncome.toLocaleString()}</p>
-              <p className="text-sm text-muted-foreground">Total Income</p>
+              <p className="text-2xl font-bold">{formatCurrency(totalReceived)}</p>
+              <p className="text-sm text-muted-foreground">Received</p>
+            </div>
+          </div>
+        </Card>
+        <Card className="p-4">
+          <div className="flex items-center gap-3">
+            <TrendingUp className="w-8 h-8 text-yellow-500" />
+            <div>
+              <p className="text-2xl font-bold">{formatCurrency(totalOutstanding)}</p>
+              <p className="text-sm text-muted-foreground">Outstanding</p>
             </div>
           </div>
         </Card>
@@ -116,8 +127,8 @@ export default function AdminAccounts() {
           <div className="flex items-center gap-3">
             <TrendingDown className="w-8 h-8 text-red-500" />
             <div>
-              <p className="text-2xl font-bold">${totalExpense.toLocaleString()}</p>
-              <p className="text-sm text-muted-foreground">Total Expenses</p>
+              <p className="text-2xl font-bold">{formatCurrency(totalExpense)}</p>
+              <p className="text-sm text-muted-foreground">Expenses</p>
             </div>
           </div>
         </Card>
@@ -125,7 +136,7 @@ export default function AdminAccounts() {
           <div className="flex items-center gap-3">
             <Landmark className="w-8 h-8 text-orange-500" />
             <div>
-              <p className={`text-2xl font-bold ${balance >= 0 ? 'text-green-500' : 'text-red-500'}`}>${balance.toLocaleString()}</p>
+              <p className={`text-2xl font-bold ${balance >= 0 ? 'text-green-500' : 'text-red-500'}`}>{formatCurrency(balance)}</p>
               <p className="text-sm text-muted-foreground">Balance</p>
             </div>
           </div>
@@ -165,7 +176,7 @@ export default function AdminAccounts() {
                 </div>
                 <div className="text-right">
                   <p className={`font-semibold ${record.type === 'income' ? 'text-green-500' : 'text-red-500'}`}>
-                    {record.type === 'income' ? '+' : '-'}${record.amount.toLocaleString()}
+                    {record.type === 'income' ? '+' : '-'}{formatCurrency(record.amount)}
                   </p>
                   <Badge variant="secondary">{record.status}</Badge>
                 </div>
