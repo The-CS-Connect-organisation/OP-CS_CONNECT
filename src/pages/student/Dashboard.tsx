@@ -12,7 +12,7 @@ import {
   BookOpen, ClipboardList, Calendar, BarChart3, UserCheck,
   CreditCard, Trophy, Sparkles, TrendingUp, TrendingDown,
   Clock, AlertCircle, CheckCircle2, ArrowUpRight, Brain,
-  Target, Zap, GraduationCap, Star, Loader2
+  Target, Zap, GraduationCap, Star, Loader2, Sun
 } from 'lucide-react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
