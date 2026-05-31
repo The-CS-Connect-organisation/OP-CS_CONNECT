@@ -3,7 +3,7 @@ import { useAuthStore } from '@/lib/store'
 import { api } from '@/lib/api'
 import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils'
 import { getAvatarUrl } from '@/lib/avatar'
-import { PeepAvatarMaker } from '@/components/ui/peep-avatar-maker'
+// import { PeepAvatarMaker } from '@/components/ui/peep-avatar-maker'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
@@ -137,7 +137,7 @@ export default function StudentProfile() {
           <div className="flex flex-col sm:flex-row items-start gap-6">
             <div className="relative group">
               <Avatar className="w-24 h-24">
-                <AvatarImage src={getAvatarUrl(user || {})} />
+                <AvatarImage src={getAvatarUrl(user || {})} alt={user?.name} />
                 <AvatarFallback className="text-2xl bg-gradient-to-br from-orange-500 to-amber-600 text-white">
                   {user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                 </AvatarFallback>
@@ -260,12 +260,12 @@ export default function StudentProfile() {
       </Card>
 
       {/* Avatar Dialog */}
-      <PeepAvatarMaker
+      {/* <PeepAvatarMaker
         open={showAvatarDialog}
         onOpenChange={setShowAvatarDialog}
         onSave={handleAvatarSave}
         initialAvatar={user?.avatar}
-      />
+      /> */}
     </div>
   )
 }
