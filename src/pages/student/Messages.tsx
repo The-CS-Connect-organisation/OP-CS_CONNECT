@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { useAuthStore } from '@/lib/store'
 import { api } from '@/lib/api'
-import { ChatTemplate } from '@/components/ui/chat-template'
 import { ScrollArea } from '@/components/ui/ScrollArea'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { Card, CardContent } from '@/components/ui/Card'
 import { EmojiPicker, EmojiPickerSearch, EmojiPickerContent } from '@/components/ui/emoji-picker'
-import { MessageSquare, Send, User, Search, Phone, Video, Smile, X } from 'lucide-react'
+import { MessageSquare, Send, Search, Phone, Video, Smile, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -40,22 +38,31 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => { loadData() }, [])
+  useEffect(() => {
+    fetchMessages()
+    const interval = setInterval(fetchMessages, 8000)
+    return () => clearInterval(interval)
+  }, [])
 
-  const loadData = async () => {
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages, selectedContact])
+
+  const fetchMessages = async () => {
     try {
-      setLoading(true)
       const [msgsData, usersData] = await Promise.all([
         api.getMessages(user?.id || '').catch(() => []),
         api.getUsers().catch(() => [])
       ])
-      setMessages(Array.isArray(msgsData) ? msgsData : [])
+      const msgs = Array.isArray(msgsData) ? msgsData : []
+      setMessages(msgs)
 
       const allUsers = Array.isArray(usersData) ? usersData : []
       const otherUsers = allUsers.filter((u: any) => u.id !== user?.id)
       const contactList: Contact[] = otherUsers.map((u: any) => {
-        const userMsgs = msgsData.filter((m: any) => m.from === u.id || m.to === u.id)
+        const userMsgs = msgs.filter((m: any) => m.from === u.id || m.to === u.id)
         const lastMsg = userMsgs.sort((a: any, b: any) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0]
         const unread = userMsgs.filter((m: any) => m.to === user?.id && !m.read).length
         return {
@@ -69,31 +76,44 @@ export default function MessagesPage() {
         }
       })
       setContacts(contactList)
-      if (contactList.length > 0) setSelectedContact(contactList[0])
+      if (contactList.length > 0 && !selectedContact) setSelectedContact(contactList[0])
     } catch { /* error */ } finally { setLoading(false) }
   }
 
-  const conversation = messages
-    .filter(m => (m.from === selectedContact?.id && m.to === user?.id) || (m.from === user?.id && m.to === selectedContact?.id))
-    .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+  const conversation = useMemo(() =>
+    messages
+      .filter(m => (m.from === selectedContact?.id && m.to === user?.id) || (m.from === user?.id && m.to === selectedContact?.id))
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()),
+    [messages, selectedContact?.id, user?.id]
+  )
 
   const handleSend = async () => {
     if (!replyText.trim() || !selectedContact) return
+    const optimistic: Message = {
+      id: `opt-${Date.now()}`,
+      from: user?.id || '',
+      to: selectedContact.id,
+      content: replyText,
+      timestamp: new Date().toISOString(),
+      read: true,
+    }
+    setMessages(prev => [...prev, optimistic])
+    setReplyText('')
     try {
       await api.sendMessage(user?.id || '', selectedContact.id, replyText)
-      setReplyText('')
-      loadData()
     } catch { /* error */ }
   }
 
-  const filteredContacts = contacts.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()))
+  const filteredContacts = useMemo(() =>
+    contacts.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase())),
+    [contacts, searchQuery]
+  )
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="text-muted-foreground">Loading messages...</div></div>
 
   return (
     <div className="h-[calc(100vh-8rem)]">
       <div className="flex h-full rounded-lg border overflow-hidden">
-        {/* Contact list */}
         <div className="w-80 border-r flex flex-col flex-shrink-0">
           <div className="p-3 border-b">
             <h2 className="font-semibold text-lg mb-2">Messages</h2>
@@ -127,11 +147,9 @@ export default function MessagesPage() {
           </ScrollArea>
         </div>
 
-        {/* Chat area */}
         <div className="flex-1 flex flex-col">
           {selectedContact ? (
             <>
-              {/* Header */}
               <div className="h-14 border-b flex items-center px-4 gap-3">
                 <Avatar className="w-8 h-8">
                   <AvatarFallback className="text-xs bg-orange-100 text-orange-700">{selectedContact.initials}</AvatarFallback>
@@ -146,7 +164,6 @@ export default function MessagesPage() {
                 </div>
               </div>
 
-              {/* Messages */}
               <ScrollArea className="flex-1 p-4">
                 <div className="space-y-3">
                   {conversation.length === 0 && (
@@ -168,10 +185,10 @@ export default function MessagesPage() {
                       </motion.div>
                     )
                   })}
+                  <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
 
-              {/* Input */}
               <div className="p-3 border-t flex items-center gap-2 relative">
                 <div className="flex-1 relative">
                   <Input

@@ -97,6 +97,7 @@ export default function Sidebar() {
 
   return (
     <>
+<<<<<<< HEAD
       {/* Mobile overlay with blur and animation */}
       <AnimatePresence>
         {isMobileOpen && (
@@ -126,6 +127,8 @@ export default function Sidebar() {
         )}
       </AnimatePresence>
 
+=======
+>>>>>>> 5c66d6b04e36b925e1a7666b5f4c1568165979cc
       {/* Desktop sidebar - icon-only when collapsed */}
       <aside
         className={cn(
