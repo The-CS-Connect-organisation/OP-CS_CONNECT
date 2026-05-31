@@ -3,7 +3,7 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Receipt, Search, Calendar, DollarSign, User, Plus, Check, Loader2 } from 'lucide-react';
-import api from '../../lib/api';
+import { api } from '../../lib/api';
 
 export default function AdminFeeInstallments() {
   const [plans, setPlans] = useState<any[]>([]);

@@ -40,7 +40,7 @@ export default function AdminPayroll() {
     }
   };
 
-  const filteredRecords = records.filter(r => r.employeeName.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredRecords = records.filter(r => (r.employeeName ?? '').toLowerCase().includes(searchQuery.toLowerCase()));
   const totalPayroll = filteredRecords.reduce((sum, r) => sum + r.netPay, 0);
   const paidCount = filteredRecords.filter(r => r.status === 'paid').length;
 

@@ -220,9 +220,9 @@ export default function AdminTransport() {
     }
   };
 
-  const filteredRoutes = routes.filter(r => r.name.toLowerCase().includes(search.toLowerCase()));
-  const filteredVehicles = vehicles.filter(v => v.registration.toLowerCase().includes(search.toLowerCase()));
-  const filteredDrivers = drivers.filter(d => d.name.toLowerCase().includes(search.toLowerCase()));
+  const filteredRoutes = routes.filter(r => (r.name ?? '').toLowerCase().includes(search.toLowerCase()));
+  const filteredVehicles = vehicles.filter(v => (v.registration ?? '').toLowerCase().includes(search.toLowerCase()));
+  const filteredDrivers = drivers.filter(d => (d.name ?? '').toLowerCase().includes(search.toLowerCase()));
 
   const statusVariant = (s: string) => {
     switch (s) {

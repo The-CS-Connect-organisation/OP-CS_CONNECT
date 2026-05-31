@@ -86,7 +86,7 @@ export default function AdminAccounts() {
   }, []);
 
   const filteredRecords = records.filter(r => {
-    const matchesSearch = r.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (r.description ?? '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesType = filterType === 'all' || r.type === filterType;
     return matchesSearch && matchesType;
   });
