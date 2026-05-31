@@ -15,7 +15,7 @@ export default function TopBar() {
   const { user } = useAuthStore()
   const { isDark, toggleTheme } = useThemeStore()
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationStore()
-  const { toggle } = useSidebarStore()
+  const { toggle, setMobileOpen } = useSidebarStore()
   const [showNotifications, setShowNotifications] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
@@ -69,7 +69,6 @@ export default function TopBar() {
 
   return (
     <header className="sticky top-0 z-30 glass-topbar">
-<<<<<<< HEAD
       <div className="flex items-center justify-between h-16 px-4 lg:px-6">
         {/* Left section */}
         <div className="flex items-center gap-3">
@@ -77,11 +76,6 @@ export default function TopBar() {
             <Menu className="w-5 h-5" />
           </button>
           <button onClick={toggle} className="p-2 rounded-md hover:bg-accent/50 hidden lg:block">
-=======
-      <div className="flex items-center justify-between h-14 lg:h-16 px-3 lg:px-6">
-        <div className="flex items-center gap-2 lg:gap-3">
-          <button onClick={toggle} className="p-2 rounded-md hover:bg-accent/50">
->>>>>>> 5c66d6b04e36b925e1a7666b5f4c1568165979cc
             <Menu className="w-5 h-5" />
           </button>
           <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-sm">
