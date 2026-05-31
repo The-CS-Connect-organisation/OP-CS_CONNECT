@@ -278,12 +278,7 @@ export const useDataStore = create<DataState>()((set, get) => ({
   error: null,
 
   fetchStudentData: async (studentId: string) => {
-    const { students } = get();
-    if (students.find(s => s.id === studentId)) {
-      return; // Data already exists, no need to fetch again
-    }
-
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, students: [] });
     try {
       // Prioritize essential data for the initial view
       const [student, rawGrades, rawAttendance, rawFees] = await Promise.all([
@@ -293,13 +288,15 @@ export const useDataStore = create<DataState>()((set, get) => ({
         api.getStudentFees(studentId),
       ]);
 
-      // Transform and set essential data first
+      const toArray = (d: any) => Array.isArray(d) ? d : (d?.message ? [] : []);
+
       const subjectColors: Record<string, string> = {
         'Math': '#8b5cf6', 'Physics': '#3b82f6', 'Chemistry': '#10b981',
         'English': '#f59e0b', 'CS': '#6366f1', 'Biology': '#ec4899',
         'Computer Science': '#6366f1',
       };
-      const grades = rawGrades.map((g: any, i: number) => ({
+
+      const grades = toArray(rawGrades).map((g: any, i: number) => ({
         subject: g.subject,
         overall: g.marks || 0,
         midTerm: Math.round((g.marks || 0) * 0.4),
@@ -309,11 +306,12 @@ export const useDataStore = create<DataState>()((set, get) => ({
         color: subjectColors[g.subject] || '#6366f1',
       }));
 
-      const presentCount = rawAttendance.filter((a: any) => a.status === 'present').length;
-      const totalCount = rawAttendance.length || 1;
+      const rawAttendanceArr = toArray(rawAttendance);
+      const presentCount = rawAttendanceArr.filter((a: any) => a.status === 'present').length;
+      const totalCount = rawAttendanceArr.length || 1;
       const attendancePercent = Math.round((presentCount / totalCount) * 100);
 
-      const fees = rawFees.map((f: any) => ({
+      const fees = toArray(rawFees).map((f: any) => ({
         ...f,
         due: f.amount - f.paid,
       }));
@@ -323,29 +321,24 @@ export const useDataStore = create<DataState>()((set, get) => ({
         grades,
         attendance: [{ percentage: student.attendance || attendancePercent, month: 'Current' }],
         fees,
-        isLoading: false, // Set isLoading to false after essential data is loaded
+        isLoading: false,
       });
 
-      // Fetch non-essential data in the background
-      const [subjects, events, rawClubs] = await Promise.all([
-        api.getSubjects(),
-        api.getEvents(),
-        api.getClubs(),
-      ]);
+      // Fetch non-essential data individually (don't let one failure block others)
       const className = student.class || '10-A';
-      const [rawAssignments, rawTimetable] = await Promise.all([
-        api.getAssignments({ class: className, studentId }),
-        api.getTimetable(className),
-      ]);
-      const [messages, notifications] = await Promise.all([
-        api.getMessages(studentId),
-        api.getNotifications(studentId),
+      const [subjects, events, rawClubs, rawAssignments, rawTimetable, messages, notifications] = await Promise.all([
+        api.getSubjects().catch(() => []),
+        api.getEvents().catch(() => []),
+        api.getClubs().catch(() => []),
+        api.getAssignments({ class: className, studentId }).catch(() => []),
+        api.getTimetable(className).catch(() => []),
+        api.getMessages(studentId).catch(() => []),
+        api.getNotifications(studentId).catch(() => []),
       ]);
 
-      // Transform and set non-essential data
       const subjectMap: Record<string, string> = {};
-      subjects.forEach((s: any) => { subjectMap[s.id] = s.name; });
-      const assignments = rawAssignments.map((a: any) => ({
+      toArray(subjects).forEach((s: any) => { subjectMap[s.id] = s.name; });
+      const assignments = toArray(rawAssignments).map((a: any) => ({
         ...a,
         subject: subjectMap[a.subjectId] || a.subjectId,
         dueDate: a.dueDate,
@@ -359,10 +352,10 @@ export const useDataStore = create<DataState>()((set, get) => ({
         Object.values(dayMap).forEach(d => { slot[d] = null; });
         return slot;
       });
-      rawTimetable.forEach((dayEntry: any) => {
+      toArray(rawTimetable).forEach((dayEntry: any) => {
         const dayKey = dayMap[dayEntry.day];
         if (!dayKey) return;
-        dayEntry.periods.forEach((p: any, i: number) => {
+        dayEntry.periods?.forEach((p: any, i: number) => {
           if (timetable[i]) {
             timetable[i][dayKey] = {
               subject: p.subject,
@@ -375,7 +368,7 @@ export const useDataStore = create<DataState>()((set, get) => ({
 
       const clubIcons = ['💻', '🔬', '🎤', '🎨', '⚽', '📚', '🎭', '🎵'];
       const clubColors = ['#6366f1', '#10b981', '#8b5cf6', '#f59e0b', '#3b82f6', '#ec4899', '#64748b', '#f97316'];
-      const clubs = rawClubs.map((c: any, i: number) => ({
+      const clubs = toArray(rawClubs).map((c: any, i: number) => ({
         id: c.id,
         name: c.name,
         members: c.members?.length || 0,
@@ -384,15 +377,7 @@ export const useDataStore = create<DataState>()((set, get) => ({
         lead: c.lead,
       }));
 
-      set({
-        subjects,
-        assignments,
-        timetable,
-        events,
-        clubs,
-        messages,
-        notifications,
-      });
+      set({ subjects, assignments, timetable, events, clubs, messages, notifications });
 
     } catch (error: any) {
       set({ error: error.message, isLoading: false });
