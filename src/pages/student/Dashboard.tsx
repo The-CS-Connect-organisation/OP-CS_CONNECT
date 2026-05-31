@@ -321,29 +321,40 @@ export default function StudentDashboard() {
                     <Calendar className="w-5 h-5 text-orange-500" />
                     Today's Schedule
                   </CardTitle>
-                  <Badge variant="info">5 Classes</Badge>
+                  <Badge variant="info">{timetable.filter(s => { const k = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][new Date().getDay()]; return s[k]?.subject; }).length} Classes</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
-                {timetable.slice(0, 5).map((slot: any, i: number) => {
-                  const dayKey = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date().getDay()] as string
-                  const cls = slot[dayKey] || slot.monday || slot.tuesday || Object.values(slot).find((v: any) => v?.subject) as any
-                  if (!cls) return null
-                  const isBreak = cls.subject === 'Break' || cls.subject === 'Lunch'
-                  return (
-                    <div key={i} className={cn(
-                      "flex items-center gap-3 p-2.5 rounded-lg transition-colors",
-                      isBreak ? "opacity-50" : "hover:bg-secondary/30"
-                    )}>
-                      <div className="text-xs text-muted-foreground w-24 flex-shrink-0">{(slot.time || '').split(' - ')[0]}</div>
-                      <div className={cn("w-1 h-8 rounded-full", isBreak ? "bg-muted-foreground/30" : "")} style={!isBreak ? { backgroundColor: cls.color || '#6366f1' } : {}} />
-                      <div className="flex-1">
-                        <p className={cn("text-sm font-medium", isBreak && "italic")}>{cls.subject}</p>
-                        {!isBreak && cls.room && <p className="text-xs text-muted-foreground">Room {cls.room}</p>}
+                {(() => {
+                  const dayKey = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][new Date().getDay()];
+                  const todaySlots = timetable.filter(s => s[dayKey]?.subject);
+                  if (todaySlots.length === 0) {
+                    return (
+                      <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
+                        <Sun className="w-8 h-8 mb-2 opacity-40" />
+                        <p className="text-sm font-medium">No classes today</p>
+                        <p className="text-xs opacity-60">Enjoy your day off!</p>
                       </div>
-                    </div>
-                  )
-                })}
+                    );
+                  }
+                  return todaySlots.slice(0, 5).map((slot: any, i: number) => {
+                    const cls = slot[dayKey];
+                    const isBreak = cls.subject === 'Break' || cls.subject === 'Lunch';
+                    return (
+                      <div key={i} className={cn(
+                        "flex items-center gap-3 p-2.5 rounded-lg transition-colors",
+                        isBreak ? "opacity-50" : "hover:bg-secondary/30"
+                      )}>
+                        <div className="text-xs text-muted-foreground w-24 flex-shrink-0">{(slot.time || '').split(' - ')[0]}</div>
+                        <div className={cn("w-1 h-8 rounded-full", isBreak ? "bg-muted-foreground/30" : "")} style={!isBreak ? { backgroundColor: cls.color || '#6366f1' } : {}} />
+                        <div className="flex-1">
+                          <p className={cn("text-sm font-medium", isBreak && "italic")}>{cls.subject}</p>
+                          {!isBreak && cls.room && <p className="text-xs text-muted-foreground">Room {cls.room}</p>}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
               </CardContent>
             </Card>
           </motion.div>
