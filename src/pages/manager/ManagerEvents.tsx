@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Calendar, Plus, MapPin, Clock, Users } from 'lucide-react';
+import { api } from '../../lib/api';
 
 interface Event {
   id: string;
@@ -22,7 +23,19 @@ const mockEvents: Event[] = [
 ];
 
 export default function ManagerEvents() {
-  const [events] = useState<Event[]>(mockEvents);
+  const [events, setEvents] = useState<Event[]>(mockEvents);
+
+  useEffect(() => {
+    async function loadEvents() {
+      try {
+        const data = await api.getEvents();
+        setEvents(data);
+      } catch (err) {
+        console.error('[ManagerEvents] Failed to load:', err);
+      }
+    }
+    loadEvents();
+  }, []);
 
   return (
     <div className="p-6 space-y-6">

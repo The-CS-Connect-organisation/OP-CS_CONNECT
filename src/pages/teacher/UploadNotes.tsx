@@ -39,7 +39,7 @@ export default function UploadNotes() {
     (async () => {
       try {
         setLoading(true);
-        const res = await apiFetch("/notes");
+        const res = await api.getNotes();
         setNotes(Array.isArray(res.data) ? res.data : []);
       } catch {
         setNotes([]);

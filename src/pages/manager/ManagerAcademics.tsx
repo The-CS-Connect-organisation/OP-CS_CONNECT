@@ -28,8 +28,8 @@ export default function ManagerAcademics() {
       setLoading(true);
       const data = await api.getManagerAcademics();
       if (data) setStats(data);
-    } catch {
-      // error
+    } catch (err) {
+      console.error('[ManagerAcademics] Failed to load:', err);
     } finally {
       setLoading(false);
     }

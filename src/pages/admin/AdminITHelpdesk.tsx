@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Headphones, Plus, Search, Calendar, User, AlertCircle, Check, Clock } from 'lucide-react';
+import { api } from '@/lib/api';
 
 interface Ticket {
   id: string;
@@ -22,8 +23,28 @@ const mockTickets: Ticket[] = [
 ];
 
 export default function AdminITHelpdesk() {
-  const [tickets] = useState<Ticket[]>(mockTickets);
+  const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
   const [filter, setFilter] = useState<'all' | 'open' | 'in-progress' | 'resolved'>('all');
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await api.getHelpdeskTickets();
+        if (Array.isArray(data)) setTickets(data);
+      } catch (err) { console.error('[AdminITHelpdesk] Failed to load:', err); }
+    })();
+  }, []);
+
+  const handleStart = async (id: string) => {
+    const prev = tickets;
+    try {
+      await api.updateHelpdeskTicket(id, { status: 'in-progress' });
+      setTickets(prev => prev.map(t => t.id === id ? { ...t, status: 'in-progress' as const } : t));
+    } catch (err) {
+      console.error('[AdminITHelpdesk] Failed to update ticket:', err);
+      setTickets(prev);
+    }
+  };
 
   const filteredTickets = tickets.filter(t => filter === 'all' || t.status === filter);
 
@@ -87,7 +108,7 @@ export default function AdminITHelpdesk() {
                 </div>
               </div>
               {ticket.status === 'open' && (
-                <Button size="sm"><Check className="w-4 h-4 mr-1" />Start</Button>
+                <Button size="sm" onClick={() => handleStart(ticket.id)}><Check className="w-4 h-4 mr-1" />Start</Button>
               )}
             </div>
           </Card>

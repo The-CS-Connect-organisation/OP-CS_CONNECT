@@ -34,8 +34,8 @@ export default function ParentExamSyllabus() {
     try {
       const data = await api.getExams()
       setSyllabi(Array.isArray(data) ? data as ExamSyllabusItem[] : [])
-    } catch {
-      setSyllabi([])
+    } catch (err) {
+      console.error('[ExamSyllabus] Failed to load:', err);
     } finally {
       setLoading(false)
     }

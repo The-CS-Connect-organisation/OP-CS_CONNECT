@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Wallet, DollarSign, Calendar, User, Search } from 'lucide-react';
+import { api } from '../../lib/api';
 
 interface PayrollRecord {
   id: string;
@@ -21,8 +21,20 @@ const mockRecords: PayrollRecord[] = [
 ];
 
 export default function ManagerPayroll() {
-  const [records] = useState<PayrollRecord[]>(mockRecords);
+  const [records, setRecords] = useState<PayrollRecord[]>(mockRecords);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    async function loadPayroll() {
+      try {
+        const data = await api.getPayrollRecords();
+        setRecords(data);
+      } catch (err) {
+        console.error('[ManagerPayroll] Failed to load:', err);
+      }
+    }
+    loadPayroll();
+  }, []);
 
   const filteredRecords = records.filter(r => r.employeeName.toLowerCase().includes(searchQuery.toLowerCase()));
   const totalPayroll = filteredRecords.reduce((sum, r) => sum + r.netPay, 0);

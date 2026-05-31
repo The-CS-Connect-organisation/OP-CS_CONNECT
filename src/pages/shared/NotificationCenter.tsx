@@ -57,7 +57,7 @@ export default function NotificationCenter() {
     (async () => {
       try {
         setLoading(true);
-        const res = await apiFetch(`/notifications/${user?.id}`);
+        const res = await api.getNotifications(user?.id!);
         const data = Array.isArray(res.data) ? res.data : [];
         setNotifications(data.map((n: any) => ({ ...n, type: n.type || "info", priority: n.priority || "medium", read: n.read || false, category: n.category || "general" })));
       } catch {
@@ -80,11 +80,23 @@ export default function NotificationCenter() {
 
   const handleMarkRead = async (notifId: string) => {
     setNotifications((prev) => prev.map((n) => n.id === notifId ? { ...n, read: true } : n));
-    try { await apiFetch(`/notifications/${user?.id}/${notifId}/read`); } catch {}
+    try {
+      await api.markNotificationRead(user?.id!, notifId);
+    } catch (err) {
+      setNotifications((prev) => prev.map((n) => n.id === notifId ? { ...n, read: false } : n));
+      console.error('[Notifications] Failed to mark read:', err);
+    }
   };
 
-  const handleMarkAllRead = () => {
+  const handleMarkAllRead = async () => {
+    const prev = notifications;
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    try {
+      await apiFetch(`/notifications/${user?.id}/mark-all-read`, { method: 'PUT' });
+    } catch (err) {
+      setNotifications(prev);
+      console.error('[Notifications] Failed to mark all read:', err);
+    }
   };
 
   const handleDelete = (notifId: string) => {

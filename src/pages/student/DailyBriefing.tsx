@@ -52,7 +52,7 @@ export default function StudentDailyBriefing() {
   const pendingAssignments = assignments.filter((a: any) => a.status === 'active' || a.studentStatus === 'pending')
   const overdueBooks = borrowedBooks.filter((b: any) => b.status === 'overdue')
   const attendancePercent = attendance.length > 0 ? attendance[0]?.percentage : (user?.attendance || 0)
-  const gpa = normalizeAcademicPercentage(user?.gpa || 0)
+  const gpa = normalizeAcademicPercentage(grades.length > 0 ? grades.reduce((a: number, g: any) => a + (g.overall || g.score || 0), 0) / grades.length : (user?.gpa || 0))
 
   const upcomingExams = events.filter((e: any) => e.type === 'exam' || e.title.toLowerCase().includes('exam'))
     .sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime())

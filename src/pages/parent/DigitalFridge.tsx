@@ -24,8 +24,8 @@ export default function DigitalFridge() {
         )
         const flattened = results.flat()
         setFridgeData(flattened)
-      } catch {
-        setFridgeData([])
+      } catch (err) {
+        console.error('[DigitalFridge] Failed to load:', err);
       }
       setIsLoading(false)
     }

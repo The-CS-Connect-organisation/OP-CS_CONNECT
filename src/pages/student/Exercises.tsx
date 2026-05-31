@@ -67,7 +67,7 @@ export default function Exercises() {
       });
       setSubmitted(true);
       await loadExercises();
-    } catch { } finally {
+    } catch (err) { console.error('[Exercises] Failed to submit exercise:', err); } finally {
       setSubmitting(false);
     }
   };

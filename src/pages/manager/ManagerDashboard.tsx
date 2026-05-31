@@ -21,13 +21,13 @@ export default function ManagerDashboard() {
     (async () => {
       try {
         const [studentsRes, teachersRes, feesRes, attendanceRes] = await Promise.all([
-          apiFetch("/students"),
-          apiFetch("/teachers"),
+          api.getStudents(),
+          api.getTeachers(),
           api.getFeeRecords(),
           api.getAttendance(),
         ]);
-        const studentCount = Array.isArray(studentsRes.data) ? studentsRes.data.length : 0;
-        const teacherCount = Array.isArray(teachersRes.data) ? teachersRes.data.length : 0;
+        const studentCount = Array.isArray(studentsRes) ? studentsRes.length : Array.isArray(studentsRes?.data) ? studentsRes.data.length : 0;
+        const teacherCount = Array.isArray(teachersRes) ? teachersRes.length : Array.isArray(teachersRes?.data) ? teachersRes.data.length : 0;
         const feeList = Array.isArray(feesRes) ? feesRes : [];
         const totalRevenue = feeList.reduce((sum: number, f: any) => sum + (f.amount || f.paid || 0), 0);
         const attList = Array.isArray(attendanceRes) ? attendanceRes : [];
@@ -38,8 +38,8 @@ export default function ManagerDashboard() {
             )
           : 0;
         setStats({ students: studentCount, teachers: teacherCount, revenue: totalRevenue, attendance: overallAttendance });
-      } catch {
-        setStats({ students: 0, teachers: 0, revenue: 0, attendance: 0 });
+      } catch (err) {
+        console.error('[ManagerDashboard] Failed to load stats:', err);
       }
     })();
   }, []);

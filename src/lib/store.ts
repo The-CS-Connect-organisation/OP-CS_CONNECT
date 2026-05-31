@@ -44,7 +44,7 @@ interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (user: User) => void;
+  login: (user: User, token?: string) => void;
   logout: () => void;
   setLoading: (loading: boolean) => void;
   updateUser: (data: Partial<User>) => void;
@@ -58,12 +58,14 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isLoading: false,
-      login: (user) => {
+      login: (user, token?: string) => {
         localStorage.setItem('eduvault-user-id', user.id);
+        if (token) localStorage.setItem('eduvault-token', token);
         set({ user, isAuthenticated: true });
       },
       logout: () => {
         localStorage.removeItem('eduvault-user-id');
+        localStorage.removeItem('eduvault-token');
         set({ user: null, isAuthenticated: false });
       },
       setLoading: (isLoading) => set({ isLoading }),
@@ -71,12 +73,14 @@ export const useAuthStore = create<AuthState>()(
       loginWithCredentials: async (email: string, password: string) => {
         const data = await api.login(email, password);
         localStorage.setItem('eduvault-user-id', data.user.id);
+        if (data.token) localStorage.setItem('eduvault-token', data.token);
         set({ user: data.user, isAuthenticated: true });
         return data.user;
       },
       signupWithCredentials: async (data: any) => {
         const result = await api.signup(data);
         localStorage.setItem('eduvault-user-id', result.user.id);
+        if (result.token) localStorage.setItem('eduvault-token', result.token);
         set({ user: result.user, isAuthenticated: true });
         return result.user;
       },

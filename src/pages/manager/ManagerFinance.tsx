@@ -25,8 +25,8 @@ export default function ManagerFinance() {
       setLoading(true);
       const data = await api.getManagerFinance();
       if (data) setStats(data);
-    } catch {
-      // error
+    } catch (err) {
+      console.error('[ManagerFinance] Failed to load:', err);
     } finally {
       setLoading(false);
     }

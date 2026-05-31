@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Search, Plus, MapPin, Calendar, User, Check, Archive } from 'lucide-react';
+import { api } from '@/lib/api';
 
 interface LostFoundItem {
   id: string;
@@ -23,8 +24,39 @@ const mockItems: LostFoundItem[] = [
 ];
 
 export default function AdminLostFound() {
-  const [items] = useState<LostFoundItem[]>(mockItems);
+  const [items, setItems] = useState<LostFoundItem[]>(mockItems);
   const [filter, setFilter] = useState<'all' | 'lost' | 'found'>('all');
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await api.getLostFoundItems();
+        if (Array.isArray(data)) setItems(data);
+      } catch (err) { console.error('[AdminLostFound] Failed to load:', err); }
+    })();
+  }, []);
+
+  const handleClaim = async (id: string) => {
+    const prev = items;
+    try {
+      await api.claimLostFoundItem(id);
+      setItems(prev => prev.map(i => i.id === id ? { ...i, status: 'claimed' as const } : i));
+    } catch (err) {
+      console.error('[AdminLostFound] Failed to claim item:', err);
+      setItems(prev);
+    }
+  };
+
+  const handleArchive = async (id: string) => {
+    const prev = items;
+    try {
+      await api.archiveLostFoundItem(id);
+      setItems(prev => prev.map(i => i.id === id ? { ...i, status: 'archived' as const } : i));
+    } catch (err) {
+      console.error('[AdminLostFound] Failed to archive item:', err);
+      setItems(prev);
+    }
+  };
 
   const filteredItems = items.filter(i => filter === 'all' || i.type === filter);
 
@@ -62,8 +94,8 @@ export default function AdminLostFound() {
             </div>
             {item.status === 'active' && (
               <div className="flex gap-2 mt-3">
-                <Button size="sm" variant="outline"><Check className="w-4 h-4 mr-1" />Mark Claimed</Button>
-                <Button size="sm" variant="outline"><Archive className="w-4 h-4 mr-1" />Archive</Button>
+                <Button size="sm" variant="outline" onClick={() => handleClaim(item.id)}><Check className="w-4 h-4 mr-1" />Mark Claimed</Button>
+                <Button size="sm" variant="outline" onClick={() => handleArchive(item.id)}><Archive className="w-4 h-4 mr-1" />Archive</Button>
               </div>
             )}
           </Card>

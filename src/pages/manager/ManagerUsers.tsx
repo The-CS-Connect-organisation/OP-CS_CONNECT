@@ -29,8 +29,8 @@ export default function ManagerUsers() {
       setLoading(true);
       const data = await api.getUsers();
       setUsers(Array.isArray(data) ? data : []);
-    } catch {
-      // error
+    } catch (err) {
+      console.error('[ManagerUsers] Failed to load:', err);
     } finally {
       setLoading(false);
     }

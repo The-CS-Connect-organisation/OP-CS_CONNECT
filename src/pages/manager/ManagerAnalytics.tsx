@@ -34,27 +34,8 @@ export default function ManagerAnalytics() {
       setLoading(true);
       const data = await api.getManagerAnalytics();
       if (data) setStats(data);
-      else {
-        // Fallback to mock data if API fails
-        setStats({
-          totalStudents: 1250, totalTeachers: 85, avgAttendance: 94, avgGpa: 82, revenue: 500000, expenses: 350000,
-          maleStudents: 650, femaleStudents: 600,
-          studentTrend: [],
-          performanceByClass: [{ class: "10-A", avg: 85 }, { class: "10-B", avg: 78 }],
-          financeData: [
-            { name: "Jan", income: 4000, expense: 2400 },
-            { name: "Feb", income: 3000, expense: 1398 },
-            { name: "Mar", income: 2000, expense: 9800 },
-          ],
-          attendanceTrend: [
-            { name: "Mon", present: 95, absent: 5 },
-            { name: "Tue", present: 92, absent: 8 },
-            { name: "Wed", present: 98, absent: 2 },
-          ]
-        } as any);
-      }
-    } catch {
-      // error
+    } catch (err) {
+      console.error('[ManagerAnalytics] Failed to load stats:', err);
     } finally {
       setLoading(false);
     }

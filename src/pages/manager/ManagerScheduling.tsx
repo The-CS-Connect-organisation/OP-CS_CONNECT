@@ -42,7 +42,7 @@ interface BellSchedule {
 
 interface CoverageRequest {
   id: string;
-  className: string;
+  class: string;
   subject: string;
   date: string;
   period: string;
@@ -106,7 +106,9 @@ function TimetableTab({ days }: { days: string[] }) {
         setClasses(unique);
         if (unique.length > 0) setSelectedClass(unique[0]);
       }
-    } catch { }
+    } catch (err) {
+      console.error('[ManagerScheduling] Failed to load classes:', err);
+    }
   };
 
   useEffect(() => {
@@ -120,8 +122,8 @@ function TimetableTab({ days }: { days: string[] }) {
       if (Array.isArray(data)) setEntries(data);
       else if (data?.schedule) setEntries(data.schedule);
       else setEntries([]);
-    } catch {
-      setEntries([]);
+    } catch (err) {
+      console.error('[ManagerScheduling] Failed to load timetable:', err);
     } finally {
       setLoading(false);
     }
@@ -130,10 +132,12 @@ function TimetableTab({ days }: { days: string[] }) {
   const handleGenerate = async () => {
     try {
       setGenerating(true);
-      const data = await api.generateTimetable({ className: selectedClass, subjects });
+      const data = await api.generateTimetable({ class: selectedClass, subjects });
       if (data?.schedule) setEntries(data.schedule);
       else if (Array.isArray(data)) setEntries(data);
-    } catch { } finally {
+    } catch (err) {
+      console.error('[ManagerScheduling] Failed to generate timetable:', err);
+    } finally {
       setGenerating(false);
     }
   };
@@ -157,7 +161,7 @@ function TimetableTab({ days }: { days: string[] }) {
         return [...filtered, { day: editingCell.day, period: editingCell.period, ...editForm }];
       });
       setEditingCell(null);
-    } catch { }
+    } catch (err) { console.error('[ManagerScheduling] Failed to save cell:', err); }
   };
 
   return (
@@ -242,7 +246,7 @@ function RoomBookingTab() {
       const [b, r] = await Promise.all([api.getRoomBookings(), api.getRooms()]);
       setBookings(Array.isArray(b) ? b : []);
       setRooms(Array.isArray(r) ? r : []);
-    } catch { } finally {
+    } catch (err) { console.error('[ManagerScheduling] Failed to load bookings:', err); } finally {
       setLoading(false);
     }
   };
@@ -254,14 +258,14 @@ function RoomBookingTab() {
       setBookings(prev => [...prev, data]);
       setForm({ room: '', date: '', startTime: '', endTime: '', purpose: '', bookedBy: '' });
       setShowForm(false);
-    } catch { }
+    } catch (err) { console.error('[ManagerScheduling] Failed to create booking:', err); }
   };
 
   const handleDelete = async (id: string) => {
     try {
       await api.deleteRoomBooking(id);
       setBookings(prev => prev.filter(b => b.id !== id));
-    } catch { }
+    } catch (err) { console.error('[ManagerScheduling] Failed to delete booking:', err); }
   };
 
   return (
@@ -340,7 +344,7 @@ function BellSchedulesTab() {
       setLoading(true);
       const data = await api.getBellSchedules();
       setSchedules(Array.isArray(data) ? data : []);
-    } catch { } finally {
+    } catch (err) { console.error('[ManagerScheduling] Failed to load schedules:', err); } finally {
       setLoading(false);
     }
   };
@@ -363,14 +367,14 @@ function BellSchedulesTab() {
       setForm({ name: '', startTime: '', endTime: '', periods: '' });
       setShowForm(false);
       setEditing(null);
-    } catch { }
+    } catch (err) { console.error('[ManagerScheduling] Failed to save schedule:', err); }
   };
 
   const handleDelete = async (id: string) => {
     try {
       await api.deleteBellSchedule(id);
       setSchedules(prev => prev.filter(s => s.id !== id));
-    } catch { }
+    } catch (err) { console.error('[ManagerScheduling] Failed to delete schedule:', err); }
   };
 
   const handleEdit = (sched: BellSchedule) => {
@@ -446,7 +450,7 @@ function CoverageTab() {
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState<CoverageRequest[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ className: '', subject: '', date: '', period: '', teacher: '', substitute: '', reason: '' });
+  const [form, setForm] = useState({ class: '', subject: '', date: '', period: '', teacher: '', substitute: '', reason: '' });
 
   useEffect(() => {
     loadRequests();
@@ -457,26 +461,26 @@ function CoverageTab() {
       setLoading(true);
       const data = await api.getCoverageRequests();
       setRequests(Array.isArray(data) ? data : []);
-    } catch { } finally {
+    } catch (err) { console.error('[ManagerScheduling] Failed to load coverage:', err); } finally {
       setLoading(false);
     }
   };
 
   const handleCreate = async () => {
-    if (!form.className || !form.date) return;
+    if (!form.class || !form.date) return;
     try {
       const data = await api.createCoverageRequest(form);
       setRequests(prev => [...prev, data]);
-      setForm({ className: '', subject: '', date: '', period: '', teacher: '', substitute: '', reason: '' });
+      setForm({ class: '', subject: '', date: '', period: '', teacher: '', substitute: '', reason: '' });
       setShowForm(false);
-    } catch { }
+    } catch (err) { console.error('[ManagerScheduling] Failed to create coverage:', err); }
   };
 
   const handleStatusUpdate = async (id: string, status: string) => {
     try {
       await api.updateCoverageRequest(id, { status });
       setRequests(prev => prev.map(r => r.id === id ? { ...r, status } : r));
-    } catch { }
+    } catch (err) { console.error('[ManagerScheduling] Failed to update coverage status:', err); }
   };
 
   const getStatusBadge = (status: string) => {
@@ -499,7 +503,7 @@ function CoverageTab() {
         <Card className="p-4">
           <h3 className="font-semibold mb-4">Create Coverage Request</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input type="text" placeholder="Class" value={form.className} onChange={(e) => setForm(f => ({ ...f, className: e.target.value }))} className="px-3 py-2 rounded-lg border bg-background" />
+            <input type="text" placeholder="Class" value={form.class} onChange={(e) => setForm(f => ({ ...f, class: e.target.value }))} className="px-3 py-2 rounded-lg border bg-background" />
             <input type="text" placeholder="Subject" value={form.subject} onChange={(e) => setForm(f => ({ ...f, subject: e.target.value }))} className="px-3 py-2 rounded-lg border bg-background" />
             <input type="date" value={form.date} onChange={(e) => setForm(f => ({ ...f, date: e.target.value }))} className="px-3 py-2 rounded-lg border bg-background" />
             <input type="text" placeholder="Period" value={form.period} onChange={(e) => setForm(f => ({ ...f, period: e.target.value }))} className="px-3 py-2 rounded-lg border bg-background" />
@@ -509,7 +513,7 @@ function CoverageTab() {
           </div>
           <div className="flex gap-2 mt-4">
             <Button onClick={handleCreate}>Create</Button>
-            <Button variant="outline" onClick={() => { setShowForm(false); setForm({ className: '', subject: '', date: '', period: '', teacher: '', substitute: '', reason: '' }); }}>Cancel</Button>
+            <Button variant="outline" onClick={() => { setShowForm(false); setForm({ class: '', subject: '', date: '', period: '', teacher: '', substitute: '', reason: '' }); }}>Cancel</Button>
           </div>
         </Card>
       )}
@@ -524,7 +528,7 @@ function CoverageTab() {
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <h4 className="font-semibold">{r.subject}</h4>
-                    <Badge variant="secondary">{r.className}</Badge>
+                    <Badge variant="secondary">{r.class}</Badge>
                     {getStatusBadge(r.status)}
                   </div>
                   <div className="flex items-center gap-3 text-sm text-muted-foreground">

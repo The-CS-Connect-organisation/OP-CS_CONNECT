@@ -32,8 +32,8 @@ export default function AdminAnnouncements() {
       setLoading(true);
       const data = await api.getAnnouncements();
       setAnnouncements(Array.isArray(data) ? data : []);
-    } catch {
-      // error
+    } catch (err) {
+      console.error('[AdminAnnouncements] Failed to load:', err);
     } finally {
       setLoading(false);
     }
@@ -41,22 +41,26 @@ export default function AdminAnnouncements() {
 
   const handleCreate = async () => {
     if (!form.title.trim()) return;
+    const prev = announcements;
     try {
       const newAnnouncement = await api.createAnnouncement(form);
       setAnnouncements(prev => [newAnnouncement, ...prev]);
       setForm({ title: '', content: '', type: 'general', priority: 'medium', expiresAt: '' });
       setShowForm(false);
-    } catch {
-      // error
+    } catch (err) {
+      console.error('[AdminAnnouncements] Failed to create:', err);
+      setAnnouncements(prev);
     }
   };
 
   const handleDelete = async (id: string) => {
+    const prev = announcements;
     try {
       await api.deleteAnnouncement(id);
       setAnnouncements(prev => prev.filter(a => a.id !== id));
-    } catch {
-      // error
+    } catch (err) {
+      console.error('[AdminAnnouncements] Failed to delete:', err);
+      setAnnouncements(prev);
     }
   };
 

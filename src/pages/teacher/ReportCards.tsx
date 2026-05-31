@@ -32,20 +32,20 @@ export default function ReportCards() {
     (async () => {
       try {
         setLoading(true);
-        const res = await apiFetch(`/students?class=${selectedClass}`);
-        const studentData = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+        const studentsData = await api.getStudents(selectedClass);
+        const studentData = Array.isArray(studentsData) ? studentsData : Array.isArray(studentsData?.data) ? studentsData.data : [];
         setStudents(studentData);
 
         const gradesMap: Record<string, any[]> = {};
         const attendanceMap: Record<string, any[]> = {};
         for (const s of studentData) {
           try {
-            const gRes = await apiFetch(`/students/${s.id}/grades`);
-            gradesMap[s.id] = Array.isArray(gRes) ? gRes : Array.isArray(gRes?.data) ? gRes.data : [];
+            const gradesData = await api.getStudentGrades(s.id);
+            gradesMap[s.id] = Array.isArray(gradesData) ? gradesData : Array.isArray(gradesData?.data) ? gradesData.data : [];
           } catch { gradesMap[s.id] = []; }
           try {
-            const aRes = await apiFetch(`/students/${s.id}/attendance`);
-            attendanceMap[s.id] = Array.isArray(aRes) ? aRes : Array.isArray(aRes?.data) ? aRes.data : [];
+            const attData = await api.getStudentAttendance(s.id);
+            attendanceMap[s.id] = Array.isArray(attData) ? attData : Array.isArray(attData?.data) ? attData.data : [];
           } catch { attendanceMap[s.id] = []; }
         }
         setGrades(gradesMap);

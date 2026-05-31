@@ -39,29 +39,23 @@ export default function QuickMessenger() {
     (async () => {
       try {
         setLoading(true);
-        const res = await apiFetch("/users");
-        const data = Array.isArray(res.data) ? res.data : [];
-        const contactList = data
+        const res = await api.getUsers();
+        const rawUsers = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+        const contactList = rawUsers
           .filter((u: any) => u.id !== user?.id)
           .map((u: any) => ({
             id: u.id,
             name: u.name,
             role: u.role,
             avatar: u.avatar,
-            online: Math.random() > 0.5,
+            online: false,
             lastMessage: "",
             lastMessageTime: "",
             unread: 0,
           }));
         setContacts(contactList);
-      } catch {
-        setContacts([
-          { id: "u1", name: "Aarav Sharma", role: "student", avatar: "AS", online: true, lastMessage: "Thank you sir!", lastMessageTime: "2m ago", unread: 1 },
-          { id: "u2", name: "Priya Patel", role: "student", avatar: "PP", online: true, lastMessage: "Can I submit tomorrow?", lastMessageTime: "15m ago", unread: 0 },
-          { id: "u3", name: "Rohan Kumar", role: "student", avatar: "RK", online: false, lastMessage: "Noted", lastMessageTime: "1h ago", unread: 0 },
-          { id: "u5", name: "Dr. Rajesh Gupta", role: "teacher", avatar: "RG", online: true, lastMessage: "See you in class", lastMessageTime: "3h ago", unread: 0 },
-          { id: "u7", name: "Principal Meera", role: "admin", avatar: "PM", online: false, lastMessage: "Approved", lastMessageTime: "1d ago", unread: 0 },
-        ]);
+      } catch (err) {
+        console.error('[QuickMessenger] Failed to load contacts:', err);
       } finally {
         setLoading(false);
       }
@@ -72,17 +66,12 @@ export default function QuickMessenger() {
     if (!selectedContact) return;
     (async () => {
       try {
-        const res = await apiFetch(`/messages/${user?.id}`);
-        const data = Array.isArray(res.data) ? res.data : [];
+        const res = await api.getMessages(user?.id!);
+        const data = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
         const filtered = data.filter((m: any) => m.from === selectedContact || m.to === selectedContact);
         setMessages(filtered);
-      } catch {
-        setMessages([
-          { id: "dm1", from: selectedContact, to: user?.id, content: "Hello! How are you?", timestamp: new Date(Date.now() - 7200000).toISOString(), read: true },
-          { id: "dm2", from: user?.id, to: selectedContact, content: "I am good, thanks!", timestamp: new Date(Date.now() - 7000000).toISOString(), read: true },
-          { id: "dm3", from: selectedContact, to: user?.id, content: "Did you complete the assignment?", timestamp: new Date(Date.now() - 3600000).toISOString(), read: true },
-          { id: "dm4", from: user?.id, to: selectedContact, content: "Yes, submitted it yesterday!", timestamp: new Date(Date.now() - 3500000).toISOString(), read: true },
-        ]);
+      } catch (err) {
+        console.error('[QuickMessenger] Failed to load messages:', err);
       }
     })();
   }, [selectedContact, user?.id]);

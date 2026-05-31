@@ -93,7 +93,7 @@ export default function LibrarianManagement() {
       setIlls(Array.isArray(ill) ? ill : []);
       setStudents(Array.isArray(stu) ? stu : []);
       setBooks(Array.isArray(bk) ? bk : []);
-    } catch { } finally { setLoading(false); }
+    } catch (err) { console.error('[LibrarianManagement] Failed to load data:', err); } finally { setLoading(false); }
   };
 
   const reloadTab = async (tab: string) => {
@@ -106,7 +106,7 @@ export default function LibrarianManagement() {
         case 'programmes': { const d = await api.getReadingProgrammes(); setProgrammes(Array.isArray(d) ? d : []); break; }
         case 'ills': { const d = await api.getInterlibraryLoans(); setIlls(Array.isArray(d) ? d : []); break; }
       }
-    } catch { }
+    } catch (err) { console.error('[LibrarianManagement] Failed to reload tab:', err); }
   };
 
   // Catalogue
@@ -121,11 +121,11 @@ export default function LibrarianManagement() {
       setShowCatForm(false); setEditingCat(null);
       setCatForm({ title: '', author: '', isbn: '', category: '', copies: 1, shelf: '' });
       await reloadTab('catalogue');
-    } catch { } finally { setSubmitting(false); }
+    } catch (err) { console.error('[LibrarianManagement] Failed to save catalogue:', err); } finally { setSubmitting(false); }
   };
 
   const handleCatDelete = async (id: string) => {
-    try { await api.deleteLibraryItem(id); await reloadTab('catalogue'); } catch { }
+    try { await api.deleteLibraryItem(id); await reloadTab('catalogue'); } catch (err) { console.error('[LibrarianManagement] Failed to delete item:', err); }
   };
 
   const openCatEdit = (item: any) => {
@@ -141,11 +141,11 @@ export default function LibrarianManagement() {
       await api.createHold(holdForm);
       setShowHoldForm(false); setHoldForm({ studentId: '', bookId: '' });
       await reloadTab('holds');
-    } catch { } finally { setSubmitting(false); }
+    } catch (err) { console.error('[LibrarianManagement] Failed to create hold:', err); } finally { setSubmitting(false); }
   };
 
   const handleHoldFulfill = async (id: string) => {
-    try { await api.fulfillHold(id); await reloadTab('holds'); } catch { }
+    try { await api.fulfillHold(id); await reloadTab('holds'); } catch (err) { console.error('[LibrarianManagement] Failed to fulfill hold:', err); }
   };
 
   // Fines
@@ -155,11 +155,11 @@ export default function LibrarianManagement() {
       await api.createFine(fineForm);
       setShowFineForm(false); setFineForm({ studentId: '', amount: 0, reason: '' });
       await reloadTab('fines');
-    } catch { } finally { setSubmitting(false); }
+    } catch (err) { console.error('[LibrarianManagement] Failed to create fine:', err); } finally { setSubmitting(false); }
   };
 
   const handleFinePay = async (id: string) => {
-    try { await api.payFine(id); await reloadTab('fines'); } catch { }
+    try { await api.payFine(id); await reloadTab('fines'); } catch (err) { console.error('[LibrarianManagement] Failed to pay fine:', err); }
   };
 
   // Class Sets
@@ -169,7 +169,7 @@ export default function LibrarianManagement() {
       await api.createClassSet(classSetForm);
       setShowClassSetForm(false); setClassSetForm({ bookId: '', className: '', totalQuantity: 1 });
       await reloadTab('class-sets');
-    } catch { } finally { setSubmitting(false); }
+    } catch (err) { console.error('[LibrarianManagement] Failed to create class set:', err); } finally { setSubmitting(false); }
   };
 
   // Reading Logs
@@ -187,7 +187,7 @@ export default function LibrarianManagement() {
       setShowLogForm(false);
       setLogForm({ studentId: logForm.studentId, bookId: '', pagesRead: 0, notes: '' });
       await loadReadingLogs(logForm.studentId);
-    } catch { } finally { setSubmitting(false); }
+    } catch (err) { console.error('[LibrarianManagement] Failed to create reading log:', err); } finally { setSubmitting(false); }
   };
 
   // Programmes
@@ -197,13 +197,13 @@ export default function LibrarianManagement() {
       await api.createReadingProgramme(progForm);
       setShowProgForm(false); setProgForm({ name: '', duration: '', description: '' });
       await reloadTab('programmes');
-    } catch { } finally { setSubmitting(false); }
+    } catch (err) { console.error('[LibrarianManagement] Failed to create programme:', err); } finally { setSubmitting(false); }
   };
 
   // Reviews
   const loadReviews = async (bid: string) => {
     if (!bid) { setReviews([]); return; }
-    try { const d = await api.getBookReviews(bid); setReviews(Array.isArray(d) ? d : []); } catch { setReviews([]); }
+    try { const d = await api.getBookReviews(bid); setReviews(Array.isArray(d) ? d : []); } catch (err) { console.error('[LibrarianManagement] Failed to load reviews:', err); setReviews([]); }
   };
 
   useEffect(() => { if (reviewBookId) loadReviews(reviewBookId); }, [reviewBookId]);
@@ -215,7 +215,7 @@ export default function LibrarianManagement() {
       setShowReviewForm(false);
       setReviewForm({ bookId: reviewForm.bookId, studentId: '', rating: 5, comment: '' });
       await loadReviews(reviewForm.bookId);
-    } catch { } finally { setSubmitting(false); }
+    } catch (err) { console.error('[LibrarianManagement] Failed to create review:', err); } finally { setSubmitting(false); }
   };
 
   // ILL
@@ -225,7 +225,7 @@ export default function LibrarianManagement() {
       await api.createInterlibraryLoan(illForm);
       setShowIllForm(false); setIllForm({ requestingLibrary: '', bookTitle: '', borrowDate: '', returnDate: '' });
       await reloadTab('ills');
-    } catch { } finally { setSubmitting(false); }
+    } catch (err) { console.error('[LibrarianManagement] Failed to create ILL:', err); } finally { setSubmitting(false); }
   };
 
   const filteredCatalogue = catalogue.filter((b: any) =>

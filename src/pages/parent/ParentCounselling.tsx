@@ -16,7 +16,7 @@ export default function ParentCounselling() {
   useEffect(() => {
     api.getCounsellingSessions().then((d: any) => {
       setSessions(Array.isArray(d) ? d : []);
-    }).catch(() => {}).finally(() => setLoading(false));
+    }).catch((err) => { console.error('[ParentCounselling] Failed to load:', err); }).finally(() => setLoading(false));
   }, []);
 
   return (

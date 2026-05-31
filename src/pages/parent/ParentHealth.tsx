@@ -16,7 +16,7 @@ export default function ParentHealth() {
   useEffect(() => {
     api.getHealthRecords().then((d: any) => {
       setRecords(Array.isArray(d) ? d : []);
-    }).catch(() => {}).finally(() => setLoading(false));
+    }).catch((err) => { console.error('[ParentHealth] Failed to load:', err); }).finally(() => setLoading(false));
   }, []);
 
   return (

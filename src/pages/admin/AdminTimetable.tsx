@@ -82,21 +82,21 @@ export default function AdminTimetable() {
       setEntries(prev => [...prev, newEntry]);
       setShowForm(false);
       setForm({ day: 'Monday', time: '09:00', subject: '', teacher: '', room: '' });
-    } catch {}
+    } catch (err) { console.error('[AdminTimetable] Failed to add entry:', err); }
   };
 
   const handleDelete = async (id: string) => {
     try {
       await api.deleteTimetableEntry(id);
       setEntries(prev => prev.filter(e => e.id !== id));
-    } catch {}
+    } catch (err) { console.error('[AdminTimetable] Failed to delete entry:', err); }
   };
 
   const handleAssignSlot = async (day: string, time: string, data: { teacher: string; subject: string; room: string }) => {
     try {
       const newEntry = await api.createTimetableEntry({ ...data, day, time, class: selectedClass });
       setEntries(prev => [...prev, newEntry]);
-    } catch {}
+    } catch (err) { console.error('[AdminTimetable] Failed to assign slot:', err); }
   };
 
   const handleBulkSave = async (newEntries: Omit<TimetableEntry, 'id'>[]) => {
@@ -104,7 +104,7 @@ export default function AdminTimetable() {
       const created = await Promise.all(newEntries.map(e => api.createTimetableEntry(e)));
       setEntries(prev => [...prev, ...created]);
       setShowWizard(false);
-    } catch {}
+    } catch (err) { console.error('[AdminTimetable] Failed to bulk save:', err); }
   };
 
   const teachers: DropdownOption[] = users.filter(u => u.role?.toLowerCase() === 'teacher').map(t => ({ id: t.id, name: t.name }));

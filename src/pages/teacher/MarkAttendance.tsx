@@ -37,7 +37,7 @@ export default function MarkAttendance() {
     (async () => {
       try {
         setLoading(true);
-        const res = await apiFetch(`/attendance/class/${selectedClass}?date=${selectedDate}`);
+        const res = await api.getClassAttendance(selectedClass, selectedDate);
         if (!alive) return;
         const data = Array.isArray(res.data) ? res.data : [];
         setStudents(data);

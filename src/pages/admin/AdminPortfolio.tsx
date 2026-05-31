@@ -114,7 +114,7 @@ function StudentSelector({ selected, onChange }: { selected: string; onChange: (
   useEffect(() => {
     const load = async () => {
       try { const d = await api.getStudents(); setStudents(Array.isArray(d) ? d : []); }
-      catch {}
+      catch (err) { console.error('[AdminPortfolio] Failed to load students:', err); }
       finally { setLoading(false); }
     };
     load();
@@ -146,7 +146,7 @@ function OverviewTab() {
   useEffect(() => {
     const load = async () => {
       try { const d = await api.getStudents(); setStudents(Array.isArray(d) ? d : []); }
-      catch {}
+      catch (err) { console.error('[AdminPortfolio] Failed to load students:', err); }
     };
     load();
   }, []);
@@ -283,7 +283,7 @@ function ReflectionsTab() {
   useEffect(() => {
     const load = async () => {
       try { const d = await api.getStudents(); setStudents(Array.isArray(d) ? d : []); }
-      catch {}
+      catch (err) { console.error('[AdminPortfolio] Failed to load students:', err); }
     };
     load();
   }, []);
@@ -390,7 +390,7 @@ function AchievementsTab() {
   useEffect(() => {
     const load = async () => {
       try { const d = await api.getStudents(); setStudents(Array.isArray(d) ? d : []); }
-      catch {}
+      catch (err) { console.error('[AdminPortfolio] Failed to load students:', err); }
     };
     load();
   }, []);
@@ -503,7 +503,7 @@ function EndorsementsTab() {
   useEffect(() => {
     const load = async () => {
       try { const d = await api.getStudents(); setStudents(Array.isArray(d) ? d : []); }
-      catch {}
+      catch (err) { console.error('[AdminPortfolio] Failed to load students:', err); }
     };
     load();
   }, []);
@@ -607,7 +607,7 @@ function CollegeAppsTab() {
   useEffect(() => {
     const load = async () => {
       try { const d = await api.getStudents(); setStudents(Array.isArray(d) ? d : []); }
-      catch {}
+      catch (err) { console.error('[AdminPortfolio] Failed to load students:', err); }
     };
     load();
   }, []);
@@ -751,7 +751,7 @@ function ResumeTab() {
   useEffect(() => {
     const load = async () => {
       try { const d = await api.getStudents(); setStudents(Array.isArray(d) ? d : []); }
-      catch {}
+      catch (err) { console.error('[AdminPortfolio] Failed to load students:', err); }
     };
     load();
   }, []);
@@ -839,7 +839,7 @@ function CareerReadinessTab() {
   useEffect(() => {
     const load = async () => {
       try { const d = await api.getStudents(); setStudents(Array.isArray(d) ? d : []); }
-      catch {}
+      catch (err) { console.error('[AdminPortfolio] Failed to load students:', err); }
     };
     load();
   }, []);
