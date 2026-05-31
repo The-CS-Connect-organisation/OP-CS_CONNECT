@@ -68,11 +68,12 @@ export default function AdminDashboard() {
   const activitiesPerPage = 3;
 
   useEffect(() => {
+    const logErr = (label: string) => (e: any) => console.error(`[Dashboard] ${label} failed:`, e?.message || e);
     Promise.allSettled([
-      api.getInvoices().then((d: any) => setLiveData((p: any) => ({ ...p, invoices: Array.isArray(d) ? d.filter((i: any) => i.status === 'pending').length : 0, totalRevenue: Array.isArray(d) ? d.reduce((s: number, i: any) => s + Number(i.total || i.amount || 0), 0) : 0 }))).catch(() => {}),
-      api.getExpenses().then((d: any) => setLiveData((p: any) => ({ ...p, expenses: Array.isArray(d) ? d.filter((e: any) => e.status !== 'approved').length : 0 }))).catch(() => {}),
-      api.getStaffDirectory().then((d: any) => setLiveData((p: any) => ({ ...p, staff: Array.isArray(d) ? d.length : 0 }))).catch(() => {}),
-      api.getLibraryCatalogue().then((d: any) => setLiveData((p: any) => ({ ...p, books: Array.isArray(d) ? d.length : 0 }))).catch(() => {}),
+      api.getInvoices().then((d: any) => setLiveData((p: any) => ({ ...p, invoices: Array.isArray(d) ? d.filter((i: any) => i.status === 'pending').length : 0, totalRevenue: Array.isArray(d) ? d.reduce((s: number, i: any) => s + Number(i.total || i.amount || 0), 0) : 0 }))).catch(logErr('getInvoices')),
+      api.getExpenses().then((d: any) => setLiveData((p: any) => ({ ...p, expenses: Array.isArray(d) ? d.filter((e: any) => e.status !== 'approved').length : 0 }))).catch(logErr('getExpenses')),
+      api.getStaffDirectory().then((d: any) => setLiveData((p: any) => ({ ...p, staff: Array.isArray(d) ? d.length : 0 }))).catch(logErr('getStaffDirectory')),
+      api.getLibraryCatalogue().then((d: any) => setLiveData((p: any) => ({ ...p, books: Array.isArray(d) ? d.length : 0 }))).catch(logErr('getLibraryCatalogue')),
       api.getUsers().then((d: any) => {
         if (Array.isArray(d)) {
           const students = d.filter((u: any) => u.role === 'student').length
@@ -83,15 +84,15 @@ export default function AdminDashboard() {
           const departments = Object.entries(deptMap).map(([name, count], i: number) => ({ name, teachers: count, color: colors[i % colors.length] }))
           setLiveData((p: any) => ({ ...p, students, teachers, departments: departments.length ? departments : p.departments }))
         }
-      }).catch(() => {}),
+      }).catch(logErr('getUsers')),
       api.getAttendance().then((d: any) => {
         if (Array.isArray(d) && d.length > 0) setLiveData((p: any) => ({ ...p, attendanceRate: Math.round(d.filter((a: any) => a.status === 'present').length / d.length * 100) }))
-      }).catch(() => {}),
+      }).catch(logErr('getAttendance')),
       api.getLeaveRequests().then((d: any) => {
         if (Array.isArray(d)) setLiveData((p: any) => ({ ...p, onLeave: d.filter((r: any) => r.status === 'approved').length }))
-      }).catch(() => {}),
+      }).catch(logErr('getLeaveRequests')),
       Promise.allSettled([
-        api.getAnnouncements().then((d: any) => Array.isArray(d) ? d.slice(0, 3) : []).catch(() => []),
+        api.getAnnouncements().then((d: any) => Array.isArray(d) ? d.slice(0, 3) : []).catch(logErr('getAnnouncements')),
       ]).then(([annRes]) => {
         const ann = (annRes as any).value || []
         const activities = ann.map((a: any, i: number) => ({ id: i + 1, action: a.title || 'Announcement', detail: a.content?.substring(0, 40) || '', time: new Date(a.createdAt || a.date || Date.now()).toLocaleDateString(), type: 'info' as const }))

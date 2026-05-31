@@ -32,7 +32,20 @@ export default function StudentBusTracking() {
     try {
       setLoading(true);
       const data = await api.getRoutes();
-      setRoutes(Array.isArray(data) ? data : []);
+      const mapped = Array.isArray(data) ? data.map((r: any) => ({
+        id: r.id,
+        routeName: r.name || r.routeName || 'Unnamed Route',
+        busNumber: r.bus || r.busNumber || 'N/A',
+        driverName: r.driver || r.driverName || 'Unknown',
+        driverPhone: r.driverPhone || r.phone || 'N/A',
+        currentLocation: r.currentLocation || { lat: 0, lng: 0, address: r.stops?.[0] || 'Unknown' },
+        estimatedArrival: r.estimatedArrival || '--:--',
+        status: r.status || 'on-time',
+        stops: Array.isArray(r.stops)
+          ? r.stops.map((s: any) => typeof s === 'string' ? { name: s, time: '--:--', reached: false } : s)
+          : [],
+      })) : [];
+      setRoutes(mapped);
     } catch {
       // error
     } finally {

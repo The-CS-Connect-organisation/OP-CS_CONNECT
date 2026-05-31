@@ -136,7 +136,7 @@ export default function AdminTransport() {
         api.getFleetVehicles().catch(() => []),
         api.getFleetMaintenance().catch(() => []),
         api.getDrivers().catch(() => []),
-        Promise.resolve([]),
+        api.getVehicleTracking('').catch(() => []),
         api.getRidership().catch(() => []),
         api.getGeofences().catch(() => []),
         api.getDelays().catch(() => []),

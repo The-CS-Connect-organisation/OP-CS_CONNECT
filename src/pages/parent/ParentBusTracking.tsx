@@ -8,8 +8,11 @@ import { Bus, MapPin, Clock, Navigation, Phone, User } from 'lucide-react';
 
 export default function ParentBusTracking() {
   const { user } = useAuthStore();
+  const children: { id: string; name: string }[] = user?.children
+    ? (Array.isArray(user.children) ? user.children.map((c: any) => typeof c === 'string' ? { id: c, name: `Child` } : c) : [])
+    : [];
   const [loading, setLoading] = useState(true);
-  const [selectedChild, setSelectedChild] = useState('child1');
+  const [selectedChild, setSelectedChild] = useState(children[0]?.id || '');
   const [busInfo, setBusInfo] = useState({
     routeName: '',
     busNumber: '',
@@ -17,11 +20,12 @@ export default function ParentBusTracking() {
     driverPhone: '',
     currentLocation: '',
     estimatedArrival: '',
-    status: 'on-time',
+    status: 'on-time' as string,
     stops: [] as { name: string; time: string; reached: boolean }[],
   });
 
   useEffect(() => {
+    if (!selectedChild) return;
     loadBusInfo();
     const interval = setInterval(loadBusInfo, 30000);
     return () => clearInterval(interval);
@@ -31,7 +35,19 @@ export default function ParentBusTracking() {
     try {
       setLoading(true);
       const data = await api.getChildBusTracking(selectedChild);
-      if (data) setBusInfo(data);
+      const r = data || {};
+      setBusInfo({
+        routeName: r.routeName || r.name || 'Bus Route',
+        busNumber: r.busNumber || r.bus || 'N/A',
+        driverName: r.driverName || r.driver || 'Unknown',
+        driverPhone: r.driverPhone || r.phone || 'N/A',
+        currentLocation: r.currentLocation?.address ?? r.currentLocation ?? 'Unknown',
+        estimatedArrival: r.estimatedArrival || '--:--',
+        status: r.status || 'on-time',
+        stops: Array.isArray(r.stops)
+          ? r.stops.map((s: any) => typeof s === 'string' ? { name: s, time: '--:--', reached: false } : s)
+          : [],
+      });
     } catch {
       // error
     } finally {
@@ -55,10 +71,13 @@ export default function ParentBusTracking() {
           <h1 className="text-2xl font-bold">Bus Tracking</h1>
           <p className="text-muted-foreground">Live bus tracking</p>
         </div>
+        {children.length > 1 && (
         <select value={selectedChild} onChange={(e) => setSelectedChild(e.target.value)} className="px-4 py-2 rounded-lg border bg-background">
-          <option value="child1">Child 1</option>
-          <option value="child2">Child 2</option>
+          {children.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
         </select>
+        )}
       </div>
 
       {loading ? (
