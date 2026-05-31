@@ -296,13 +296,13 @@ export const useDataStore = create<DataState>()((set, get) => ({
         'Computer Science': '#6366f1',
       };
 
-      const grades = toArray(rawGrades).map((g: any, i: number) => ({
+      const grades = toArray(rawGrades).map((g: any) => ({
         subject: g.subject,
-        overall: g.marks || 0,
-        midTerm: Math.round((g.marks || 0) * 0.4),
-        final: Math.round((g.marks || 0) * 0.6),
+        overall: g.overall ?? g.marks ?? 0,
+        midTerm: g.midTerm ?? Math.round((g.marks ?? 0) * 0.4),
+        final: g.finalTerm ?? Math.round((g.marks ?? 0) * 0.6),
         grade: g.grade,
-        trend: i % 3 === 0 ? 'up' : i % 3 === 1 ? 'stable' : 'down',
+        trend: g.trend ?? 'stable',
         color: subjectColors[g.subject] || '#6366f1',
       }));
 
