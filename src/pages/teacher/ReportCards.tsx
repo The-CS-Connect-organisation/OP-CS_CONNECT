@@ -33,7 +33,7 @@ export default function ReportCards() {
       try {
         setLoading(true);
         const res = await apiFetch(`/students?class=${selectedClass}`);
-        const studentData = Array.isArray(res.data) ? res.data : [];
+        const studentData = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
         setStudents(studentData);
 
         const gradesMap: Record<string, any[]> = {};
@@ -41,11 +41,11 @@ export default function ReportCards() {
         for (const s of studentData) {
           try {
             const gRes = await apiFetch(`/students/${s.id}/grades`);
-            gradesMap[s.id] = Array.isArray(gRes.data) ? gRes.data : [];
+            gradesMap[s.id] = Array.isArray(gRes) ? gRes : Array.isArray(gRes?.data) ? gRes.data : [];
           } catch { gradesMap[s.id] = []; }
           try {
             const aRes = await apiFetch(`/students/${s.id}/attendance`);
-            attendanceMap[s.id] = Array.isArray(aRes.data) ? aRes.data : [];
+            attendanceMap[s.id] = Array.isArray(aRes) ? aRes : Array.isArray(aRes?.data) ? aRes.data : [];
           } catch { attendanceMap[s.id] = []; }
         }
         setGrades(gradesMap);
