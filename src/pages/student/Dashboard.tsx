@@ -1,7 +1,7 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-const AIChatPanel = lazy(() => import('@/components/ai/AIChatPanel'))
+import AIChatPanel from '@/components/ai/AIChatPanel'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Progress } from '@/components/ui/Progress'
@@ -12,34 +12,13 @@ import {
   BookOpen, ClipboardList, Calendar, BarChart3, UserCheck,
   CreditCard, Trophy, Sparkles, TrendingUp, TrendingDown,
   Clock, AlertCircle, CheckCircle2, ArrowUpRight, Brain,
-  Target, Zap, GraduationCap, Star, Loader2
+  Target, Zap, GraduationCap, Star, Loader2, Sun
 } from 'lucide-react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis,
   PolarRadiusAxis, Radar, PieChart, Pie, Cell
 } from 'recharts'
-
-const pageVariants = {
-  initial: {
-    opacity: 0,
-    y: 20,
-  },
-  in: {
-    opacity: 1,
-    y: 0,
-  },
-  out: {
-    opacity: 0,
-    y: -20,
-  },
-};
-
-const pageTransition = {
-  type: 'tween',
-  ease: 'anticipate',
-  duration: 0.5,
-};
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -82,11 +61,15 @@ export default function StudentDashboard() {
 
   const upcomingAssignments = assignments.filter((a: any) => a.studentStatus === 'pending' || a.studentStatus === 'active' || a.status === 'active' || a.status === 'pending').slice(0, 3)
 
+  const dayKey = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][new Date().getDay()];
+  const todayClasses = timetable.filter(s => s[dayKey]?.subject);
+  const classCount = todayClasses.length;
+
   return (
     <>
-    <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={pageTransition} className="space-y-6 bento-grid">
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
         {/* Hero Section */}
-        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-600/10 via-amber-600/5 to-transparent border border-orange-500/10 p-6 lg:p-8 hero-card">
+        <motion.div variants={itemVariants} className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-600/10 via-amber-600/5 to-transparent border border-orange-500/10 p-6 lg:p-8">
           <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/5 rounded-full filter blur-[80px]" />
           <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
             <div>
@@ -116,7 +99,7 @@ export default function StudentDashboard() {
         </motion.div>
 
         {/* Quick Stats */}
-        <div className="quick-stats-grid">
+        <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             { label: 'Academic %', value: formatPercentage(currentPercentage), icon: GraduationCap, change: '+0.3', trend: 'up', color: 'from-orange-500 to-amber-600', bgColor: 'bg-orange-500/10' },
             { label: 'Attendance', value: `${attendancePercent}%`, icon: UserCheck, change: '+2%', trend: 'up', color: 'from-emerald-600 to-teal-600', bgColor: 'bg-emerald-500/10' },
@@ -126,9 +109,9 @@ export default function StudentDashboard() {
             <motion.div
               key={stat.label}
               whileHover={{ y: -2, scale: 1.02 }}
-              transition={{ duration:.2 }}
-              className={`quick-stat-${i+1}`}>
-              <Card glow className="relative overflow-hidden">
+              transition={{ duration: 0.2 }}
+            >
+              <Card className="relative overflow-hidden">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
                     <div>
@@ -153,13 +136,13 @@ export default function StudentDashboard() {
               </Card>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Main Content Grid */}
-        <div className="main-content-grid">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Performance Chart */}
-          <motion.div variants={itemVariants} className="performance-chart">
-            <Card glow>
+          <motion.div variants={itemVariants} className="lg:col-span-2">
+            <Card>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -198,7 +181,7 @@ export default function StudentDashboard() {
                         }}
                       />
                       <Area type="monotone" dataKey="score" stroke="#8b5cf6" fill="url(#gpaGradient)" strokeWidth={2} name="Score %" />
-                      <Area type="monotone" dataKey="attendance" stroke="#10b9.81" fill="url(#attGradient)" strokeWidth={2} name="Attendance" />
+                      <Area type="monotone" dataKey="attendance" stroke="#10b981" fill="url(#attGradient)" strokeWidth={2} name="Attendance" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -215,8 +198,8 @@ export default function StudentDashboard() {
           </motion.div>
 
           {/* Attendance & Radar */}
-          <motion.div variants={itemVariants} className="attendance-radar-grid">
-            <Card glow>
+          <motion.div variants={itemVariants} className="space-y-6">
+            <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <UserCheck className="w-5 h-5 text-emerald-500" />
@@ -243,7 +226,7 @@ export default function StudentDashboard() {
               </CardContent>
             </Card>
 
-            <Card glow>
+            <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
                   <Target className="w-5 h-5 text-primary" />
@@ -266,10 +249,10 @@ export default function StudentDashboard() {
         </div>
 
         {/* Assignments & Schedule Row */}
-        <div className="assignments-schedule-grid">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Upcoming Assignments */}
-          <motion.div variants={itemVariants} className="upcoming-assignments">
-            <Card glow>
+          <motion.div variants={itemVariants}>
+            <Card>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -313,31 +296,26 @@ export default function StudentDashboard() {
           </motion.div>
 
           {/* Today's Schedule */}
-          <motion.div variants={itemVariants} className="todays-schedule">
-            <Card glow>
+          <motion.div variants={itemVariants}>
+            <Card>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
                     <Calendar className="w-5 h-5 text-orange-500" />
                     Today's Schedule
                   </CardTitle>
-                  <Badge variant="info">{timetable.filter(s => { const k = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][new Date().getDay()]; return s[k]?.subject; }).length} Classes</Badge>
+                  <Badge variant="info">{classCount > 0 ? `${classCount} Classes` : 'No Classes'}</Badge>
                 </div>
               </CardHeader>
               <CardContent className="space-y-2">
-                {(() => {
-                  const dayKey = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'][new Date().getDay()];
-                  const todaySlots = timetable.filter(s => s[dayKey]?.subject);
-                  if (todaySlots.length === 0) {
-                    return (
-                      <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
-                        <Sun className="w-8 h-8 mb-2 opacity-40" />
-                        <p className="text-sm font-medium">No classes today</p>
-                        <p className="text-xs opacity-60">Enjoy your day off!</p>
-                      </div>
-                    );
-                  }
-                  return todaySlots.slice(0, 5).map((slot: any, i: number) => {
+                {classCount === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-6 text-muted-foreground">
+                    <Sun className="w-8 h-8 mb-2 opacity-40" />
+                    <p className="text-sm font-medium">No classes today</p>
+                    <p className="text-xs opacity-60">Enjoy your day off!</p>
+                  </div>
+                ) : (
+                  todayClasses.slice(0, 5).map((slot: any, i: number) => {
                     const cls = slot[dayKey];
                     const isBreak = cls.subject === 'Break' || cls.subject === 'Lunch';
                     return (
@@ -352,19 +330,19 @@ export default function StudentDashboard() {
                           {!isBreak && cls.room && <p className="text-xs text-muted-foreground">Room {cls.room}</p>}
                         </div>
                       </div>
-                    );
-                  });
-                })()}
+                    )
+                  })
+                )}
               </CardContent>
             </Card>
           </motion.div>
         </div>
 
         {/* Grades Table & Activities */}
-        <div className="grades-activities-grid">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Grade Analytics */}
-          <motion.div variants={itemVariants} className="grade-analytics">
-            <Card glow>
+          <motion.div variants={itemVariants} className="lg:col-span-2">
+            <Card>
               <CardHeader className="pb-2">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -394,14 +372,21 @@ export default function StudentDashboard() {
                       {grades.map((grade: any) => (
                         <tr key={grade.subject} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
                           <td className="py-3 pr-4 text-sm font-medium">{grade.subject}</td>
-                          <td className="py-3 px-2 text-center text-sm">{grade.midTerm || '—'}</td>
-                          <td className="py-3 px-2 text-center text-sm">{grade.finalTerm || '—'}</td>
-                          <td className="py-3 px-2 text-center text-sm font-semibold">{grade.overall || '—'}</td>
-                          <td className="py-3 px-2 text-center text-sm">{grade.grade || '—'}</td>
+                          <td className="py-3 px-2 text-sm text-center">{grade.midTerm || '—'}</td>
+                          <td className="py-3 px-2 text-sm text-center">{grade.final || '—'}</td>
+                          <td className="py-3 px-2 text-center">
+                            <span className={cn(
+                              "text-sm font-semibold",
+                              grade.overall >= 90 ? "text-emerald-500" : grade.overall >= 80 ? "text-orange-500" : "text-amber-500"
+                            )}>{grade.overall || '—'}</span>
+                          </td>
+                          <td className="py-3 px-2 text-center">
+                            <Badge variant={grade.grade?.startsWith('A') ? 'success' : (grade.grade ? 'info' : 'secondary')}>{grade.grade || '—'}</Badge>
+                          </td>
                           <td className="py-3 pl-2 text-center">
-                            <span className={`flex items-center justify-center w-6 h-6 rounded-full mx-auto ${grade.trend === 'up' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
-                              {grade.trend === 'up' ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                            </span>
+                            {grade.trend === 'up' && <TrendingUp className="w-4 h-4 text-emerald-500 mx-auto" />}
+                            {grade.trend === 'down' && <TrendingDown className="w-4 h-4 text-red-500 mx-auto" />}
+                            {grade.trend === 'stable' && <Zap className="w-4 h-4 text-amber-500 mx-auto" />}
                           </td>
                         </tr>
                       ))}
@@ -412,80 +397,86 @@ export default function StudentDashboard() {
             </Card>
           </motion.div>
 
-          {/* Activities & Fees */}
-          <motion.div variants={itemVariants} className="activities-fees-grid">
-            <Card glow>
+          {/* Clubs & Activities */}
+          <motion.div variants={itemVariants}>
+            <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center gap-2">
-                  <Trophy className="w-5 h-5 text-yellow-500" />
-                  My Clubs & Events
+                  <Trophy className="w-5 h-5 text-amber-500" />
+                  My Clubs
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {clubs.slice(0, 2).map((club: any) => (
-                  <div key={club.id} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30">
-                    <div className="w-8 h-8 rounded-lg bg-yellow-500/10 flex items-center justify-center text-lg">{club.icon}</div>
-                    <div>
+                {clubs.slice(0, 4).map((club: any) => (
+                  <div key={club.id} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center text-lg" style={{ backgroundColor: club.color + '20' }}>
+                      {club.icon}
+                    </div>
+                    <div className="flex-1">
                       <p className="text-sm font-medium">{club.name}</p>
-                      <p className="text-xs text-muted-foreground">{club.role}</p>
+                      <p className="text-xs text-muted-foreground">{club.members} members</p>
                     </div>
+                    <ArrowUpRight className="w-4 h-4 text-muted-foreground" />
                   </div>
                 ))}
-                {events.slice(0, 1).map((event: any) => (
-                  <div key={event.id} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-lg">🎉</div>
-                    <div>
-                      <p className="text-sm font-medium">{event.name}</p>
-                      <p className="text-xs text-muted-foreground">{event.date}</p>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            <Card glow>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-orange-500" />
-                  Fee Status
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {fees.slice(0, 1).map((fee: any) => (
-                    <div key={fee.id} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium">{fee.title}</p>
-                        <Badge variant={fee.status === 'paid' ? 'success' : 'warning'}>{fee.status}</Badge>
-                      </div>
-                      <Progress value={(fee.paid / fee.amount) * 100} />
-                      <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>Paid: {formatCurrency(fee.paid)}</span>
-                        <span>Due: {formatCurrency(fee.due)}</span>
-                      </div>
-                      {fee.status !== 'paid' && (
-                        <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => navigate('/student/fees')}
-                          className="w-full py-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-600 text-white text-xs font-medium hover:shadow-lg hover:shadow-orange-500/25 transition-all"
-                        >
-                          Pay Now
-                        </motion.button>
-                      )}
-                    </div>
-                  ))}
-                </div>
               </CardContent>
             </Card>
           </motion.div>
         </div>
+
+        {/* Fee Status */}
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-red-500" />
+                  Fee Status
+                </CardTitle>
+                <div className="text-sm">
+                  Total: <span className="font-bold">{formatCurrency(totalFees)}</span>
+                  <span className="text-muted-foreground mx-2">|</span>
+                  Paid: <span className="font-bold text-emerald-500">{formatCurrency(paidFees)}</span>
+                  <span className="text-muted-foreground mx-2">|</span>
+                  Due: <span className="font-bold text-red-500">{formatCurrency(dueFees)}</span>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {fees.map((fee: any) => (
+                  <div key={fee.term} className="p-4 rounded-xl bg-secondary/30 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium text-sm">{fee.term}</p>
+                      <Badge variant={fee.status === 'paid' ? 'success' : fee.status === 'partial' ? 'warning' : 'destructive'}>
+                        {fee.status}
+                      </Badge>
+                    </div>
+                    <Progress value={(fee.paid / fee.amount) * 100} size="md" />
+                    <div className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Paid: {formatCurrency(fee.paid)}</span>
+                      <span>Due: {formatCurrency(fee.due)}</span>
+                    </div>
+                    {fee.status !== 'paid' && (
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => navigate('/student/fees')}
+                        className="w-full py-2 rounded-lg bg-gradient-to-r from-orange-500 to-amber-600 text-white text-xs font-medium hover:shadow-lg hover:shadow-orange-500/25 transition-all"
+                      >
+                        Pay Now
+                      </motion.button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
       </motion.div>
 
       {/* AI Chat Panel */}
-      <Suspense fallback={<div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-white" /></div>}>
-        <AIChatPanel isOpen={showAI} onClose={() => setShowAI(false)} context="Student dashboard - viewing grades, assignments, and schedule" />
-      </Suspense>
+      <AIChatPanel isOpen={showAI} onClose={() => setShowAI(false)} context="Student dashboard - viewing grades, assignments, and schedule" />
     </>
   )
 }
