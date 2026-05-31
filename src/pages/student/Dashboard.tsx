@@ -63,7 +63,7 @@ export default function StudentDashboard() {
 
   const totalFees = fees.reduce((a: number, f: any) => a + (f.amount || 0), 0)
   const paidFees = fees.reduce((a: number, f: any) => a + (f.paid || 0), 0)
-  const dueFees = fees.reduce((a: number, f: any) => a + (f.due || 0), 0)
+  const dueFees = fees.reduce((a: number, f: any) => a + ((f.amount || 0) - (f.paid || 0)), 0)
   const currentGPA = grades.length > 0 ? grades.reduce((a: number, g: any) => a + (g.overall || 0), 0) / grades.length : (user?.gpa || 0)
   const currentPercentage = normalizeAcademicPercentage(currentGPA)
   const attendancePercent = attendance.length > 0 && attendance[0]?.percentage ? attendance[0].percentage : (user?.attendance || 0)
@@ -452,16 +452,16 @@ export default function StudentDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {fees.slice(0, 1).map((fee: any) => (
-                    <div key={fee.id} className="space-y-2">
+                  {fees.map((fee: any, i: number) => (
+                    <div key={i} className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <p className="text-sm font-medium">{fee.title}</p>
+                        <p className="text-sm font-medium">{fee.type || `Fee ${i + 1}`}</p>
                         <Badge variant={fee.status === 'paid' ? 'success' : 'warning'}>{fee.status}</Badge>
                       </div>
-                      <Progress value={(fee.paid / fee.amount) * 100} />
+                      <Progress value={fee.amount ? ((fee.paid || 0) / fee.amount) * 100 : 0} />
                       <div className="flex items-center justify-between text-xs text-muted-foreground">
-                        <span>Paid: {formatCurrency(fee.paid)}</span>
-                        <span>Due: {formatCurrency(fee.due)}</span>
+                        <span>Paid: {formatCurrency(fee.paid || 0)}</span>
+                        <span>Total: {formatCurrency(fee.amount || 0)}</span>
                       </div>
                       {fee.status !== 'paid' && (
                         <motion.button
