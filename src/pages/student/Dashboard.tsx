@@ -1,4 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react'
+ï»¿import React, { useState, useEffect, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 const AIChatPanel = lazy(() => import('@/components/ai/AIChatPanel'))
@@ -93,8 +93,8 @@ export default function StudentDashboard() {
               <div className="flex items-center gap-3 mb-2">
                 <Avatar src={user?.avatar} alt={user?.name || ''} size="lg" />
                 <div>
-                  <h1 className="text-2xl font-bold">Welcome back, {user?.name?.split(' ')[0]}! =ƒÄô</h1>
-                  <p className="text-muted-foreground text-sm">{user?.class ? `${user.class} GÇó` : ''} Roll No: {user?.rollNo || 'GÇö'}</p>
+                  <h1 className="text-2xl font-bold">Welcome back, {user?.name?.split(' ')[0]}! â‰¡Æ’Ã„Ã´</h1>
+                  <p className="text-muted-foreground text-sm">{user?.class ? `${user.class} Î“Ã‡Ã³` : ''} Roll No: {user?.rollNo || 'Î“Ã‡Ã¶'}</p>
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mt-2 max-w-lg">
@@ -287,11 +287,11 @@ export default function StudentDashboard() {
                     className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30 hover:bg-secondary/50 transition-colors cursor-pointer"
                   >
                     <div className="w-10 h-10 rounded-lg flex items-center justify-center text-lg" style={{ backgroundColor: assignment.color + '20' }}>
-                      =ƒô¥
+                      â‰¡Æ’Ã´Â¥
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{assignment.title}</p>
-                      <p className="text-xs text-muted-foreground">{assignment.subject} GÇó Due: {assignment.dueDate}</p>
+                      <p className="text-xs text-muted-foreground">{assignment.subject} Î“Ã‡Ã³ Due: {assignment.dueDate}</p>
                     </div>
                     <Badge variant={assignment.status === 'late' ? 'destructive' : assignment.status === 'pending' ? 'warning' : 'success'}>
                       {assignment.status}
@@ -394,10 +394,10 @@ export default function StudentDashboard() {
                       {grades.map((grade: any) => (
                         <tr key={grade.subject} className="border-b border-border/30 hover:bg-secondary/20 transition-colors">
                           <td className="py-3 pr-4 text-sm font-medium">{grade.subject}</td>
-                          <td className="py-3 px-2 text-center text-sm">{grade.midTerm || 'GÇö'}</td>
-                          <td className="py-3 px-2 text-center text-sm">{grade.finalTerm || 'GÇö'}</td>
-                          <td className="py-3 px-2 text-center text-sm font-semibold">{grade.overall || 'GÇö'}</td>
-                          <td className="py-3 px-2 text-center text-sm">{grade.grade || 'GÇö'}</td>
+                          <td className="py-3 px-2 text-center text-sm">{grade.midTerm || 'Î“Ã‡Ã¶'}</td>
+                          <td className="py-3 px-2 text-center text-sm">{grade.finalTerm || 'Î“Ã‡Ã¶'}</td>
+                          <td className="py-3 px-2 text-center text-sm font-semibold">{grade.overall || 'Î“Ã‡Ã¶'}</td>
+                          <td className="py-3 px-2 text-center text-sm">{grade.grade || 'Î“Ã‡Ã¶'}</td>
                           <td className="py-3 pl-2 text-center">
                             <span className={`flex items-center justify-center w-6 h-6 rounded-full mx-auto ${grade.trend === 'up' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
                               {grade.trend === 'up' ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
@@ -433,7 +433,7 @@ export default function StudentDashboard() {
                 ))}
                 {events.slice(0, 1).map((event: any) => (
                   <div key={event.id} className="flex items-center gap-3 p-3 rounded-xl bg-secondary/30">
-                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-lg">=ƒÄë</div>
+                    <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-lg">â‰¡Æ’Ã„Ã«</div>
                     <div>
                       <p className="text-sm font-medium">{event.name}</p>
                       <p className="text-xs text-muted-foreground">{event.date}</p>
@@ -489,3 +489,4 @@ export default function StudentDashboard() {
     </>
   )
 }
+
