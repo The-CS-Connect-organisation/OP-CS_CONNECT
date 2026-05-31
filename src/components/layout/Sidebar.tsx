@@ -21,7 +21,7 @@ export default function Sidebar() {
 
   const sidebarContent = (collapsed: boolean) => (
     <div className={cn(
-      "flex flex-col h-full bg-gradient-to-b from-[#1a0a00] via-[#2a1200] to-[#1f0d00] text-white border-r border-orange-900/30",
+      "flex flex-col h-full bg-gradient-to-b from-orange-950 via-orange-900 to-orange-950 text-white border-r border-orange-800/40",
       collapsed && "items-center"
     )}>
       {/* Header */}
