@@ -772,6 +772,57 @@ input, textarea, [data-no-transition] {
   50% { transform: translateY(66%) scale(0.65); opacity: 0.8; }
 }
 
+/* Dashboard Bento Grid */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto;
+  gap: 1rem;
+  grid-template-areas:
+    "hero hero hero hero"
+    "stat1 stat2 stat3 stat4"
+    "perf perf perf attendance"
+    "perf perf perf radar"
+    "assign assign schedule schedule"
+    "grades grades grades clubs"
+    "fees fees fees clubs";
+}
+
+.hero-card { grid-area: hero; }
+.quick-stat-1 { grid-area: stat1; }
+.quick-stat-2 { grid-area: stat2; }
+.quick-stat-3 { grid-area: stat3; }
+.quick-stat-4 { grid-area: stat4; }
+.performance-chart { grid-area: perf; }
+.attendance-radar-grid { grid-area: attendance; }
+.subject-radar { grid-area: radar; }
+.upcoming-assignments { grid-area: assign; }
+.todays-schedule { grid-area: schedule; }
+.grade-analytics { grid-area: grades; }
+.clubs-activities { grid-area: clubs; }
+.fee-status { grid-area: fees; }
+
+/* Mobile: single-column stacked layout */
+@media (max-width: 1023px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "hero"
+      "stat1"
+      "stat2"
+      "stat3"
+      "stat4"
+      "perf"
+      "attendance"
+      "radar"
+      "assign"
+      "schedule"
+      "grades"
+      "clubs"
+      "fees";
+  }
+}
+
 /* Thin sidebar scrollbar */
 .sidebar-scroll::-webkit-scrollbar { width: 3px; }
 .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
