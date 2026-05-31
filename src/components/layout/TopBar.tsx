@@ -6,22 +6,25 @@ import { useNavigate } from 'react-router-dom'
 import { navSections } from '@/lib/nav-config'
 import {
   Bell, Search, Sparkles, Menu,
-  X, Check, AlertCircle, Info, CheckCircle2, GraduationCap, ArrowRight
+  X, Check, AlertCircle, Info, CheckCircle2, GraduationCap, ArrowRight,
+  User, Settings, LogOut
 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import StarWarsToggle from '@/components/ui/star-wars-toggle-switch'
 
 export default function TopBar() {
-  const { user } = useAuthStore()
+  const { user, logout } = useAuthStore()
   const { isDark, toggleTheme } = useThemeStore()
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationStore()
   const { toggle, setMobileOpen } = useSidebarStore()
   const [showNotifications, setShowNotifications] = useState(false)
+  const [showAvatarMenu, setShowAvatarMenu] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
   const navigate = useNavigate()
   const searchRef = useRef<HTMLInputElement>(null)
   const searchModalRef = useRef<HTMLDivElement>(null)
+  const avatarMenuRef = useRef<HTMLDivElement>(null)
 
   if (!user) return null
 
@@ -47,6 +50,14 @@ export default function TopBar() {
     if (showSearch) document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [showSearch])
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (avatarMenuRef.current && !avatarMenuRef.current.contains(e.target as Node)) setShowAvatarMenu(false)
+    }
+    if (showAvatarMenu) document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [showAvatarMenu])
 
   const allLinks = (navSections[user.role] || []).flatMap(s =>
     s.items.map(item => ({ ...item, section: s.label }))
@@ -187,8 +198,51 @@ export default function TopBar() {
             </AnimatePresence>
           </div>
 
-          <div className="flex items-center gap-2 ml-1">
-            <Avatar src={user.avatar} alt={user.name} fallback={user.name.split(' ').map((n: string) => n[0]).join('')} size="sm" />
+          <div className="relative" ref={avatarMenuRef}>
+            <button onClick={() => setShowAvatarMenu(!showAvatarMenu)} className="flex items-center gap-2 ml-1">
+              <Avatar src={user.avatar} alt={user.name} fallback={user.name.split(' ').map((n: string) => n[0]).join('')} size="sm" />
+            </button>
+            <AnimatePresence>
+              {showAvatarMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border/50 bg-card shadow-xl overflow-hidden z-50"
+                >
+                  <div className="p-2">
+                    <div className="px-3 py-2 border-b border-border/30 mb-1">
+                      <p className="text-sm font-medium truncate">{user.name}</p>
+                      <p className="text-xs text-muted-foreground truncate capitalize">{user.role}</p>
+                    </div>
+                    <button
+                      onClick={() => { navigate(`/${user.role}`); setShowAvatarMenu(false) }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm hover:bg-accent/50 transition-colors"
+                    >
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <span>Dashboard</span>
+                    </button>
+                    <button
+                      onClick={() => { navigate(`/${user.role}/profile`); setShowAvatarMenu(false) }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm hover:bg-accent/50 transition-colors"
+                    >
+                      <Settings className="w-4 h-4 text-muted-foreground" />
+                      <span>Profile Settings</span>
+                    </button>
+                    <div className="border-t border-border/30 mt-1 pt-1">
+                      <button
+                        onClick={() => { logout(); navigate('/login'); setShowAvatarMenu(false) }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm text-red-500 hover:bg-red-500/10 transition-colors"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Logout</span>
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

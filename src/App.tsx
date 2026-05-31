@@ -135,6 +135,7 @@ const AdminFoodService = lazy(() => import('./pages/admin/AdminFoodService'))
 const AdminAthletics = lazy(() => import('./pages/admin/AdminAthletics'))
 const AdminAlumni = lazy(() => import('./pages/admin/AdminAlumni'))
 const AdminPlatform = lazy(() => import('./pages/admin/AdminPlatform'))
+const AdminProfile = lazy(() => import('./pages/admin/AdminProfile'))
 const CreateAccount = lazy(() => import('./pages/admin/CreateAccount'))
 // Manager Phase 3
 const ManagerCounselling = lazy(() => import('./pages/manager/ManagerCounselling'))
@@ -299,6 +300,7 @@ function App() {
             <Route path="athletics" element={<AdminAthletics />} />
             <Route path="alumni" element={<AdminAlumni />} />
             <Route path="platform" element={<AdminPlatform />} />
+            <Route path="profile" element={<AdminProfile />} />
             <Route path="room-booking" element={<AdminRoomBooking />} />
             <Route path="asset-tracking" element={<AdminAssetTracking />} />
             <Route path="create-account" element={<CreateAccount />} />

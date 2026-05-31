@@ -342,7 +342,7 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                   {[
                     { label: 'Add User', icon: UserPlus, color: 'from-orange-500 to-amber-600', href: '/admin/create-account' },
-                    { label: 'Send Notice', icon: Bell, color: 'from-orange-600 to-amber-600', href: '/admin/communication' },
+                    { label: 'Send Notice', icon: Bell, color: 'from-orange-600 to-amber-600', href: '/admin/announcements' },
                     { label: 'View Reports', icon: FileText, color: 'from-emerald-600 to-teal-600', href: '/admin/analytics' },
                     { label: 'System Settings', icon: Settings, color: 'from-amber-600 to-orange-600', href: '/admin/platform' },
                   ].map(action => (
