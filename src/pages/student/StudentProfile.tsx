@@ -32,7 +32,7 @@ export default function StudentProfile() {
   };
 
   useEffect(() => {
-    if (user) fetchProfile();
+    if (user && user.id !== 'u1') fetchProfile();
   }, [user?.id]);
 
   const handleRefresh = async () => {

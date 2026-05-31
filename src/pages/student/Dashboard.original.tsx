@@ -59,7 +59,7 @@ export default function StudentDashboard() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (user?.id) fetchStudentData(user.id)
+    if (user?.id && user.id !== 'u1') fetchStudentData(user.id)
   }, [user?.id, fetchStudentData])
 
   const totalFees = fees.reduce((a: number, f: any) => a + (f.amount || 0), 0)
