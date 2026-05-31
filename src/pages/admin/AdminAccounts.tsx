@@ -29,6 +29,7 @@ export default function AdminAccounts() {
         api.getInvoices(),
         api.getPayments(),
         api.getExpenses(),
+        api.getFeeRecords(),
       ]);
 
       const allRecords: AccountRecord[] = [];
@@ -39,6 +40,20 @@ export default function AdminAccounts() {
         ? results[1].value : [];
       const expenses = results[2].status === 'fulfilled' && Array.isArray(results[2].value)
         ? results[2].value : [];
+      const feeRecords = results[3].status === 'fulfilled' && Array.isArray(results[3].value)
+        ? results[3].value : [];
+
+      for (const fee of feeRecords) {
+        allRecords.push({
+          id: `fee-${fee.id}`,
+          description: `${fee.type || 'Fee'}${fee.studentName ? ` - ${fee.studentName}` : ''}${fee.studentId ? ` (${fee.studentId})` : ''}`,
+          type: 'income',
+          category: fee.type || 'tuition',
+          amount: Number(fee.paid || fee.amount || 0),
+          date: fee.due || fee.date || '',
+          status: fee.paid >= fee.amount ? 'completed' : fee.paid > 0 ? 'partial' : 'pending',
+        });
+      }
 
       for (const inv of invoices) {
         allRecords.push({
