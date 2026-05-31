@@ -14,25 +14,17 @@ interface User {
   grade?: number;
   gpa?: number;
   average?: number;
-}
-
-interface Invoice {
-  amount?: number;
+  gender?: string;
+  date?: string;
   status?: string;
-  paid?: boolean;
-}
-
-interface Payment {
-  amount?: number;
-}
-
-interface Expense {
-  amount?: number;
+  present?: boolean;
 }
 
 interface AttendanceRecord {
   status?: string;
   present?: boolean;
+  date?: string;
+  studentId?: string;
 }
 
 export default function AdminAnalytics() {
@@ -62,56 +54,62 @@ export default function AdminAnalytics() {
     try {
       const results = await Promise.allSettled([
         api.getUsers(),
-        api.getInvoices(),
-        api.getPayments(),
-        api.getExpenses(),
+        api.getManagerFinance(),
         api.getAttendance(),
-        api.getLeaveRequests(),
-        api.getStaffDirectory(),
-        api.getLibraryCatalogue(),
-        api.getAnnouncements(),
       ]);
 
-      const [
-        usersResult,
-        invoicesResult,
-        paymentsResult,
-        expensesResult,
-        attendanceResult,
-      ] = results;
+      const [usersResult, financeResult, attendanceResult] = results;
 
       const users: User[] = usersResult.status === 'fulfilled' ? usersResult.value : [];
-      const invoices: Invoice[] = invoicesResult.status === 'fulfilled' ? invoicesResult.value : [];
-      const payments: Payment[] = paymentsResult.status === 'fulfilled' ? paymentsResult.value : [];
-      const expenses: Expense[] = expensesResult.status === 'fulfilled' ? expensesResult.value : [];
+      const finance: any = financeResult.status === 'fulfilled' ? financeResult.value : {};
       const attendance: AttendanceRecord[] = attendanceResult.status === 'fulfilled' ? attendanceResult.value : [];
 
       const students = users.filter(u => u.role?.toLowerCase() === 'student');
       const teachers = users.filter(u => u.role?.toLowerCase() === 'teacher');
-      const maleStudents = users.filter(u => u.role?.toLowerCase() === 'student' && (u as any).gender?.toLowerCase() === 'male').length;
-      const femaleStudents = users.filter(u => u.role?.toLowerCase() === 'student' && (u as any).gender?.toLowerCase() === 'female').length;
+      const maleStudents = users.filter(u => u.role?.toLowerCase() === 'student' && u.gender?.toLowerCase() === 'male').length;
+      const femaleStudents = users.filter(u => u.role?.toLowerCase() === 'student' && u.gender?.toLowerCase() === 'female').length;
 
       const totalStudents = students.length;
       const totalTeachers = teachers.length;
 
-      const totalPayments = payments.reduce((sum, p) => sum + (p.amount || 0), 0);
-      const totalExpenses = expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+      const revenue = finance.revenue || 0;
+      const expenses = finance.expenses || 0;
+      const feeCollection = finance.feeCollection || { collected: 0, pending: 0 };
 
-      let collected = 0;
-      let pending = 0;
-      invoices.forEach(inv => {
-        if (inv.status?.toLowerCase() === 'paid' || inv.paid) {
-          collected += inv.amount || 0;
-        } else {
-          pending += inv.amount || 0;
-        }
-      });
+      const monthlyTrend = (finance.monthlyTrend || []).map((m: any) => ({
+        name: m.month,
+        income: m.revenue || 0,
+        expense: m.expenses || 0,
+      }));
 
       let avgAttendance = 0;
       if (attendance.length > 0) {
         const present = attendance.filter(a => a.status?.toLowerCase() === 'present' || a.present).length;
         avgAttendance = Math.round((present / attendance.length) * 100);
       }
+
+      const dayMap = new Map<string, { present: number; absent: number }>();
+      const dayOrder = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      dayOrder.forEach(d => dayMap.set(d, { present: 0, absent: 0 }));
+
+      attendance.forEach(a => {
+        const dateStr = (a as any).date || '';
+        if (dateStr) {
+          const dayName = new Date(dateStr + 'T00:00:00').toLocaleDateString('en', { weekday: 'short' });
+          if (dayMap.has(dayName)) {
+            const isPresent = a.status?.toLowerCase() === 'present' || a.present === true;
+            if (isPresent) {
+              dayMap.get(dayName)!.present++;
+            } else {
+              dayMap.get(dayName)!.absent++;
+            }
+          }
+        }
+      });
+
+      const attendanceTrend = Array.from(dayMap.entries())
+        .filter(([, v]) => v.present > 0 || v.absent > 0)
+        .map(([name, v]) => ({ name, present: v.present, absent: v.absent }));
 
       const classMap = new Map<string, number[]>();
       students.forEach(s => {
@@ -131,38 +129,20 @@ export default function AdminAnalytics() {
         ? Math.round(performanceByClass.reduce((s, c) => s + c.avg, 0) / performanceByClass.length)
         : 0;
 
-      // Mock Data for Charts
-      const financeData = [
-        { name: "Jan", income: 4000, expense: 2400 },
-        { name: "Feb", income: 3000, expense: 1398 },
-        { name: "Mar", income: 2000, expense: 9800 },
-        { name: "Apr", income: 2780, expense: 3908 },
-        { name: "May", income: 1890, expense: 4800 },
-        { name: "Jun", income: 2390, expense: 3800 },
-      ];
-
-      const attendanceData = [
-        { name: "Mon", present: 95, absent: 5 },
-        { name: "Tue", present: 92, absent: 8 },
-        { name: "Wed", present: 98, absent: 2 },
-        { name: "Thu", present: 90, absent: 10 },
-        { name: "Fri", present: 88, absent: 12 },
-      ];
-
       setStats({
         totalStudents,
         totalTeachers,
         avgAttendance,
         avgGpa,
-        revenue: totalPayments,
-        expenses: totalExpenses,
+        revenue,
+        expenses,
         maleStudents,
         femaleStudents,
         studentTrend: [],
         performanceByClass,
-        attendanceTrend: attendanceData as any,
-        feeCollection: { collected, pending },
-        financeData: financeData as any,
+        attendanceTrend,
+        feeCollection,
+        financeData: monthlyTrend,
       });
     } catch {
       // data remains 0s
