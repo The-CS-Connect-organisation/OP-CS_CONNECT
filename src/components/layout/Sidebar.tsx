@@ -1,5 +1,6 @@
 import React from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useAuthStore, useSidebarStore } from '@/lib/store'
 import { navSections, roleLabels } from '@/lib/nav-config'
 import { cn } from '@/lib/utils'
@@ -96,17 +97,34 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile overlay */}
-      {isMobileOpen && (
-        <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden" onClick={() => setMobileOpen(false)} />
-      )}
+      {/* Mobile overlay with blur and animation */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-md lg:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
+        )}
+      </AnimatePresence>
 
-      {/* Mobile sidebar */}
-      {isMobileOpen && (
-        <aside className="fixed left-0 top-0 z-50 h-full w-[280px] lg:hidden shadow-2xl">
-          {sidebarContent(false)}
-        </aside>
-      )}
+      {/* Mobile sidebar with slide-in animation */}
+      <AnimatePresence>
+        {isMobileOpen && (
+          <motion.aside
+            initial={{ x: -300 }}
+            animate={{ x: 0 }}
+            exit={{ x: -300 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed left-0 top-0 z-50 h-full w-[280px] lg:hidden shadow-2xl"
+          >
+            {sidebarContent(false)}
+          </motion.aside>
+        )}
+      </AnimatePresence>
 
       {/* Desktop sidebar - icon-only when collapsed */}
       <aside
