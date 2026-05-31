@@ -70,7 +70,8 @@ export default function AdminDashboard() {
   useEffect(() => {
     const logErr = (label: string) => (e: any) => console.error(`[Dashboard] ${label} failed:`, e?.message || e);
     Promise.allSettled([
-      api.getInvoices().then((d: any) => setLiveData((p: any) => ({ ...p, invoices: Array.isArray(d) ? d.filter((i: any) => i.status === 'pending').length : 0, totalRevenue: Array.isArray(d) ? d.reduce((s: number, i: any) => s + Number(i.total || i.amount || 0), 0) : 0 }))).catch(logErr('getInvoices')),
+      api.getInvoices().then((d: any) => setLiveData((p: any) => ({ ...p, invoices: Array.isArray(d) ? d.filter((i: any) => i.status === 'pending').length : 0 }))).catch(logErr('getInvoices')),
+      api.getFeeRecords().then((d: any) => setLiveData((p: any) => ({ ...p, totalRevenue: Array.isArray(d) ? d.reduce((s: number, f: any) => s + Number(f.paid || 0), 0) : 0 }))).catch(logErr('getFeeRecords')),
       api.getExpenses().then((d: any) => setLiveData((p: any) => ({ ...p, expenses: Array.isArray(d) ? d.filter((e: any) => e.status !== 'approved').length : 0 }))).catch(logErr('getExpenses')),
       api.getStaffDirectory().then((d: any) => setLiveData((p: any) => ({ ...p, staff: Array.isArray(d) ? d.length : 0 }))).catch(logErr('getStaffDirectory')),
       api.getLibraryCatalogue().then((d: any) => setLiveData((p: any) => ({ ...p, books: Array.isArray(d) ? d.length : 0 }))).catch(logErr('getLibraryCatalogue')),
