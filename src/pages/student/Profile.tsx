@@ -173,60 +173,60 @@ export default function StudentProfile() {
           <div className="grid grid-cols-1 xl:grid-cols-[1.3fr_0.9fr] gap-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="flex items-center gap-2"><User className="w-4 h-4 text-orange-500" />Full Name</Label>
-                {editing ? <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.name}</p>}
+                <Label htmlFor="name" className="flex items-center gap-2"><User className="w-4 h-4 text-orange-500" />Full Name</Label>
+                {editing ? <Input id="name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.name}</p>}
               </div>
               <div className="space-y-2">
-                <Label className="flex items-center gap-2"><BookOpen className="w-4 h-4 text-orange-500" />Admission No</Label>
-                {editing ? <Input value={form.admissionNo} onChange={e => setForm({ ...form, admissionNo: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.admissionNo || 'Not set'}</p>}
+                <Label htmlFor="admissionNo" className="flex items-center gap-2"><BookOpen className="w-4 h-4 text-orange-500" />Admission No</Label>
+                {editing ? <Input id="admissionNo" value={form.admissionNo} onChange={e => setForm({ ...form, admissionNo: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.admissionNo || 'Not set'}</p>}
               </div>
               <div className="space-y-2">
-                <Label className="flex items-center gap-2"><UserCheck className="w-4 h-4 text-orange-500" />Roll No</Label>
-                {editing ? <Input value={form.rollNo} onChange={e => setForm({ ...form, rollNo: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.rollNo || 'Not set'}</p>}
+                <Label htmlFor="rollNo" className="flex items-center gap-2"><UserCheck className="w-4 h-4 text-orange-500" />Roll No</Label>
+                {editing ? <Input id="rollNo" value={form.rollNo} onChange={e => setForm({ ...form, rollNo: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.rollNo || 'Not set'}</p>}
               </div>
               <div className="space-y-2">
-                <Label className="flex items-center gap-2"><Calendar className="w-4 h-4 text-orange-500" />Date of Birth</Label>
-                {editing ? <Input type="date" value={form.dateOfBirth} onChange={e => setForm({ ...form, dateOfBirth: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString() : 'Not set'}</p>}
+                <Label htmlFor="dateOfBirth" className="flex items-center gap-2"><Calendar className="w-4 h-4 text-orange-500" />Date of Birth</Label>
+                {editing ? <Input id="dateOfBirth" type="date" value={form.dateOfBirth} onChange={e => setForm({ ...form, dateOfBirth: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.dateOfBirth ? new Date(user.dateOfBirth).toLocaleDateString() : 'Not set'}</p>}
               </div>
               <div className="space-y-2 sm:col-span-2">
-                <Label className="flex items-center gap-2"><MapPin className="w-4 h-4 text-orange-500" />Address</Label>
-                {editing ? <Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.address || 'Not set'}</p>}
+                <Label htmlFor="address" className="flex items-center gap-2"><MapPin className="w-4 h-4 text-orange-500" />Address</Label>
+                {editing ? <Input id="address" value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.address || 'Not set'}</p>}
               </div>
               <div className="space-y-2 sm:col-span-2">
-                <Label className="flex items-center gap-2"><Home className="w-4 h-4 text-orange-500" />House Location</Label>
-                {editing ? <Input value={form.houseLocation} onChange={e => setForm({ ...form, houseLocation: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.houseLocation || 'Not set'}</p>}
+                <Label htmlFor="houseLocation" className="flex items-center gap-2"><Home className="w-4 h-4 text-orange-500" />House Location</Label>
+                {editing ? <Input id="houseLocation" value={form.houseLocation} onChange={e => setForm({ ...form, houseLocation: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.houseLocation || 'Not set'}</p>}
               </div>
               <div className="space-y-2 sm:col-span-2">
-                <Label className="flex items-center gap-2"><Home className="w-4 h-4 text-orange-500" />School House</Label>
-                {editing ? <Input value={form.schoolHouse} onChange={e => setForm({ ...form, schoolHouse: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.schoolHouse || 'Not set'}</p>}
+                <Label htmlFor="schoolHouse" className="flex items-center gap-2"><Home className="w-4 h-4 text-orange-500" />School House</Label>
+                {editing ? <Input id="schoolHouse" value={form.schoolHouse} onChange={e => setForm({ ...form, schoolHouse: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.schoolHouse || 'Not set'}</p>}
               </div>
             </div>
 
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2"><Award className="w-4 h-4 text-orange-500" />Blood Group</Label>
-                  {editing ? <Input value={form.bloodGroup} onChange={e => setForm({ ...form, bloodGroup: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.bloodGroup || 'Not set'}</p>}
+                  <Label htmlFor="bloodGroup" className="flex items-center gap-2"><Award className="w-4 h-4 text-orange-500" />Blood Group</Label>
+                  {editing ? <Input id="bloodGroup" value={form.bloodGroup} onChange={e => setForm({ ...form, bloodGroup: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.bloodGroup || 'Not set'}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2"><CreditCard className="w-4 h-4 text-orange-500" />Aadhar No</Label>
-                  {editing ? <Input value={form.aadharNo} onChange={e => setForm({ ...form, aadharNo: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.aadharNo || 'Not set'}</p>}
+                  <Label htmlFor="aadharNo" className="flex items-center gap-2"><CreditCard className="w-4 h-4 text-orange-500" />Aadhar No</Label>
+                  {editing ? <Input id="aadharNo" value={form.aadharNo} onChange={e => setForm({ ...form, aadharNo: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.aadharNo || 'Not set'}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2"><ClipboardList className="w-4 h-4 text-orange-500" />PEN</Label>
                   {editing ? <Input value={form.penNo} onChange={e => setForm({ ...form, penNo: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.penNo || 'Not set'}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2"><Hash className="w-4 h-4 text-orange-500" />Apaar ID</Label>
-                  {editing ? <Input value={form.apaarId} onChange={e => setForm({ ...form, apaarId: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.apaarId || 'Not set'}</p>}
+                  <Label htmlFor="apaarId" className="flex items-center gap-2"><Hash className="w-4 h-4 text-orange-500" />Apaar ID</Label>
+                  {editing ? <Input id="apaarId" value={form.apaarId} onChange={e => setForm({ ...form, apaarId: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.apaarId || 'Not set'}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2"><Globe className="w-4 h-4 text-orange-500" />Religion</Label>
-                  {editing ? <Input value={form.religion} onChange={e => setForm({ ...form, religion: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.religion || 'Not set'}</p>}
+                  <Label htmlFor="religion" className="flex items-center gap-2"><Globe className="w-4 h-4 text-orange-500" />Religion</Label>
+                  {editing ? <Input id="religion" value={form.religion} onChange={e => setForm({ ...form, religion: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.religion || 'Not set'}</p>}
                 </div>
                 <div className="space-y-2">
-                  <Label className="flex items-center gap-2"><Flag className="w-4 h-4 text-orange-500" />Nationality</Label>
-                  {editing ? <Input value={form.nationality} onChange={e => setForm({ ...form, nationality: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.nationality || 'Not set'}</p>}
+                  <Label htmlFor="nationality" className="flex items-center gap-2"><Flag className="w-4 h-4 text-orange-500" />Nationality</Label>
+                  {editing ? <Input id="nationality" value={form.nationality} onChange={e => setForm({ ...form, nationality: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.nationality || 'Not set'}</p>}
                 </div>
               </div>
 
@@ -237,20 +237,20 @@ export default function StudentProfile() {
                 </div>
                 <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
-                    <Label className="flex items-center gap-2"><User className="w-4 h-4 text-orange-500" />Father's Name</Label>
-                    {editing ? <Input value={form.fatherName} onChange={e => setForm({ ...form, fatherName: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.fatherName || 'Not set'}</p>}
+                    <Label htmlFor="fatherName" className="flex items-center gap-2"><User className="w-4 h-4 text-orange-500" />Father's Name</Label>
+                    {editing ? <Input id="fatherName" value={form.fatherName} onChange={e => setForm({ ...form, fatherName: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.fatherName || 'Not set'}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label className="flex items-center gap-2"><Phone className="w-4 h-4 text-orange-500" />Father's Phone</Label>
-                    {editing ? <Input value={form.fatherPhone} onChange={e => setForm({ ...form, fatherPhone: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.fatherPhone || 'Not set'}</p>}
+                    <Label htmlFor="fatherPhone" className="flex items-center gap-2"><Phone className="w-4 h-4 text-orange-500" />Father's Phone</Label>
+                    {editing ? <Input id="fatherPhone" value={form.fatherPhone} onChange={e => setForm({ ...form, fatherPhone: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.fatherPhone || 'Not set'}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label className="flex items-center gap-2"><User className="w-4 h-4 text-orange-500" />Mother's Name</Label>
-                    {editing ? <Input value={form.motherName} onChange={e => setForm({ ...form, motherName: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.motherName || 'Not set'}</p>}
+                    <Label htmlFor="motherName" className="flex items-center gap-2"><User className="w-4 h-4 text-orange-500" />Mother's Name</Label>
+                    {editing ? <Input id="motherName" value={form.motherName} onChange={e => setForm({ ...form, motherName: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.motherName || 'Not set'}</p>}
                   </div>
                   <div className="space-y-2">
-                    <Label className="flex items-center gap-2"><Phone className="w-4 h-4 text-orange-500" />Mother's Phone</Label>
-                    {editing ? <Input value={form.motherPhone} onChange={e => setForm({ ...form, motherPhone: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.motherPhone || 'Not set'}</p>}
+                    <Label htmlFor="motherPhone" className="flex items-center gap-2"><Phone className="w-4 h-4 text-orange-500" />Mother's Phone</Label>
+                    {editing ? <Input id="motherPhone" value={form.motherPhone} onChange={e => setForm({ ...form, motherPhone: e.target.value })} /> : <p className="text-sm text-muted-foreground">{user?.motherPhone || 'Not set'}</p>}
                   </div>
                 </div>
               </div>
