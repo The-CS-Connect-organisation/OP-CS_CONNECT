@@ -96,18 +96,6 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile overlay */}
-      {isMobileOpen && (
-        <div className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden" onClick={() => setMobileOpen(false)} />
-      )}
-
-      {/* Mobile sidebar */}
-      {isMobileOpen && (
-        <aside className="fixed left-0 top-0 z-50 h-full w-[280px] lg:hidden shadow-2xl">
-          {sidebarContent(false)}
-        </aside>
-      )}
-
       {/* Desktop sidebar - icon-only when collapsed */}
       <aside
         className={cn(
