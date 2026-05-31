@@ -42,7 +42,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className={cn("flex-1 overflow-y-auto py-3 space-y-0.5 scrollbar-thin", collapsed ? "px-1" : "px-3")}>
+      <nav className={cn("flex-1 overflow-y-auto py-3 space-y-0.5 sidebar-scroll", collapsed ? "px-1" : "px-3")} style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}>
         {sections.map((section) => (
           <div key={section.label} className={cn("mb-2", collapsed && "flex flex-col items-center")}>
             <p className={cn(

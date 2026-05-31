@@ -40,7 +40,6 @@ export default function TopBar() {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-sm">
               <GraduationCap className="w-4 h-4 text-white" />
             </div>
-            <span className="font-bold text-sm bg-clip-text text-transparent bg-gradient-to-r from-orange-500 to-amber-500">School Sync</span>
           </div>
           <div className="hidden lg:block h-4 w-px bg-border/50" />
           <div className="hidden lg:block">
@@ -86,7 +85,7 @@ export default function TopBar() {
 
           {/* Theme Toggle - Star Wars BB-8 */}
           <div className="flex items-center -mr-2">
-            <StarWarsToggle checked={isDark} onChange={toggleTheme} scale={0.15} />
+            <StarWarsToggle checked={isDark} onChange={toggleTheme} scale={0.35} />
           </div>
 
           {/* Notifications */}
