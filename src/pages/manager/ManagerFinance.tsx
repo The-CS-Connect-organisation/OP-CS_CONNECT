@@ -62,11 +62,11 @@ export default function ManagerFinance() {
                   <div className="flex items-center gap-4">
                     <div className="flex-1">
                       <div className="flex justify-between text-sm mb-1"><span>Revenue</span><span className="text-green-500">{formatCurrency(month.revenue)}</span></div>
-                      <div className="w-full h-2 bg-background rounded-full"><div className="h-full bg-green-500 rounded-full" style={{ width: `${(month.revenue / stats.revenue) * 100}%` }} /></div>
+                      <div className="w-full h-2 bg-background rounded-full"><div className="h-full bg-green-500 rounded-full" style={{ width: `${stats.revenue ? (month.revenue / stats.revenue) * 100 : 0}%` }} /></div>
                     </div>
                     <div className="flex-1">
                       <div className="flex justify-between text-sm mb-1"><span>Expenses</span><span className="text-red-500">{formatCurrency(month.expenses)}</span></div>
-                      <div className="w-full h-2 bg-background rounded-full"><div className="h-full bg-red-500 rounded-full" style={{ width: `${(month.expenses / stats.expenses) * 100}%` }} /></div>
+                      <div className="w-full h-2 bg-background rounded-full"><div className="h-full bg-red-500 rounded-full" style={{ width: `${stats.expenses ? (month.expenses / stats.expenses) * 100 : 0}%` }} /></div>
                     </div>
                   </div>
                 </div>

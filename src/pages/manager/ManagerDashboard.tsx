@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { useAuthStore } from "@/lib/store";
 import { api, apiFetch } from "@/lib/api";
+import { formatCurrency } from "../../lib/utils";
 import {
   LayoutDashboard, Users, GraduationCap, CreditCard, Bus,
   Calendar, FileText, BarChart3, Bell, Settings, Shield,
@@ -20,16 +21,15 @@ export default function ManagerDashboard() {
   useEffect(() => {
     (async () => {
       try {
-        const [studentsRes, teachersRes, feesRes, attendanceRes] = await Promise.all([
+        const [studentsRes, teachersRes, financeRes, attendanceRes] = await Promise.all([
           api.getStudents(),
           api.getTeachers(),
-          api.getFeeRecords(),
+          api.getManagerFinance(),
           api.getAttendance(),
         ]);
         const studentCount = Array.isArray(studentsRes) ? studentsRes.length : Array.isArray(studentsRes?.data) ? studentsRes.data.length : 0;
         const teacherCount = Array.isArray(teachersRes) ? teachersRes.length : Array.isArray(teachersRes?.data) ? teachersRes.data.length : 0;
-        const feeList = Array.isArray(feesRes) ? feesRes : [];
-        const totalRevenue = feeList.reduce((sum: number, f: any) => sum + (f.amount || f.paid || 0), 0);
+        const totalRevenue = financeRes?.revenue || 0;
         const attList = Array.isArray(attendanceRes) ? attendanceRes : [];
         const overallAttendance = attList.length > 0
           ? Math.round(
@@ -47,7 +47,7 @@ export default function ManagerDashboard() {
   const quickStats = [
     { label: "Total Students", value: stats.students, icon: GraduationCap, color: "from-orange-500 to-amber-500", change: "+12" },
     { label: "Total Teachers", value: stats.teachers, icon: Users, color: "from-orange-500 to-amber-500", change: "+3" },
-    { label: "Revenue (YTD)", value: `Rs ${(stats.revenue / 1000).toFixed(0)}K`, icon: DollarSign, color: "from-emerald-500 to-teal-500", change: "+18%" },
+    { label: "Revenue", value: formatCurrency(stats.revenue), icon: DollarSign, color: "from-emerald-500 to-teal-500", change: "+18%" },
     { label: "Avg Attendance", value: `${stats.attendance}%`, icon: UserCheck, color: "from-orange-500 to-amber-500", change: "+2%" },
   ];
 

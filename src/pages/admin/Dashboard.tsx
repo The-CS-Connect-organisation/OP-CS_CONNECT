@@ -71,7 +71,7 @@ export default function AdminDashboard() {
     const logErr = (label: string) => (e: any) => console.error(`[Dashboard] ${label} failed:`, e?.message || e);
     Promise.allSettled([
       api.getInvoices().then((d: any) => setLiveData((p: any) => ({ ...p, invoices: Array.isArray(d) ? d.filter((i: any) => i.status === 'pending').length : 0 }))).catch(logErr('getInvoices')),
-      api.getFeeRecords().then((d: any) => setLiveData((p: any) => ({ ...p, totalRevenue: Array.isArray(d) ? d.reduce((s: number, f: any) => s + Number(f.paid || 0), 0) : 0 }))).catch(logErr('getFeeRecords')),
+      api.getManagerFinance().then((d: any) => setLiveData((p: any) => ({ ...p, totalRevenue: d?.revenue || 0, monthlyTrend: d?.monthlyTrend || [] }))).catch(logErr('getManagerFinance')),
       api.getExpenses().then((d: any) => setLiveData((p: any) => ({ ...p, expenses: Array.isArray(d) ? d.filter((e: any) => e.status !== 'approved').length : 0 }))).catch(logErr('getExpenses')),
       api.getStaffDirectory().then((d: any) => setLiveData((p: any) => ({ ...p, staff: Array.isArray(d) ? d.length : 0 }))).catch(logErr('getStaffDirectory')),
       api.getLibraryCatalogue().then((d: any) => setLiveData((p: any) => ({ ...p, books: Array.isArray(d) ? d.length : 0 }))).catch(logErr('getLibraryCatalogue')),
@@ -149,7 +149,7 @@ export default function AdminDashboard() {
           {[
             { label: 'Total Students', value: liveData.students.toLocaleString(), icon: GraduationCap, color: 'from-orange-500 to-red-500', change: 'enrolled', trend: 'up' },
             { label: 'Total Teachers', value: liveData.teachers.toString(), icon: Users, color: 'from-orange-600 to-amber-600', change: `${liveData.onLeave} on leave`, trend: 'neutral' },
-            { label: 'Revenue', value: `₹${((liveData.totalRevenue || 0) / 100000).toFixed(1)}L`, icon: DollarSign, color: 'from-emerald-600 to-teal-600', change: 'invoiced', trend: 'up' },
+            { label: 'Revenue', value: formatCurrency(liveData.totalRevenue), icon: DollarSign, color: 'from-emerald-600 to-teal-600', change: 'invoiced', trend: 'up' },
             { label: 'Attendance', value: `${liveData.attendanceRate || 0}%`, icon: Activity, color: 'from-amber-600 to-orange-600', change: 'School-wide', trend: 'up' },
           ].map((stat) => (
             <motion.div key={stat.label} whileHover={{ y: -2, scale: 1.02 }}>
@@ -191,7 +191,7 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={[{ month: 'Collected', collected: liveData.totalRevenue || 0, expenses: 0 }]}>
+                    <AreaChart data={liveData.monthlyTrend?.length ? liveData.monthlyTrend : [{ month: 'Collected', collected: liveData.totalRevenue || 0, expenses: 0 }]}>
                       <defs>
                         <linearGradient id="revGradient" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
@@ -205,7 +205,7 @@ export default function AdminDashboard() {
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                       <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                      <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', fontSize: '12px' }} formatter={(v: number) => [`₹${(v/100000).toFixed(1)}L`, '']} />
+                      <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', fontSize: '12px' }} formatter={(v: number) => [formatCurrency(v), '']} />
                       <Area type="monotone" dataKey="collected" stroke="#10b981" fill="url(#revGradient)" strokeWidth={2} name="Collected" />
                       <Area type="monotone" dataKey="expenses" stroke="#ef4444" fill="url(#expGradient)" strokeWidth={2} name="Expenses" />
                     </AreaChart>
