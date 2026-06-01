@@ -37,7 +37,7 @@ export default function ActivitiesPage() {
             {clubs.length === 0 ? (
               <Card><CardContent className="py-12 text-center text-muted-foreground">No clubs found</CardContent></Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
                 {clubs.map((club: any) => (
                   <motion.div key={club.id} variants={itemVariants}>
                     <Card glow className="hover:border-primary/20 transition-colors cursor-pointer group">
@@ -66,7 +66,7 @@ export default function ActivitiesPage() {
             {events.length === 0 ? (
               <Card><CardContent className="py-12 text-center text-muted-foreground">No events found</CardContent></Card>
             ) : (
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {events.map((event: any) => (
                   <motion.div key={event.id} variants={itemVariants}>
                     <Card glow className="hover:border-primary/20 transition-colors">

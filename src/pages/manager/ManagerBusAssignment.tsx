@@ -54,7 +54,7 @@ export default function ManagerBusAssignment() {
         <input type="text" placeholder="Search routes..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2 rounded-lg border bg-background" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
         {filteredBuses.map(bus => (
           <Card key={bus.id} className="p-4">
             <div className="flex items-start justify-between mb-3">
@@ -78,3 +78,4 @@ export default function ManagerBusAssignment() {
     </div>
   );
 }
+

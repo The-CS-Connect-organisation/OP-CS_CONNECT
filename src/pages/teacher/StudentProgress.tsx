@@ -44,7 +44,7 @@ export default function TeacherStudentProgress() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Student Progress</h1>
           <p className="text-muted-foreground">Individual student tracking</p>
@@ -55,11 +55,11 @@ export default function TeacherStudentProgress() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-32" />)}
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-1 space-y-3">
             {students.map(student => (
               <Card
@@ -90,7 +90,7 @@ export default function TeacherStudentProgress() {
           <div className="lg:col-span-2">
             {selected ? (
               <Card className="p-4">
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex flex-col sm:flex-row items-center gap-3 mb-6">
                   <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center">
                     <User className="w-7 h-7 text-orange-500" />
                   </div>
@@ -100,7 +100,7 @@ export default function TeacherStudentProgress() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                   <div className="p-3 bg-accent rounded-lg text-center">
                     <p className="text-2xl font-bold text-orange-500">{formatPercentage(normalizeAcademicPercentage(selected.gpa))}</p>
                     <p className="text-sm text-muted-foreground">Academic %</p>

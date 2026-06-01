@@ -113,7 +113,7 @@ export default function Accolades() {
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
-      <motion.div variants={itemVariants} className="flex items-center justify-between">
+      <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><Award className="w-6 h-6 text-primary" /> Accolades</h1>
           <p className="text-muted-foreground text-sm mt-1">Apply for recognitions - teachers approve</p>

@@ -58,7 +58,7 @@ export default function StudentExamSyllabus() {
           <p className="text-muted-foreground">No syllabus entries have been uploaded for your class yet.</p>
         </Card>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {syllabi.map((item) => (
             <Card key={item.id} className="p-4">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">

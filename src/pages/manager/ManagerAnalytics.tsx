@@ -49,12 +49,12 @@ export default function ManagerAnalytics() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4, 5, 6].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
             <Card className="p-4 card-hover"><div className="flex items-center gap-3"><Users className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold stat-value">{stats.totalStudents}</p><p className="text-sm text-muted-foreground">Students</p></div></div></Card>
             <Card className="p-4 card-hover"><div className="flex items-center gap-3"><GraduationCap className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold stat-value">{stats.totalTeachers}</p><p className="text-sm text-muted-foreground">Teachers</p></div></div></Card>
             <Card className="p-4 card-hover"><div className="flex items-center gap-3"><TrendingUp className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold stat-value">{stats.avgAttendance}%</p><p className="text-sm text-muted-foreground">Attendance</p></div></div></Card>
@@ -103,3 +103,4 @@ export default function ManagerAnalytics() {
     </div>
   );
 }
+

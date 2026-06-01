@@ -41,12 +41,12 @@ export default function ManagerFinance() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
             <Card className="p-4"><div className="flex items-center gap-3"><DollarSign className="w-8 h-8 text-green-500" /><div><p className="text-2xl font-bold">{formatCurrency(stats.revenue)}</p><p className="text-sm text-muted-foreground">Revenue</p></div></div></Card>
             <Card className="p-4"><div className="flex items-center gap-3"><TrendingDown className="w-8 h-8 text-red-500" /><div><p className="text-2xl font-bold">{formatCurrency(stats.expenses)}</p><p className="text-sm text-muted-foreground">Expenses</p></div></div></Card>
             <Card className="p-4"><div className="flex items-center gap-3"><Wallet className="w-8 h-8 text-orange-500" /><div><p className={`text-2xl font-bold ${stats.profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>{formatCurrency(stats.profit)}</p><p className="text-sm text-muted-foreground">Profit</p></div></div></Card>
@@ -78,3 +78,4 @@ export default function ManagerFinance() {
     </div>
   );
 }
+

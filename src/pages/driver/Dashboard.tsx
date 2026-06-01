@@ -143,7 +143,7 @@ export default function DriverDashboard() {
         </motion.div>
 
         {/* Route & Students */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Route Timeline */}
           <motion.div variants={itemVariants}>
             <Card glow>
@@ -246,7 +246,7 @@ export default function DriverDashboard() {
         </div>
 
         {/* Fuel & Vehicle */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <motion.div variants={itemVariants}>
             <Card glow>
               <CardHeader className="pb-2">

@@ -180,12 +180,12 @@ export default function EnterGrades() {
 
       {selectedClass && selectedSubject && (
         <>
-          <motion.div variants={itemVariants} className="flex items-center justify-between">
+          <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-between">
             <div className="flex items-center gap-2">
               <Users className="w-5 h-5 text-orange-500" />
               <span className="text-sm font-medium">{filteredStudents.length} students</span>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <input
@@ -225,7 +225,7 @@ export default function EnterGrades() {
                   return (
                     <motion.div key={student.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                       <Card className="p-4">
-                        <div className="flex items-center gap-4">
+                        <div className="flex flex-wrap items-center gap-4">
                           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white font-bold text-sm">
                             {student.name?.charAt(0) || '?'}
                           </div>

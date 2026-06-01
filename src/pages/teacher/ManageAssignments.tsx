@@ -75,7 +75,7 @@ export default function TeacherManageAssignments() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Manage Assignments</h1>
           <p className="text-muted-foreground">Create & manage assignments</p>
@@ -114,7 +114,7 @@ export default function TeacherManageAssignments() {
         <div className="space-y-4">
           {assignments.map(assignment => (
             <Card key={assignment.id} className="p-4">
-              <div className="flex items-start justify-between">
+              <div className="flex flex-wrap items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <FileText className="w-5 h-5 text-orange-500" />
@@ -125,7 +125,7 @@ export default function TeacherManageAssignments() {
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">{assignment.description}</p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1"><Calendar className="w-4 h-4" />Due: {assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString() : 'Not set'}</span>
                     <span className="flex items-center gap-1"><Users className="w-4 h-4" />{assignment.submissions} submissions</span>
                     <span className="flex items-center gap-1"><ClipboardList className="w-4 h-4" />{assignment.totalMarks} marks</span>

@@ -164,9 +164,9 @@ export default function ReportCards() {
         </select>
       </Card>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Student List */}
-        <div className="lg:col-span-5 space-y-3">
+        <div className="md:col-span-5 space-y-3">
           {loading ? (
             <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-orange-500" /></div>
           ) : filteredStudents.length === 0 ? (
@@ -220,7 +220,7 @@ export default function ReportCards() {
         </div>
 
         {/* Report Card Preview */}
-        <div className="lg:col-span-7">
+        <div className="md:col-span-7">
           {!selectedStudent ? (
             <Card className="p-12 text-center">
               <GraduationCap className="w-16 h-16 text-muted-foreground/20 mx-auto mb-4" />
@@ -232,7 +232,7 @@ export default function ReportCards() {
               <Card className="overflow-hidden">
                 {/* Report Header */}
                 <div className="bg-gradient-to-r from-orange-500 to-amber-500 p-6 text-white">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-center justify-between">
                     <div>
                       <h2 className="text-2xl font-bold">Cornerstone International School</h2>
                       <p className="text-sm opacity-80 mt-1">Academic Report Card - {selectedTerm}</p>
@@ -250,7 +250,7 @@ export default function ReportCards() {
 
                 <div className="p-6 space-y-6">
                   {/* Student Info */}
-                  <div className="flex items-center gap-4 p-4 bg-accent/50 rounded-xl">
+                  <div className="flex flex-col sm:flex-row items-center gap-4 p-4 bg-accent/50 rounded-xl">
                     <Avatar className="w-14 h-14 rounded-xl">
                       <AvatarImage src={getAvatarUrl(currentStudent)} className="rounded-xl" />
                       <AvatarFallback className="bg-gradient-to-br from-orange-400 to-amber-500 text-white font-bold text-lg rounded-xl">

@@ -163,12 +163,12 @@ export default function AdminAnalytics() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4, 5, 6, 7, 8].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
             <Card className="p-4 card-hover">
               <div className="flex items-center gap-3">
                 <Users className="w-8 h-8 text-orange-500" />
@@ -301,3 +301,4 @@ export default function AdminAnalytics() {
     </div>
   );
 }
+

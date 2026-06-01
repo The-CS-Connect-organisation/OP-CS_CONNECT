@@ -64,7 +64,7 @@ export default function ManagerCounselling() {
       <div className="p-6 space-y-6">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-6 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
         {[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}
@@ -79,7 +79,7 @@ export default function ManagerCounselling() {
         <p className="text-muted-foreground">Sessions, referrals, care plans & grievances</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
         <Card className="p-4"><div className="flex items-center gap-3"><HeartPulse className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{sessions.filter(s => s.status === 'scheduled' || s.status === 'completed').length}</p><p className="text-sm text-muted-foreground">Total Sessions</p></div></div></Card>
         <Card className="p-4"><div className="flex items-center gap-3"><MessageSquare className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{referrals.filter(r => r.status === 'pending').length}</p><p className="text-sm text-muted-foreground">Pending Referrals</p></div></div></Card>
         <Card className="p-4"><div className="flex items-center gap-3"><ClipboardList className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{carePlans.filter(p => p.status === 'active').length}</p><p className="text-sm text-muted-foreground">Active Care Plans</p></div></div></Card>
@@ -128,3 +128,4 @@ export default function ManagerCounselling() {
     </div>
   );
 }
+

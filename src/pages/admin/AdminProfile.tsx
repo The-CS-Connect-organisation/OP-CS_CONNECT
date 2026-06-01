@@ -160,7 +160,7 @@ export default function AdminProfile() {
           <CardTitle className="text-lg">Personal Information</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
             {field('Full Name', 'name', <User className="w-3.5 h-3.5" />)}
             {field('Email Address', 'email', <Mail className="w-3.5 h-3.5" />)}
             {field('Phone Number', 'phone', <Phone className="w-3.5 h-3.5" />)}
@@ -175,3 +175,4 @@ export default function AdminProfile() {
     </motion.div>
   )
 }
+

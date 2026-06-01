@@ -196,7 +196,7 @@ export default function Login() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5, duration: 0.6 }}
-          className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-8"
+          className="grid grid-cols-2 md:grid-cols-4 md:grid-cols-2 gap-3 mb-8"
         >
           {roles.map((r, i) => (
             <motion.button

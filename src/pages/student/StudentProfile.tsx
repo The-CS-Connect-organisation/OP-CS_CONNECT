@@ -87,7 +87,7 @@ export default function StudentProfile() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
           <div className="bg-white shadow-lg rounded-xl overflow-hidden">
             <div className="p-8 md:p-10">
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-10 pb-10 border-b-2 border-border">
+              <div className="flex flex-col items-center md:flex-row md:items-start gap-8 mb-10 pb-10 border-b-2 border-border">
                 <div className="flex-shrink-0">
                   <div className="w-32 h-32 rounded-full bg-accent flex items-center justify-center overflow-hidden border-4 border-pink-500">
                     <span className="text-4xl font-bold text-pink-500">{user?.name?.split(' ').map((n: string) => n[0]).join('') || 'S'}</span>
@@ -136,7 +136,7 @@ export default function StudentProfile() {
 
               <div className="mb-10">
                 <h3 className="text-2xl font-bold text-foreground mb-6 pb-3 border-b-2 border-purple-500">Academic Performance</h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {grades.map((g: any, i: number) => (
                     <div key={i} className="p-4 rounded-xl bg-card border border-border">
                       <p className="text-xs text-muted-foreground font-semibold uppercase">{g.subject}</p>

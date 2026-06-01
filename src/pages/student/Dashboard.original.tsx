@@ -117,7 +117,7 @@ export default function StudentDashboard() {
         </motion.div>
 
         {/* Quick Stats */}
-        <div className="quick-stats-grid">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
             { label: 'Academic %', value: formatPercentage(currentPercentage), icon: GraduationCap, change: '+0.3', trend: 'up', color: 'from-orange-500 to-amber-600', bgColor: 'bg-orange-500/10' },
             { label: 'Attendance', value: `${attendancePercent}%`, icon: UserCheck, change: '+2%', trend: 'up', color: 'from-emerald-600 to-teal-600', bgColor: 'bg-emerald-500/10' },
@@ -157,7 +157,7 @@ export default function StudentDashboard() {
         </div>
 
         {/* Main Content Grid */}
-        <div className="main-content-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Performance Chart */}
           <motion.div variants={itemVariants} className="performance-chart">
             <Card glow>
@@ -267,7 +267,7 @@ export default function StudentDashboard() {
         </div>
 
         {/* Assignments & Schedule Row */}
-        <div className="assignments-schedule-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Upcoming Assignments */}
           <motion.div variants={itemVariants} className="upcoming-assignments">
             <Card glow>
@@ -351,7 +351,7 @@ export default function StudentDashboard() {
         </div>
 
         {/* Grades Table & Activities */}
-        <div className="grades-activities-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Grade Analytics */}
           <motion.div variants={itemVariants} className="grade-analytics">
             <Card glow>

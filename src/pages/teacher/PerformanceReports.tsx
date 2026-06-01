@@ -37,7 +37,7 @@ export default function TeacherPerformanceReports() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Performance Reports</h1>
           <p className="text-muted-foreground">Detailed performance analysis</p>
@@ -61,7 +61,7 @@ export default function TeacherPerformanceReports() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
             <Card className="p-4">
               <div className="flex items-center gap-3">
                 <BarChart3 className="w-8 h-8 text-orange-500" />

@@ -175,7 +175,7 @@ export default function AdminDashboard() {
         </motion.div>
 
         {/* Main Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Revenue Chart */}
           <motion.div variants={itemVariants} className="lg:col-span-2">
             <Card glow>
@@ -261,7 +261,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Enrollment & Activity */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Enrollment Trend */}
           <motion.div variants={itemVariants}>
             <Card glow>
@@ -369,3 +369,4 @@ export default function AdminDashboard() {
     </>
   )
 }
+

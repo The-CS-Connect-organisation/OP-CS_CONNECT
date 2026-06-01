@@ -50,7 +50,7 @@ export function GridView({ entries, timeSlots, onAssignSlot, onDeleteEntry, teac
   const hasCRUD = !!(onAssignSlot || onDeleteEntry);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto hidden md:block">
       <table className="w-full">
         <thead>
           <tr className="border-b border-border/50">
@@ -167,6 +167,31 @@ export function GridView({ entries, timeSlots, onAssignSlot, onDeleteEntry, teac
           ))}
         </tbody>
       </table>
+    </div>
+    <div className="md:hidden space-y-4">
+      {DAYS.map(day => (
+        <div key={day}>
+          <h3 className="font-semibold text-lg mb-2">{day}</h3>
+          <div className="space-y-2">
+            {timeSlots.map(time => {
+              const entry = getEntry(day, time);
+              if (!entry) return null;
+              return (
+                <div key={`${day}-${time}`} className="p-3 rounded-lg" style={{ backgroundColor: (entry.color || '#f97316') + '15' }}>
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold">{entry.subject}</span>
+                    <span className="text-sm text-muted-foreground">{time}</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground mt-1">
+                    <span>{entry.teacher}</span>
+                    {entry.room && <span> &middot; Room {entry.room}</span>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

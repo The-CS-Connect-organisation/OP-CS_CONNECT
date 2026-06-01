@@ -231,8 +231,8 @@ export default function CSCalendar() {
 
     return (
       <div className="rounded-lg border bg-card overflow-hidden">
-        {/* Header */}
-        <div className="grid grid-cols-8 border-b">
+        {/* Header - Hidden on mobile */}
+        <div className="hidden md:grid grid-cols-8 border-b">
           <div className="p-2 border-r" />
           {weekDates.map((date, i) => {
             const isToday = date.toDateString() === new Date().toDateString()
@@ -246,8 +246,8 @@ export default function CSCalendar() {
             )
           })}
         </div>
-        {/* Time grid */}
-        <ScrollArea className="h-[600px]">
+        {/* Time grid for Desktop */}
+        <ScrollArea className="h-[600px] hidden md:block">
           <div className="grid grid-cols-8">
             {HOURS.map(hour => (
               <React.Fragment key={hour}>
@@ -281,6 +281,53 @@ export default function CSCalendar() {
               </React.Fragment>
             ))}
           </div>
+        </ScrollArea>
+        {/* Vertical list for Mobile */}
+        <ScrollArea className="h-[600px] md:hidden">
+          {weekDates.map((date, i) => {
+            const dayEvents = getEventsForDay(date)
+            const isToday = date.toDateString() === new Date().toDateString()
+            return (
+              <div key={i} className={cn("border-b p-3", isToday && "bg-orange-50/50 dark:bg-orange-950/20")}>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={cn("text-lg font-semibold w-8 h-8 flex items-center justify-center rounded-full", isToday && "bg-primary text-primary-foreground")}>
+                    {date.getDate()}
+                  </div>
+                  <div>
+                    <p className="font-semibold">{dayNames[date.getDay()]}</p>
+                    <p className="text-xs text-muted-foreground">{dayEvents.length} events</p>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  {dayEvents.length > 0 ? dayEvents.map(event => {
+                    const colors = EVENT_COLORS[event.type] || EVENT_COLORS.event
+                    return (
+                      <div
+                        key={event.id}
+                        className={cn("p-2 rounded-lg border cursor-pointer", colors.bg, colors.border)}
+                        onClick={() => { setSelectedEvent(event); setShowEventDetail(true) }}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className={cn("font-semibold text-sm", colors.text)}>{event.title}</div>
+                            {event.startTime && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                <Clock className="w-3 h-3" />
+                                {event.startTime} {event.endTime && `- ${event.endTime}`}
+                              </div>
+                            )}
+                          </div>
+                          <div className={cn("w-2 h-2 rounded-full mt-1.5", colors.dot)} />
+                        </div>
+                      </div>
+                    )
+                  }) : (
+                    <p className="text-sm text-muted-foreground italic">No events scheduled.</p>
+                  )}
+                </div>
+              </div>
+            )
+          })}
         </ScrollArea>
       </div>
     )
@@ -363,16 +410,16 @@ export default function CSCalendar() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">CS Calendar</h1>
           <p className="text-sm text-muted-foreground">Your academic schedule at a glance</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={goToToday}>Today</Button>
           <div className="flex items-center gap-1">
             <Button variant="ghost" size="icon" onClick={goToPrev}><ChevronLeft className="w-4 h-4" /></Button>
-            <span className="text-sm font-semibold min-w-[140px] text-center">{getHeaderTitle()}</span>
+            <span className="text-sm font-semibold w-36 text-center">{getHeaderTitle()}</span>
             <Button variant="ghost" size="icon" onClick={goToNext}><ChevronRight className="w-4 h-4" /></Button>
           </div>
           <div className="flex items-center border rounded-lg overflow-hidden">

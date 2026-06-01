@@ -78,7 +78,7 @@ export default function StudentExams() {
         <div className="space-y-4">
           {filteredExams.map(exam => (
             <Card key={exam.id} className="p-4">
-              <div className="flex items-start justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <FileText className="w-5 h-5 text-orange-500" />

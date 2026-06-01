@@ -71,7 +71,7 @@ export default function ManagerPortfolio() {
       <div className="p-6 space-y-6">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-6 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
         <Skeleton className="h-40" />
@@ -86,7 +86,7 @@ export default function ManagerPortfolio() {
         <p className="text-muted-foreground">Student portfolios, achievements & college applications</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
         <Card className="p-4"><div className="flex items-center gap-3"><ScrollText className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{students.length}</p><p className="text-sm text-muted-foreground">Portfolios Active</p></div></div></Card>
         <Card className="p-4"><div className="flex items-center gap-3"><Award className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{achievements.length}</p><p className="text-sm text-muted-foreground">Total Achievements</p></div></div></Card>
         <Card className="p-4"><div className="flex items-center gap-3"><GraduationCap className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{collegeApps.filter((c: any) => c.status === 'in-progress' || c.status === 'pending').length}</p><p className="text-sm text-muted-foreground">College Apps In Progress</p></div></div></Card>
@@ -138,3 +138,4 @@ export default function ManagerPortfolio() {
     </div>
   );
 }
+

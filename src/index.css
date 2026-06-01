@@ -787,38 +787,37 @@ input, textarea, [data-no-transition] {
     "fees fees fees clubs";
 }
 
-.hero-card { grid-area: hero; }
-.quick-stat-1 { grid-area: stat1; }
-.quick-stat-2 { grid-area: stat2; }
-.quick-stat-3 { grid-area: stat3; }
-.quick-stat-4 { grid-area: stat4; }
-.performance-chart { grid-area: perf; }
-.attendance-radar-grid { grid-area: attendance; }
-.subject-radar { grid-area: radar; }
-.upcoming-assignments { grid-area: assign; }
-.todays-schedule { grid-area: schedule; }
-.grade-analytics { grid-area: grades; }
-.clubs-activities { grid-area: clubs; }
-.fee-status { grid-area: fees; }
+.quick-stats-grid,
+.main-content-grid,
+.assignments-schedule-grid,
+.grades-activities-grid {
+  display: grid;
+  gap: 1rem;
+}
 
-/* Mobile: single-column stacked layout */
-@media (max-width: 1023px) {
-  .bento-grid {
-    grid-template-columns: 1fr;
-    grid-template-areas:
-      "hero"
-      "stat1"
-      "stat2"
-      "stat3"
-      "stat4"
-      "perf"
-      "attendance"
-      "radar"
-      "assign"
-      "schedule"
-      "grades"
-      "clubs"
-      "fees";
+@media (min-width: 768px) {
+  .quick-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .main-content-grid,
+  .assignments-schedule-grid,
+  .grades-activities-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .quick-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  .main-content-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .assignments-schedule-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .grades-activities-grid {
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 

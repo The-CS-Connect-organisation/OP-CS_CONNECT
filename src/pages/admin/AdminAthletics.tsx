@@ -659,7 +659,7 @@ function EquipmentTab() {
           <Plus className="w-4 h-4 mr-2" />Add Equipment
         </Button>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
         {filtered.map(eq => (
           <Card key={eq.id} className="p-4">
             <div className="flex items-start justify-between">
@@ -1042,3 +1042,4 @@ function StatsTab() {
     </div>
   );
 }
+

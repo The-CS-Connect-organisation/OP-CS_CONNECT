@@ -66,14 +66,14 @@ export default function ParentDashboard() {
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="p-4">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <Users className="w-8 h-8 text-orange-500" />
                 <div>
                   <p className="text-2xl font-bold">{dashboard.children.length}</p>
@@ -82,7 +82,7 @@ export default function ParentDashboard() {
               </div>
             </Card>
             <Card className="p-4">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <BarChart3 className="w-8 h-8 text-orange-500" />
                 <div>
                   <p className="text-2xl font-bold">{dashboard.children[0]?.gpa !== undefined ? formatPercentage(normalizeAcademicPercentage(dashboard.children[0].gpa)) : 'N/A'}</p>
@@ -91,7 +91,7 @@ export default function ParentDashboard() {
               </div>
             </Card>
             <Card className="p-4">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <DollarSign className="w-8 h-8 text-orange-500" />
                 <div>
                   <p className="text-2xl font-bold">${dashboard.feeStatus.pending}</p>
@@ -100,7 +100,7 @@ export default function ParentDashboard() {
               </div>
             </Card>
             <Card className="p-4">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <AlertCircle className="w-8 h-8 text-orange-500" />
                 <div>
                   <p className="text-2xl font-bold">{dashboard.notifications}</p>
@@ -164,7 +164,7 @@ export default function ParentDashboard() {
             <Card className="p-4">
               <h3 className="font-semibold mb-4">Bus Status</h3>
               <div className="p-4 bg-accent rounded-lg">
-                <div className="flex items-center gap-3 mb-3">
+                <div className="flex items-center gap-4 mb-3">
                   <Bus className="w-6 h-6 text-orange-500" />
                   <div>
                     <p className="font-medium">{dashboard.busStatus.route}</p>
@@ -182,3 +182,4 @@ export default function ParentDashboard() {
     </motion.div>
   );
 }
+

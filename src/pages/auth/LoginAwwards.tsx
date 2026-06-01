@@ -257,7 +257,7 @@ export default function Login() {
 
           <div className="mt-16 w-full max-w-4xl px-6">
             {/* Account cards grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-8">
+            <div className="grid grid-cols-2 md:grid-cols-4 md:grid-cols-2 gap-3 mb-8">
               {accounts.map((acc, i) => (
                 <motion.button
                   key={i}
@@ -377,3 +377,4 @@ export default function Login() {
     </main>
   )
 }
+

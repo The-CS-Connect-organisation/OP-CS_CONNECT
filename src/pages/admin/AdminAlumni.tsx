@@ -229,7 +229,7 @@ function DirectoryTab() {
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input placeholder="Search directory..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10" />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
         {filtered.map((e, idx) => (
           <Card key={e.id || idx} className="p-4">
             <div className="flex items-center gap-3">
@@ -999,3 +999,4 @@ function PTConferencesTab() {
     </div>
   );
 }
+

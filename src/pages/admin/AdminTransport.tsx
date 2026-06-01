@@ -389,7 +389,7 @@ export default function AdminTransport() {
             </div>
             <Button onClick={() => openModal('vehicle')}><Plus className="w-4 h-4 mr-2" />Add Vehicle</Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
             {filteredVehicles.length === 0 && <p className="text-muted-foreground col-span-full">No vehicles found.</p>}
             {filteredVehicles.map(v => (
               <Card key={v.id} className="p-4">
@@ -484,7 +484,7 @@ export default function AdminTransport() {
         </TabsContent>
 
         <TabsContent value="tracking" className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
             {tracking.length === 0 && (
               <Card className="p-8 col-span-full text-center">
                 <MapPin className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
@@ -539,7 +539,7 @@ export default function AdminTransport() {
           <div className="flex justify-end">
             <Button onClick={() => openModal('geofence')}><Plus className="w-4 h-4 mr-2" />Create Geofence</Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
             {geofences.length === 0 && <p className="text-muted-foreground col-span-full">No geofences defined.</p>}
             {geofences.map(g => (
               <Card key={g.id} className="p-4">
@@ -622,3 +622,4 @@ export default function AdminTransport() {
     </div>
   );
 }
+

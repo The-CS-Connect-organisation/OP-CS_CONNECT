@@ -133,7 +133,7 @@ export default function StudyPlanner() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><Brain className="w-6 h-6 text-orange-500" />Study Planner</h1>
           <p className="text-sm text-muted-foreground">AI-powered study plans and task tracking</p>

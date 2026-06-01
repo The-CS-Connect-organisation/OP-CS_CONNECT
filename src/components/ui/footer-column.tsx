@@ -84,7 +84,7 @@ export default function Footer4Col() {
   return (
     <footer className="bg-secondary dark:bg-secondary/20 mt-16 w-full place-self-end rounded-t-xl">
       <div className="mx-auto max-w-screen-xl px-4 pt-16 pb-6 sm:px-6 lg:px-8 lg:pt-24">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
           <div>
             <div className="text-primary flex justify-center gap-2 sm:justify-start">
               <img
@@ -213,3 +213,4 @@ export default function Footer4Col() {
     </footer>
   );
 }
+

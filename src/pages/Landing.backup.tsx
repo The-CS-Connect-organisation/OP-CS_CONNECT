@@ -311,7 +311,7 @@ export default function LandingPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-center max-w-5xl"
+            className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-center max-w-7xl"
           >
             <span className="text-gray-900">Your school,</span>{' '}
             <span className="bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 bg-clip-text text-transparent">
@@ -412,7 +412,7 @@ export default function LandingPage() {
 
             {/* App Preview + CTA Section */}
             <section className="py-16 md:py-32 w-full relative">
-              <div className="mx-auto max-w-6xl px-4 flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+              <div className="mx-auto max-w-7xl px-4 flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
                 <div className="flex-1 text-center lg:text-left">
                   <AnimatedContainer>
                     <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
@@ -442,7 +442,7 @@ export default function LandingPage() {
 
             {/* 3D Testimonials Section */}
             <section className="py-16 md:py-32 w-full bg-orange-50/50">
-              <div className="mx-auto max-w-5xl px-4 mb-12 text-center">
+              <div className="mx-auto max-w-7xl px-4 mb-12 text-center">
                 <AnimatedContainer>
                   <h2 className="text-3xl font-bold tracking-wide md:text-4xl lg:text-5xl">
                     Loved by Educators
@@ -479,7 +479,7 @@ export default function LandingPage() {
 
             {/* Feature Cards Section */}
             <section className="py-16 md:py-32">
-              <div className="mx-auto w-full max-w-5xl space-y-8 px-4">
+              <div className="mx-auto w-full max-w-7xl space-y-8 px-4">
                 <AnimatedContainer className="mx-auto max-w-3xl text-center">
                   <h2 className="text-3xl font-bold tracking-wide md:text-4xl lg:text-5xl xl:font-extrabold">
                     Power. Speed. Control.
@@ -518,3 +518,5 @@ export default function LandingPage() {
     </main>
   );
 }
+
+

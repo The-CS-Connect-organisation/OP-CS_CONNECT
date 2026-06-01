@@ -105,7 +105,7 @@ export default function ManagerDashboard() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Pending Actions */}
         <div className="lg:col-span-5">
           <Card className="p-5">
@@ -168,7 +168,7 @@ export default function ManagerDashboard() {
         <h3 className="text-sm font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
           <Shield className="w-4 h-4 text-orange-500" /> Management Access
         </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 md:grid-cols-2 gap-3">
           {[
             { label: "User Management", icon: Users, path: "/manager/users" },
             { label: "Academics", icon: GraduationCap, path: "/manager/academics" },
@@ -204,3 +204,4 @@ export default function ManagerDashboard() {
     </div>
   );
 }
+

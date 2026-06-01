@@ -168,7 +168,7 @@ export default function Exercises() {
                   <p>No exercises available</p>
                 </CardContent></Card>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {exercises.map((ex: any) => {
                     const isSubmitted = submissions.some(s => s.id === ex.id);
                     return (
@@ -216,7 +216,7 @@ export default function Exercises() {
                 const sub = ex.submission || {};
                 return (
                   <Card key={ex.id} className="p-5">
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
                           <BookOpen className="w-4 h-4 text-primary" />

@@ -68,7 +68,7 @@ export default function ManagerActivities() {
       <div className="p-6 space-y-6">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-6 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
         {[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}
@@ -83,7 +83,7 @@ export default function ManagerActivities() {
         <p className="text-muted-foreground">Clubs, field trips, elections & service hours</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
         <Card className="p-4"><div className="flex items-center gap-3"><Users className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{clubs.filter(c => c.status === 'active').length}</p><p className="text-sm text-muted-foreground">Active Clubs</p></div></div></Card>
         <Card className="p-4"><div className="flex items-center gap-3"><TreePine className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{fieldTrips.filter(f => f.status === 'upcoming').length}</p><p className="text-sm text-muted-foreground">Upcoming Field Trips</p></div></div></Card>
         <Card className="p-4"><div className="flex items-center gap-3"><Vote className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{elections.filter(e => e.status === 'open').length}</p><p className="text-sm text-muted-foreground">Active Elections</p></div></div></Card>
@@ -124,3 +124,4 @@ export default function ManagerActivities() {
     </div>
   );
 }
+

@@ -268,7 +268,7 @@ export default function UploadNotes() {
           <p className="text-sm text-muted-foreground mt-1">Click "Upload New" to share your first notes with students</p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
           {filteredNotes.map((note, idx) => (
             <motion.div key={note.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }}>
               <Card className="p-4 hover:shadow-lg transition-all group h-full flex flex-col">
@@ -306,3 +306,4 @@ export default function UploadNotes() {
     </div>
   );
 }
+

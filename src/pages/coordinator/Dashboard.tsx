@@ -63,7 +63,7 @@ export default function CoordinatorDashboard() {
           {[1,2,3,4].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
         <Skeleton className="h-64" />
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Skeleton className="h-72" />
           <Skeleton className="h-72" />
         </div>
@@ -144,7 +144,7 @@ export default function CoordinatorDashboard() {
             <Building2 className="w-5 h-5 text-emerald-500" />
             Schools Overview
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
             {schools.map((school: any, i: number) => (
               <motion.div key={school.id} whileHover={{ y: -3, scale: 1.02 }}>
                 <Card glow className="cursor-pointer" onClick={() => setSelectedSchool(school.id)}>
@@ -187,7 +187,7 @@ export default function CoordinatorDashboard() {
         </motion.div>
 
         {/* Comparison Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <motion.div variants={itemVariants}>
             <Card glow>
               <CardHeader className="pb-2">

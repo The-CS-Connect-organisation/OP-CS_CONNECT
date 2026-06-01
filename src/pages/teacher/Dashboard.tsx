@@ -410,7 +410,7 @@ export default function TeacherDashboard() {
                 <Zap className="w-5 h-5 text-primary" />
                 <h3 className="font-semibold">Quick Actions</h3>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 {[
                   { label: 'Take Attendance', icon: UserCheck, color: 'bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20' },
                   { label: 'Create Assignment', icon: ClipboardList, color: 'bg-orange-500/10 text-orange-500 hover:bg-orange-500/20' },

@@ -491,7 +491,7 @@ export default function GenericPage({ title, description, icon, category, role, 
     if (d.stats && d.schedule) {
       return (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
             {d.stats.map((s: any, i: number) => (
               <motion.div key={s.label} variants={itemVariants}>
                 <Card className="overflow-hidden">
@@ -826,7 +826,7 @@ export default function GenericPage({ title, description, icon, category, role, 
     // Achievements
     if (d.achievements) {
       return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
           {d.achievements.map((a: any) => (
             <Card key={a.id} className={cn(!a.earned && "opacity-50")}>
               <CardContent className="p-4 text-center">
@@ -926,7 +926,7 @@ export default function GenericPage({ title, description, icon, category, role, 
       if (d.stats) {
         return (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
               {d.stats.map((s: any) => (
                 <Card key={s.label}>
                   <CardContent className="p-4 flex items-center gap-3">
@@ -1065,3 +1065,4 @@ export default function GenericPage({ title, description, icon, category, role, 
     </motion.div>
   )
 }
+

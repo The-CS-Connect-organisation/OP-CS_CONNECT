@@ -99,9 +99,9 @@ export default function SocialClub() {
   if (loading) return <div className="flex items-center justify-center h-64"><p className="text-muted-foreground">Loading clubs...</p></div>
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] gap-4">
+    <div className="flex flex-col md:flex-row h-[calc(100vh-8rem)] gap-4">
       {/* Club List */}
-      <div className="w-64 bg-card rounded-lg border border-border/50 flex flex-col">
+      <div className="w-full md:w-64 bg-card rounded-lg border border-border/50 flex flex-col">
         <div className="p-3 border-b border-border/50">
           <h2 className="font-semibold text-sm mb-2">Social Clubs</h2>
           <div className="relative">

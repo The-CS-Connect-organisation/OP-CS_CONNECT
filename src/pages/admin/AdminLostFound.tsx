@@ -78,7 +78,7 @@ export default function AdminLostFound() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
         {filteredItems.map(item => (
           <Card key={item.id} className="p-4">
             <div className="flex items-start justify-between mb-3">
@@ -104,3 +104,4 @@ export default function AdminLostFound() {
     </div>
   );
 }
+

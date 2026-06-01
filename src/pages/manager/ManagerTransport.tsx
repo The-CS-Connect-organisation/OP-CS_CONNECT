@@ -62,7 +62,7 @@ export default function ManagerTransport() {
       <div className="p-6 space-y-6">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-6 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
         {[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}
@@ -77,7 +77,7 @@ export default function ManagerTransport() {
         <p className="text-muted-foreground">Routes, vehicles, drivers & delays</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
         <Card className="p-4"><div className="flex items-center gap-3"><Route className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{routes.filter(r => r.status === 'active').length}</p><p className="text-sm text-muted-foreground">Active Routes</p></div></div></Card>
         <Card className="p-4"><div className="flex items-center gap-3"><Bus className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{vehicles.filter(v => v.status === 'active').length}</p><p className="text-sm text-muted-foreground">Active Vehicles</p></div></div></Card>
         <Card className="p-4"><div className="flex items-center gap-3"><Users className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{drivers.filter(d => d.status === 'active' || d.status === 'on_route').length}</p><p className="text-sm text-muted-foreground">Active Drivers</p></div></div></Card>

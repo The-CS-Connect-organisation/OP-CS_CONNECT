@@ -289,7 +289,7 @@ export default function MarkAttendance() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.03 }}
                   >
-                    <Card className="flex items-center gap-4 p-3 hover:shadow-md transition-all group">
+                    <Card className="flex flex-wrap items-center gap-4 p-3 hover:shadow-md transition-all group">
                       <Avatar className="w-10 h-10 rounded-xl">
                         <AvatarImage src={getAvatarUrl(student)} className="rounded-xl" />
                         <AvatarFallback className="bg-gradient-to-br from-orange-100 to-amber-100 text-orange-600 font-bold text-sm rounded-xl group-hover:from-orange-200 group-hover:to-amber-200 transition-all">

@@ -62,7 +62,7 @@ export default function ManagerAthletics() {
       <div className="p-6 space-y-6">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-6 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
         {[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}
@@ -77,7 +77,7 @@ export default function ManagerAthletics() {
         <p className="text-muted-foreground">Programmes, teams, games & injuries</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
         <Card className="p-4"><div className="flex items-center gap-3"><Trophy className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{programmes.filter(p => p.status === 'active').length}</p><p className="text-sm text-muted-foreground">Active Programmes</p></div></div></Card>
         <Card className="p-4"><div className="flex items-center gap-3"><Users className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{teams.length}</p><p className="text-sm text-muted-foreground">Teams</p></div></div></Card>
         <Card className="p-4"><div className="flex items-center gap-3"><Calendar className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{games.filter(g => g.status === 'scheduled').length}</p><p className="text-sm text-muted-foreground">Upcoming Games</p></div></div></Card>
@@ -129,3 +129,4 @@ export default function ManagerAthletics() {
     </div>
   );
 }
+

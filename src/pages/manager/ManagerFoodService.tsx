@@ -62,7 +62,7 @@ export default function ManagerFoodService() {
       <div className="p-6 space-y-6">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-6 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
         {[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}
@@ -83,7 +83,7 @@ export default function ManagerFoodService() {
         <p className="text-muted-foreground">Menus, preorders, inventory & FSM</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
         <Card className="p-4"><div className="flex items-center gap-3"><UtensilsCrossed className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{menus.length}</p><p className="text-sm text-muted-foreground">Menus This Week</p></div></div></Card>
         <Card className="p-4"><div className="flex items-center gap-3"><ShoppingCart className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{preorders.filter(p => p.status === 'confirmed').length}</p><p className="text-sm text-muted-foreground">Preorders Today</p></div></div></Card>
         <Card className="p-4"><div className="flex items-center gap-3"><Package className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{lowStock.length}</p><p className="text-sm text-muted-foreground">Low Stock Items</p></div></div></Card>
@@ -132,3 +132,4 @@ export default function ManagerFoodService() {
     </div>
   );
 }
+

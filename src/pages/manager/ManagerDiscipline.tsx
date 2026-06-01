@@ -63,7 +63,7 @@ export default function ManagerDiscipline() {
       <div className="p-6 space-y-6">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-6 w-48" />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
           {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-24" />)}
         </div>
         {[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}
@@ -78,7 +78,7 @@ export default function ManagerDiscipline() {
         <p className="text-muted-foreground">Incidents, BIPs, detentions & positive behaviour</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
         <Card className="p-4"><div className="flex items-center gap-3"><AlertTriangle className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{incidents.filter(i => i.status === 'open' || i.status === 'pending').length}</p><p className="text-sm text-muted-foreground">Open Incidents</p></div></div></Card>
         <Card className="p-4"><div className="flex items-center gap-3"><FileText className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{bips.filter(b => b.status === 'active').length}</p><p className="text-sm text-muted-foreground">Active BIPs</p></div></div></Card>
         <Card className="p-4"><div className="flex items-center gap-3"><Clock className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{detentions.filter(d => d.status === 'scheduled').length}</p><p className="text-sm text-muted-foreground">Scheduled Detentions</p></div></div></Card>
@@ -128,3 +128,4 @@ export default function ManagerDiscipline() {
     </div>
   );
 }
+

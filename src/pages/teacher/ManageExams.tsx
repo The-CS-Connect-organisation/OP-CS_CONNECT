@@ -77,7 +77,7 @@ export default function TeacherManageExams() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Manage Exams</h1>
           <p className="text-muted-foreground">Schedule & manage exams</p>
@@ -124,7 +124,7 @@ export default function TeacherManageExams() {
         <div className="space-y-4">
           {exams.map(exam => (
             <Card key={exam.id} className="p-4">
-              <div className="flex items-start justify-between">
+              <div className="flex flex-wrap items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     <FileText className="w-5 h-5 text-orange-500" />
@@ -132,7 +132,7 @@ export default function TeacherManageExams() {
                     <Badge className={getTypeColor(exam.type)}>{exam.type}</Badge>
                     <Badge variant="secondary">{exam.class}</Badge>
                   </div>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-3">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Calendar className="w-4 h-4" />
                       <span>{new Date(exam.date).toLocaleDateString()}</span>

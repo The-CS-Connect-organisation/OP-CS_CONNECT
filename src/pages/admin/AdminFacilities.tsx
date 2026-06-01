@@ -407,7 +407,7 @@ export default function AdminFacilities() {
             </div>
             <Button onClick={() => openModal('building')}><Plus className="w-4 h-4 mr-2" />Add Building</Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
             {filteredBuildings.length === 0 && <p className="text-muted-foreground col-span-full">No buildings found.</p>}
             {filteredBuildings.map(b => (
               <Card key={b.id} className="p-4">
@@ -534,7 +534,7 @@ export default function AdminFacilities() {
           <div className="flex justify-end">
             <Button onClick={() => openModal('energy')}><Plus className="w-4 h-4 mr-2" />Log Reading</Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
             {energyReadings.length === 0 && <p className="text-muted-foreground col-span-full">No energy readings logged.</p>}
             {energyReadings.map(e => (
               <Card key={e.id} className="p-4">
@@ -557,7 +557,7 @@ export default function AdminFacilities() {
             </div>
             <Button onClick={() => openModal('supply')}><Plus className="w-4 h-4 mr-2" />Update Stock</Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
             {filteredSupplies.length === 0 && <p className="text-muted-foreground col-span-full">No supplies tracked.</p>}
             {filteredSupplies.map(s => (
               <Card key={s.id} className="p-4">
@@ -687,3 +687,4 @@ export default function AdminFacilities() {
     </div>
   );
 }
+

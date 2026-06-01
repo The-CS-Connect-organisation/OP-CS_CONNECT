@@ -368,7 +368,7 @@ export default function AdminFoodService() {
             </div>
             <Button onClick={() => openModal('menu')}><Plus className="w-4 h-4 mr-2" />Create Menu</Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
             {filteredMenus.length === 0 && <p className="text-muted-foreground col-span-full">No menus created.</p>}
             {filteredMenus.map(m => (
               <Card key={m.id} className="p-4">
@@ -461,7 +461,7 @@ export default function AdminFoodService() {
             </div>
             <Button onClick={() => openModal('inventory')}><Plus className="w-4 h-4 mr-2" />Add Item</Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
             {filteredInventory.length === 0 && <p className="text-muted-foreground col-span-full">No inventory items.</p>}
             {filteredInventory.map(item => (
               <Card key={item.id} className="p-4">
@@ -590,7 +590,7 @@ export default function AdminFoodService() {
           <div className="flex justify-end">
             <Button onClick={() => openModal('waste')}><Plus className="w-4 h-4 mr-2" />Log Waste</Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
             {foodWaste.length === 0 && <p className="text-muted-foreground col-span-full">No food waste logged.</p>}
             {foodWaste.map(w => (
               <Card key={w.id} className="p-4">
@@ -611,3 +611,4 @@ export default function AdminFoodService() {
     </div>
   );
 }
+

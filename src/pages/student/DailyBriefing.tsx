@@ -83,7 +83,7 @@ export default function StudentDailyBriefing() {
         <Card><CardContent className="p-4"><div className="flex items-center gap-3"><Bell className="w-8 h-8 text-blue-500" /><div><p className="text-2xl font-bold">{announcements.filter(a => a.pinned).length}</p><p className="text-xs text-muted-foreground">Pinned</p></div></div></CardContent></Card>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Today's Schedule */}
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm flex items-center gap-2"><Calendar className="w-4 h-4 text-orange-500" />Today's Schedule - {todayName}</CardTitle></CardHeader>
@@ -184,3 +184,4 @@ export default function StudentDailyBriefing() {
     </motion.div>
   )
 }
+

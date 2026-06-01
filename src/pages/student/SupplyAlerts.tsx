@@ -71,7 +71,7 @@ export default function SupplyAlerts() {
 
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
-      <motion.div variants={itemVariants} className="flex items-center justify-between">
+      <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Package className="w-6 h-6 text-pink-500" />

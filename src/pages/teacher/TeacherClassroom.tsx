@@ -208,7 +208,7 @@ export default function TeacherClassroom() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Teacher Classroom</h1>
           <p className="text-muted-foreground">Manage your classroom activities</p>
@@ -216,7 +216,7 @@ export default function TeacherClassroom() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex-wrap">
+        <TabsList className="flex flex-wrap h-auto">
           <TabsTrigger value="lesson-plans"><BookOpen className="w-4 h-4 mr-1" />Lesson Plans</TabsTrigger>
           <TabsTrigger value="exercises"><Dumbbell className="w-4 h-4 mr-1" />Exercises</TabsTrigger>
           <TabsTrigger value="rubrics"><ListChecks className="w-4 h-4 mr-1" />Rubrics</TabsTrigger>
@@ -234,7 +234,7 @@ export default function TeacherClassroom() {
           {showLessonForm && (
             <Card className="p-4 mb-4">
               <h3 className="font-semibold mb-4">Create Lesson Plan</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input placeholder="Title" value={lessonForm.title} onChange={e => setLessonForm({ ...lessonForm, title: e.target.value })} />
                 <select value={lessonForm.subject} onChange={e => setLessonForm({ ...lessonForm, subject: e.target.value })} className="px-3 py-2 rounded-lg border bg-background">
                   {['Math', 'Science', 'English', 'History', 'Geography', 'Art'].map(s => <option key={s} value={s}>{s}</option>)}
@@ -243,7 +243,7 @@ export default function TeacherClassroom() {
                   {['10-A', '10-B', '11-A', '11-B', '12-A', '12-B'].map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
                 <Input type="number" placeholder="Week" value={lessonForm.week} onChange={e => setLessonForm({ ...lessonForm, week: parseInt(e.target.value) || 1 })} />
-                <div className="md:col-span-2">
+                <div className="sm:col-span-2">
                   <Input placeholder="Objectives (comma separated)" value={lessonForm.objectives} onChange={e => setLessonForm({ ...lessonForm, objectives: e.target.value })} />
                 </div>
               </div>
@@ -257,7 +257,7 @@ export default function TeacherClassroom() {
             <div className="space-y-4">
               {lessonPlans.map(plan => (
                 <Card key={plan.id} className="p-4">
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col sm:flex-row items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <FileText className="w-5 h-5 text-orange-500" />
@@ -295,7 +295,7 @@ export default function TeacherClassroom() {
           {showExerciseForm && (
             <Card className="p-4 mb-4">
               <h3 className="font-semibold mb-4">Create Exercise</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input placeholder="Title" value={exerciseForm.title} onChange={e => setExerciseForm({ ...exerciseForm, title: e.target.value })} />
                 <select value={exerciseForm.subject} onChange={e => setExerciseForm({ ...exerciseForm, subject: e.target.value })} className="px-3 py-2 rounded-lg border bg-background">
                   {['Math', 'Science', 'English', 'History', 'Geography', 'Art'].map(s => <option key={s} value={s}>{s}</option>)}

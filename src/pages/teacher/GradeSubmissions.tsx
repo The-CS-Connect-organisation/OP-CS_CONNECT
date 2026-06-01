@@ -129,7 +129,7 @@ export default function GradeSubmissions() {
                 return (
                   <motion.div key={assignment.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                     <Card className="p-5 hover:shadow-lg transition-all cursor-pointer group" onClick={() => handleSelectAssignment(assignment)}>
-                      <div className="flex items-start justify-between">
+                      <div className="flex flex-wrap items-start justify-between">
                         <div>
                           <h3 className="text-lg font-bold group-hover:text-orange-500 transition-colors">{assignment.title}</h3>
                           <div className="flex items-center gap-3 mt-2">
@@ -224,7 +224,7 @@ export default function GradeSubmissions() {
             return (
               <motion.div key={student.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
                 <Card className="p-5">
-                  <div className="flex items-start gap-4">
+                  <div className="flex flex-wrap items-start gap-4">
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white font-bold text-sm">
                       {student.name?.charAt(0) || '?'}
                     </div>

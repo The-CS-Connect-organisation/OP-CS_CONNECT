@@ -66,7 +66,7 @@ export default function GradesPage() {
             </div>
 
             {/* Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <motion.div variants={itemVariants}>
                 <Card glow>
                   <CardHeader className="pb-2"><CardTitle className="text-lg">Subject Radar</CardTitle></CardHeader>
@@ -157,3 +157,4 @@ export default function GradesPage() {
       </motion.div>
   )
 }
+

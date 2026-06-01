@@ -265,7 +265,7 @@ function LoginPage() {
 
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2 bg-gradient-to-b from-primary via-primary/90 to-primary/70">
+    <div className="min-h-screen grid md:grid-cols-2 bg-gradient-to-b from-primary via-primary/90 to-primary/70">
       {/* Left Content Section */}
       <div className="relative hidden lg:flex flex-col p-12 text-primary-foreground">
         <div className="relative z-20">
