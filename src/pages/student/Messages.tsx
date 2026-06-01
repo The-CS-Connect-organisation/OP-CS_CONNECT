@@ -77,7 +77,7 @@ export default function MessagesPage() {
       })
       setContacts(contactList)
       if (contactList.length > 0 && !selectedContact) setSelectedContact(contactList[0])
-    } catch { /* error */ } finally { setLoading(false) }
+    } catch (err) { console.error('[Messages] Failed to fetch messages:', err) } finally { setLoading(false) }
   }
 
   const conversation = useMemo(() =>
@@ -97,11 +97,15 @@ export default function MessagesPage() {
       timestamp: new Date().toISOString(),
       read: true,
     }
+    const prevMessages = messages
     setMessages(prev => [...prev, optimistic])
     setReplyText('')
     try {
       await api.sendMessage(user?.id || '', selectedContact.id, replyText)
-    } catch { /* error */ }
+    } catch (err) {
+      console.error('[Messages] Failed to send message:', err)
+      setMessages(prevMessages)
+    }
   }
 
   const filteredContacts = useMemo(() =>

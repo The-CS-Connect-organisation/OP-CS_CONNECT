@@ -60,7 +60,7 @@ export default function ManagerComms() {
       setModerationQueue(Array.isArray(m) ? m : []);
       setEmailLogs(Array.isArray(el) ? el : []);
       setTranslations(Array.isArray(t) ? t : []);
-    } catch { /* error */ } finally { setLoading(false); }
+    } catch (err) { console.error('[ManagerComms] Failed to load:', err); } finally { setLoading(false); }
   };
 
   const handleSave = async () => {
@@ -84,14 +84,15 @@ export default function ManagerComms() {
       }
       setShowForm(false);
       setForm({});
-    } catch { /* error */ }
+    } catch (err) { console.error('[ManagerComms] Failed to save:', err); }
   };
 
   const handleModerate = async (id: string, action: string) => {
+    const prev = moderationQueue;
     try {
       await api.moderateContent(id, action, 'manager');
       setModerationQueue(prev => prev.map(m => m.id === id ? { ...m, status: action } : m));
-    } catch { /* error */ }
+    } catch (err) { console.error('[ManagerComms] Failed to moderate:', err); setModerationQueue(prev); }
   };
 
   const getForm = () => {

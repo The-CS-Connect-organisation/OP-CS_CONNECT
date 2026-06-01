@@ -65,7 +65,7 @@ export default function ManagerHR() {
       setTraining(Array.isArray(trainingData) ? trainingData : []);
       setRecruitments(Array.isArray(recruitData) ? recruitData : []);
       setPayroll(Array.isArray(payrollData) ? payrollData : []);
-    } catch { } finally { setLoading(false); }
+    } catch (err) { console.error('[ManagerHR] Failed to load data:', err); } finally { setLoading(false); }
   };
 
   const loadCertifications = async (staffId: string) => {
@@ -89,38 +89,38 @@ export default function ManagerHR() {
   };
 
   const createStaff = async () => {
-    try { await api.createStaff(staffForm); await loadAll(); setDialogOpen(null); setStaffForm({ firstName: '', lastName: '', department: '', position: '', employeeId: '', qualification: '', userId: '' }); } catch { }
+    try { await api.createStaff(staffForm); await loadAll(); setDialogOpen(null); setStaffForm({ firstName: '', lastName: '', department: '', position: '', employeeId: '', qualification: '', userId: '' }); } catch (err) { console.error('[ManagerHR] Failed to create staff:', err); }
   };
   const createPosition = async () => {
-    try { await api.createStaffPosition(positionForm); await loadAll(); setDialogOpen(null); setPositionForm({ title: '', department: '', salaryMin: 0, salaryMax: 0 }); } catch { }
+    try { await api.createStaffPosition(positionForm); await loadAll(); setDialogOpen(null); setPositionForm({ title: '', department: '', salaryMin: 0, salaryMax: 0 }); } catch (err) { console.error('[ManagerHR] Failed to create position:', err); }
   };
   const createLeave = async () => {
-    try { await api.createStaffLeave(leaveForm); const data = await api.getStaffLeave(); setLeave(Array.isArray(data) ? data : []); setDialogOpen(null); setLeaveForm({ staffId: '', type: '', startDate: '', endDate: '', reason: '' }); } catch { }
+    try { await api.createStaffLeave(leaveForm); const data = await api.getStaffLeave(); setLeave(Array.isArray(data) ? data : []); setDialogOpen(null); setLeaveForm({ staffId: '', type: '', startDate: '', endDate: '', reason: '' }); } catch (err) { console.error('[ManagerHR] Failed to create leave:', err); }
   };
   const approveLeave = async (id: string) => {
-    try { await api.approveStaffLeave(id, user?.id || ''); const data = await api.getStaffLeave(); setLeave(Array.isArray(data) ? data : []); } catch { }
+    try { await api.approveStaffLeave(id, user?.id || ''); const data = await api.getStaffLeave(); setLeave(Array.isArray(data) ? data : []); } catch (err) { console.error('[ManagerHR] Failed to approve leave:', err); }
   };
   const createCert = async () => {
-    try { await api.createCertification(selectedStaffId, certForm); await loadCertifications(selectedStaffId); setDialogOpen(null); setCertForm({ name: '', issuer: '', date: '', expiry: '' }); } catch { }
+    try { await api.createCertification(selectedStaffId, certForm); await loadCertifications(selectedStaffId); setDialogOpen(null); setCertForm({ name: '', issuer: '', date: '', expiry: '' }); } catch (err) { console.error('[ManagerHR] Failed to create cert:', err); }
   };
   const createTraining = async () => {
-    try { await api.createTrainingSession(trainingForm); await loadAll(); setDialogOpen(null); setTrainingForm({ title: '', description: '', date: '', duration: 1 }); } catch { }
+    try { await api.createTrainingSession(trainingForm); await loadAll(); setDialogOpen(null); setTrainingForm({ title: '', description: '', date: '', duration: 1 }); } catch (err) { console.error('[ManagerHR] Failed to create training:', err); }
   };
   const createAppraisal = async () => {
-    try { await api.createAppraisal(appraisalForm.staffId, appraisalForm); await loadAppraisals(appraisalForm.staffId); setDialogOpen(null); setAppraisalForm({ staffId: '', reviewer: '', score: 0, comments: '', date: '' }); } catch { }
+    try { await api.createAppraisal(appraisalForm.staffId, appraisalForm); await loadAppraisals(appraisalForm.staffId); setDialogOpen(null); setAppraisalForm({ staffId: '', reviewer: '', score: 0, comments: '', date: '' }); } catch (err) { console.error('[ManagerHR] Failed to create appraisal:', err); }
   };
   const createRecruitment = async () => {
-    try { await api.createRecruitment(recruitForm); await loadAll(); setDialogOpen(null); setRecruitForm({ position: '', department: '', description: '', requirements: '', status: 'open' }); } catch { }
+    try { await api.createRecruitment(recruitForm); await loadAll(); setDialogOpen(null); setRecruitForm({ position: '', department: '', description: '', requirements: '', status: 'open' }); } catch (err) { console.error('[ManagerHR] Failed to create recruitment:', err); }
   };
   const updateRecruitmentStatus = async (id: string, status: string) => {
-    try { await api.updateRecruitment(id, { status }); const data = await api.getRecruitments(); setRecruitments(Array.isArray(data) ? data : []); } catch { }
+    try { await api.updateRecruitment(id, { status }); const data = await api.getRecruitments(); setRecruitments(Array.isArray(data) ? data : []); } catch (err) { console.error('[ManagerHR] Failed to update recruitment:', err); }
   };
   const createPayrollEntry = async () => {
-    try { await api.createPayrollEntry(payrollForm); await loadAll(); setDialogOpen(null); setPayrollForm({ staffId: '', month: '', basicPay: 0, deductions: 0, netPay: 0 }); } catch { }
+    try { await api.createPayrollEntry(payrollForm); await loadAll(); setDialogOpen(null); setPayrollForm({ staffId: '', month: '', basicPay: 0, deductions: 0, netPay: 0 }); } catch (err) { console.error('[ManagerHR] Failed to create payroll:', err); }
   };
   const processPayroll = async () => {
     if (!payrollMonth) return;
-    try { await api.processPayroll(payrollMonth); await loadAll(); setPayrollMonth(''); } catch { }
+    try { await api.processPayroll(payrollMonth); await loadAll(); setPayrollMonth(''); } catch (err) { console.error('[ManagerHR] Failed to process payroll:', err); }
   };
 
   const filteredStaff = staff.filter(s => `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) || s.department?.toLowerCase().includes(searchQuery.toLowerCase()));

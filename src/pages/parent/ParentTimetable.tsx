@@ -23,8 +23,8 @@ export default function ParentTimetable() {
       setLoading(true);
       const data = await api.getChildTimetable(selectedChild);
       setEntries(extractArray(data) as TimetableEntry[]);
-    } catch {
-      setEntries([]);
+    } catch (err) {
+      console.error('[ParentTimetable] Failed to load:', err);
     } finally {
       setLoading(false);
     }

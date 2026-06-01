@@ -1,19 +1,37 @@
 
-const API_BASE = 'https://op-csconnect-backend-production.up.railway.app/api';
+const API_BASE = import.meta.env.VITE_API_BASE || 'https://op-csconnect-backend-production.up.railway.app/api';
+
+function authHeaders(): Record<string, string> {
+  const token = localStorage.getItem('eduvault-token');
+  const userId = localStorage.getItem('eduvault-user-id');
+  const headers: Record<string, string> = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  } else if (userId) {
+    headers['x-user-id'] = userId;
+  }
+  return headers;
+}
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
-  const userId = localStorage.getItem('eduvault-user-id') || '';
   const res = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      'x-user-id': userId,
+      ...authHeaders(),
       ...options.headers,
     },
   });
   if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: res.statusText, message: res.statusText }));
-    throw new Error(err.message || err.error || 'API Error');
+    const text = await res.text().catch(() => '');
+    let message: string;
+    try {
+      const json = JSON.parse(text);
+      message = json.message || json.error || res.statusText;
+    } catch {
+      message = text || res.statusText;
+    }
+    throw new Error(message);
   }
   const payload = await res.json();
   return payload;
@@ -950,6 +968,12 @@ export const api = {
   getReadingProgrammes: () => apiFetch('/library/programmes'),
   createReadingProgramme: (data: any) => apiFetch('/library/programmes', { method: 'POST', body: JSON.stringify(data) }),
 
+  // CS Library (digital book search)
+  searchCSLibrary: (params: any) =>
+    apiFetch('/cs-library/search', { method: 'POST', body: JSON.stringify(params) }),
+  getCSLibraryBook: (bookId: string) =>
+    apiFetch(`/cs-library/book/${bookId}`),
+
   // Library - Reviews
   getBookReviews: (bookId: string) => apiFetch(`/library/reviews/${bookId}`),
   createBookReview: (data: any) => apiFetch('/library/reviews', { method: 'POST', body: JSON.stringify(data) }),
@@ -1007,4 +1031,31 @@ export const api = {
   // ERP - Money Format
   getMoneyFormat: () => apiFetch('/erp/money-format'),
   updateMoneyFormat: (data: any) => apiFetch('/erp/money-format', { method: 'PUT', body: JSON.stringify(data) }),
+
+  // Admin - Anonymous Reports
+  getAnonymousReports: () => apiFetch('/anonymous-reports'),
+  createAnonymousReport: (data: any) => apiFetch('/anonymous-reports', { method: 'POST', body: JSON.stringify(data) }),
+  updateAnonymousReportStatus: (id: string, status: string) =>
+    apiFetch(`/anonymous-reports/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) }),
+
+  // Admin - Clinic Visits
+  getClinicVisits: () => apiFetch('/clinic'),
+  createClinicVisit: (data: any) => apiFetch('/clinic', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Admin - IT Helpdesk
+  getHelpdeskTickets: () => apiFetch('/helpdesk'),
+  createHelpdeskTicket: (data: any) => apiFetch('/helpdesk', { method: 'POST', body: JSON.stringify(data) }),
+  updateHelpdeskTicket: (id: string, data: any) => apiFetch(`/helpdesk/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+
+  // Admin - Lost & Found
+  getLostFoundItems: () => apiFetch('/lost-found'),
+  createLostFoundItem: (data: any) => apiFetch('/lost-found', { method: 'POST', body: JSON.stringify(data) }),
+  claimLostFoundItem: (id: string) => apiFetch(`/lost-found/${id}/claim`, { method: 'PUT' }),
+  archiveLostFoundItem: (id: string) => apiFetch(`/lost-found/${id}/archive`, { method: 'PUT' }),
+
+  // Admin - Skip Bus
+  getSkipBusRequests: () => apiFetch('/skip-bus'),
+  createSkipBusRequest: (data: any) => apiFetch('/skip-bus', { method: 'POST', body: JSON.stringify(data) }),
+  approveSkipBusRequest: (id: string) => apiFetch(`/skip-bus/${id}/approve`, { method: 'PUT' }),
+  rejectSkipBusRequest: (id: string) => apiFetch(`/skip-bus/${id}/reject`, { method: 'PUT' }),
 };

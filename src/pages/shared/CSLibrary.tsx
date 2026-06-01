@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Search, BookOpen, Download, Clock, Star, Filter, X, ChevronLeft, ChevronRight, Book, FileText, ExternalLink, Loader2 } from 'lucide-react'
 import { useAuthStore } from '../../lib/store'
+import { api } from '../../lib/api'
 
 interface Book {
   id: string
@@ -98,20 +99,8 @@ const CSLibrary = () => {
         params.to_year = searchFilters.toYear
       }
 
-      const response = await fetch('/api/cs-library/search', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...params, page }),
-      })
-
-      if (!response.ok) {
-        throw new Error('Search failed. Please try again.')
-      }
-
-      const data = await response.json()
-      if (data.error) {
-        throw new Error(data.error)
-      }
+      const data = await api.searchCSLibrary({ ...params, page })
+      if (data.error) throw new Error(data.error)
       setBooks(data.books || [])
       setTotalPages(data.totalPages || 0)
       setCurrentPage(page)
@@ -129,13 +118,8 @@ const CSLibrary = () => {
     setError(null)
     
     try {
-      const response = await fetch(`/api/cs-library/book/${bookId}`)
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch book details')
-      }
-
-      const data = await response.json()
+      const data = await api.getCSLibraryBook(bookId)
+      if (data.error) throw new Error(data.error)
       setSelectedBook(data.book)
     } catch (err: any) {
       setError(err.message || 'An error occurred')

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Eye, Calendar, User, Search } from 'lucide-react';
+import { apiFetch } from '../../lib/api';
 
 interface AuditEntry {
   id: string;
@@ -22,8 +23,20 @@ const mockEntries: AuditEntry[] = [
 ];
 
 export default function ManagerAuditLog() {
-  const [entries] = useState<AuditEntry[]>(mockEntries);
+  const [entries, setEntries] = useState<AuditEntry[]>(mockEntries);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    async function loadAuditLog() {
+      try {
+        const data = await apiFetch('/audit-log');
+        setEntries(data);
+      } catch (err) {
+        console.error('[ManagerAuditLog] Failed to load:', err);
+      }
+    }
+    loadAuditLog();
+  }, []);
   const filteredEntries = entries.filter(e => e.user.toLowerCase().includes(searchQuery.toLowerCase()) || e.details.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (

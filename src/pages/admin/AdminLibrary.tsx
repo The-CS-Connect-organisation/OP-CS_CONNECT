@@ -118,8 +118,8 @@ export default function AdminLibrary() {
   };
 
   const filteredCatalogue = catalogue.filter(b =>
-    b.title.toLowerCase().includes(search.toLowerCase()) ||
-    b.author.toLowerCase().includes(search.toLowerCase())
+    (b.title ?? '').toLowerCase().includes(search.toLowerCase()) ||
+    (b.author ?? '').toLowerCase().includes(search.toLowerCase())
   );
 
   if (loading) {

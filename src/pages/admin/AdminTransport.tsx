@@ -136,7 +136,7 @@ export default function AdminTransport() {
         api.getFleetVehicles().catch(() => []),
         api.getFleetMaintenance().catch(() => []),
         api.getDrivers().catch(() => []),
-        Promise.resolve([]),
+        api.getVehicleTracking('').catch(() => []),
         api.getRidership().catch(() => []),
         api.getGeofences().catch(() => []),
         api.getDelays().catch(() => []),
@@ -220,9 +220,9 @@ export default function AdminTransport() {
     }
   };
 
-  const filteredRoutes = routes.filter(r => r.name.toLowerCase().includes(search.toLowerCase()));
-  const filteredVehicles = vehicles.filter(v => v.registration.toLowerCase().includes(search.toLowerCase()));
-  const filteredDrivers = drivers.filter(d => d.name.toLowerCase().includes(search.toLowerCase()));
+  const filteredRoutes = routes.filter(r => (r.name ?? '').toLowerCase().includes(search.toLowerCase()));
+  const filteredVehicles = vehicles.filter(v => (v.registration ?? '').toLowerCase().includes(search.toLowerCase()));
+  const filteredDrivers = drivers.filter(d => (d.name ?? '').toLowerCase().includes(search.toLowerCase()));
 
   const statusVariant = (s: string) => {
     switch (s) {

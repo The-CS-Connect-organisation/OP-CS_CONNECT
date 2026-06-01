@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { FileText, Plus, Calendar, Clock, MapPin, Users } from 'lucide-react';
+import { api } from '../../lib/api';
 
 interface Exam {
   id: string;
@@ -24,7 +25,19 @@ const mockExams: Exam[] = [
 ];
 
 export default function ManagerExams() {
-  const [exams] = useState<Exam[]>(mockExams);
+  const [exams, setExams] = useState<Exam[]>(mockExams);
+
+  useEffect(() => {
+    async function loadExams() {
+      try {
+        const data = await api.getExams();
+        setExams(data);
+      } catch (err) {
+        console.error('[ManagerExams] Failed to load:', err);
+      }
+    }
+    loadExams();
+  }, []);
 
   const getTypeColor = (type: string) => {
     switch (type) {

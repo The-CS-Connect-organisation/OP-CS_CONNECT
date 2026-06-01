@@ -44,12 +44,29 @@ export default function StudentProfile() {
     motherPhone: user?.motherPhone || '',
   })
 
+  const [computedGpa, setComputedGpa] = useState<number>(0)
+
+  useEffect(() => {
+    if (!user?.id) return
+    api.getStudentGrades(user.id)
+      .then((data: any) => {
+        const grades = Array.isArray(data) ? data : []
+        if (grades.length > 0) {
+          const avg = grades.reduce((a: number, g: any) => a + (g.overall || g.score || 0), 0) / grades.length
+          setComputedGpa(normalizeAcademicPercentage(avg))
+        } else {
+          setComputedGpa(normalizeAcademicPercentage(user?.gpa || 0))
+        }
+      })
+      .catch(() => setComputedGpa(normalizeAcademicPercentage(user?.gpa || 0)))
+  }, [user?.id, user?.gpa])
+
   // Calculate academic percentage and attendance from actual data
   const { gpa, attendance } = useMemo(() => {
-    const gpa = normalizeAcademicPercentage(user?.gpa || 0)
+    const gpa = computedGpa || normalizeAcademicPercentage(user?.gpa || 0)
     const attendance = user?.attendance || 0
     return { gpa, attendance }
-  }, [user?.gpa, user?.attendance])
+  }, [computedGpa, user?.gpa, user?.attendance])
 
   useEffect(() => {
     setForm({
@@ -78,7 +95,7 @@ export default function StudentProfile() {
   const handleSave = async () => {
     updateUser(form)
     if (user?.id) {
-      try { await api.updateUserProfile(user.id, form) } catch { /* error */ }
+      try { await api.updateUserProfile(user.id, form) } catch { console.error('[Profile] Failed to save profile') }
     }
     setEditing(false)
   }
@@ -114,7 +131,7 @@ export default function StudentProfile() {
       await api.updateUser(user.id, { avatar: newAvatarUrl })
       updateUser({ avatar: newAvatarUrl })
       setShowAvatarDialog(false)
-    } catch { /* error */ }
+    } catch { console.error('[Profile] Failed to update avatar') }
   }
 
   return (

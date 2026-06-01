@@ -230,10 +230,10 @@ function StaffDirectoryTab() {
   };
 
   const filteredStaff = staff.filter(s =>
-    `${s.firstName} ${s.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.position.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    s.email.toLowerCase().includes(searchQuery.toLowerCase())
+    ((s.firstName || '') + ' ' + (s.lastName || '')).toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (s.department || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (s.position || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (s.email || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleSubmit = async () => {
@@ -1133,7 +1133,7 @@ function PayrollTab() {
     catch (e: any) { setError(e.message); }
   };
 
-  const totalPayroll = entries.reduce((s, e) => s + e.netPay, 0);
+  const totalPayroll = entries.reduce((s, e) => s + (Number(e.netPay) || 0), 0);
   const paidCount = entries.filter(e => e.status === 'paid').length;
 
   if (loading) return <div className="space-y-4">{[1, 2, 3].map(i => <Skeleton key={i} className="h-20" />)}</div>;

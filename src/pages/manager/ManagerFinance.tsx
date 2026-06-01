@@ -3,6 +3,7 @@ import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { formatCurrency } from '../../lib/utils';
 import { Wallet, DollarSign, TrendingUp, TrendingDown, BarChart3 } from 'lucide-react';
 
 export default function ManagerFinance() {
@@ -25,8 +26,8 @@ export default function ManagerFinance() {
       setLoading(true);
       const data = await api.getManagerFinance();
       if (data) setStats(data);
-    } catch {
-      // error
+    } catch (err) {
+      console.error('[ManagerFinance] Failed to load:', err);
     } finally {
       setLoading(false);
     }
@@ -46,10 +47,10 @@ export default function ManagerFinance() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <Card className="p-4"><div className="flex items-center gap-3"><DollarSign className="w-8 h-8 text-green-500" /><div><p className="text-2xl font-bold">${stats.revenue.toLocaleString()}</p><p className="text-sm text-muted-foreground">Revenue</p></div></div></Card>
-            <Card className="p-4"><div className="flex items-center gap-3"><TrendingDown className="w-8 h-8 text-red-500" /><div><p className="text-2xl font-bold">${stats.expenses.toLocaleString()}</p><p className="text-sm text-muted-foreground">Expenses</p></div></div></Card>
-            <Card className="p-4"><div className="flex items-center gap-3"><Wallet className="w-8 h-8 text-orange-500" /><div><p className={`text-2xl font-bold ${stats.profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>${stats.profit.toLocaleString()}</p><p className="text-sm text-muted-foreground">Profit</p></div></div></Card>
-            <Card className="p-4"><div className="flex items-center gap-3"><BarChart3 className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">${stats.payroll.toLocaleString()}</p><p className="text-sm text-muted-foreground">Payroll</p></div></div></Card>
+            <Card className="p-4"><div className="flex items-center gap-3"><DollarSign className="w-8 h-8 text-green-500" /><div><p className="text-2xl font-bold">{formatCurrency(stats.revenue)}</p><p className="text-sm text-muted-foreground">Revenue</p></div></div></Card>
+            <Card className="p-4"><div className="flex items-center gap-3"><TrendingDown className="w-8 h-8 text-red-500" /><div><p className="text-2xl font-bold">{formatCurrency(stats.expenses)}</p><p className="text-sm text-muted-foreground">Expenses</p></div></div></Card>
+            <Card className="p-4"><div className="flex items-center gap-3"><Wallet className="w-8 h-8 text-orange-500" /><div><p className={`text-2xl font-bold ${stats.profit >= 0 ? 'text-green-500' : 'text-red-500'}`}>{formatCurrency(stats.profit)}</p><p className="text-sm text-muted-foreground">Profit</p></div></div></Card>
+            <Card className="p-4"><div className="flex items-center gap-3"><BarChart3 className="w-8 h-8 text-orange-500" /><div><p className="text-2xl font-bold">{formatCurrency(stats.payroll)}</p><p className="text-sm text-muted-foreground">Payroll</p></div></div></Card>
           </div>
 
           <Card className="p-4">
@@ -60,12 +61,12 @@ export default function ManagerFinance() {
                   <p className="font-medium mb-2">{month.month}</p>
                   <div className="flex items-center gap-4">
                     <div className="flex-1">
-                      <div className="flex justify-between text-sm mb-1"><span>Revenue</span><span className="text-green-500">${month.revenue.toLocaleString()}</span></div>
-                      <div className="w-full h-2 bg-background rounded-full"><div className="h-full bg-green-500 rounded-full" style={{ width: `${(month.revenue / stats.revenue) * 100}%` }} /></div>
+                      <div className="flex justify-between text-sm mb-1"><span>Revenue</span><span className="text-green-500">{formatCurrency(month.revenue)}</span></div>
+                      <div className="w-full h-2 bg-background rounded-full"><div className="h-full bg-green-500 rounded-full" style={{ width: `${stats.revenue ? (month.revenue / stats.revenue) * 100 : 0}%` }} /></div>
                     </div>
                     <div className="flex-1">
-                      <div className="flex justify-between text-sm mb-1"><span>Expenses</span><span className="text-red-500">${month.expenses.toLocaleString()}</span></div>
-                      <div className="w-full h-2 bg-background rounded-full"><div className="h-full bg-red-500 rounded-full" style={{ width: `${(month.expenses / stats.expenses) * 100}%` }} /></div>
+                      <div className="flex justify-between text-sm mb-1"><span>Expenses</span><span className="text-red-500">{formatCurrency(month.expenses)}</span></div>
+                      <div className="w-full h-2 bg-background rounded-full"><div className="h-full bg-red-500 rounded-full" style={{ width: `${stats.expenses ? (month.expenses / stats.expenses) * 100 : 0}%` }} /></div>
                     </div>
                   </div>
                 </div>

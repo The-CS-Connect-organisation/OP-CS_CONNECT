@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { SkipForward, Search, Calendar, User, Bus, Check, X, Clock } from 'lucide-react';
+import { api } from '@/lib/api';
 
 interface SkipRequest {
   id: string;
@@ -22,8 +23,39 @@ const mockRequests: SkipRequest[] = [
 ];
 
 export default function AdminSkipBus() {
-  const [requests] = useState<SkipRequest[]>(mockRequests);
+  const [requests, setRequests] = useState<SkipRequest[]>(mockRequests);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await api.getSkipBusRequests();
+        if (Array.isArray(data)) setRequests(data);
+      } catch (err) { console.error('[AdminSkipBus] Failed to load:', err); }
+    })();
+  }, []);
+
+  const handleApprove = async (id: string) => {
+    const prev = requests;
+    try {
+      await api.approveSkipBusRequest(id);
+      setRequests(prev => prev.map(r => r.id === id ? { ...r, status: 'approved' as const } : r));
+    } catch (err) {
+      console.error('[AdminSkipBus] Failed to approve:', err);
+      setRequests(prev);
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    const prev = requests;
+    try {
+      await api.rejectSkipBusRequest(id);
+      setRequests(prev => prev.map(r => r.id === id ? { ...r, status: 'rejected' as const } : r));
+    } catch (err) {
+      console.error('[AdminSkipBus] Failed to reject:', err);
+      setRequests(prev);
+    }
+  };
 
   const filteredRequests = requests.filter(r => filter === 'all' || r.status === filter);
 
@@ -77,8 +109,8 @@ export default function AdminSkipBus() {
                 <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
                 {request.status === 'pending' && request.parentApproved && (
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline"><Check className="w-4 h-4 mr-1" />Approve</Button>
-                    <Button size="sm" variant="outline"><X className="w-4 h-4 mr-1" />Reject</Button>
+                    <Button size="sm" variant="outline" onClick={() => handleApprove(request.id)}><Check className="w-4 h-4 mr-1" />Approve</Button>
+                    <Button size="sm" variant="outline" onClick={() => handleReject(request.id)}><X className="w-4 h-4 mr-1" />Reject</Button>
                   </div>
                 )}
               </div>

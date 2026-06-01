@@ -45,6 +45,8 @@ const SocialClub = lazy(() => import('./pages/student/SocialClub'))
 const Achievements = lazy(() => import('./pages/student/Achievements'))
 const Accolades = lazy(() => import('./pages/student/Accolades'))
 const StudentProfile = lazy(() => import('./pages/student/Profile'))
+const StudentCounselling = lazy(() => import('./pages/student/Counselling'))
+const StudentHealth = lazy(() => import('./pages/student/Health'))
 const TeacherManageAssignments = lazy(() => import('./pages/teacher/ManageAssignments'))
 const TeacherManageExams = lazy(() => import('./pages/teacher/ManageExams'))
 const TeacherExamSyllabus = lazy(() => import('./pages/teacher/ExamSyllabus'))
@@ -75,6 +77,8 @@ const ParentFees = lazy(() => import('./pages/parent/ParentFees'))
 const ParentBusTracking = lazy(() => import('./pages/parent/ParentBusTracking'))
 const ParentExamSyllabus = lazy(() => import('./pages/parent/ExamSyllabus'))
 const ParentProfile = lazy(() => import('./pages/parent/ParentProfile'))
+const ParentCounselling = lazy(() => import('./pages/parent/ParentCounselling'))
+const ParentHealth = lazy(() => import('./pages/parent/ParentHealth'))
 const DriverProfile = lazy(() => import('./pages/driver/DriverProfile'))
 const LibrarianDashboard = lazy(() => import('./pages/librarian/LibrarianDashboard'))
 const ManagerUsers = lazy(() => import('./pages/manager/ManagerUsers'))
@@ -131,6 +135,7 @@ const AdminFoodService = lazy(() => import('./pages/admin/AdminFoodService'))
 const AdminAthletics = lazy(() => import('./pages/admin/AdminAthletics'))
 const AdminAlumni = lazy(() => import('./pages/admin/AdminAlumni'))
 const AdminPlatform = lazy(() => import('./pages/admin/AdminPlatform'))
+const AdminProfile = lazy(() => import('./pages/admin/AdminProfile'))
 const CreateAccount = lazy(() => import('./pages/admin/CreateAccount'))
 // Manager Phase 3
 const ManagerCounselling = lazy(() => import('./pages/manager/ManagerCounselling'))
@@ -220,6 +225,8 @@ function App() {
             <Route path="accolades" element={<Accolades />} />
             <Route path="profile" element={<StudentProfile />} />
             <Route path="exercises" element={<StudentExercises />} />
+            <Route path="counselling" element={<StudentCounselling />} />
+            <Route path="health" element={<StudentHealth />} />
           </Route>
 
           {/* TEACHER */}
@@ -293,6 +300,7 @@ function App() {
             <Route path="athletics" element={<AdminAthletics />} />
             <Route path="alumni" element={<AdminAlumni />} />
             <Route path="platform" element={<AdminPlatform />} />
+            <Route path="profile" element={<AdminProfile />} />
             <Route path="room-booking" element={<AdminRoomBooking />} />
             <Route path="asset-tracking" element={<AdminAssetTracking />} />
             <Route path="create-account" element={<CreateAccount />} />
@@ -308,7 +316,8 @@ function App() {
             <Route path="bus-tracking" element={<ParentBusTracking />} />
             <Route path="notifications" element={<NotificationCenter />} />
             <Route path="exam-syllabus" element={<ParentExamSyllabus />} />
-            <Route path="messages" element={<QuickMessenger />} />
+            <Route path="counselling" element={<ParentCounselling />} />
+            <Route path="health" element={<ParentHealth />} />
             <Route path="profile" element={<ParentProfile />} />
           </Route>
 

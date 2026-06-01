@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Search, AlertTriangle, Eye, Check, X, Calendar, User, FileText } from 'lucide-react';
+import { api } from '@/lib/api';
 
 interface Report {
   id: string;
@@ -22,8 +23,28 @@ const mockReports: Report[] = [
 ];
 
 export default function AdminAnonymousReports() {
-  const [reports] = useState<Report[]>(mockReports);
+  const [reports, setReports] = useState<Report[]>(mockReports);
   const [filter, setFilter] = useState<'all' | 'pending' | 'reviewed' | 'resolved'>('all');
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await api.getAnonymousReports();
+        if (Array.isArray(data)) setReports(data);
+      } catch (err) { console.error('[AdminAnonymousReports] Failed to load:', err); }
+    })();
+  }, []);
+
+  const handleStatus = async (id: string, status: string) => {
+    const prev = reports;
+    try {
+      await api.updateAnonymousReportStatus(id, status);
+      setReports(prev => prev.map(r => r.id === id ? { ...r, status: status as Report['status'] } : r));
+    } catch (err) {
+      console.error('[AdminAnonymousReports] Failed to update status:', err);
+      setReports(prev);
+    }
+  };
 
   const filteredReports = reports.filter(r => filter === 'all' || r.status === filter);
 
@@ -72,8 +93,8 @@ export default function AdminAnonymousReports() {
                 <button className="p-2 hover:bg-accent rounded"><Eye className="w-4 h-4" /></button>
                 {report.status === 'pending' && (
                   <>
-                    <button className="p-2 hover:bg-green-100 rounded text-green-500"><Check className="w-4 h-4" /></button>
-                    <button className="p-2 hover:bg-red-100 rounded text-red-500"><X className="w-4 h-4" /></button>
+                    <button onClick={() => handleStatus(report.id, 'reviewed')} className="p-2 hover:bg-green-100 rounded text-green-500"><Check className="w-4 h-4" /></button>
+                    <button onClick={() => handleStatus(report.id, 'resolved')} className="p-2 hover:bg-red-100 rounded text-red-500"><X className="w-4 h-4" /></button>
                   </>
                 )}
               </div>

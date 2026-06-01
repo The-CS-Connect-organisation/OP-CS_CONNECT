@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Bus, Plus, User, MapPin, Phone, Search } from 'lucide-react';
+import { api } from '../../lib/api';
 
 interface BusAssignment {
   id: string;
@@ -22,8 +23,20 @@ const mockBuses: BusAssignment[] = [
 ];
 
 export default function ManagerBusAssignment() {
-  const [buses] = useState<BusAssignment[]>(mockBuses);
+  const [buses, setBuses] = useState<BusAssignment[]>(mockBuses);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    async function loadBusAssignments() {
+      try {
+        const data = await api.getBusAssignments();
+        setBuses(data);
+      } catch (err) {
+        console.error('[ManagerBusAssignment] Failed to load:', err);
+      }
+    }
+    loadBusAssignments();
+  }, []);
   const filteredBuses = buses.filter(b => b.routeName.toLowerCase().includes(searchQuery.toLowerCase()) || b.driverName.toLowerCase().includes(searchQuery.toLowerCase()));
 
   return (

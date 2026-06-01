@@ -124,7 +124,7 @@ function CustomFieldsTab() {
       setFields(updated);
       setForm({ label: '', type: 'text', required: false, options: '' });
       setShowForm(false);
-    } catch { }
+    } catch (err) { console.error('[ManagerSIS] Failed to add field:', err); }
   };
 
   return (
@@ -196,7 +196,7 @@ function TransfersTab() {
       setLoading(true);
       const data = await api.getStudentTransfers();
       setTransfers(Array.isArray(data) ? data : []);
-    } catch { } finally {
+    } catch (err) { console.error('[ManagerSIS] Failed to load transfers:', err); } finally {
       setLoading(false);
     }
   };
@@ -208,7 +208,7 @@ function TransfersTab() {
       setTransfers(prev => [...prev, data]);
       setForm({ studentName: '', fromSchool: '', toSchool: '', date: '', reason: '' });
       setShowForm(false);
-    } catch { }
+    } catch (err) { console.error('[ManagerSIS] Failed to create transfer:', err); }
   };
 
   return (
@@ -280,7 +280,7 @@ function FamiliesTab() {
       setLoading(true);
       const data = await api.getFamilies();
       setFamilies(Array.isArray(data) ? data : []);
-    } catch { } finally {
+    } catch (err) { console.error('[ManagerSIS] Failed to load families:', err); } finally {
       setLoading(false);
     }
   };
@@ -298,7 +298,7 @@ function FamiliesTab() {
       setForm({ name: '', parentName: '', phone: '', email: '' });
       setShowForm(false);
       setEditing(null);
-    } catch { }
+    } catch (err) { console.error('[ManagerSIS] Failed to save family:', err); }
   };
 
   const handleEdit = (fam: Family) => {
@@ -369,7 +369,7 @@ function LockersTab() {
       setLoading(true);
       const data = await api.getLockers();
       setLockers(Array.isArray(data) ? data : []);
-    } catch { } finally {
+    } catch (err) { console.error('[ManagerSIS] Failed to load lockers:', err); } finally {
       setLoading(false);
     }
   };
@@ -381,7 +381,7 @@ function LockersTab() {
       setLockers(prev => [...prev, data]);
       setForm({ number: '', location: '', assignedTo: '', combination: '' });
       setShowForm(false);
-    } catch { }
+    } catch (err) { console.error('[ManagerSIS] Failed to assign locker:', err); }
   };
 
   return (
@@ -451,7 +451,7 @@ function PromotionsTab() {
       setLoading(true);
       const data = await api.getPromotions();
       setPromotions(Array.isArray(data) ? data : []);
-    } catch { } finally {
+    } catch (err) { console.error('[ManagerSIS] Failed to load promotions:', err); } finally {
       setLoading(false);
     }
   };
@@ -466,7 +466,7 @@ function PromotionsTab() {
       setPromotions(prev => [...prev, data]);
       setForm({ fromClass: '', toClass: '', academicYear: '', studentIds: '' });
       setShowForm(false);
-    } catch { }
+    } catch (err) { console.error('[ManagerSIS] Failed to create promotion:', err); }
   };
 
   return (
@@ -536,7 +536,7 @@ function TransferCertificatesTab() {
       setLoading(true);
       const data = await api.getTransferCertificates();
       setCertificates(Array.isArray(data) ? data : []);
-    } catch { } finally {
+    } catch (err) { console.error('[ManagerSIS] Failed to load certificates:', err); } finally {
       setLoading(false);
     }
   };
@@ -548,7 +548,7 @@ function TransferCertificatesTab() {
       setCertificates(prev => [...prev, data]);
       setForm({ studentName: '', className: '', issueDate: '', reason: '' });
       setShowForm(false);
-    } catch { }
+    } catch (err) { console.error('[ManagerSIS] Failed to issue TC:', err); }
   };
 
   return (

@@ -86,7 +86,7 @@ export default function TeacherClassroom() {
       setCourses(Array.isArray(crs) ? crs : []);
       setHallPasses(Array.isArray(passes) ? passes.filter((p: any) => p.active !== false) : []);
       setCertificates(Array.isArray(certs) ? certs : []);
-    } catch {
+    } catch (err) { console.error('[TeacherClassroom] Failed to load data:', err);
     } finally {
       setLoading(false);
     }
@@ -96,7 +96,7 @@ export default function TeacherClassroom() {
     try {
       const data = await api.getStudents();
       setStudents(Array.isArray(data) ? data : []);
-    } catch {}
+    } catch (err) { console.error('[TeacherClassroom] Failed to load students:', err); }
   };
 
   const loadProgressNotes = async (studentId: string) => {
@@ -125,14 +125,14 @@ export default function TeacherClassroom() {
       setLessonPlans(prev => [...prev, data]);
       setLessonForm({ title: '', subject: 'Math', class: '10-A', status: 'active', week: 1, objectives: '' });
       setShowLessonForm(false);
-    } catch {}
+    } catch (err) { console.error('[TeacherClassroom] Failed to create lesson:', err); }
   };
 
   const handleDeleteLesson = async (id: string) => {
     try {
       await api.deleteLessonPlan(id);
       setLessonPlans(prev => prev.filter(p => p.id !== id));
-    } catch {}
+    } catch (err) { console.error('[TeacherClassroom] Failed to delete lesson:', err); }
   };
 
   const handleCreateExercise = async () => {
@@ -142,7 +142,7 @@ export default function TeacherClassroom() {
       setExercises(prev => [...prev, data]);
       setExerciseForm({ title: '', subject: 'Math', class: '10-A', questionCount: 0, maxScore: 100 });
       setShowExerciseForm(false);
-    } catch {}
+    } catch (err) { console.error('[TeacherClassroom] Failed to create exercise:', err); }
   };
 
   const handleCreateRubric = async () => {
@@ -156,7 +156,7 @@ export default function TeacherClassroom() {
       setRubrics(prev => [...prev, data]);
       setRubricForm({ name: '', criteria: '', scale: 5 });
       setShowRubricForm(false);
-    } catch {}
+    } catch (err) { console.error('[TeacherClassroom] Failed to create rubric:', err); }
   };
 
   const handleCreateCourse = async () => {
@@ -166,14 +166,14 @@ export default function TeacherClassroom() {
       setCourses(prev => [...prev, data]);
       setCourseForm({ name: '', code: '', credits: 3 });
       setShowCourseForm(false);
-    } catch {}
+    } catch (err) { console.error('[TeacherClassroom] Failed to create course:', err); }
   };
 
   const handleEndPass = async (id: string) => {
     try {
       await api.endHallPass(id);
       setHallPasses(prev => prev.filter(p => p.id !== id));
-    } catch {}
+    } catch (err) { console.error('[TeacherClassroom] Failed to end pass:', err); }
   };
 
   const handleCreateNote = async () => {
@@ -182,7 +182,7 @@ export default function TeacherClassroom() {
       const data = await api.createProgressNote(selectedStudent, { content: noteContent });
       setProgressNotes(prev => [data, ...prev]);
       setNoteContent('');
-    } catch {}
+    } catch (err) { console.error('[TeacherClassroom] Failed to create note:', err); }
   };
 
   const handleIssueCertificate = async () => {
@@ -191,7 +191,7 @@ export default function TeacherClassroom() {
       const data = await api.issueCertificate(certForm);
       setCertificates(prev => [data, ...prev]);
       setCertForm({ title: '', studentId: '' });
-    } catch {}
+    } catch (err) { console.error('[TeacherClassroom] Failed to issue certificate:', err); }
   };
 
   const skeletonRows = () => (

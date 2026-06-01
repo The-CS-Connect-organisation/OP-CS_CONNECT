@@ -59,8 +59,8 @@ export default function CommunicationHub() {
     (async () => {
       try {
         setLoading(true);
-        const res = await apiFetch("/chat/channels");
-        const data = Array.isArray(res.data) ? res.data : [];
+        const res = await api.getChatChannels();
+        const data = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
         if (data.length === 0) {
           setChannels(defaultChannels);
           setSelectedChannel(defaultChannels[0].id);
@@ -68,7 +68,8 @@ export default function CommunicationHub() {
           setChannels(data);
           setSelectedChannel(data[0].id);
         }
-      } catch {
+      } catch (err) {
+        console.error('[CommunicationHub] Failed to load channels:', err);
         setChannels(defaultChannels);
         setSelectedChannel(defaultChannels[0].id);
       } finally {
@@ -81,18 +82,11 @@ export default function CommunicationHub() {
     if (!selectedChannel) return;
     (async () => {
       try {
-        const res = await apiFetch(`/chat/channels/${selectedChannel}/messages`);
-        const data = Array.isArray(res.data) ? res.data : [];
+        const res = await api.getChannelMessages(selectedChannel);
+        const data = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
         setMessages(data);
-      } catch {
-        // Demo messages
-        setMessages([
-          { id: "m1", senderId: "u5", senderName: "Dr. Rajesh Gupta", content: "Good morning everyone! Today we will cover quadratic equations.", timestamp: new Date(Date.now() - 3600000).toISOString(), type: "text" },
-          { id: "m2", senderId: "u1", senderName: "Aarav Sharma", content: "Good morning sir! I had a doubt about the discriminant formula.", timestamp: new Date(Date.now() - 3500000).toISOString(), type: "text" },
-          { id: "m3", senderId: "u5", senderName: "Dr. Rajesh Gupta", content: "Sure Aarav, the discriminant is b^2 - 4ac. It tells us the nature of roots.", timestamp: new Date(Date.now() - 3400000).toISOString(), type: "text" },
-          { id: "m4", senderId: "u2", senderName: "Priya Patel", content: "Can someone share the notes from yesterday?", timestamp: new Date(Date.now() - 1800000).toISOString(), type: "text" },
-          { id: "m5", senderId: "u3", senderName: "Rohan Kumar", content: "I have them! Uploading now.", timestamp: new Date(Date.now() - 1700000).toISOString(), type: "text" },
-        ]);
+      } catch (err) {
+        console.error('[CommunicationHub] Failed to load messages:', err);
       }
     })();
   }, [selectedChannel]);

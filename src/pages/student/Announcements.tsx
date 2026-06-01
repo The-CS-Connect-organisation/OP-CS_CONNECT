@@ -18,10 +18,9 @@ interface Announcement {
   id: string
   title: string
   content: string
-  date: string
+  createdAt: string
   priority: 'low' | 'medium' | 'high'
   author: string
-  authorName: string
   pinned: boolean
   approved: boolean
   approvedBy?: string
@@ -46,14 +45,14 @@ export default function StudentAnnouncements() {
       setLoading(true)
       const data = await api.getAnnouncements()
       setAnnouncements(Array.isArray(data) ? data : [])
-    } catch { /* error */ } finally { setLoading(false) }
+    } catch (err) { console.error('[StudentAnnouncements] Failed to load:', err); } finally { setLoading(false) }
   }
 
   const togglePin = async (id: string) => {
     try {
       const result = await api.pinAnnouncement(id)
       setAnnouncements(prev => prev.map(a => a.id === id ? { ...a, pinned: result.pinned } : a))
-    } catch { /* error */ }
+    } catch (err) { console.error('[StudentAnnouncements] Failed to toggle pin:', err); }
   }
 
   const toggleExpand = (id: string) => {
@@ -76,8 +75,8 @@ export default function StudentAnnouncements() {
         const pOrder = { high: 0, medium: 1, low: 2 }
         return pOrder[a.priority] - pOrder[b.priority]
       }
-      if (sortMode === 'date-asc') return new Date(a.date).getTime() - new Date(b.date).getTime()
-      return new Date(b.date).getTime() - new Date(a.date).getTime()
+      if (sortMode === 'date-asc') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     })
   }
 
@@ -144,8 +143,8 @@ export default function StudentAnnouncements() {
                               )}
                             </AnimatePresence>
                             <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                              <span className="flex items-center gap-1"><User className="w-3 h-3" />{ann.authorName || 'Admin'}</span>
-                              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(ann.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                              <span className="flex items-center gap-1"><User className="w-3 h-3" />{ann.author || 'Admin'}</span>
+                              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{new Date(ann.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
                             </div>
                           </div>
                           <div className="flex items-center gap-1 flex-shrink-0">
@@ -196,8 +195,8 @@ export default function StudentAnnouncements() {
               </DialogHeader>
               <div className="space-y-4 mt-4">
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1.5"><User className="w-4 h-4" />{selectedAnn.authorName || 'Admin'}</span>
-                  <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" />{new Date(selectedAnn.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                  <span className="flex items-center gap-1.5"><User className="w-4 h-4" />{selectedAnn.author || 'Admin'}</span>
+                  <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" />{new Date(selectedAnn.createdAt).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</span>
                 </div>
                 <div className="p-4 rounded-lg bg-muted/50 border">
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">{selectedAnn.content}</p>

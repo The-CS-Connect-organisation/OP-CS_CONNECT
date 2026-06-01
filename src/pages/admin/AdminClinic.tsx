@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Stethoscope, Calendar, User, Clock, Plus, Search } from 'lucide-react';
+import { api } from '@/lib/api';
 
 interface ClinicVisit {
   id: string;
@@ -23,8 +24,17 @@ const mockVisits: ClinicVisit[] = [
 ];
 
 export default function AdminClinic() {
-  const [visits] = useState<ClinicVisit[]>(mockVisits);
+  const [visits, setVisits] = useState<ClinicVisit[]>(mockVisits);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await api.getClinicVisits();
+        if (Array.isArray(data)) setVisits(data);
+      } catch (err) { console.error('[AdminClinic] Failed to load:', err); }
+    })();
+  }, []);
 
   const filteredVisits = visits.filter(v => v.studentName.toLowerCase().includes(searchQuery.toLowerCase()));
 

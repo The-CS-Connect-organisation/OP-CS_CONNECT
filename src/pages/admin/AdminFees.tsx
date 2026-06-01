@@ -5,6 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { Landmark, DollarSign, Calendar, TrendingUp, TrendingDown, Search, Filter } from 'lucide-react';
+import { formatCurrency } from '@/lib/utils';
 
 interface FeeRecord {
   id: string;
@@ -32,8 +33,8 @@ export default function AdminFees() {
       setLoading(true);
       const data = await api.getFeeRecords();
       setFees(Array.isArray(data) ? data : []);
-    } catch {
-      // error
+    } catch (err) {
+      console.error('[AdminFees] Failed to load:', err);
     } finally {
       setLoading(false);
     }
@@ -41,7 +42,10 @@ export default function AdminFees() {
 
   const filteredFees = fees.filter(fee => {
     const matchesFilter = filter === 'all' || fee.status === filter;
-    const matchesSearch = fee.studentName.toLowerCase().includes(searchQuery.toLowerCase()) || fee.class.toLowerCase().includes(searchQuery.toLowerCase());
+    const s = (fee.studentName || '').toLowerCase();
+    const c = (fee.class || '').toLowerCase();
+    const q = searchQuery.toLowerCase();
+    const matchesSearch = !q || s.includes(q) || c.includes(q);
     return matchesFilter && matchesSearch;
   });
 
@@ -69,7 +73,7 @@ export default function AdminFees() {
           <div className="flex items-center gap-3">
             <DollarSign className="w-8 h-8 text-green-500" />
             <div>
-              <p className="text-2xl font-bold">${totalCollected.toLocaleString()}</p>
+              <p className="text-2xl font-bold">{formatCurrency(totalCollected)}</p>
               <p className="text-sm text-muted-foreground">Collected</p>
             </div>
           </div>
@@ -78,7 +82,7 @@ export default function AdminFees() {
           <div className="flex items-center gap-3">
             <DollarSign className="w-8 h-8 text-orange-500" />
             <div>
-              <p className="text-2xl font-bold">${totalPending.toLocaleString()}</p>
+              <p className="text-2xl font-bold">{formatCurrency(totalPending)}</p>
               <p className="text-sm text-muted-foreground">Pending</p>
             </div>
           </div>
@@ -126,8 +130,8 @@ export default function AdminFees() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-semibold">${fee.amount}</p>
-                  <p className="text-sm text-muted-foreground">Paid: ${fee.paid}</p>
+                  <p className="font-semibold">{formatCurrency(fee.amount)}</p>
+                  <p className="text-sm text-muted-foreground">Paid: {formatCurrency(fee.paid)}</p>
                   <Badge className={getStatusColor(fee.status)}>{fee.status}</Badge>
                 </div>
               </div>

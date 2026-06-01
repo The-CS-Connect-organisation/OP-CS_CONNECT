@@ -72,7 +72,7 @@ export default function ManagerInvoicing() {
       setExpenses(Array.isArray(exp) ? exp : []);
       setConcessions(Array.isArray(conc) ? conc : []);
       setLateFees(Array.isArray(lf) ? lf : []);
-    } catch { } finally { setLoading(false); }
+    } catch (err) { console.error('[ManagerInvoicing] Failed to load data:', err); } finally { setLoading(false); }
   };
 
   const createInvoice = async () => {
@@ -80,38 +80,38 @@ export default function ManagerInvoicing() {
       await api.createInvoice({ ...invoiceForm, items: invoiceForm.items ? JSON.parse(invoiceForm.items) : [] });
       await loadAll(); setDialogOpen(null);
       setInvoiceForm({ studentId: '', total: 0, dueDate: '', items: '' });
-    } catch { }
+    } catch (err) { console.error('[ManagerInvoicing] Failed to create invoice:', err); }
   };
   const deleteInvoice = async (id: string) => {
-    try { await api.deleteInvoice(id); setInvoices(prev => prev.filter(i => i.id !== id)); } catch { }
+    try { await api.deleteInvoice(id); setInvoices(prev => prev.filter(i => i.id !== id)); } catch (err) { console.error('[ManagerInvoicing] Failed to delete invoice:', err); }
   };
   const recordPayment = async (id: string) => {
-    try { await api.recordInvoicePayment(id, { amount: paymentAmount }); setPaymentDialogId(null); setPaymentAmount(0); await loadAll(); } catch { }
+    try { await api.recordInvoicePayment(id, { amount: paymentAmount }); setPaymentDialogId(null); setPaymentAmount(0); await loadAll(); } catch (err) { console.error('[ManagerInvoicing] Failed to record payment:', err); }
   };
   const createQuote = async () => {
     try {
       await api.createQuote({ ...quoteForm, items: quoteForm.items ? JSON.parse(quoteForm.items) : [] });
       await loadAll(); setDialogOpen(null);
       setQuoteForm({ studentId: '', total: 0, validUntil: '', items: '' });
-    } catch { }
+    } catch (err) { console.error('[ManagerInvoicing] Failed to create quote:', err); }
   };
   const convertQuote = async (id: string) => {
-    try { await api.convertQuoteToInvoice(id); await loadAll(); } catch { }
+    try { await api.convertQuoteToInvoice(id); await loadAll(); } catch (err) { console.error('[ManagerInvoicing] Failed to convert quote:', err); }
   };
   const createPayment = async () => {
-    try { await api.createPayment(paymentForm); await loadAll(); setDialogOpen(null); setPaymentForm({ studentId: '', amount: 0, method: 'cash', date: '', reference: '' }); } catch { }
+    try { await api.createPayment(paymentForm); await loadAll(); setDialogOpen(null); setPaymentForm({ studentId: '', amount: 0, method: 'cash', date: '', reference: '' }); } catch (err) { console.error('[ManagerInvoicing] Failed to create payment:', err); }
   };
   const createExpense = async () => {
-    try { await api.createExpense(expenseForm); await loadAll(); setDialogOpen(null); setExpenseForm({ description: '', amount: 0, category: '', date: '' }); } catch { }
+    try { await api.createExpense(expenseForm); await loadAll(); setDialogOpen(null); setExpenseForm({ description: '', amount: 0, category: '', date: '' }); } catch (err) { console.error('[ManagerInvoicing] Failed to create expense:', err); }
   };
   const approveExpense = async (id: string) => {
-    try { await api.approveExpense(id, 'manager'); await loadAll(); } catch { }
+    try { await api.approveExpense(id, 'manager'); await loadAll(); } catch (err) { console.error('[ManagerInvoicing] Failed to approve expense:', err); }
   };
   const createConcession = async () => {
-    try { await api.createConcession(concessionForm); await loadAll(); setDialogOpen(null); setConcessionForm({ studentId: '', type: '', percentage: 0, amount: 0, reason: '' }); } catch { }
+    try { await api.createConcession(concessionForm); await loadAll(); setDialogOpen(null); setConcessionForm({ studentId: '', type: '', percentage: 0, amount: 0, reason: '' }); } catch (err) { console.error('[ManagerInvoicing] Failed to create concession:', err); }
   };
   const createLateFee = async () => {
-    try { await api.createLateFee(lateFeeForm); await loadAll(); setDialogOpen(null); setLateFeeForm({ name: '', type: 'fixed', value: 0, gracePeriod: 0, maxFee: 0 }); } catch { }
+    try { await api.createLateFee(lateFeeForm); await loadAll(); setDialogOpen(null); setLateFeeForm({ name: '', type: 'fixed', value: 0, gracePeriod: 0, maxFee: 0 }); } catch (err) { console.error('[ManagerInvoicing] Failed to create late fee:', err); }
   };
 
   const filteredInvoices = invoices.filter(i =>

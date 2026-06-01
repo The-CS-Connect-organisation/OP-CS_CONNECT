@@ -51,8 +51,8 @@ export default function ParentDashboard() {
       setLoading(true);
       const data = await api.getParentDashboard();
       if (data) setDashboard(data);
-    } catch {
-      // error
+    } catch (err) {
+      console.error('[ParentDashboard] Failed to load:', err);
     } finally {
       setLoading(false);
     }

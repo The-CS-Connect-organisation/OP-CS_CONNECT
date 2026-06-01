@@ -41,7 +41,7 @@ export default function AdminUsers() {
   };
 
   const filteredUsers = users.filter(u => {
-    const matchesSearch = u.name.toLowerCase().includes(searchQuery.toLowerCase()) || u.email.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (u.name ?? '').toLowerCase().includes(searchQuery.toLowerCase()) || (u.email ?? '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = filterRole === 'all' || u.role === filterRole;
     return matchesSearch && matchesRole;
   });

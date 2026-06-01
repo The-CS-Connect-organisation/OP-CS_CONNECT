@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Eye, Calendar, User, FileText, Search, DollarSign } from 'lucide-react';
+import { api } from '../../lib/api';
 
 interface FeeRecord {
   id: string;
@@ -22,8 +22,20 @@ const mockFees: FeeRecord[] = [
 ];
 
 export default function ManagerFees() {
-  const [fees] = useState<FeeRecord[]>(mockFees);
+  const [fees, setFees] = useState<FeeRecord[]>(mockFees);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    async function loadFees() {
+      try {
+        const data = await api.getFeeRecords();
+        setFees(data);
+      } catch (err) {
+        console.error('[ManagerFees] Failed to load:', err);
+      }
+    }
+    loadFees();
+  }, []);
   const filteredFees = fees.filter(f => f.studentName.toLowerCase().includes(searchQuery.toLowerCase()));
   const totalCollected = fees.filter(f => f.status === 'paid').reduce((sum, f) => sum + f.paid, 0);
   const totalPending = fees.filter(f => f.status !== 'paid').reduce((sum, f) => sum + (f.amount - f.paid), 0);

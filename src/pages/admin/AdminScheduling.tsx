@@ -32,7 +32,8 @@ interface RoomBooking {
   id: string;
   room: string;
   date: string;
-  time: string;
+  startTime: string;
+  endTime: string;
   purpose: string;
   bookedBy: string;
 }
@@ -89,7 +90,7 @@ export default function AdminScheduling() {
   const [bookings, setBookings] = useState<RoomBooking[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [showBookingForm, setShowBookingForm] = useState(false);
-  const [bookingForm, setBookingForm] = useState({ room: '', date: '', time: '', purpose: '', bookedBy: '' });
+  const [bookingForm, setBookingForm] = useState({ room: '', date: '', startTime: '', endTime: '', purpose: '', bookedBy: '' });
 
   // Bell Schedules
   const [bellSchedules, setBellSchedules] = useState<BellSchedule[]>([]);
@@ -116,7 +117,7 @@ export default function AdminScheduling() {
   const loadAll = async () => {
     try {
       setLoading(true);
-      const [tt, bks, bells, cov, sc, coteach] = await Promise.all([
+      const raw = await Promise.allSettled([
         api.getGeneratedTimetable('10-A'),
         api.getRoomBookings(),
         api.getBellSchedules(),
@@ -124,16 +125,15 @@ export default function AdminScheduling() {
         api.getSubjectChoices('all'),
         api.getCoTeaching(),
       ]);
+      const [tt, bks, bells, cov, sc, coteach] = raw.map(r => r.status === 'fulfilled' ? r.value : []);
       setTtEntries(Array.isArray(tt) ? tt : []);
       setBookings(Array.isArray(bks) ? bks : []);
       setBellSchedules(Array.isArray(bells) ? bells : []);
       setCoverage(Array.isArray(cov) ? cov : []);
       setSubjectChoices(Array.isArray(sc) ? sc : []);
       setCoTeaching(Array.isArray(coteach) ? coteach : []);
-      const roomData = await api.getRooms();
-      setRooms(Array.isArray(roomData) ? roomData : []);
-    } catch {
-      // error
+      try { const roomData = await api.getRooms(); setRooms(Array.isArray(roomData) ? roomData : []); } catch (err) { console.error('[AdminScheduling] Failed to load rooms:', err); }
+    } catch (err) { console.error('[AdminScheduling] Failed to load data:', err);
     } finally {
       setLoading(false);
     }
@@ -167,7 +167,7 @@ export default function AdminScheduling() {
       const created = await api.createRoomBooking(bookingForm);
       setBookings(prev => [...prev, created]);
       setShowBookingForm(false);
-      setBookingForm({ room: '', date: '', time: '', purpose: '', bookedBy: '' });
+      setBookingForm({ room: '', date: '', startTime: '', endTime: '', purpose: '', bookedBy: '' });
     } catch {
       // error
     }
@@ -329,7 +329,8 @@ export default function AdminScheduling() {
                   {rooms.map(r => <option key={r.id} value={r.name}>{r.name} (Cap: {r.capacity})</option>)}
                 </select>
                 <input type="date" value={bookingForm.date} onChange={(e) => setBookingForm({ ...bookingForm, date: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
-                <input type="time" value={bookingForm.time} onChange={(e) => setBookingForm({ ...bookingForm, time: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
+                <input type="time" value={bookingForm.startTime} onChange={(e) => setBookingForm({ ...bookingForm, startTime: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
+                <input type="time" value={bookingForm.endTime} onChange={(e) => setBookingForm({ ...bookingForm, endTime: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
                 <input type="text" placeholder="Purpose" value={bookingForm.purpose} onChange={(e) => setBookingForm({ ...bookingForm, purpose: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
                 <input type="text" placeholder="Booked By" value={bookingForm.bookedBy} onChange={(e) => setBookingForm({ ...bookingForm, bookedBy: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
               </div>
@@ -354,7 +355,7 @@ export default function AdminScheduling() {
                         <div className="text-sm text-muted-foreground flex items-center gap-2">
                           <span>{new Date(b.date).toLocaleDateString()}</span>
                           <span>•</span>
-                          <span>{b.time}</span>
+                          <span>{b.startTime} - {b.endTime}</span>
                           <span>•</span>
                           <span>{b.purpose}</span>
                           <span>•</span>

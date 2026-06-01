@@ -124,10 +124,10 @@ export default function AdminERP() {
   };
 
   const filteredClients = clients.filter(c =>
-    c.name.toLowerCase().includes(search.toLowerCase()) || c.email.toLowerCase().includes(search.toLowerCase())
+    (c.name ?? '').toLowerCase().includes(search.toLowerCase()) || (c.email ?? '').toLowerCase().includes(search.toLowerCase())
   );
   const filteredProducts = products.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase()) || p.sku.toLowerCase().includes(search.toLowerCase())
+    (p.name ?? '').toLowerCase().includes(search.toLowerCase()) || (p.sku ?? '').toLowerCase().includes(search.toLowerCase())
   );
 
   const statusOrderColors: Record<string, string> = {

@@ -269,7 +269,7 @@ export default function AdminFoodService() {
             <>
               <Input placeholder="Student Name" value={form.studentName || ''} onChange={e => setForm({ ...form, studentName: e.target.value })} />
               <Input placeholder="Payment Method (cash/card/meal-account)" value={form.paymentMethod || ''} onChange={e => setForm({ ...form, paymentMethod: e.target.value })} />
-              <div className="md:col-span-2"><Textarea placeholder="Items (JSON array)" value={form.items ? JSON.stringify(form.items) : ''} onChange={e => { try { setForm({ ...form, items: JSON.parse(e.target.value) }); } catch {} }} /></div>
+              <div className="md:col-span-2"><Textarea placeholder="Items (JSON array)" value={form.items ? JSON.stringify(form.items) : ''} onChange={e => { try { setForm({ ...form, items: JSON.parse(e.target.value) }); } catch (err) { console.error('[AdminFoodService] Invalid JSON:', err); } }} /></div>
               <Input placeholder="Total" type="number" value={form.total || ''} onChange={e => setForm({ ...form, total: parseFloat(e.target.value) || 0 })} />
             </>
           )}

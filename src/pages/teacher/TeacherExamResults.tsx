@@ -61,7 +61,7 @@ export default function TeacherExamResults() {
       setLoadingExams(true);
       const data = await api.getExams();
       setExams(Array.isArray(data) ? data : []);
-    } catch {} finally { setLoadingExams(false); }
+    } catch (err) { console.error('[TeacherExamResults] Failed to load exams:', err); } finally { setLoadingExams(false); }
   };
 
   const loadOnlineExams = async () => {
@@ -69,7 +69,7 @@ export default function TeacherExamResults() {
       setLoadingOnline(true);
       const data = await api.getExams({ type: 'online' });
       setOnlineExams(Array.isArray(data) ? data : []);
-    } catch {} finally { setLoadingOnline(false); }
+    } catch (err) { console.error('[TeacherExamResults] Failed to load online exams:', err); } finally { setLoadingOnline(false); }
   };
 
   const loadResults = async (examId: string) => {
@@ -108,7 +108,7 @@ export default function TeacherExamResults() {
       const entries = Object.entries(marksEntries).map(([studentId, marks]) => ({ studentId, marks }));
       await api.enterExamResult(selectedExam, { entries });
       alert('Results saved successfully');
-    } catch {}
+    } catch (err) { console.error('[TeacherExamResults] Failed to submit results:', err); }
   };
 
   const handlePublishResults = async () => {
@@ -116,7 +116,7 @@ export default function TeacherExamResults() {
     try {
       await api.publishExamResults(selectedExam);
       alert('Results published successfully');
-    } catch {}
+    } catch (err) { console.error('[TeacherExamResults] Failed to publish results:', err); }
   };
 
   const handleApplyGrace = async (studentId: string) => {
@@ -128,7 +128,7 @@ export default function TeacherExamResults() {
       setGraceMarks(prev => { const n = { ...prev }; delete n[studentId]; return n; });
       await loadGraceResults(graceExamId);
       alert('Grace marks applied');
-    } catch {}
+    } catch (err) { console.error('[TeacherExamResults] Failed to apply grace marks:', err); }
   };
 
   const handleCreateOnlineExam = async () => {
@@ -138,7 +138,7 @@ export default function TeacherExamResults() {
       setOnlineExams(prev => [...prev, data]);
       setOnlineForm({ title: '', duration: 60, subject: 'Math', class: '10-A' });
       setShowOnlineForm(false);
-    } catch {}
+    } catch (err) { console.error('[TeacherExamResults] Failed to create online exam:', err); }
   };
 
   const totalMarks = results.length > 0 ? results[0].totalMarks : 100;

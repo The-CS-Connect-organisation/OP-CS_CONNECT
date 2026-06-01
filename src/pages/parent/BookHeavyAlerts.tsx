@@ -19,8 +19,8 @@ export default function BookHeavyAlerts() {
       try {
         const data = await api.getBookAlerts(user?.class || '')
         setAlerts(data)
-      } catch {
-        setAlerts([])
+      } catch (err) {
+        console.error('[BookHeavyAlerts] Failed to load:', err);
       }
       setIsLoading(false)
     }

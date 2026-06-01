@@ -145,18 +145,21 @@ function InvoicesTab() {
   };
 
   const getSubtotal = () => formData.items.reduce((s, i) => s + (Number(i.amount) || 0), 0);
-  const getTotal = () => { const sub = getSubtotal(); return sub + (Number(formData.tax) || 0); };
+  const getTaxAmount = () => { const sub = getSubtotal(); return sub * (Number(formData.tax) || 0) / 100; };
+  const getTotal = () => { const sub = getSubtotal(); return sub + getTaxAmount(); };
 
   const handleCreate = async () => {
     try {
       setError('');
+      const sub = getSubtotal();
+      const taxAmount = getTaxAmount();
       await api.createInvoice({
         studentId: formData.studentId,
         studentName: formData.studentName,
         items: formData.items.filter(i => i.description),
-        subtotal: getSubtotal(),
-        tax: Number(formData.tax),
-        total: getTotal(),
+        subtotal: sub,
+        tax: taxAmount,
+        total: sub + taxAmount,
         dueDate: formData.dueDate,
       });
       setShowCreate(false);
@@ -187,8 +190,8 @@ function InvoicesTab() {
   };
 
   const filtered = invoices.filter(i =>
-    i.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    i.studentName.toLowerCase().includes(searchQuery.toLowerCase())
+    (i.invoiceNumber || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (i.studentName || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const getStatusBadge = (s: string) => {
@@ -244,7 +247,7 @@ function InvoicesTab() {
               </div>
               <div className="text-right flex flex-col items-end gap-1">
                 <p className="text-lg font-bold">${inv.total.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">Subtotal: ${inv.subtotal} | Tax: ${inv.tax}</p>
+                <p className="text-xs text-muted-foreground">Subtotal: ${inv.subtotal} | Tax: ${inv.tax} | Total: ${inv.total}</p>
                 <div className="flex gap-1 mt-1">
                   {inv.status === 'pending' || inv.status === 'overdue' ? (
                     <Button size="sm" variant="outline" onClick={() => { setShowRecordPayment(inv.id); setPaymentData(p => ({ ...p, amount: inv.total })); }}>
@@ -318,8 +321,9 @@ function InvoicesTab() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium">Tax</label>
-              <Input type="number" value={formData.tax || ''} onChange={e => setFormData(f => ({ ...f, tax: Number(e.target.value) }))} />
+              <label className="text-sm font-medium">Tax Rate (%)</label>
+              <Input type="number" min="0" max="100" value={formData.tax || ''} onChange={e => setFormData(f => ({ ...f, tax: Number(e.target.value) }))} />
+              {formData.tax > 0 && <p className="text-xs text-muted-foreground mt-1">Tax amount: ₹{getTaxAmount().toFixed(2)}</p>}
             </div>
             <div className="flex items-end">
               <div className="p-2 rounded bg-accent w-full text-right">
@@ -384,7 +388,7 @@ function QuotesTab() {
     try {
       setError('');
       const items = formData.items.filter(i => i.description);
-      const total = items.reduce((s, i) => s + i.amount, 0);
+      const total = items.reduce((s, i) => s + (Number(i.amount) || 0), 0);
       await api.createQuote({ client: formData.client, items, total });
       setShowCreate(false);
       setFormData({ client: '', items: [{ description: '', amount: 0 }] });
@@ -489,7 +493,7 @@ function PaymentsTab() {
   };
 
   const filtered = payments.filter(p => {
-    const m = p.studentName.toLowerCase().includes(searchQuery.toLowerCase());
+    const m = (p.studentName || '').toLowerCase().includes(searchQuery.toLowerCase());
     const f = !methodFilter || p.method === methodFilter;
     return m && f;
   });
