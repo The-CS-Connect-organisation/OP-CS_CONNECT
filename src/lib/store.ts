@@ -27,6 +27,7 @@ export interface User {
   admissionNo?: string;
   rollNo?: string;
   bloodGroup?: string;
+  employeeId?: string;
   aadharNo?: string;
   penNo?: string;
   apaarId?: string;
