@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { EmojiPicker, EmojiPickerSearch, EmojiPickerContent } from '@/components/ui/emoji-picker'
-import { MessageSquare, Send, Search, Phone, Video, Smile, X } from 'lucide-react'
+import { MessageSquare, Send, Search, Phone, Video, Smile, X, ChevronLeft } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
@@ -38,6 +38,7 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [showEmojiPicker, setShowEmojiPicker] = useState(false)
+  const [showSidebar, setShowSidebar] = useState(true)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -118,7 +119,7 @@ export default function MessagesPage() {
   return (
     <div className="h-[calc(100vh-8rem)]">
       <div className="flex h-full rounded-lg border overflow-hidden">
-        <div className="w-80 border-r flex flex-col flex-shrink-0">
+        <div className={cn("w-80 border-r flex-col flex-shrink-0", showSidebar ? "flex" : "hidden", "lg:flex")}>
           <div className="p-3 border-b">
             <h2 className="font-semibold text-lg mb-2">Messages</h2>
             <div className="relative">
@@ -130,7 +131,7 @@ export default function MessagesPage() {
             {filteredContacts.map(contact => (
               <button
                 key={contact.id}
-                onClick={() => setSelectedContact(contact)}
+                onClick={() => { setSelectedContact(contact); setShowSidebar(false) }}
                 className={cn("w-full flex items-center gap-3 p-3 hover:bg-accent/50 transition-colors text-left border-b last:border-b-0", selectedContact?.id === contact.id && "bg-accent")}
               >
                 <Avatar className="w-10 h-10 flex-shrink-0">
@@ -151,10 +152,13 @@ export default function MessagesPage() {
           </ScrollArea>
         </div>
 
-        <div className="flex-1 flex flex-col">
+        <div className={cn("flex-1 flex-col", showSidebar ? "hidden" : "flex", "lg:flex")}>
           {selectedContact ? (
             <>
               <div className="h-14 border-b flex items-center px-4 gap-3">
+                <button onClick={() => setShowSidebar(true)} className="lg:hidden p-1 -ml-1 rounded-lg hover:bg-accent transition-all">
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
                 <Avatar className="w-8 h-8">
                   <AvatarFallback className="text-xs bg-orange-100 text-orange-700">{selectedContact.initials}</AvatarFallback>
                 </Avatar>

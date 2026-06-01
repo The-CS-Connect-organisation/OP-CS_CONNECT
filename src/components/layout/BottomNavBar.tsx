@@ -97,9 +97,11 @@ export default function BottomNavBar() {
                 {isActive && (
                   <motion.div
                     layoutId="bottom-nav-indicator"
-                    className="absolute -top-px left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full"
+                    className="absolute -top-px inset-x-0 flex justify-center"
                     transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  />
+                  >
+                    <div className="w-8 h-0.5 bg-primary rounded-full" />
+                  </motion.div>
                 )}
                 <div className="relative">
                   <item.icon className={cn("w-5 h-5", isActive && "text-primary")} />
