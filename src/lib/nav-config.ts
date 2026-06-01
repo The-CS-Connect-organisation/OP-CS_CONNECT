@@ -30,7 +30,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
       label: 'Main',
       items: [
         { icon: Home, label: 'Dashboard', path: '/student' },
-        { icon: Zap, label: 'Daily Briefing', path: '/student/daily-briefing' },
         { icon: CalendarDays, label: 'Calendar', path: '/student/cs-calendar' },
       ]
     },
@@ -48,8 +47,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Tools',
       items: [
-        { icon: Sparkles, label: 'AI Assistant', path: '/student/ai' },
-        { icon: Brain, label: 'Study Planner', path: '/student/study-planner' },
+        { icon: Sparkles, label: 'AI Tools', path: '/student/ai' },
         { icon: StickyNote, label: 'Notes', path: '/student/notes' },
         { icon: Library, label: 'CS Library', path: '/cs-library' },
         { icon: PenTool, label: 'Exercises', path: '/student/exercises' },
@@ -58,8 +56,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Community',
       items: [
-        { icon: MessageSquare, label: 'Messages', path: '/student/messages' },
-        { icon: Globe, label: 'Social Club', path: '/student/social-club' },
+        { icon: MessageSquare, label: 'Community', path: '/student/messages' },
         { icon: Megaphone, label: 'Announcements', path: '/student/announcements' },
         { icon: Bus, label: 'Bus Tracking', path: '/student/bus-tracking' },
       ]
@@ -75,7 +72,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
       label: 'Profile',
       items: [
         { icon: Award, label: 'Achievements', path: '/student/achievements' },
-        { icon: Star, label: 'Accolades', path: '/student/accolades' },
         { icon: User, label: 'Profile', path: '/student/profile' },
       ]
     },
