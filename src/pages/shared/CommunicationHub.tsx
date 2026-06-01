@@ -9,7 +9,7 @@ import { api, apiFetch } from "@/lib/api";
 import {
   MessageSquare, Send, Hash, Plus, Users, Search,
   Loader2, Smile, Paperclip, Phone, Video, Settings,
-  ChevronDown, Circle, UserPlus, Lock, Globe
+  ChevronDown, Circle, UserPlus, Lock, Globe, X
 } from "lucide-react";
 
 interface Channel {
@@ -40,6 +40,7 @@ export default function CommunicationHub() {
   const [loading, setLoading] = useState(false);
   const [sendingMsg, setSendingMsg] = useState(false);
   const [showCreateChannel, setShowCreateChannel] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [channelForm, setChannelForm] = useState({ name: "", type: "general" as const, description: "" });
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -185,13 +186,26 @@ export default function CommunicationHub() {
 
   return (
     <div className="h-[calc(100vh-8rem)] flex gap-0 rounded-2xl overflow-hidden border border-border bg-background">
+      {/* Mobile sidebar toggle */}
+      <button
+        onClick={() => setShowSidebar(true)}
+        className={`${showSidebar ? 'hidden' : 'flex'} lg:hidden fixed left-3 bottom-20 z-10 w-10 h-10 items-center justify-center rounded-full bg-orange-500 text-white shadow-lg hover:bg-orange-600 transition-all`}
+      >
+        <MessageSquare className="w-5 h-5" />
+      </button>
+
       {/* Sidebar */}
-      <div className="w-72 flex-shrink-0 border-r border-border flex flex-col bg-background">
+      <div className={`${showSidebar ? 'flex' : 'hidden'} lg:flex w-72 flex-shrink-0 border-r border-border flex-col bg-background absolute lg:relative inset-y-0 left-0 z-20 lg:z-auto shadow-xl lg:shadow-none`}>
         <div className="p-4 border-b border-border">
-          <h2 className="text-lg font-bold flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-orange-500" />
-            Comms Hub
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-bold flex items-center gap-2">
+              <MessageSquare className="w-5 h-5 text-orange-500" />
+              Comms Hub
+            </h2>
+            <button onClick={() => setShowSidebar(false)} className="lg:hidden p-1.5 rounded-lg hover:bg-accent transition-all">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
           <div className="relative mt-3">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
             <input
@@ -245,6 +259,9 @@ export default function CommunicationHub() {
         {currentChannel && (
           <div className="px-5 py-3 border-b border-border flex items-center justify-between bg-background">
             <div className="flex items-center gap-3">
+              <button onClick={() => setShowSidebar(true)} className="lg:hidden p-1.5 -ml-1 rounded-lg hover:bg-accent transition-all">
+                <ChevronDown className="w-5 h-5 rotate-90" />
+              </button>
               <div className="w-9 h-9 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
                 {getChannelIcon(currentChannel.type)}
               </div>

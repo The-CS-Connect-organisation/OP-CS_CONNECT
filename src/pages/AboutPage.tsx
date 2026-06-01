@@ -44,7 +44,7 @@ export default function AboutPage() {
           communication and analytics — into one intelligent, AI-powered ecosystem.
         </p>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
           {highlights.map((h) => (
             <div key={h.label} className="rounded-xl border border-gray-100 bg-gray-50 p-6">
               <h.icon className="w-8 h-8 text-orange-500 mb-4" />

@@ -47,7 +47,7 @@ export const ToastContainer: React.FC<ToastProps> = ({ toasts, removeToast }) =>
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 80 }}
             transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-            className="pointer-events-auto flex items-start gap-3 p-4 rounded-xl min-w-[320px] max-w-md nova-glass"
+            className="pointer-events-auto flex items-start gap-3 p-4 rounded-xl min-w-[280px] sm:min-w-[320px] max-w-md nova-glass"
             style={{
               background: colors[toast.type],
               borderLeft: `3px solid ${borderColors[toast.type]}`,

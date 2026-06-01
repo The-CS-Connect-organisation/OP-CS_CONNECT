@@ -411,7 +411,7 @@ export default function AIChatPanel({ isOpen = true, onClose, context }: AIChatP
           className={cn(
             "fixed z-50 flex flex-col overflow-hidden rounded-2xl border border-border/50 shadow-2xl",
             "bg-background/95 backdrop-blur-2xl",
-            isExpanded ? "inset-4" : "bottom-4 right-4 w-[400px] h-[600px]"
+            isExpanded ? "inset-4" : "bottom-4 right-4 sm:w-[400px] w-[calc(100vw-32px)] sm:h-[600px] h-[50vh]"
           )}
         >
           {panelContent}

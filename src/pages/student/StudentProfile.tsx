@@ -52,7 +52,7 @@ export default function StudentProfile() {
               <div className="w-32 h-32 rounded-full bg-accent animate-pulse" />
               <div className="flex-1 space-y-4">
                 <div className="h-8 w-48 rounded bg-accent animate-pulse" />
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {[1, 2, 3].map((i) => <div key={i} className="h-12 rounded bg-accent animate-pulse" />)}
                 </div>
               </div>
