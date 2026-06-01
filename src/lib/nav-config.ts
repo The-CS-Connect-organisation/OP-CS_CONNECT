@@ -42,7 +42,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: Calendar, label: 'Timetable', path: '/student/timetable' },
         { icon: UserCheck, label: 'Attendance', path: '/student/attendance' },
         { icon: FileText, label: 'Exams', path: '/student/exams' },
-        { icon: FileSpreadsheet, label: 'Exam Syllabus', path: '/student/exam-syllabus' },
         { icon: CreditCard, label: 'Fees', path: '/student/fees' },
       ]
     },
@@ -51,9 +50,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
       items: [
         { icon: Sparkles, label: 'AI Assistant', path: '/student/ai' },
         { icon: Brain, label: 'Study Planner', path: '/student/study-planner' },
-        { icon: Target, label: 'Focus Mode', path: '/student/focus-mode' },
         { icon: StickyNote, label: 'Notes', path: '/student/notes' },
-        { icon: Share2, label: 'Shared Notes', path: '/student/shared-notes' },
         { icon: Library, label: 'CS Library', path: '/cs-library' },
         { icon: PenTool, label: 'Exercises', path: '/student/exercises' },
       ]
@@ -98,7 +95,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: FileCheck, label: 'Grading', path: '/teacher/grading' },
         { icon: StickyNote, label: 'Class Notes', path: '/teacher/notes' },
         { icon: FileText, label: 'Exams', path: '/teacher/exams' },
-        { icon: FileSpreadsheet, label: 'Exam Syllabus', path: '/teacher/exam-syllabus' },
         { icon: Cap, label: 'Report Cards', path: '/teacher/report-cards' },
         { icon: BookOpen, label: 'Classroom', path: '/teacher/classroom' },
         { icon: BarChart3, label: 'Exam Results', path: '/teacher/exam-results' },
@@ -124,8 +120,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
       label: 'Tools',
       items: [
         { icon: Sparkles, label: 'AI Lab', path: '/teacher/ai' },
-        { icon: CalendarDays, label: 'Room Booking', path: '/teacher/room-booking' },
-        { icon: Monitor, label: 'Asset Tracking', path: '/teacher/asset-tracking' },
         { icon: Library, label: 'CS Library', path: '/cs-library' },
       ]
     },
@@ -215,8 +209,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
       label: 'Facilities',
       items: [
         { icon: Building2, label: 'Facilities', path: '/admin/facilities' },
-        { icon: CalendarDays, label: 'Room Booking', path: '/admin/room-booking' },
-        { icon: Monitor, label: 'Asset Tracking', path: '/admin/asset-tracking' },
         { icon: Truck, label: 'Transport', path: '/admin/transport' },
         { icon: UtensilsCrossed, label: 'Food Service', path: '/admin/food-service' },
         { icon: Dumbbell, label: 'Athletics', path: '/admin/athletics' },
@@ -248,7 +240,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
       items: [
         { icon: UserCheck, label: 'Attendance', path: '/parent/attendance' },
         { icon: BarChart3, label: 'Grades', path: '/parent/grades' },
-        { icon: FileSpreadsheet, label: 'Exam Syllabus', path: '/parent/exam-syllabus' },
         { icon: Calendar, label: 'Timetable', path: '/parent/timetable' },
         { icon: CreditCard, label: 'Fees', path: '/parent/fees' },
       ]
@@ -413,8 +404,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
       label: 'Facilities',
       items: [
         { icon: Building2, label: 'Facilities', path: '/manager/facilities' },
-        { icon: CalendarDays, label: 'Room Booking', path: '/manager/room-booking' },
-        { icon: Monitor, label: 'Asset Tracking', path: '/manager/asset-tracking' },
         { icon: Truck, label: 'Transport', path: '/manager/transport' },
         { icon: UtensilsCrossed, label: 'Food Service', path: '/manager/food-service' },
         { icon: Dumbbell, label: 'Athletics', path: '/manager/athletics' },
