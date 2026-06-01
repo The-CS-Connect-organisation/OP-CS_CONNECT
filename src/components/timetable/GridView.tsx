@@ -50,6 +50,7 @@ export function GridView({ entries, timeSlots, onAssignSlot, onDeleteEntry, teac
   const hasCRUD = !!(onAssignSlot || onDeleteEntry);
 
   return (
+    <>
     <div className="overflow-x-auto hidden md:block">
       <table className="w-full">
         <thead>
@@ -193,5 +194,6 @@ export function GridView({ entries, timeSlots, onAssignSlot, onDeleteEntry, teac
         </div>
       ))}
     </div>
+    </>
   );
 }
