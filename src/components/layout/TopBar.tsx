@@ -16,7 +16,7 @@ export default function TopBar() {
   const { user, logout } = useAuthStore()
   const { isDark, toggleTheme } = useThemeStore()
   const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationStore()
-  const { toggle, setMobileOpen } = useSidebarStore()
+  const { isMobileOpen, toggle, setMobileOpen } = useSidebarStore()
   const [showNotifications, setShowNotifications] = useState(false)
   const [showAvatarMenu, setShowAvatarMenu] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -83,7 +83,7 @@ export default function TopBar() {
       <div className="flex items-center justify-between h-16 px-4 lg:px-6">
         {/* Left section */}
         <div className="flex items-center gap-3">
-          <button onClick={() => setMobileOpen(true)} className="p-2 rounded-md hover:bg-accent/50 lg:hidden">
+          <button onClick={() => setMobileOpen(!isMobileOpen)} className="p-2 rounded-md hover:bg-accent/50 lg:hidden">
             <Menu className="w-5 h-5" />
           </button>
           <button onClick={toggle} className="p-2 rounded-md hover:bg-accent/50 hidden lg:block">
