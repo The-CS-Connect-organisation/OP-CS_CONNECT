@@ -37,7 +37,7 @@ export default function Sidebar() {
           <p className="text-sm font-bold leading-tight truncate text-white/90">{user.name}</p>
           <p className="text-[11px] text-orange-300/70 font-medium">{roleLabels[user.role]}</p>
         </div>
-        <button onClick={() => setMobileOpen(false)} className={cn("p-1 rounded-md hover:bg-white/10 lg:hidden", collapsed && "hidden")}>
+        <button onClick={() => setMobileOpen(false)} className="p-1 rounded-md hover:bg-white/10 lg:hidden">
           <X className="w-4 h-4 text-white/70" />
         </button>
       </div>
