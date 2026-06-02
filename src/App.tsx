@@ -13,6 +13,7 @@ const StudentGrades = lazy(() => import('./pages/student/Grades'))
 const StudentAttendance = lazy(() => import('./pages/student/Attendance'))
 const StudentFees = lazy(() => import('./pages/student/Fees'))
 const StudentMessages = lazy(() => import('./pages/student/Messages'))
+const StudentCommunity = lazy(() => import('./pages/student/Community'))
 const StudentAI = lazy(() => import('./pages/student/AI'))
 const TeacherDashboard = lazy(() => import('./pages/teacher/Dashboard'))
 const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'))
@@ -219,6 +220,7 @@ function App() {
             <Route path="exam-syllabus" element={<StudentExamSyllabus />} />
             <Route path="bus-tracking" element={<StudentBusTracking />} />
             <Route path="ai" element={<AILab />} />
+            <Route path="community" element={<StudentCommunity />} />
             <Route path="messages" element={<StudentMessages />} />
             <Route path="social-club" element={<SocialClub />} />
             <Route path="achievements" element={<Achievements />} />
