@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuthStore, useSidebarStore } from '@/lib/store'
 import { navSections, roleLabels } from '@/lib/nav-config'
 import { cn } from '@/lib/utils'
-import { LogOut, X, GraduationCap, Menu } from 'lucide-react'
+import { LogOut, X, ChevronLeft, ChevronRight, GraduationCap } from 'lucide-react'
 
 export default function Sidebar() {
   const { user, logout } = useAuthStore()
@@ -37,6 +37,13 @@ export default function Sidebar() {
           <p className="text-sm font-bold leading-tight truncate text-white/90">{user.name}</p>
           <p className="text-[11px] text-orange-300/70 font-medium">{roleLabels[user.role]}</p>
         </div>
+        <button
+          onClick={toggle}
+          className="hidden lg:inline-flex p-1 rounded-md hover:bg-white/10"
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          {collapsed ? <ChevronRight className="w-4 h-4 text-white/70" /> : <ChevronLeft className="w-4 h-4 text-white/70" />}
+        </button>
         <button onClick={() => setMobileOpen(false)} className="p-1 rounded-md hover:bg-white/10 lg:hidden">
           <X className="w-4 h-4 text-white/70" />
         </button>

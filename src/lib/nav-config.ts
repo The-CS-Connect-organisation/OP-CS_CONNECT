@@ -56,7 +56,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Community',
       items: [
-        { icon: MessageSquare, label: 'Community', path: '/student/messages' },
+        { icon: Globe, label: 'Community', path: '/student/messages' },
         { icon: Megaphone, label: 'Announcements', path: '/student/announcements' },
         { icon: Bus, label: 'Bus Tracking', path: '/student/bus-tracking' },
       ]
