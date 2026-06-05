@@ -147,6 +147,13 @@ export default function StudentBusTracking() {
 
   const selectedBus = routes.find(r => r.id === selectedRoute);
 
+  console.log('Routes:', routes);
+  console.log('Selected route:', selectedRoute);
+
+  useEffect(() => {
+    console.log('SelectedBus changed:', selectedBus);
+  }, [selectedBus]);
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'on-time': return 'bg-green-100 text-green-700';
