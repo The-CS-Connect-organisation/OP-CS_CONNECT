@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Button } from '@/components/ui/Button';
 import { getSocket } from '@/lib/socket';
-import { Bus, MapPin, Clock, Navigation, Phone, AlertCircle, Locate } from 'lucide-react';
+import { Bus, MapPin, Clock, Navigation, Phone, AlertCircle, Locate, User } from 'lucide-react';
 import 'leaflet/dist/leaflet.css';
 
 // Fix Leaflet default marker icon issue with bundlers
@@ -200,6 +200,10 @@ export default function StudentBusTracking() {
                   <Badge className={getStatusColor(route.status)}>{route.status}</Badge>
                 </div>
                 <div className="space-y-1 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4" />
+                    <span>{route.driverName}</span>
+                  </div>
                   <div className="flex items-center gap-2">
                     <Navigation className="w-4 h-4" />
                     <span>Bus #{route.busNumber}</span>

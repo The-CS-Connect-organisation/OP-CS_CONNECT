@@ -32,7 +32,22 @@ export default function AdminBusAssignment() {
     try {
       setLoading(true);
       const data = await api.getBusAssignments();
-      setBuses(Array.isArray(data) ? data : []);
+      const list = Array.isArray(data) ? data : [];
+      // The backend serves bus assignments from the `routes` collection, which
+      // uses fields like `bus`, `name`, `driver`. Normalize them to the shape
+      // this page renders so the driver, bus number and route name show up.
+      const normalized: BusAssignment[] = list.map((b: any) => ({
+        id: b.id,
+        busNumber: b.busNumber || b.bus || 'N/A',
+        routeName: b.routeName || b.name || 'Unnamed Route',
+        driverName: b.driverName || b.driver || 'Unassigned',
+        driverPhone: b.driverPhone || b.phone || 'N/A',
+        capacity: b.capacity ?? 40,
+        assignedStudents: b.assignedStudents ?? (Array.isArray(b.students) ? b.students.length : 0),
+        stops: Array.isArray(b.stops) ? b.stops : [],
+        status: b.status || 'active',
+      }));
+      setBuses(normalized);
     } catch {
       // error
     } finally {

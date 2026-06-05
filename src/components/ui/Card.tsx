@@ -66,7 +66,8 @@ function Card({ className, glow, tilt = false, spotlight = true, children, ...pr
       )}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      {...motionProps}
+      {...props}
+      style={{ ...(props.style || {}), ...(motionProps.style || {}) }}
     >
       {spotlight && (
         <motion.div
