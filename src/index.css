@@ -360,10 +360,28 @@ body::after {
   transition-duration: 150ms;
 }
 
-/* Remove transition from specific elements */
-input, textarea, [data-no-transition] {
-  transition-property: none;
+/* ... previous content ... */
+
+/* Print styles for dashboards */
+@media print {
+  .sidebar-scroll, .top-bar, .nav-hover-btn, .btn-primary, .btn-secondary, .btn-ghost, .btn-pink, .btn-danger {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .nova-card {
+    border: 1px solid #ddd !important;
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+  .gradient-text, .text-gradient-pink {
+    color: black !important;
+    background: none !important
+  }
 }
+
 
 /* ============================================
    CS CONNECT DESIGN SYSTEM - POOKIE THEME
@@ -902,3 +920,5 @@ input, textarea, [data-no-transition] {
 .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
 .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
 .sidebar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.15); }
+
+@media print { .sidebar-scroll, .topbar, .TopBar, .nav-hover-btn, .btn-primary, .btn-secondary, .btn-ghost, .btn-pink, .btn-danger { display: none !important; } body { background: white !important; color: black !important; } .nova-card { border: 1px solid #ddd !important; box-shadow: none !important; break-inside: avoid; } .gradient-text, .text-gradient-pink { color: black !important; background: none !important } }

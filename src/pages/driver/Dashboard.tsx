@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import AIChatPanel from '@/components/ai/AIChatPanel'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
@@ -10,11 +10,12 @@ import { Button } from '@/components/ui/Button'
 import { useAuthStore } from '@/lib/store'
 import { api } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { getSocket } from '@/lib/socket'
 import {
   MapPin, Bus, Users, Fuel, Shield, Sparkles,
   Brain, Clock, CheckCircle2, AlertCircle, Navigation,
   Phone, Route, Thermometer, Zap, AlertTriangle,
-  ArrowRight, Star, Timer, Map
+  ArrowRight, Star, Timer, Map, Radio
 } from 'lucide-react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -32,6 +33,14 @@ const itemVariants = {
 
 
 
+const GPS_START_HOUR = 5
+const GPS_END_HOUR = 17
+
+function isWithinSchedule(): boolean {
+  const hour = new Date().getHours()
+  return hour >= GPS_START_HOUR && hour < GPS_END_HOUR
+}
+
 export default function DriverDashboard() {
   const { user } = useAuthStore()
   const [showAI, setShowAI] = useState(false)
@@ -40,13 +49,68 @@ export default function DriverDashboard() {
   const [routes, setRoutes] = useState<any[]>([])
   const [students, setStudents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [gpsActive, setGpsActive] = useState(false)
+  const [gpsStatus, setGpsStatus] = useState('Waiting for schedule...')
+  const [scheduleActive, setScheduleActive] = useState(isWithinSchedule())
+  const watchIdRef = useRef<number | null>(null)
+  const busIdRef = useRef<string>('r1')
+
+  const startGps = useCallback(() => {
+    if (watchIdRef.current !== null) return
+    if (!navigator.geolocation) {
+      setGpsStatus('GPS not available on this device')
+      return
+    }
+    setGpsActive(true)
+    setGpsStatus('Acquiring GPS position...')
+    watchIdRef.current = navigator.geolocation.watchPosition(
+      (pos) => {
+        const { latitude: lat, longitude: lng } = pos.coords
+        getSocket().emit('driver:location', { busId: busIdRef.current, lat, lng })
+        setGpsStatus(`Broadcasting: ${lat.toFixed(4)}, ${lng.toFixed(4)}`)
+      },
+      (err) => {
+        setGpsStatus(`GPS error: ${err.message}`)
+        stopGps()
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
+    )
+  }, [])
+
+  const stopGps = useCallback(() => {
+    if (watchIdRef.current !== null) {
+      navigator.geolocation.clearWatch(watchIdRef.current)
+      watchIdRef.current = null
+    }
+    setGpsActive(false)
+  }, [])
+
+  // Auto-schedule: check every minute
+  useEffect(() => {
+    const check = () => {
+      const active = isWithinSchedule()
+      setScheduleActive(active)
+      if (active) {
+        startGps()
+        setGpsStatus(prev => prev.includes('Broadcasting') ? prev : 'Auto-started (5:00–17:00)')
+      } else {
+        stopGps()
+        setGpsStatus('Outside schedule (active 5:00–17:00)')
+      }
+    }
+    check()
+    const interval = setInterval(check, 60000)
+    return () => { clearInterval(interval); stopGps() }
+  }, [startGps, stopGps])
 
   useEffect(() => {
     Promise.allSettled([
       api.getRoutes().then((d: any) => setRoutes(Array.isArray(d) ? d : [])).catch(() => {}),
       api.getStudents().then((d: any) => setStudents(Array.isArray(d) ? d : [])).catch(() => {}),
     ]).then(() => setLoading(false))
-  }, [])
+
+    if (user?.routeId) busIdRef.current = user.routeId
+  }, [user?.routeId])
 
   const toggleBoarded = (id: string) => {
     setBoardedStudents(prev => {
@@ -55,6 +119,15 @@ export default function DriverDashboard() {
       else next.add(id)
       return next
     })
+  }
+
+  const toggleGps = () => {
+    if (gpsActive) {
+      stopGps()
+      setGpsStatus('GPS broadcasting stopped')
+    } else {
+      startGps()
+    }
   }
 
   const fuelData = [
@@ -140,6 +213,50 @@ export default function DriverDashboard() {
               </Card>
             </motion.div>
           ))}
+        </motion.div>
+
+        {/* GPS Broadcast Card */}
+        <motion.div variants={itemVariants}>
+          <Card glow className={cn("border transition-all", gpsActive ? "border-emerald-500/30" : "border-orange-500/10")}>
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center",
+                    gpsActive ? "bg-gradient-to-br from-emerald-600 to-teal-600" : "bg-gradient-to-br from-orange-600 to-amber-600"
+                  )}>
+                    <Radio className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Live GPS Broadcasting</p>
+                    <p className="text-xs text-muted-foreground">{gpsStatus}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  {gpsActive && (
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-xs text-emerald-500 font-medium">LIVE</span>
+                    </div>
+                  )}
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={toggleGps}
+                    className={cn(
+                      "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium shadow-lg transition-all",
+                      gpsActive
+                        ? "bg-red-600 text-white shadow-red-500/25 hover:shadow-red-500/40"
+                        : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-emerald-500/25 hover:shadow-emerald-500/40"
+                    )}
+                  >
+                    <MapPin className="w-4 h-4" />
+                    {gpsActive ? 'Stop GPS' : 'Start GPS'}
+                  </motion.button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
 
         {/* Route & Students */}
