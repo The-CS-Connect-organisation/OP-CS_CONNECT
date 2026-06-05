@@ -83,6 +83,8 @@
     "vite": "^7.0.0"
   },
   "overrides": {
-    "three-mesh-bvh": "^0.8.0"
+    "three-mesh-bvh": "^0.8.0",
+    "effect": "^3.21.3",
+    "js-cookie": "^3.0.8"
   }
 }
