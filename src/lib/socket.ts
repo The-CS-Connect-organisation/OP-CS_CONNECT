@@ -1,7 +1,6 @@
 import { io, Socket } from 'socket.io-client';
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://op-csconnect-backend-production.up.railway.app/api';
-const SOCKET_URL = API_BASE.replace('/api', '');
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || window.location.origin;
 
 let socket: Socket | null = null;
 
@@ -13,6 +12,8 @@ export function getSocket(): Socket {
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
     });
+    socket.on('connect', () => console.log('[Socket] connected'));
+    socket.on('connect_error', (err) => console.error('[Socket] error:', err.message));
   }
   return socket;
 }
