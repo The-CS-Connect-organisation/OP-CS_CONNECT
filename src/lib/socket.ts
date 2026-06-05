@@ -1,6 +1,14 @@
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || window.location.origin;
+// The Socket.IO server runs on the same backend host as the REST API.
+// Derive it from VITE_API_BASE (stripping the trailing "/api") so live bus
+// tracking connects to the backend instead of the frontend's own origin.
+const API_BASE =
+  import.meta.env.VITE_API_BASE ||
+  'https://op-csconnect-backend-production.up.railway.app/api';
+
+const SOCKET_URL =
+  import.meta.env.VITE_SOCKET_URL || API_BASE.replace(/\/api\/?$/, '');
 
 let socket: Socket | null = null;
 

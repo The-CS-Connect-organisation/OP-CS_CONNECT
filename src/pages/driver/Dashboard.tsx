@@ -145,6 +145,20 @@ export default function DriverDashboard() {
   const totalStudents = students.length;
   const boardedCount = boardedStudents.size;
 
+  // Safely derive the active route and normalize its stops. Stops may come from
+  // the backend as plain strings or as rich objects, and the route list can be
+  // empty - guard against both so the dashboard never crashes on render.
+  const currentRoute = routes[0];
+  const routeStops: any[] = Array.isArray(currentRoute?.stops)
+    ? currentRoute.stops.map((s: any, i: number) =>
+        typeof s === 'string'
+          ? { id: `stop-${i}`, name: s, time: '--:--', students: 0, status: 'upcoming' }
+          : { id: s.id ?? `stop-${i}`, status: 'upcoming', time: '--:--', students: 0, ...s }
+      )
+    : [];
+  const currentStopName = routeStops.find((s: any) => s.status === 'current')?.name ?? '—';
+  const nextStopName = routeStops.find((s: any) => s.status === 'upcoming')?.name ?? '—';
+
   return (
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
         {/* Hero */}
@@ -162,7 +176,7 @@ export default function DriverDashboard() {
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mt-2 max-w-lg">
-                Currently at <span className="text-orange-500 font-medium">{routes[0].stops.find((s: any) => s.status === 'current')?.name}</span>. {boardedCount}/{totalStudents} students boarded. Next stop: {routes[0].stops.find((s: any) => s.status === 'upcoming')?.name}.
+                Currently at <span className="text-orange-500 font-medium">{currentStopName}</span>. {boardedCount}/{totalStudents} students boarded. Next stop: {nextStopName}.
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -275,7 +289,7 @@ export default function DriverDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
-                  {routes[0].stops.map((stop: any, i: number) => (
+                  {routeStops.map((stop: any, i: number) => (
                     <motion.div
                       key={stop.id}
                       initial={{ opacity: 0, x: -10 }}
@@ -296,7 +310,7 @@ export default function DriverDashboard() {
                           stop.status === 'upcoming' && "bg-muted border-muted-foreground/30",
                           (stop.status === 'start' || stop.status === 'end') && "bg-orange-500 border-orange-500",
                         )} />
-                        {i < routes[0].stops.length - 1 && <div className="w-0.5 h-6 bg-border" />}
+                        {i < routeStops.length - 1 && <div className="w-0.5 h-6 bg-border" />}
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className={cn("text-sm font-medium", stop.status === 'current' && "text-orange-500")}>{stop.name}</p>
