@@ -176,11 +176,15 @@ export default function StudentBusTracking() {
           {/* Route list */}
           <div className="md:col-span-1 space-y-4">
             {routes.map(route => (
-              <Card
-                key={route.id}
-                className={`p-4 cursor-pointer transition-colors ${selectedRoute === route.id ? 'border-orange-500 bg-orange-50/30' : 'hover:border-orange-200'}`}
-                onClick={() => setSelectedRoute(route.id)}
-              >
+                  <Card
+                    key={route.id}
+                    className={`p-4 cursor-pointer transition-colors ${selectedRoute === route.id ? 'border-orange-500 bg-orange-50/30' : 'hover:border-orange-200'}`}
+                    onClick={() => {
+                      console.log('Clicked route:', route.id);
+                      setSelectedRoute(route.id);
+                      console.log('Selected route set to:', route.id);
+                    }}
+                  >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <Bus className="w-5 h-5 text-orange-500" />
