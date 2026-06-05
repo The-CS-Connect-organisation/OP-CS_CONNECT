@@ -1,50 +1,62 @@
 import { cn } from "@/lib/utils"
-import { motion, useMotionValue, useSpring, useTransform, type HTMLMotionProps, MotionStyle } from 'framer-motion';
+import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
 import React, { useCallback } from 'react';
 
-interface CardProps extends HTMLMotionProps<"div"> {
+interface CardProps {
+  className?: string
+  style?: React.CSSProperties
+  children?: React.ReactNode
   glow?: boolean
   tilt?: boolean
   spotlight?: boolean
+  onClick?: React.MouseEventHandler<HTMLDivElement>
+  key?: React.Key
 }
 
 function Card({ className, glow, tilt = false, spotlight = true, children, ...props }: CardProps) {
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-  const springX = useSpring(x, { stiffness: 150, damping: 15 })
-  const springY = useSpring(y, { stiffness: 150, damping: 15 })
+  const x = useMotionValue(0.5);
+  const y = useMotionValue(0.5);
+  const springX = useSpring(x, { stiffness: 150, damping: 15 });
+  const springY = useSpring(y, { stiffness: 150, damping: 15 });
 
-  const rotateX = useSpring(0, { stiffness: 300, damping: 30 })
-  const rotateY = useSpring(0, { stiffness: 300, damping: 30 })
+  const rotateX = useSpring(0, { stiffness: 300, damping: 30 });
+  const rotateY = useSpring(0, { stiffness: 300, damping: 30 });
 
-  const spotlightX = useTransform(springX, [0, 1], [0, 100])
-  const spotlightY = useTransform(springY, [0, 1], [0, 100])
-
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const mx = (e.clientX - rect.left) / rect.width
-    const my = (e.clientY - rect.top) / rect.height
-    x.set(mx)
-    y.set(my)
-
-    if (tilt) {
-      const centerX = rect.left + rect.width / 2
-      const centerY = rect.top + rect.height / 2
-      const tx = (e.clientX - centerX) / (rect.width / 2)
-      const ty = (e.clientY - centerY) / (rect.height / 2)
-      rotateX.set(-ty * 4)
-      rotateY.set(tx * 4)
-    }
-  }, [tilt, x, y, rotateX, rotateY])
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const mx = (e.clientX - rect.left) / rect.width;
+      const my = (e.clientY - rect.top) / rect.height;
+      x.set(mx);
+      y.set(my);
+      if (tilt) {
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        rotateX.set(-((e.clientY - cy) / (rect.height / 2)) * 4);
+        rotateY.set(((e.clientX - cx) / (rect.width / 2)) * 4);
+      }
+    },
+    [tilt, x, y, rotateX, rotateY]
+  );
 
   const handleMouseLeave = useCallback(() => {
-    x.set(0.5)
-    y.set(0.5)
+    x.set(0.5);
+    y.set(0.5);
     if (tilt) {
-      rotateX.set(0)
-      rotateY.set(0)
+      rotateX.set(0);
+      rotateY.set(0);
     }
-  }, [tilt, x, y, rotateX, rotateY])
+  }, [tilt, x, y, rotateX, rotateY]);
+
+  const motionProps: Record<string, any> = {};
+  if (tilt) {
+    motionProps.style = {
+      transform: useTransform([rotateX, rotateY], ([rx, ry]: number[]) =>
+        `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`
+      ),
+      transformStyle: 'preserve-3d',
+    };
+  }
 
   return (
     <motion.div
@@ -54,23 +66,20 @@ function Card({ className, glow, tilt = false, spotlight = true, children, ...pr
       )}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      style={tilt ? {
-        transform: useTransform([rotateX, rotateY], ([rx, ry]) =>
-          `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`
-        ),
-        transformStyle: "preserve-3d",
-      } as any : undefined}
-      {...props}
+      {...motionProps}
     >
       {spotlight && (
         <motion.div
           className="pointer-events-none absolute inset-0 opacity-0 group-hover/card:opacity-100 transition-opacity duration-500"
-          style={{
-            background: useTransform(
-              [springX, springY],
-              ([px, py]) => `radial-gradient(800px circle at ${(px as number) * 100}% ${(py as number) * 100}%, rgba(249,115,22,0.08), transparent 40%)`
-            )
-          }}
+          style={
+            {
+              background: useTransform(
+                [springX, springY],
+                ([px, py]: number[]) =>
+                  `radial-gradient(800px circle at ${(px as number) * 100}% ${(py as number) * 100}%, rgba(249,115,22,0.08), transparent 40%)`
+              ),
+            } as any
+          }
         />
       )}
       {children}
