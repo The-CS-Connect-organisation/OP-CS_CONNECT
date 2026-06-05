@@ -54,6 +54,10 @@ export default function DriverDashboard() {
   const [scheduleActive, setScheduleActive] = useState(isWithinSchedule())
   const watchIdRef = useRef<number | null>(null)
   const busIdRef = useRef<string>('r1')
+  // Manual GPS override: null = follow schedule, true = force on, false = force off.
+  const gpsOverrideRef = useRef<boolean | null>(null)
+  // Tracks the last schedule-window state so we can detect boundary crossings.
+  const lastActiveRef = useRef<boolean>(isWithinSchedule())
 
   const startGps = useCallback(() => {
     if (watchIdRef.current !== null) return
@@ -90,6 +94,21 @@ export default function DriverDashboard() {
     const check = () => {
       const active = isWithinSchedule()
       setScheduleActive(active)
+      // When the schedule window boundary is crossed, clear any manual override
+      // so automatic scheduling resumes from the new window.
+      if (active !== lastActiveRef.current) {
+        lastActiveRef.current = active
+        gpsOverrideRef.current = null
+      }
+      // A manual override takes precedence over the schedule.
+      if (gpsOverrideRef.current === true) {
+        startGps()
+        return
+      }
+      if (gpsOverrideRef.current === false) {
+        stopGps()
+        return
+      }
       if (active) {
         startGps()
         setGpsStatus(prev => prev.includes('Broadcasting') ? prev : 'Auto-started (5:00–17:00)')
@@ -123,9 +142,11 @@ export default function DriverDashboard() {
 
   const toggleGps = () => {
     if (gpsActive) {
+      gpsOverrideRef.current = false
       stopGps()
-      setGpsStatus('GPS broadcasting stopped')
+      setGpsStatus('GPS broadcasting stopped (manual)')
     } else {
+      gpsOverrideRef.current = true
       startGps()
     }
   }
