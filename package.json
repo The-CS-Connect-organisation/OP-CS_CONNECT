@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "postinstall": "npm install --legacy-peer-deps"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@fontsource/inter": "^5.2.8",
