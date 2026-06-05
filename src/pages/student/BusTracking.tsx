@@ -67,6 +67,7 @@ interface BusData {
   estimatedArrival: string;
   status: 'on-time' | 'delayed' | 'arrived';
   stops: { name: string; time: string; reached: boolean }[];
+  onLeave?: boolean;
 }
 
 interface Location {
@@ -109,6 +110,7 @@ export default function StudentBusTracking() {
         driverPhone: r.driverPhone || r.phone || 'N/A',
         estimatedArrival: r.estimatedArrival || '--:--',
         status: r.status || 'on-time',
+        onLeave: !!r.onLeave,
         stops: Array.isArray(r.stops)
           ? r.stops.map((s: any) => typeof s === 'string' ? { name: s, time: '--:--', reached: false } : s)
           : [],
@@ -123,9 +125,12 @@ export default function StudentBusTracking() {
 
   // Subscribe to bus location when a route is selected
   useEffect(() => {
+    // Always clear the previous route's location so a route with no live GPS
+    // feed doesn't keep showing the last route's bus position.
+    setBusLocation(null);
+    setDistance(null);
+
     if (!selectedRoute) {
-      setBusLocation(null);
-      setDistance(null);
       return;
     }
 
@@ -139,9 +144,20 @@ export default function StudentBusTracking() {
       }
     };
 
+    // Service status (driver on leave) updates in real time.
+    const statusHandler = (s: { onLeave: boolean }) => {
+      setRoutes(prev => prev.map(r => (r.id === selectedRoute ? { ...r, onLeave: s.onLeave } : r)));
+      if (s.onLeave) {
+        setBusLocation(null);
+        setDistance(null);
+      }
+    };
+
     socket.on(`bus:location:${selectedRoute}`, handler);
+    socket.on(`bus:status:${selectedRoute}`, statusHandler);
     return () => {
       socket.off(`bus:location:${selectedRoute}`, handler);
+      socket.off(`bus:status:${selectedRoute}`, statusHandler);
     };
   }, [selectedRoute, userLocation]);
 
@@ -197,7 +213,9 @@ export default function StudentBusTracking() {
                     <Bus className="w-5 h-5 text-orange-500" />
                     <h3 className="font-semibold">{route.routeName}</h3>
                   </div>
-                  <Badge className={getStatusColor(route.status)}>{route.status}</Badge>
+                  {route.onLeave
+                    ? <Badge className="bg-amber-100 text-amber-700">no service</Badge>
+                    : <Badge className={getStatusColor(route.status)}>{route.status}</Badge>}
                 </div>
                 <div className="space-y-1 text-sm text-muted-foreground">
                   <div className="flex items-center gap-2">
@@ -221,6 +239,17 @@ export default function StudentBusTracking() {
           <div className="md:col-span-2 space-y-4">
             {selectedBus ? (
               <>
+                {selectedBus.onLeave && (
+                  <Card className="p-4 border-amber-300 bg-amber-50/50">
+                    <div className="flex items-center gap-3">
+                      <AlertCircle className="w-6 h-6 text-amber-600 shrink-0" />
+                      <div>
+                        <p className="font-semibold text-amber-800">No service today</p>
+                        <p className="text-sm text-amber-700">The driver for this route is on leave, so the bus is not being tracked right now.</p>
+                      </div>
+                    </div>
+                  </Card>
+                )}
                 {/* Live Map */}
                 <Card className="overflow-hidden">
                   <div className="h-[400px]">

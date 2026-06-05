@@ -52,12 +52,15 @@ export default function DriverDashboard() {
   const [gpsActive, setGpsActive] = useState(false)
   const [gpsStatus, setGpsStatus] = useState('Waiting for schedule...')
   const [scheduleActive, setScheduleActive] = useState(isWithinSchedule())
+  const [onLeave, setOnLeave] = useState(false)
   const watchIdRef = useRef<number | null>(null)
   const busIdRef = useRef<string>('r1')
   // Manual GPS override: null = follow schedule, true = force on, false = force off.
   const gpsOverrideRef = useRef<boolean | null>(null)
   // Tracks the last schedule-window state so we can detect boundary crossings.
   const lastActiveRef = useRef<boolean>(isWithinSchedule())
+  // Mirror onLeave into a ref so the schedule interval always sees the latest value.
+  const onLeaveRef = useRef<boolean>(false)
 
   const startGps = useCallback(() => {
     if (watchIdRef.current !== null) return
@@ -92,6 +95,12 @@ export default function DriverDashboard() {
   // Auto-schedule: check every minute
   useEffect(() => {
     const check = () => {
+      // If the admin has marked this driver on leave, never broadcast.
+      if (onLeaveRef.current) {
+        stopGps()
+        setGpsStatus('You are marked on leave — tracking disabled')
+        return
+      }
       const active = isWithinSchedule()
       setScheduleActive(active)
       // When the schedule window boundary is crossed, clear any manual override
@@ -120,7 +129,7 @@ export default function DriverDashboard() {
     check()
     const interval = setInterval(check, 60000)
     return () => { clearInterval(interval); stopGps() }
-  }, [startGps, stopGps])
+  }, [startGps, stopGps, onLeave])
 
   useEffect(() => {
     Promise.allSettled([
@@ -129,7 +138,13 @@ export default function DriverDashboard() {
     ]).then(() => setLoading(false))
 
     if (user?.routeId) busIdRef.current = user.routeId
-  }, [user?.routeId])
+    // Load the driver's current leave status so tracking stays disabled on leave days.
+    if (user?.id) {
+      api.getUser(user.id)
+        .then((u: any) => { onLeaveRef.current = !!u?.onLeave; setOnLeave(!!u?.onLeave) })
+        .catch(() => {})
+    }
+  }, [user?.routeId, user?.id])
 
   const toggleBoarded = (id: string) => {
     setBoardedStudents(prev => {
@@ -141,6 +156,7 @@ export default function DriverDashboard() {
   }
 
   const toggleGps = () => {
+    if (onLeave) return
     if (gpsActive) {
       gpsOverrideRef.current = false
       stopGps()
@@ -274,20 +290,24 @@ export default function DriverDashboard() {
                       <span className="text-xs text-emerald-500 font-medium">LIVE</span>
                     </div>
                   )}
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={toggleGps}
-                    className={cn(
-                      "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium shadow-lg transition-all",
-                      gpsActive
-                        ? "bg-red-600 text-white shadow-red-500/25 hover:shadow-red-500/40"
-                        : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-emerald-500/25 hover:shadow-emerald-500/40"
-                    )}
-                  >
-                    <MapPin className="w-4 h-4" />
-                    {gpsActive ? 'Stop GPS' : 'Start GPS'}
-                  </motion.button>
+                  {onLeave ? (
+                    <span className="px-3 py-2 rounded-xl text-sm font-medium bg-amber-100 text-amber-700">On leave — tracking off</span>
+                  ) : (
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={toggleGps}
+                      className={cn(
+                        "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium shadow-lg transition-all",
+                        gpsActive
+                          ? "bg-red-600 text-white shadow-red-500/25 hover:shadow-red-500/40"
+                          : "bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-emerald-500/25 hover:shadow-emerald-500/40"
+                      )}
+                    >
+                      <MapPin className="w-4 h-4" />
+                      {gpsActive ? 'Stop GPS' : 'Start GPS'}
+                    </motion.button>
+                  )}
                 </div>
               </div>
             </CardContent>

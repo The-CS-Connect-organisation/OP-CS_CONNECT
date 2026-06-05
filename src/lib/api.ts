@@ -304,6 +304,7 @@ export const api = {
   getBusAssignments: () => apiFetch('/bus/assignments'),
   createBusAssignment: (data: any) => apiFetch('/bus/assignments', { method: 'POST', body: JSON.stringify(data) }),
   deleteBusAssignment: (id: string) => apiFetch(`/bus/assignments/${id}`, { method: 'DELETE' }),
+  setDriverLeave: (driverId: string, onLeave: boolean) => apiFetch(`/bus/drivers/${driverId}/leave`, { method: 'PUT', body: JSON.stringify({ onLeave }) }),
 
   // Fees
   getFeeRecords: () => apiFetch('/fees'),

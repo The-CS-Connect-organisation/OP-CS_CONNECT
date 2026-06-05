@@ -10,12 +10,14 @@ interface BusAssignment {
   id: string;
   busNumber: string;
   routeName: string;
+  driverId?: string;
   driverName: string;
   driverPhone: string;
   capacity: number;
   assignedStudents: number;
   stops: string[];
   status: 'active' | 'inactive' | 'maintenance';
+  onLeave?: boolean;
 }
 
 export default function AdminBusAssignment() {
@@ -40,12 +42,14 @@ export default function AdminBusAssignment() {
         id: b.id,
         busNumber: b.busNumber || b.bus || 'N/A',
         routeName: b.routeName || b.name || 'Unnamed Route',
+        driverId: b.driverId,
         driverName: b.driverName || b.driver || 'Unassigned',
         driverPhone: b.driverPhone || b.phone || 'N/A',
         capacity: b.capacity ?? 40,
         assignedStudents: b.assignedStudents ?? (Array.isArray(b.students) ? b.students.length : 0),
         stops: Array.isArray(b.stops) ? b.stops : [],
         status: b.status || 'active',
+        onLeave: !!b.onLeave,
       }));
       setBuses(normalized);
     } catch {
@@ -73,6 +77,18 @@ export default function AdminBusAssignment() {
       setBuses(prev => prev.filter(b => b.id !== id));
     } catch {
       // error
+    }
+  };
+
+  const handleToggleLeave = async (driverId: string | undefined, onLeave: boolean) => {
+    if (!driverId) return;
+    // Optimistically update every route driven by this driver.
+    setBuses(prev => prev.map(b => (b.driverId === driverId ? { ...b, onLeave } : b)));
+    try {
+      await api.setDriverLeave(driverId, onLeave);
+    } catch {
+      // Revert on failure
+      setBuses(prev => prev.map(b => (b.driverId === driverId ? { ...b, onLeave: !onLeave } : b)));
     }
   };
 
@@ -130,7 +146,9 @@ export default function AdminBusAssignment() {
                     <p className="text-sm text-muted-foreground">{bus.routeName}</p>
                   </div>
                 </div>
-                <Badge className={getStatusColor(bus.status)}>{bus.status}</Badge>
+                {bus.onLeave
+                  ? <Badge className="bg-amber-100 text-amber-700">driver on leave</Badge>
+                  : <Badge className={getStatusColor(bus.status)}>{bus.status}</Badge>}
               </div>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
@@ -146,7 +164,17 @@ export default function AdminBusAssignment() {
                   <span>{bus.assignedStudents}/{bus.capacity} students</span>
                 </div>
               </div>
-              <div className="flex gap-2 mt-3">
+              <div className="flex items-center justify-between gap-2 mt-3">
+                <label className="flex items-center gap-2 text-sm cursor-pointer select-none" title="When on leave, this driver's bus is not tracked">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 accent-amber-600"
+                    checked={!!bus.onLeave}
+                    disabled={!bus.driverId}
+                    onChange={(e) => handleToggleLeave(bus.driverId, e.target.checked)}
+                  />
+                  <span>On leave today</span>
+                </label>
                 <button onClick={() => handleDelete(bus.id)} className="text-sm text-red-500 hover:underline">Remove</button>
               </div>
             </Card>
