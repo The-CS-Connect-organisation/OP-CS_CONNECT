@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
@@ -31,11 +32,48 @@ const buttonVariants = cva(
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean
+  magnetic?: boolean
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, asChild = false, ...props }, ref) => {
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, asChild = false, magnetic = false, ...props }, ref) => {
+  const magnetX = useMotionValue(0)
+  const magnetY = useMotionValue(0)
+  const springMagnetX = useSpring(magnetX, { stiffness: 200, damping: 20 })
+  const springMagnetY = useSpring(magnetY, { stiffness: 200, damping: 20 })
+
+  const handleMouseMove = magnetic ? (e: React.MouseEvent<HTMLButtonElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX - rect.left - rect.width / 2
+    const y = e.clientY - rect.top - rect.height / 2
+    magnetX.set(x * 0.25)
+    magnetY.set(y * 0.25)
+  } : undefined
+
+  const handleMouseLeave = magnetic ? () => {
+    magnetX.set(0)
+    magnetY.set(0)
+  } : undefined
+
   const Comp = asChild ? Slot : "button"
-  return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+
+  if (magnetic) {
+    return (
+      <motion.button
+        ref={ref as any}
+        className={cn(buttonVariants({ variant, size, className }))}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          transform: useTransform([springMagnetX, springMagnetY], ([mx, my]: number[]) =>
+            `translate(${mx}px, ${my}px)`
+          ),
+        } as any}
+        {...(props as any)}
+      />
+    )
+  }
+
+  return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref as any} {...props} />
 })
 Button.displayName = "Button"
 
