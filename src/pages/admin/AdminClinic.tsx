@@ -17,14 +17,8 @@ interface ClinicVisit {
   status: 'completed' | 'follow-up' | 'referred';
 }
 
-const mockVisits: ClinicVisit[] = [
-  { id: '1', studentName: 'Alice Johnson', class: '10-A', reason: 'Headache', treatment: 'Rest, water', date: '2026-05-15', time: '10:30', nurse: 'Nurse Smith', status: 'completed' },
-  { id: '2', studentName: 'Bob Williams', class: '11-B', reason: 'Stomach ache', treatment: 'Medication given', date: '2026-05-15', time: '11:15', nurse: 'Nurse Smith', status: 'follow-up' },
-  { id: '3', studentName: 'Carol Davis', class: '9-A', reason: 'Minor cut', treatment: 'Bandage applied', date: '2026-05-14', time: '09:45', nurse: 'Nurse Jones', status: 'completed' },
-];
-
 export default function AdminClinic() {
-  const [visits, setVisits] = useState<ClinicVisit[]>(mockVisits);
+  const [visits, setVisits] = useState<ClinicVisit[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {

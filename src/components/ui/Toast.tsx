@@ -57,7 +57,7 @@ export const ToastContainer: React.FC<ToastProps> = ({ toasts, removeToast }) =>
             <p className="text-sm text-[var(--text-primary)] flex-1">{toast.message}</p>
             <button
               onClick={() => removeToast(toast.id)}
-              className="w-6 h-6 rounded flex items-center justify-center hover:bg-black/05 transition-colors"
+              className="w-6 h-6 rounded flex items-center justify-center hover:bg-black/5 transition-colors"
             >
               <X size={14} className="text-[var(--text-muted)]" />
             </button>

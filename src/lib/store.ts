@@ -168,7 +168,7 @@ export const useNotificationStore = create<NotificationState>()((set) => ({
       read: true,
     },
   ],
-  unreadCount: 2,
+  unreadCount: 2, // Computed from mock data: notifications.filter(n => !n.read).length = 2
   addNotification: (notification) =>
     set((state) => ({
       notifications: [
@@ -385,7 +385,7 @@ export const useDataStore = create<DataState>()((set, get) => ({
       set({ subjects, assignments, timetable, events, clubs, messages, notifications });
 
     } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+      set({ error: typeof error === 'string' ? error : error?.message || 'Unknown error', isLoading: false });
     }
   },
 
@@ -418,7 +418,7 @@ export const useDataStore = create<DataState>()((set, get) => ({
         isLoading: false,
       });
     } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+      set({ error: typeof error === 'string' ? error : error?.message || 'Unknown error', isLoading: false });
     }
   },
 
@@ -445,7 +445,7 @@ export const useDataStore = create<DataState>()((set, get) => ({
         isLoading: false,
       });
     } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+      set({ error: typeof error === 'string' ? error : error?.message || 'Unknown error', isLoading: false });
     }
   },
 
@@ -478,7 +478,7 @@ export const useDataStore = create<DataState>()((set, get) => ({
         api.getRoutes(),
         api.getEvents(),
       ]);
-      const driverRoute = routes.find((r: any) => r.id === driver.routeId) || routes[0];
+      const driverRoute = routes.length > 0 ? (routes.find((r: any) => r.id === driver.routeId) || routes[0]) : null;
       set({
         students: driverRoute?.students || [],
         routes,
@@ -486,7 +486,7 @@ export const useDataStore = create<DataState>()((set, get) => ({
         isLoading: false,
       });
     } catch (error: any) {
-      set({ error: error.message, isLoading: false });
+      set({ error: typeof error === 'string' ? error : error?.message || 'Unknown error', isLoading: false });
     }
   },
 

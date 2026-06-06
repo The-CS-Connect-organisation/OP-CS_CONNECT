@@ -26,8 +26,6 @@ export default function TopBar() {
   const searchModalRef = useRef<HTMLDivElement>(null)
   const avatarMenuRef = useRef<HTMLDivElement>(null)
 
-  if (!user) return null
-
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.code === 'Space') {
@@ -58,6 +56,8 @@ export default function TopBar() {
     if (showAvatarMenu) document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [showAvatarMenu])
+
+  if (!user) return null
 
   const allLinks = (navSections[user.role] || []).flatMap(s =>
     s.items.map(item => ({ ...item, section: s.label }))

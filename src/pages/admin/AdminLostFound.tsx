@@ -17,14 +17,8 @@ interface LostFoundItem {
   image?: string;
 }
 
-const mockItems: LostFoundItem[] = [
-  { id: '1', title: 'Blue backpack', description: 'Found near gymnasium', type: 'found', location: 'Gymnasium', date: '2026-05-15', reportedBy: 'Staff', status: 'active' },
-  { id: '2', title: 'Math textbook', description: 'Lost in library', type: 'lost', location: 'Library', date: '2026-05-14', reportedBy: 'Student', status: 'active' },
-  { id: '3', title: 'Water bottle', description: 'Found in cafeteria', type: 'found', location: 'Cafeteria', date: '2026-05-13', reportedBy: 'Teacher', status: 'claimed' },
-];
-
 export default function AdminLostFound() {
-  const [items, setItems] = useState<LostFoundItem[]>(mockItems);
+  const [items, setItems] = useState<LostFoundItem[]>([]);
   const [filter, setFilter] = useState<'all' | 'lost' | 'found'>('all');
 
   useEffect(() => {

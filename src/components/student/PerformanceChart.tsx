@@ -38,7 +38,7 @@ const PerformanceChart = ({ grades, attendancePercent }: { grades: any[], attend
           }}
         />
         <Area type="monotone" dataKey="score" stroke="#8b5cf6" fill="url(#gpaGradient)" strokeWidth={2} name="Score %" />
-        <Area type="monotone" dataKey="attendance" stroke="#10b9.81" fill="url(#attGradient)" strokeWidth={2} name="Attendance" />
+        <Area type="monotone" dataKey="attendance" stroke="#10b981" fill="url(#attGradient)" strokeWidth={2} name="Attendance" />
       </AreaChart>
     </ResponsiveContainer>
   );

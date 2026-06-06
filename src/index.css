@@ -275,7 +275,7 @@ html::-webkit-scrollbar {
 }
 
 .glow-blue {
-  box-shadow: 0 0 20px rgba(249, 115, 22, 0.3), 0 0 60px rgba(249, 115, 22, 0.1);
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3), 0 0 60px rgba(59, 130, 246, 0.1);
 }
 
 /* Skeleton loading */
@@ -360,7 +360,7 @@ body::after {
   transition-duration: 150ms;
 }
 
-/* ... previous content ... */
+
 
 /* Print styles for dashboards */
 @media print {

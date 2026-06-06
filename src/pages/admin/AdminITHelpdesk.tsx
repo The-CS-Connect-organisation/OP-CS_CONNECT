@@ -16,14 +16,8 @@ interface Ticket {
   date: string;
 }
 
-const mockTickets: Ticket[] = [
-  { id: '1', title: 'Computer not turning on', description: 'Lab 3 computer #5 not powering on', submittedBy: 'Teacher A', category: 'hardware', priority: 'high', status: 'open', date: '2026-05-15' },
-  { id: '2', title: 'WiFi connectivity issues', description: 'Cannot connect to school WiFi in library', submittedBy: 'Student B', category: 'network', priority: 'medium', status: 'in-progress', date: '2026-05-14' },
-  { id: '3', title: 'Password reset needed', description: 'Forgot account password', submittedBy: 'Parent C', category: 'account', priority: 'low', status: 'resolved', date: '2026-05-13' },
-];
-
 export default function AdminITHelpdesk() {
-  const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
   const [filter, setFilter] = useState<'all' | 'open' | 'in-progress' | 'resolved'>('all');
 
   useEffect(() => {

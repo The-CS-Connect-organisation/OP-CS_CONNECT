@@ -16,14 +16,8 @@ interface Report {
   anonymous: boolean;
 }
 
-const mockReports: Report[] = [
-  { id: '1', title: 'Broken window in hallway', description: 'Window in B wing hallway is broken', reportedBy: 'Anonymous', date: '2026-05-15', category: 'maintenance', status: 'pending', anonymous: true },
-  { id: '2', title: 'Bullying incident', description: 'Reported incident near cafeteria', reportedBy: 'John Doe', date: '2026-05-14', category: 'bullying', status: 'reviewed', anonymous: false },
-  { id: '3', title: 'Fire exit blocked', description: 'Emergency exit near gym is blocked', reportedBy: 'Anonymous', date: '2026-05-13', category: 'safety', status: 'resolved', anonymous: true },
-];
-
 export default function AdminAnonymousReports() {
-  const [reports, setReports] = useState<Report[]>(mockReports);
+  const [reports, setReports] = useState<Report[]>([]);
   const [filter, setFilter] = useState<'all' | 'pending' | 'reviewed' | 'resolved'>('all');
 
   useEffect(() => {

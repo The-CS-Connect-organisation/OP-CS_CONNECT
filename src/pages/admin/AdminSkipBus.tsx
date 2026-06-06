@@ -16,14 +16,8 @@ interface SkipRequest {
   parentApproved: boolean;
 }
 
-const mockRequests: SkipRequest[] = [
-  { id: '1', studentName: 'Alice Johnson', class: '10-A', busRoute: 'Route A', date: '2026-05-16', reason: 'Parent will pick up', status: 'pending', parentApproved: true },
-  { id: '2', studentName: 'Bob Williams', class: '11-B', busRoute: 'Route B', date: '2026-05-16', reason: 'Staying after school', status: 'approved', parentApproved: true },
-  { id: '3', studentName: 'Carol Davis', class: '9-A', busRoute: 'Route C', date: '2026-05-17', reason: 'Doctor appointment', status: 'pending', parentApproved: false },
-];
-
 export default function AdminSkipBus() {
-  const [requests, setRequests] = useState<SkipRequest[]>(mockRequests);
+  const [requests, setRequests] = useState<SkipRequest[]>([]);
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
   useEffect(() => {

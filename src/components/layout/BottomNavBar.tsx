@@ -5,9 +5,9 @@ import { useAuthStore, type UserRole } from '@/lib/store'
 import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, BookOpen, Calendar, MessageSquare, User,
-  Sparkles, Trophy, Bell, Settings, CreditCard, ClipboardList,
-  BarChart3, Bus, Library, Globe, Target, FileText, Users,
-  Wallet, Radio, Shield, MapPin, Building2
+  Sparkles, CreditCard, ClipboardList,
+  BarChart3, Bus, Library, FileText, Users,
+  Wallet, Radio, MapPin, Building2
 } from 'lucide-react'
 
 interface BottomNavItem {

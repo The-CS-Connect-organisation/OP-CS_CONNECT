@@ -975,7 +975,7 @@ export default function GenericPage({ title, description, icon, category, role, 
     }
 
     // Student Progress
-    if (d.students && !d.students[0]?.gpa === undefined) {
+    if (d.students && d.students[0]?.gpa === undefined) {
       return renderList(d.students)
     }
 

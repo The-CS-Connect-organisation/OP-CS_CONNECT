@@ -1,4 +1,3 @@
-import React from 'react'
 import ResponsiveShell from './ResponsiveShell'
 
 interface DashboardLayoutProps {

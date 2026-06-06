@@ -17,10 +17,10 @@ export function getSocket(): Socket {
     socket = io(SOCKET_URL, {
       autoConnect: true,
       reconnection: true,
-      reconnectionAttempts: Infinity,
+      reconnectionAttempts: 10,
       reconnectionDelay: 1000,
     });
-    socket.on('connect', () => console.log('[Socket] connected'));
+    socket.on('connect', () => {});
     socket.on('connect_error', (err) => console.error('[Socket] error:', err.message));
   }
   return socket;

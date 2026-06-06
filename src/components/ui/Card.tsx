@@ -48,12 +48,14 @@ function Card({ className, glow, tilt = false, spotlight = true, children, ...pr
     }
   }, [tilt, x, y, rotateX, rotateY]);
 
+  const transformed = useTransform([rotateX, rotateY], ([rx, ry]: number[]) =>
+    `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`
+  );
+
   const motionProps: Record<string, any> = {};
   if (tilt) {
     motionProps.style = {
-      transform: useTransform([rotateX, rotateY], ([rx, ry]: number[]) =>
-        `perspective(800px) rotateX(${rx}deg) rotateY(${ry}deg)`
-      ),
+      transform: transformed,
       transformStyle: 'preserve-3d',
     };
   }
