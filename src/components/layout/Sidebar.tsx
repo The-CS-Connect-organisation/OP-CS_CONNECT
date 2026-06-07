@@ -44,8 +44,8 @@ export default function Sidebar() {
         >
           {collapsed ? <ChevronRight className="w-4 h-4 text-white/70" /> : <ChevronLeft className="w-4 h-4 text-white/70" />}
         </button>
-        <button onClick={() => setMobileOpen(false)} className="p-1 rounded-md hover:bg-white/10 lg:hidden">
-          <X className="w-4 h-4 text-white/70" />
+        <button type="button" onClick={(e) => { e.stopPropagation(); setMobileOpen(false) }} className="p-2 rounded-md hover:bg-white/10 lg:hidden active:scale-95 transition-transform">
+          <X className="w-5 h-5 text-white/80" />
         </button>
       </div>
 
