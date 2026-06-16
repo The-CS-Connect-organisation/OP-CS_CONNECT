@@ -13,6 +13,7 @@ export interface User {
   role: UserRole;
   avatar?: string;
   schoolId?: string;
+  employeeId?: string;
   classIds?: string[];
   routeId?: string;
   class?: string;
