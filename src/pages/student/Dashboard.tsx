@@ -53,7 +53,7 @@ const itemVariants = {
 
 export default function StudentDashboard() {
   const { user } = useAuthStore()
-  const { grades, attendance, assignments, subjects, fees, clubs, timetable, events, announcements = [], isLoading, fetchStudentData } = useDataStore()
+  const { grades, attendance, assignments, subjects, fees, clubs, timetable, events, isLoading, fetchStudentData } = useDataStore()
   const [showAI, setShowAI] = useState(false)
   const [recentAnns, setRecentAnns] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState<'overview' | 'academics' | 'schedule'>('overview')
