@@ -14,16 +14,8 @@ interface AuditEntry {
   ip: string;
 }
 
-const mockEntries: AuditEntry[] = [
-  { id: '1', action: 'User Created', user: 'Admin', role: 'admin', timestamp: '2026-05-15 10:30', details: 'Created new teacher account for John Doe', ip: '192.168.1.100' },
-  { id: '2', action: 'Grade Updated', user: 'Mr. Smith', role: 'teacher', timestamp: '2026-05-15 09:45', details: 'Updated math grades for class 10-A', ip: '192.168.1.101' },
-  { id: '3', action: 'Fee Payment', user: 'Parent A', role: 'parent', timestamp: '2026-05-14 14:20', details: 'Paid tuition fee $2500', ip: '10.0.0.50' },
-  { id: '4', action: 'Login Failed', user: 'Unknown', role: 'unknown', timestamp: '2026-05-14 03:15', details: 'Failed login attempt - invalid credentials', ip: '203.0.113.50' },
-  { id: '5', action: 'Settings Changed', user: 'Manager', role: 'manager', timestamp: '2026-05-13 16:00', details: 'Updated school name and timezone', ip: '192.168.1.1' },
-];
-
 export default function ManagerAuditLog() {
-  const [entries, setEntries] = useState<AuditEntry[]>(mockEntries);
+  const [entries, setEntries] = useState<AuditEntry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {

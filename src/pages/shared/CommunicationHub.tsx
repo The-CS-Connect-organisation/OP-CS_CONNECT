@@ -59,8 +59,16 @@ export default function CommunicationHub() {
     (async () => {
       try {
         setLoading(true);
-        const res = await api.getChatChannels();
-        const data = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+        const [res, users] = await Promise.all([api.getChatChannels(), api.getUsers()]);
+        const userChannels = (Array.isArray(users) ? users : []).filter((u: any) => u.id !== user?.id).map((u: any) => ({
+          id: `dm_${u.id}`,
+          name: u.name,
+          type: 'private' as const,
+          description: `Direct message with ${u.role}`,
+          members: [user?.id, u.id]
+        }));
+        const apiData = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
+        const data = [...apiData, ...userChannels];
         if (data.length === 0) {
           setChannels(defaultChannels);
           setSelectedChannel(defaultChannels[0].id);
@@ -82,7 +90,24 @@ export default function CommunicationHub() {
     if (!selectedChannel) return;
     (async () => {
       try {
-        const res = await api.getChannelMessages(selectedChannel);
+        let res: any;
+        if (selectedChannel.startsWith('dm_')) {
+          const targetId = selectedChannel.replace('dm_', '');
+          const msgs = await api.getMessages(user?.id || '').catch(() => []);
+          res = (Array.isArray(msgs) ? msgs : []).filter((m: any) => 
+            (m.from === user?.id && m.to === targetId) || 
+            (m.from === targetId && m.to === user?.id)
+          ).map((m: any) => ({
+            id: m.id,
+            senderId: m.from,
+            senderName: m.from === user?.id ? user?.name : channels.find(c => c.id === selectedChannel)?.name || 'User',
+            content: m.content,
+            timestamp: m.timestamp,
+            type: 'text'
+          }));
+        } else {
+          res = await api.getChannelMessages(selectedChannel);
+        }
         const data = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
         setMessages(data);
       } catch (err) {
@@ -107,7 +132,12 @@ export default function CommunicationHub() {
         timestamp: new Date().toISOString(),
         type: "text",
       };
-      await api.sendChannelMessage(selectedChannel, msg);
+      if (selectedChannel.startsWith('dm_')) {
+        const targetId = selectedChannel.replace('dm_', '');
+        await api.sendMessage(user?.id || '', targetId, msg.content);
+      } else {
+        await api.sendChannelMessage(selectedChannel, msg);
+      }
       setMessages((prev) => [...prev, msg]);
       setNewMessage("");
     } catch {

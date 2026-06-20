@@ -24,6 +24,7 @@ interface Announcement {
   pinned: boolean
   approved: boolean
   approvedBy?: string
+  audience?: string
 }
 
 type SortMode = 'date-desc' | 'date-asc' | 'priority'
@@ -44,7 +45,7 @@ export default function StudentAnnouncements() {
     try {
       setLoading(true)
       const data = await api.getAnnouncements()
-      setAnnouncements(Array.isArray(data) ? data : [])
+      setAnnouncements(Array.isArray(data) ? data.filter(a => !a.audience || a.audience === 'all' || a.audience === 'students') : [])
     } catch (err) { console.error('[StudentAnnouncements] Failed to load:', err); } finally { setLoading(false) }
   }
 
@@ -133,6 +134,7 @@ export default function StudentAnnouncements() {
                             <div className="flex items-center gap-2 flex-wrap">
                               <h3 className="font-semibold text-sm truncate">{ann.title}</h3>
                               {getPriorityBadge(ann.priority)}
+                              <Badge variant="outline" className="bg-purple-100 text-purple-700 capitalize border-purple-200">To: {ann.audience || 'all'}</Badge>
                               {ann.pinned && <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400 border-orange-200 dark:border-orange-800"><Pin className="w-3 h-3 mr-1" />Pinned</Badge>}
                             </div>
                             <AnimatePresence>
@@ -188,6 +190,7 @@ export default function StudentAnnouncements() {
                     <div className="flex items-center gap-2 flex-wrap mb-2">
                       <DialogTitle className="text-xl">{selectedAnn.title}</DialogTitle>
                       {getPriorityBadge(selectedAnn.priority)}
+                      <Badge variant="outline" className="bg-purple-100 text-purple-700 capitalize border-purple-200">To: {selectedAnn.audience || 'all'}</Badge>
                       {selectedAnn.pinned && <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"><Pin className="w-3 h-3 mr-1" />Pinned</Badge>}
                     </div>
                   </div>

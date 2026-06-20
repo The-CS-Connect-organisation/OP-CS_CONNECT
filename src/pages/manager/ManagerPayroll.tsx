@@ -14,14 +14,8 @@ interface PayrollRecord {
   status: string;
 }
 
-const mockRecords: PayrollRecord[] = [
-  { id: '1', employeeName: 'Mr. Smith', role: 'Teacher', salary: 5000, netPay: 4500, month: 'May 2026', status: 'paid' },
-  { id: '2', employeeName: 'Ms. Johnson', role: 'Teacher', salary: 5000, netPay: 4500, month: 'May 2026', status: 'paid' },
-  { id: '3', employeeName: 'John Doe', role: 'Driver', salary: 3000, netPay: 2700, month: 'May 2026', status: 'pending' },
-];
-
 export default function ManagerPayroll() {
-  const [records, setRecords] = useState<PayrollRecord[]>(mockRecords);
+  const [records, setRecords] = useState<PayrollRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {

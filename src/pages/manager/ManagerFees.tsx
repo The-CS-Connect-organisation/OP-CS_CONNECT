@@ -15,14 +15,8 @@ interface FeeRecord {
   type: string;
 }
 
-const mockFees: FeeRecord[] = [
-  { id: '1', studentName: 'Alice Johnson', class: '10-A', amount: 5000, paid: 5000, dueDate: '2026-05-01', status: 'paid', type: 'tuition' },
-  { id: '2', studentName: 'Bob Williams', class: '11-B', amount: 3000, paid: 1500, dueDate: '2026-06-01', status: 'pending', type: 'tuition' },
-  { id: '3', studentName: 'Carol Davis', class: '9-A', amount: 1000, paid: 0, dueDate: '2026-04-15', status: 'overdue', type: 'transport' },
-];
-
 export default function ManagerFees() {
-  const [fees, setFees] = useState<FeeRecord[]>(mockFees);
+  const [fees, setFees] = useState<FeeRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {

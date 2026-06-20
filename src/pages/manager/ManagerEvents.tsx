@@ -16,14 +16,8 @@ interface Event {
   type: string;
 }
 
-const mockEvents: Event[] = [
-  { id: '1', title: 'Annual Day', description: 'School annual day celebration', date: '2026-06-15', time: '10:00 AM', location: 'Auditorium', attendees: 500, type: 'celebration' },
-  { id: '2', title: 'Parent-Teacher Meeting', description: 'Quarterly PTM', date: '2026-05-20', time: '2:00 PM', location: 'Classrooms', attendees: 200, type: 'meeting' },
-  { id: '3', title: 'Sports Day', description: 'Annual sports competition', date: '2026-07-01', time: '9:00 AM', location: 'Sports Ground', attendees: 300, type: 'sports' },
-];
-
 export default function ManagerEvents() {
-  const [events, setEvents] = useState<Event[]>(mockEvents);
+  const [events, setEvents] = useState<Event[]>([]);
 
   useEffect(() => {
     async function loadEvents() {

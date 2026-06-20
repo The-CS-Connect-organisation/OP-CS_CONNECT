@@ -61,6 +61,11 @@ export function TimetableView({
   const [viewMode, setViewMode] = useState<ViewMode>(defaultView);
   const hasEntries = entries.length > 0;
 
+  // Extract unique times from entries to support arbitrary seed data format, fallback to default
+  const actualTimeSlots = hasEntries 
+    ? Array.from(new Set(entries.map(e => e.time))).sort() 
+    : timeSlots;
+
   const handleExportPDF = () => {
     exportTimetablePDF(entries, selectedClass || 'Timetable');
   };
@@ -141,7 +146,7 @@ export function TimetableView({
               {viewMode === 'grid' && (
                 <GridView
                   entries={entries}
-                  timeSlots={timeSlots}
+                  timeSlots={actualTimeSlots}
                   onAssignSlot={crud?.onAssignSlot}
                   onDeleteEntry={crud?.onDeleteEntry}
                   teachers={teachers}
@@ -153,7 +158,7 @@ export function TimetableView({
               {viewMode === 'kanban' && (
                 <KanbanView
                   entries={entries}
-                  timeSlots={timeSlots}
+                  timeSlots={actualTimeSlots}
                   onDeleteEntry={crud?.onDeleteEntry}
                 />
               )}

@@ -16,14 +16,8 @@ interface BusAssignment {
   status: string;
 }
 
-const mockBuses: BusAssignment[] = [
-  { id: '1', busNumber: 'B001', routeName: 'Route A', driverName: 'John Driver', driverPhone: '555-0101', capacity: 40, assignedStudents: 35, status: 'active' },
-  { id: '2', busNumber: 'B002', routeName: 'Route B', driverName: 'Jane Driver', driverPhone: '555-0102', capacity: 40, assignedStudents: 28, status: 'active' },
-  { id: '3', busNumber: 'B003', routeName: 'Route C', driverName: 'Mike Driver', driverPhone: '555-0103', capacity: 40, assignedStudents: 0, status: 'maintenance' },
-];
-
 export default function ManagerBusAssignment() {
-  const [buses, setBuses] = useState<BusAssignment[]>(mockBuses);
+  const [buses, setBuses] = useState<BusAssignment[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {

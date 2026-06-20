@@ -15,13 +15,14 @@ interface Announcement {
   createdAt: string;
   expiresAt?: string;
   priority: 'low' | 'medium' | 'high';
+  audience?: 'all' | 'students' | 'teachers' | 'parents' | 'staff';
 }
 
 export default function AdminAnnouncements() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title: '', content: '', type: 'general' as Announcement['type'], priority: 'medium' as Announcement['priority'], expiresAt: '' });
+  const [form, setForm] = useState({ title: '', content: '', type: 'general' as Announcement['type'], priority: 'medium' as Announcement['priority'], expiresAt: '', audience: 'all' as 'all' | 'students' | 'teachers' | 'parents' | 'staff' });
 
   useEffect(() => {
     loadAnnouncements();
@@ -45,7 +46,7 @@ export default function AdminAnnouncements() {
     try {
       const newAnnouncement = await api.createAnnouncement(form);
       setAnnouncements(prev => [newAnnouncement, ...prev]);
-      setForm({ title: '', content: '', type: 'general', priority: 'medium', expiresAt: '' });
+      setForm({ title: '', content: '', type: 'general', priority: 'medium', expiresAt: '', audience: 'all' });
       setShowForm(false);
     } catch (err) {
       console.error('[AdminAnnouncements] Failed to create:', err);
@@ -102,6 +103,13 @@ export default function AdminAnnouncements() {
               <option value="medium">Medium</option>
               <option value="high">High</option>
             </select>
+            <select value={form.audience} onChange={(e) => setForm({ ...form, audience: e.target.value as any })} className="px-3 py-2 rounded-lg border bg-background">
+              <option value="all">All Roles</option>
+              <option value="students">Students Only</option>
+              <option value="teachers">Teachers Only</option>
+              <option value="parents">Parents Only</option>
+              <option value="staff">Staff/Admin Only</option>
+            </select>
             <input type="date" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
             <textarea placeholder="Content" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className="px-3 py-2 rounded-lg border bg-background md:col-span-2" />
           </div>
@@ -125,6 +133,7 @@ export default function AdminAnnouncements() {
                     <h3 className="font-semibold text-lg">{announcement.title}</h3>
                     <Badge className={getTypeColor(announcement.type)}>{announcement.type}</Badge>
                     {announcement.priority === 'high' && <Badge variant="outline"><AlertCircle className="w-3 h-3 mr-1" />High Priority</Badge>}
+                    <Badge variant="outline" className="bg-purple-100 text-purple-700 capitalize border-purple-200">To: {announcement.audience || 'all'}</Badge>
                   </div>
                   <p className="text-muted-foreground mb-2">{announcement.content}</p>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">

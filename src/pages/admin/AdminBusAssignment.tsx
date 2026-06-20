@@ -23,6 +23,8 @@ interface BusAssignment {
 export default function AdminBusAssignment() {
   const [buses, setBuses] = useState<BusAssignment[]>([]);
   const [loading, setLoading] = useState(true);
+  const [students, setStudents] = useState<any[]>([]);
+  const [assigningBusId, setAssigningBusId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState({ busNumber: '', routeName: '', driverName: '', driverPhone: '', capacity: 40, stops: '' });
 
@@ -35,6 +37,8 @@ export default function AdminBusAssignment() {
       setLoading(true);
       const data = await api.getBusAssignments();
       const list = Array.isArray(data) ? data : [];
+      const stds = await api.getUsers({ role: 'student' }).catch(() => []);
+      setStudents(Array.isArray(stds) ? stds : []);
       // The backend serves bus assignments from the `routes` collection, which
       // uses fields like `bus`, `name`, `driver`. Normalize them to the shape
       // this page renders so the driver, bus number and route name show up.
@@ -49,6 +53,7 @@ export default function AdminBusAssignment() {
         assignedStudents: b.assignedStudents ?? (Array.isArray(b.students) ? b.students.length : 0),
         stops: Array.isArray(b.stops) ? b.stops : [],
         status: b.status || 'active',
+        students: Array.isArray(b.students) ? b.students : [],
         onLeave: !!b.onLeave,
       }));
       setBuses(normalized);
@@ -89,6 +94,28 @@ export default function AdminBusAssignment() {
     } catch {
       // Revert on failure
       setBuses(prev => prev.map(b => (b.driverId === driverId ? { ...b, onLeave: !onLeave } : b)));
+    }
+  };
+
+  
+  const handleAssignStudent = async (busId: string, studentId: string) => {
+    try {
+      const bus = buses.find(b => b.id === busId);
+      if (!bus) return;
+      
+      let newStudents = [...(bus as any).students];
+      if (newStudents.includes(studentId)) {
+        newStudents = newStudents.filter(id => id !== studentId);
+      } else {
+        newStudents.push(studentId);
+      }
+      
+      // optimistically update
+      setBuses(prev => prev.map(b => b.id === busId ? { ...b, students: newStudents, assignedStudents: newStudents.length } : b));
+      
+      await api.updateBusAssignment(busId, { students: newStudents });
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -164,7 +191,12 @@ export default function AdminBusAssignment() {
                   <span>{bus.assignedStudents}/{bus.capacity} students</span>
                 </div>
               </div>
+              
               <div className="flex items-center justify-between gap-2 mt-3">
+                <Button variant="outline" size="sm" onClick={() => setAssigningBusId(assigningBusId === bus.id ? null : bus.id)}>
+                  {assigningBusId === bus.id ? 'Done' : 'Assign Students'}
+                </Button>
+
                 <label className="flex items-center gap-2 text-sm cursor-pointer select-none" title="When on leave, this driver's bus is not tracked">
                   <input
                     type="checkbox"
@@ -177,7 +209,25 @@ export default function AdminBusAssignment() {
                 </label>
                 <button onClick={() => handleDelete(bus.id)} className="text-sm text-red-500 hover:underline">Remove</button>
               </div>
+
+              {assigningBusId === bus.id && (
+                <div className="mt-3 p-3 bg-muted/50 rounded-lg space-y-2 max-h-40 overflow-y-auto">
+                  <p className="text-xs font-semibold mb-2">Select Students</p>
+                  {students.map(s => (
+                    <label key={s.id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-accent p-1 rounded">
+                      <input 
+                        type="checkbox" 
+                        checked={((bus as any).students || []).includes(s.id)}
+                        onChange={() => handleAssignStudent(bus.id, s.id)}
+                        className="rounded border-gray-300"
+                      />
+                      {s.name} ({s.class || 'No Class'})
+                    </label>
+                  ))}
+                </div>
+              )}
             </Card>
+
           ))}
         </div>
       )}

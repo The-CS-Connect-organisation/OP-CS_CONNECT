@@ -1,3 +1,4 @@
+import Loader from "./components/ui/loader"
 
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
@@ -12,7 +13,6 @@ const StudentTimetable = lazy(() => import('./pages/student/Timetable'))
 const StudentGrades = lazy(() => import('./pages/student/Grades'))
 const StudentAttendance = lazy(() => import('./pages/student/Attendance'))
 const StudentFees = lazy(() => import('./pages/student/Fees'))
-const StudentMessages = lazy(() => import('./pages/student/Messages'))
 const StudentCommunity = lazy(() => import('./pages/student/Community'))
 const StudentAI = lazy(() => import('./pages/student/AI'))
 const TeacherDashboard = lazy(() => import('./pages/teacher/Dashboard'))
@@ -31,7 +31,6 @@ const QuickMessenger = lazy(() => import('./pages/shared/QuickMessenger'))
 const AILab = lazy(() => import('./pages/shared/AILab'))
 const ReportCards = lazy(() => import('./pages/teacher/ReportCards'))
 const NotificationCenter = lazy(() => import('./pages/shared/NotificationCenter'))
-const Circulars = lazy(() => import('./pages/shared/Circulars'))
 const ManagerDashboard = lazy(() => import('./pages/manager/ManagerDashboard'))
 const StudentNotes = lazy(() => import('./pages/student/Notes'))
 const SharedNotes = lazy(() => import('./pages/student/SharedNotes'))
@@ -85,7 +84,6 @@ const LibrarianDashboard = lazy(() => import('./pages/librarian/LibrarianDashboa
 const ManagerUsers = lazy(() => import('./pages/manager/ManagerUsers'))
 const ManagerAcademics = lazy(() => import('./pages/manager/ManagerAcademics'))
 const ManagerFinance = lazy(() => import('./pages/manager/ManagerFinance'))
-const ManagerTransport = lazy(() => import('./pages/manager/ManagerTransport'))
 const ManagerAnalytics = lazy(() => import('./pages/manager/ManagerAnalytics'))
 const ManagerAnnouncements = lazy(() => import('./pages/manager/ManagerAnnouncements'))
 const ManagerEvents = lazy(() => import('./pages/manager/ManagerEvents'))
@@ -122,6 +120,11 @@ const TeacherClassroom = lazy(() => import('./pages/teacher/TeacherClassroom'))
 const TeacherExamResults = lazy(() => import('./pages/teacher/TeacherExamResults'))
 const LibrarianManagement = lazy(() => import('./pages/librarian/LibrarianManagement'))
 const StudentExercises = lazy(() => import('./pages/student/Exercises'))
+const StudentLostAndFound = lazy(() => import('./pages/student/StudentLostAndFound'))
+const StudentITHelpdesk = lazy(() => import('./pages/student/StudentITHelpdesk'))
+const StudentClinicVisits = lazy(() => import('./pages/student/StudentClinicVisits'))
+const StudentSkipBus = lazy(() => import('./pages/student/StudentSkipBus'))
+const StudentAnonymousReports = lazy(() => import('./pages/student/StudentAnonymousReports'))
 // Admin Phase 3
 const AdminCounselling = lazy(() => import('./pages/admin/AdminCounselling'))
 const AdminHealth = lazy(() => import('./pages/admin/AdminHealth'))
@@ -131,7 +134,6 @@ const AdminPortfolio = lazy(() => import('./pages/admin/AdminPortfolio'))
 const AdminEnrolment = lazy(() => import('./pages/admin/AdminEnrolment'))
 // Admin Phase 4
 const AdminFacilities = lazy(() => import('./pages/admin/AdminFacilities'))
-const AdminTransport = lazy(() => import('./pages/admin/AdminTransport'))
 const AdminFoodService = lazy(() => import('./pages/admin/AdminFoodService'))
 const AdminAthletics = lazy(() => import('./pages/admin/AdminAthletics'))
 const AdminAlumni = lazy(() => import('./pages/admin/AdminAlumni'))
@@ -157,6 +159,7 @@ const ManagerRoomBooking = lazy(() => import('./pages/manager/ManagerRoomBooking
 const ManagerAssetTracking = lazy(() => import('./pages/manager/ManagerAssetTracking'))
 const TeacherRoomBooking = lazy(() => import('./pages/teacher/TeacherRoomBooking'))
 const TeacherAssetTracking = lazy(() => import('./pages/teacher/TeacherAssetTracking'))
+const TeacherSalary = lazy(() => import('./pages/teacher/TeacherSalary'))
 
 const GP = (title: string, description: string, icon: string, category: string, role: string) => (
   <GenericPage title={title} description={description} icon={icon as any} category={category} role={role as any} />
@@ -192,7 +195,7 @@ function App() {
 
   return (
     <div className="aurora-bg">
-      <Suspense fallback={<div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-gray-900"><div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent"></div></div>}>
+      <Suspense fallback={<div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-gray-900"><Loader variant="dots" size="lg" /></div>}>
         <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/about" element={<AboutPage />} />
@@ -221,7 +224,7 @@ function App() {
             <Route path="bus-tracking" element={<StudentBusTracking />} />
             <Route path="ai" element={<AILab />} />
             <Route path="community" element={<StudentCommunity />} />
-            <Route path="messages" element={<StudentMessages />} />
+            <Route path="comms-hub" element={<CommunicationHub />} />
             <Route path="social-club" element={<SocialClub />} />
             <Route path="achievements" element={<Achievements />} />
             <Route path="accolades" element={<Accolades />} />
@@ -229,6 +232,11 @@ function App() {
             <Route path="exercises" element={<StudentExercises />} />
             <Route path="counselling" element={<StudentCounselling />} />
             <Route path="health" element={<StudentHealth />} />
+            <Route path="lost-found" element={<StudentLostAndFound />} />
+            <Route path="it-helpdesk" element={<StudentITHelpdesk />} />
+            <Route path="clinic" element={<StudentClinicVisits />} />
+            <Route path="skip-bus" element={<StudentSkipBus />} />
+            <Route path="anonymous-report" element={<StudentAnonymousReports />} />
           </Route>
 
           {/* TEACHER */}
@@ -252,6 +260,7 @@ function App() {
             <Route path="exam-results" element={<TeacherExamResults />} />
             <Route path="room-booking" element={<TeacherRoomBooking />} />
             <Route path="asset-tracking" element={<TeacherAssetTracking />} />
+            <Route path="salary" element={<TeacherSalary />} />
           </Route>
 
           {/* ADMIN */}
@@ -268,8 +277,7 @@ function App() {
             <Route path="fees" element={<AdminFees />} />
             <Route path="ai" element={<AILab />} />
             <Route path="comms-hub" element={<CommunicationHub />} />
-            <Route path="circulars" element={<Circulars />} />
-            <Route path="notifications" element={<NotificationCenter />} />
+                        <Route path="notifications" element={<NotificationCenter />} />
             <Route path="bus-assignment" element={<AdminBusAssignment />} />
             <Route path="lost-found" element={<AdminLostFound />} />
             <Route path="anonymous-report" element={<AdminAnonymousReports />} />
@@ -297,8 +305,7 @@ function App() {
             <Route path="enrolment" element={<AdminEnrolment />} />
             {/* Admin Phase 4 */}
             <Route path="facilities" element={<AdminFacilities />} />
-            <Route path="transport" element={<AdminTransport />} />
-            <Route path="food-service" element={<AdminFoodService />} />
+                        <Route path="food-service" element={<AdminFoodService />} />
             <Route path="athletics" element={<AdminAthletics />} />
             <Route path="alumni" element={<AdminAlumni />} />
             <Route path="platform" element={<AdminPlatform />} />
@@ -348,8 +355,7 @@ function App() {
             <Route path="academics" element={<ManagerAcademics />} />
             <Route path="finance" element={<ManagerFinance />} />
             <Route path="analytics" element={<ManagerAnalytics />} />
-            <Route path="circulars" element={<Circulars />} />
-            <Route path="announcements" element={<ManagerAnnouncements />} />
+                        <Route path="announcements" element={<ManagerAnnouncements />} />
             <Route path="events" element={<ManagerEvents />} />
             <Route path="exams" element={<ManagerExams />} />
             <Route path="timetable" element={<ManagerTimetable />} />
@@ -384,8 +390,7 @@ function App() {
             <Route path="enrolment" element={<ManagerEnrolment />} />
             {/* Manager Phase 4 */}
             <Route path="facilities" element={<ManagerFacilities />} />
-            <Route path="transport" element={<ManagerTransport />} />
-            <Route path="food-service" element={<ManagerFoodService />} />
+                        <Route path="food-service" element={<ManagerFoodService />} />
             <Route path="athletics" element={<ManagerAthletics />} />
             <Route path="alumni" element={<ManagerAlumni />} />
             <Route path="platform" element={<ManagerPlatform />} />

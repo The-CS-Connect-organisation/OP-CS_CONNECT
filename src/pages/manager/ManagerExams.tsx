@@ -18,14 +18,8 @@ interface Exam {
   totalMarks: number;
 }
 
-const mockExams: Exam[] = [
-  { id: '1', title: 'Midterm Math', subject: 'Math', class: '10-A', date: '2026-06-01', time: '09:00', duration: 120, location: 'Hall A', type: 'midterm', totalMarks: 100 },
-  { id: '2', title: 'Final Science', subject: 'Science', class: '11-B', date: '2026-07-15', time: '10:00', duration: 180, location: 'Hall B', type: 'final', totalMarks: 150 },
-  { id: '3', title: 'Quiz English', subject: 'English', class: '9-A', date: '2026-05-25', time: '11:00', duration: 45, location: 'Room 101', type: 'quiz', totalMarks: 50 },
-];
-
 export default function ManagerExams() {
-  const [exams, setExams] = useState<Exam[]>(mockExams);
+  const [exams, setExams] = useState<Exam[]>([]);
 
   useEffect(() => {
     async function loadExams() {

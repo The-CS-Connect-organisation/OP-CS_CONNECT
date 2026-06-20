@@ -66,6 +66,11 @@ export const navSections: Record<UserRole, NavSection[]> = {
       items: [
         { icon: MessageSquare, label: 'Counselling', path: '/student/counselling' },
         { icon: HeartPulse, label: 'Health', path: '/student/health' },
+        { icon: Search, label: 'Lost & Found', path: '/student/lost-found' },
+        { icon: Headphones, label: 'IT Helpdesk', path: '/student/it-helpdesk' },
+        { icon: Stethoscope, label: 'Clinic', path: '/student/clinic' },
+        { icon: SkipForward, label: 'Skip Bus', path: '/student/skip-bus' },
+        { icon: AlertTriangle, label: 'Anonymous Report', path: '/student/anonymous-report' },
       ]
     },
     {
@@ -110,6 +115,12 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: MessageSquare, label: 'Messages', path: '/teacher/messages' },
         { icon: Bell, label: 'Notifications', path: '/teacher/notifications' },
         { icon: Radio, label: 'Comms Hub', path: '/teacher/comms-hub' },
+      ]
+    },
+    {
+      label: 'Finance',
+      items: [
+        { icon: DollarSign, label: 'My Salary', path: '/teacher/salary' },
       ]
     },
     {
@@ -187,7 +198,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Transport',
       items: [
-        { icon: Bus, label: 'Bus Assignment', path: '/admin/bus-assignment' },
+        { icon: Bus, label: 'Transport / Buses', path: '/admin/bus-assignment' },
       ]
     },
     {
@@ -413,7 +424,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: Shield, label: 'Security', path: '/manager/security' },
         { icon: Settings, label: 'Settings', path: '/manager/settings' },
         { icon: Eye, label: 'Audit Log', path: '/manager/audit-log' },
-        { icon: Bus, label: 'Bus Assignment', path: '/manager/bus-assignment' },
+        { icon: Bus, label: 'Transport / Buses', path: '/manager/bus-assignment' },
       ]
     },
   ],

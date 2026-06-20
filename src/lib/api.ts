@@ -1,5 +1,5 @@
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'https://op-csconnect-backend-production.up.railway.app/api';
+const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? '' : 'https://op-csconnect-backend-production.up.railway.app/api');
 
 function authHeaders(): Record<string, string> {
   const token = localStorage.getItem('eduvault-token');
@@ -254,9 +254,9 @@ export const api = {
   markAnnouncementRead: (id: string) => apiFetch(`/announcements/${id}/read`, { method: 'POST' }),
 
   // Study Planner
-  createStudyTask: (data: any) => apiFetch('/study-plan', { method: 'POST', body: JSON.stringify(data) }),
-  updateStudyTask: (id: string, data: any) => apiFetch(`/study-plan/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  deleteStudyTask: (id: string) => apiFetch(`/study-plan/${id}`, { method: 'DELETE' }),
+  createStudyTask: (data: any) => apiFetch('/study-plans', { method: 'POST', body: JSON.stringify(data) }),
+  updateStudyTask: (id: string, data: any) => apiFetch(`/study-plans/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteStudyTask: (id: string) => apiFetch(`/study-plans/${id}`, { method: 'DELETE' }),
 
   // Calendar
   getCalendarEvents: () => apiFetch('/calendar'),
@@ -303,6 +303,7 @@ export const api = {
   // Bus
   getBusAssignments: () => apiFetch('/bus/assignments'),
   createBusAssignment: (data: any) => apiFetch('/bus/assignments', { method: 'POST', body: JSON.stringify(data) }),
+  updateBusAssignment: (id: string, data: any) => apiFetch(`/bus/assignments/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   deleteBusAssignment: (id: string) => apiFetch(`/bus/assignments/${id}`, { method: 'DELETE' }),
   setDriverLeave: (driverId: string, onLeave: boolean) => apiFetch(`/bus/drivers/${driverId}/leave`, { method: 'PUT', body: JSON.stringify({ onLeave }) }),
 

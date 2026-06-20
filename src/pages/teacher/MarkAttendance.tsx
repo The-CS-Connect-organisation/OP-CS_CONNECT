@@ -39,7 +39,7 @@ export default function MarkAttendance() {
         setLoading(true);
         const res = await api.getClassAttendance(selectedClass, selectedDate);
         if (!alive) return;
-        const data = Array.isArray(res.data) ? res.data : [];
+        const data = Array.isArray(res.data) ? res.data : Array.isArray(res) ? res : [];
         setStudents(data);
         const initialMarks: Record<string, string> = {};
         data.forEach((s: any) => {
