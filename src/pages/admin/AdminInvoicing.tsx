@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { formatCurrency } from '@/lib/utils'
 import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -240,14 +241,14 @@ function InvoicesTab() {
                 {inv.items.length > 0 && (
                   <div className="mt-2 text-xs text-muted-foreground">
                     {inv.items.map((item, idx) => (
-                      <span key={idx}>{item.description} (${item.amount}){idx < inv.items.length - 1 ? ', ' : ''}</span>
+                      <span key={idx}>{item.description} (${formatCurrency(item.amount)}){idx < inv.items.length - 1 ? ', ' : ''}</span>
                     ))}
                   </div>
                 )}
               </div>
               <div className="text-right flex flex-col items-end gap-1">
                 <p className="text-lg font-bold">${inv.total.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">Subtotal: ${inv.subtotal} | Tax: ${inv.tax} | Total: ${inv.total}</p>
+                <p className="text-xs text-muted-foreground">Subtotal: ${inv.subtotal} | Tax: ${inv.tax} | Total: ${formatCurrency(inv.total)}</p>
                 <div className="flex gap-1 mt-1">
                   {inv.status === 'pending' || inv.status === 'overdue' ? (
                     <Button size="sm" variant="outline" onClick={() => { setShowRecordPayment(inv.id); setPaymentData(p => ({ ...p, amount: inv.total })); }}>
@@ -422,7 +423,7 @@ function QuotesTab() {
                 <p className="text-sm text-muted-foreground">{q.client}</p>
                 <div className="text-xs text-muted-foreground mt-1">
                   {q.items?.map((item, i) => (
-                    <span key={i}>{item.description} (${item.amount}){i < q.items.length - 1 ? ', ' : ''}</span>
+                    <span key={i}>{item.description} (${formatCurrency(item.amount)}){i < q.items.length - 1 ? ', ' : ''}</span>
                   ))}
                 </div>
               </div>
@@ -860,7 +861,7 @@ function LateFeesTab() {
               </div>
               <div>
                 <p className="text-muted-foreground">Max Fee</p>
-                <p className="font-semibold">${lf.maxFee}</p>
+                <p className="font-semibold">${formatCurrency(lf.maxFee)}</p>
               </div>
             </div>
           </Card>
@@ -943,14 +944,14 @@ function PaymentPlansTab() {
                   <Badge variant={pp.status === 'active' ? 'success' : pp.status === 'completed' ? 'info' : 'secondary'}>{pp.status}</Badge>
                 </div>
                 <div className="flex items-center gap-3 text-sm text-muted-foreground mt-1">
-                  <span>{pp.installments} installments of ${pp.installmentAmount}</span>
+                  <span>{pp.installments} installments of ${formatCurrency(pp.installmentAmount)}</span>
                   <span>•</span>
                   <span>{pp.frequency}</span>
                 </div>
               </div>
               <div className="text-right">
                 <p className="text-lg font-bold">${pp.totalAmount.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">${pp.installmentAmount}/{pp.frequency}</p>
+                <p className="text-xs text-muted-foreground">${formatCurrency(pp.installmentAmount)}/{pp.frequency}</p>
               </div>
             </div>
           </Card>

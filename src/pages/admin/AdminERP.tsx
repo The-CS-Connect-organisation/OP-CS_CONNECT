@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { formatCurrency } from '@/lib/utils'
 import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -183,7 +184,7 @@ export default function AdminERP() {
                 <div><span className="text-muted-foreground">Contact:</span> {selectedClient.contact}</div>
                 <div><span className="text-muted-foreground">Email:</span> {selectedClient.email}</div>
                 <div><span className="text-muted-foreground">Type:</span> {selectedClient.type}</div>
-                <div><span className="text-muted-foreground">Credit Limit:</span> ${selectedClient.creditLimit}</div>
+                <div><span className="text-muted-foreground">Credit Limit:</span> ${formatCurrency(selectedClient.creditLimit)}</div>
                 <div><span className="text-muted-foreground">Status:</span> <Badge variant={selectedClient.status === 'active' ? 'success' : 'secondary'}>{selectedClient.status}</Badge></div>
               </div>
             </Card>
@@ -200,7 +201,7 @@ export default function AdminERP() {
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
-                      <p className="text-sm">Limit: ${client.creditLimit}</p>
+                      <p className="text-sm">Limit: {formatCurrency(client.creditLimit)}</p>
                       <Badge variant={client.status === 'active' ? 'success' : 'secondary'}>{client.status}</Badge>
                       <button className="p-2 hover:bg-accent rounded"><Eye className="w-4 h-4" /></button>
                       <button className="p-2 hover:bg-accent rounded"><Edit className="w-4 h-4" /></button>
@@ -253,7 +254,7 @@ export default function AdminERP() {
                     <p className="text-sm text-muted-foreground"><Hash className="w-3 h-3 inline" />{product.sku} • {product.category} • Per {product.unit}</p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <p className="font-semibold">${product.price}</p>
+                    <p className="font-semibold">${formatCurrency(product.price)}</p>
                     <div className="text-right">
                       <p className="text-sm">Stock: {product.stockQuantity}</p>
                       <div className="flex gap-1 mt-1">
@@ -300,7 +301,7 @@ export default function AdminERP() {
                     <p className="text-muted-foreground">Ordered: {new Date(order.orderDate).toLocaleDateString()} • Expected: {new Date(order.expectedDelivery).toLocaleDateString()}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold">${order.total}</p>
+                    <p className="font-semibold">${formatCurrency(order.total)}</p>
                     <Badge className={statusOrderColors[order.status] || ''}>{order.status}</Badge>
                   </div>
                 </div>

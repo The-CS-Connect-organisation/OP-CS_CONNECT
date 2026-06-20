@@ -107,7 +107,7 @@ const ManagerLibrary = lazy(() => import('./pages/manager/ManagerLibrary'))
 const ManagerERP = lazy(() => import('./pages/manager/ManagerERP'))
 const ManagerComms = lazy(() => import('./pages/manager/ManagerComms'))
 // Admin Phase 1+2
-const AdminScheduling = lazy(() => import('./pages/admin/AdminScheduling'))
+const AdminCirculars = lazy(() => import('./pages/admin/AdminCirculars'))
 const AdminSIS = lazy(() => import('./pages/admin/AdminSIS'))
 const AdminClassroom = lazy(() => import('./pages/admin/AdminClassroom'))
 const AdminInvoicing = lazy(() => import('./pages/admin/AdminInvoicing'))
@@ -287,7 +287,7 @@ function App() {
             <Route path="skip-bus" element={<AdminSkipBus />} />
             <Route path="fee-installments" element={<AdminFeeInstallments />} />
             {/* Admin Phase 1+2 */}
-            <Route path="scheduling" element={<AdminScheduling />} />
+            <Route path="circulars" element={<AdminCirculars />} />
             <Route path="sis" element={<AdminSIS />} />
             <Route path="classroom" element={<AdminClassroom />} />
             <Route path="invoicing" element={<AdminInvoicing />} />

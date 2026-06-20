@@ -2,303 +2,201 @@ import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { normalizeAcademicPercentage, formatPercentage } from '@/lib/utils';
-import { BarChart3, Users, TrendingUp, DollarSign, GraduationCap } from 'lucide-react';
-import { FinanceChart, AttendanceChart } from '../../components/ui/Charts';
-import { GenderBreakdownChart, DemographicPieChart } from '../../components/ui/RadialChart';
+import { BarChart3, TrendingUp, AlertTriangle, Users } from 'lucide-react';
 
-interface User {
-  role?: string;
-  class?: string;
-  className?: string;
-  grade?: number;
-  gpa?: number;
-  average?: number;
-  gender?: string;
-  date?: string;
-  status?: string;
-  present?: boolean;
-}
+interface ClassItem { id: string; name: string; }
 
-interface AttendanceRecord {
-  status?: string;
-  present?: boolean;
-  date?: string;
-  studentId?: string;
+interface ClassAnalytics {
+  classAverage?: number;
+  topScore?: number;
+  atRiskCount?: number;
+  complianceScore?: number;
+  gradeDistribution?: Record<string, number>;
+  weakAreas?: Array<{ subjectName: string; averageScore: number; studentsBelow60: number }>;
+  totalStudents?: number;
+  attendanceRate?: number;
 }
 
 export default function AdminAnalytics() {
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalStudents: 0,
-    totalTeachers: 0,
-    avgAttendance: 0,
-    avgGpa: 0,
-    revenue: 0,
-    expenses: 0,
-    maleStudents: 0,
-    femaleStudents: 0,
-    studentTrend: [] as { month: string; count: number }[],
-    performanceByClass: [] as { class: string; avg: number }[],
-    attendanceTrend: [] as { name: string; present: number; absent: number }[],
-    feeCollection: { collected: 0, pending: 0 },
-    financeData: [] as { name: string; income: number; expense: number }[],
-  });
+  const [classes, setClasses] = useState<ClassItem[]>([]);
+  const [selectedClassId, setSelectedClassId] = useState('');
+  const [analytics, setAnalytics] = useState<ClassAnalytics | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    loadStats();
+    api.getCourses().then((data: any) => {
+      const list = Array.isArray(data) ? data.map((c: any) => ({ id: c.id, name: c.name || c.code })) : [];
+      setClasses(list);
+    }).catch(() => {});
   }, []);
 
-  const loadStats = async () => {
+  useEffect(() => {
+    if (!selectedClassId) { setAnalytics(null); return; }
     setLoading(true);
-    try {
-      const results = await Promise.allSettled([
-        api.getUsers(),
-        api.getManagerFinance(),
-        api.getAttendance(),
-      ]);
+    setError('');
+    fetch(`/api/v1/analytics/class/${selectedClassId}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
+    })
+      .then(r => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); })
+      .then(data => { setAnalytics(data); setLoading(false); })
+      .catch(err => { setError(`Failed to load analytics: ${err.message}`); setLoading(false); });
+  }, [selectedClassId]);
 
-      const [usersResult, financeResult, attendanceResult] = results;
+  const stats = [
+    {
+      label: 'Class Average',
+      value: analytics?.classAverage != null ? `${analytics.classAverage.toFixed(1)}%` : '--',
+      icon: BarChart3,
+      bg: 'bg-blue-50',
+      color: 'text-blue-600',
+    },
+    {
+      label: 'Top Score',
+      value: analytics?.topScore != null ? `${analytics.topScore.toFixed(1)}%` : '--',
+      icon: TrendingUp,
+      bg: 'bg-green-50',
+      color: 'text-green-600',
+    },
+    {
+      label: 'At-Risk Students',
+      value: analytics?.atRiskCount != null ? String(analytics.atRiskCount) : '--',
+      icon: AlertTriangle,
+      bg: 'bg-red-50',
+      color: 'text-red-600',
+    },
+    {
+      label: 'Compliance Score',
+      value: analytics?.complianceScore != null ? `${analytics.complianceScore.toFixed(1)}%` : '--',
+      icon: Users,
+      bg: 'bg-purple-50',
+      color: 'text-purple-600',
+    },
+  ];
 
-      const users: User[] = usersResult.status === 'fulfilled' ? usersResult.value : [];
-      const finance: any = financeResult.status === 'fulfilled' ? financeResult.value : {};
-      const attendance: AttendanceRecord[] = attendanceResult.status === 'fulfilled' ? attendanceResult.value : [];
+  const gradeEntries = analytics?.gradeDistribution
+    ? Object.entries(analytics.gradeDistribution).sort(([a], [b]) => a.localeCompare(b))
+    : [];
 
-      const students = users.filter(u => u.role?.toLowerCase() === 'student');
-      const teachers = users.filter(u => u.role?.toLowerCase() === 'teacher');
-      const maleStudents = users.filter(u => u.role?.toLowerCase() === 'student' && u.gender?.toLowerCase() === 'male').length;
-      const femaleStudents = users.filter(u => u.role?.toLowerCase() === 'student' && u.gender?.toLowerCase() === 'female').length;
-
-      const totalStudents = students.length;
-      const totalTeachers = teachers.length;
-
-      const revenue = finance.revenue || 0;
-      const expenses = finance.expenses || 0;
-      const feeCollection = finance.feeCollection || { collected: 0, pending: 0 };
-
-      const monthlyTrend = (finance.monthlyTrend || []).map((m: any) => ({
-        name: m.month,
-        income: m.revenue || 0,
-        expense: m.expenses || 0,
-      }));
-
-      let avgAttendance = 0;
-      if (attendance.length > 0) {
-        const present = attendance.filter(a => a.status?.toLowerCase() === 'present' || a.present).length;
-        avgAttendance = Math.round((present / attendance.length) * 100);
-      }
-
-      const dayMap = new Map<string, { present: number; absent: number }>();
-      const dayOrder = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      dayOrder.forEach(d => dayMap.set(d, { present: 0, absent: 0 }));
-
-      attendance.forEach(a => {
-        const dateStr = (a as any).date || '';
-        if (dateStr) {
-          const dayName = new Date(dateStr + 'T00:00:00').toLocaleDateString('en', { weekday: 'short' });
-          if (dayMap.has(dayName)) {
-            const isPresent = a.status?.toLowerCase() === 'present' || a.present === true;
-            if (isPresent) {
-              dayMap.get(dayName)!.present++;
-            } else {
-              dayMap.get(dayName)!.absent++;
-            }
-          }
-        }
-      });
-
-      const attendanceTrend = Array.from(dayMap.entries())
-        .filter(([, v]) => v.present > 0 || v.absent > 0)
-        .map(([name, v]) => ({ name, present: v.present, absent: v.absent }));
-
-      const classMap = new Map<string, number[]>();
-      students.forEach(s => {
-        const cls = s.class || s.className || '';
-        const score = s.gpa || s.average || s.grade || 0;
-        if (cls && score) {
-          if (!classMap.has(cls)) classMap.set(cls, []);
-          classMap.get(cls)!.push(Number(score));
-        }
-      });
-      const performanceByClass = Array.from(classMap.entries()).map(([cls, scores]) => ({
-        class: cls,
-        avg: Math.round(scores.reduce((a, b) => a + b, 0) / scores.length),
-      }));
-
-      const avgGpa = performanceByClass.length > 0
-        ? Math.round(performanceByClass.reduce((s, c) => s + c.avg, 0) / performanceByClass.length)
-        : 0;
-
-      setStats({
-        totalStudents,
-        totalTeachers,
-        avgAttendance,
-        avgGpa,
-        revenue,
-        expenses,
-        maleStudents,
-        femaleStudents,
-        studentTrend: [],
-        performanceByClass,
-        attendanceTrend,
-        feeCollection,
-        financeData: monthlyTrend,
-      });
-    } catch {
-      // data remains 0s
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const totalFees = stats.feeCollection.collected + stats.feeCollection.pending;
-  const collectedPercent = totalFees > 0 ? (stats.feeCollection.collected / totalFees) * 100 : 0;
-  const pendingPercent = totalFees > 0 ? (stats.feeCollection.pending / totalFees) * 100 : 0;
+  const maxGradeCount = gradeEntries.reduce((m, [, v]) => Math.max(m, v), 0);
 
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Analytics</h1>
-        <p className="text-muted-foreground">School-wide analytics dashboard</p>
+        <h1 className="text-2xl font-bold">Performance Analytics</h1>
+        <p className="text-muted-foreground">School-wide class performance tracking</p>
       </div>
 
-      {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map(i => <Skeleton key={i} className="h-24" />)}
+      {/* Class Selector */}
+      <Card className="p-4">
+        <label className="block text-sm font-medium mb-1">Select Class</label>
+        <select
+          value={selectedClassId}
+          onChange={e => setSelectedClassId(e.target.value)}
+          className="w-full max-w-xs border rounded-md px-3 py-2 text-sm bg-background"
+        >
+          <option value="">Select a class to view analytics</option>
+          {classes.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+      </Card>
+
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm">{error}</div>
+      )}
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map(s => {
+          const Icon = s.icon;
+          return (
+            <Card key={s.label} className="p-4">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${s.bg}`}>
+                  <Icon className={`h-5 w-5 ${s.color}`} />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">{s.label}</p>
+                  <p className={`text-xl font-bold ${loading ? 'text-muted-foreground' : ''}`}>
+                    {loading ? '...' : s.value}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          );
+        })}
+      </div>
+
+      {analytics && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Grade Distribution */}
+          <Card className="p-6">
+            <h2 className="font-semibold mb-4">Grade Distribution</h2>
+            {gradeEntries.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No grade distribution data.</p>
+            ) : (
+              <div className="space-y-3">
+                {gradeEntries.map(([grade, count]) => (
+                  <div key={grade} className="flex items-center gap-3">
+                    <span className="text-sm font-bold w-8">{grade}</span>
+                    <div className="flex-1 bg-muted rounded-full h-4">
+                      <div
+                        className="bg-primary h-4 rounded-full transition-all"
+                        style={{ width: maxGradeCount > 0 ? `${(count / maxGradeCount) * 100}%` : '0%' }}
+                      />
+                    </div>
+                    <span className="text-sm text-muted-foreground w-10 text-right">{count}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {analytics.totalStudents != null && (
+              <p className="text-xs text-muted-foreground mt-4">Total students: {analytics.totalStudents}</p>
+            )}
+          </Card>
+
+          {/* Weak Area Interventions */}
+          <Card className="p-6">
+            <h2 className="font-semibold mb-4">Weak Area Interventions</h2>
+            {!analytics.weakAreas || analytics.weakAreas.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No students flagged for intervention at this time.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {analytics.weakAreas.map(area => (
+                  <div key={area.subjectName} className="flex items-center justify-between border-b pb-3 last:border-0">
+                    <div>
+                      <p className="text-sm font-medium">{area.subjectName}</p>
+                      <p className="text-xs text-muted-foreground">Avg: {area.averageScore.toFixed(1)}%</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="px-2 py-1 rounded bg-red-100 text-red-700 text-xs">
+                        {area.studentsBelow60} below 60%
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {analytics.attendanceRate != null && (
+              <div className="mt-4 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Attendance Rate</span>
+                  <span className={`font-bold text-sm ${analytics.attendanceRate >= 75 ? 'text-green-600' : 'text-red-600'}`}>
+                    {analytics.attendanceRate.toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+            )}
+          </Card>
         </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
-            <Card className="p-4 card-hover">
-              <div className="flex items-center gap-3">
-                <Users className="w-8 h-8 text-orange-500" />
-                <div>
-                  <p className="text-2xl font-bold stat-value">{stats.totalStudents}</p>
-                  <p className="text-sm text-muted-foreground">Total Students</p>
-                </div>
-              </div>
-            </Card>
-            <Card className="p-4 card-hover">
-              <div className="flex items-center gap-3">
-                <GraduationCap className="w-8 h-8 text-orange-500" />
-                <div>
-                  <p className="text-2xl font-bold stat-value">{stats.totalTeachers}</p>
-                  <p className="text-sm text-muted-foreground">Total Teachers</p>
-                </div>
-              </div>
-            </Card>
-            <Card className="p-4 card-hover">
-              <div className="flex items-center gap-3">
-                <TrendingUp className="w-8 h-8 text-orange-500" />
-                <div>
-                  <p className="text-2xl font-bold stat-value">{stats.avgAttendance}%</p>
-                  <p className="text-sm text-muted-foreground">Avg Attendance</p>
-                </div>
-              </div>
-            </Card>
-            <Card className="p-4 card-hover">
-              <div className="flex items-center gap-3">
-                <BarChart3 className="w-8 h-8 text-orange-500" />
-                <div>
-                  <p className="text-2xl font-bold stat-value">{formatPercentage(normalizeAcademicPercentage(stats.avgGpa))}</p>
-                  <p className="text-sm text-muted-foreground">Avg Academic %</p>
-                </div>
-              </div>
-            </Card>
-          </div>
+      )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Card className="p-4 card-hover">
-              <div className="flex items-center gap-3">
-                <DollarSign className="w-8 h-8 text-green-500" />
-                <div>
-                  <p className="text-2xl font-bold stat-value">${stats.revenue.toLocaleString()}</p>
-                  <p className="text-sm text-muted-foreground">Revenue</p>
-                </div>
-              </div>
-            </Card>
-            <Card className="p-4 card-hover">
-              <div className="flex items-center gap-3">
-                <DollarSign className="w-8 h-8 text-red-500" />
-                <div>
-                  <p className="text-2xl font-bold stat-value">${stats.expenses.toLocaleString()}</p>
-                  <p className="text-sm text-muted-foreground">Expenses</p>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="h-[400px]">
-              <FinanceChart data={stats.financeData} />
-            </div>
-            <div className="h-[400px]">
-              <AttendanceChart data={stats.attendanceTrend} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="h-[350px]">
-              <GenderBreakdownChart male={stats.maleStudents} female={stats.femaleStudents} />
-            </div>
-            <div className="h-[350px]">
-              <DemographicPieChart
-                title="Class Performance Distribution"
-                data={stats.performanceByClass.map(c => ({ name: c.class, value: c.avg }))}
-              />
-            </div>
-            <Card className="p-4">
-              <h3 className="font-semibold mb-4">Performance by Class</h3>
-              {stats.performanceByClass.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No data</p>
-              ) : (
-                <div className="space-y-3">
-                  {stats.performanceByClass.map(cls => (
-                    <div key={cls.class} className="flex items-center justify-between">
-                      <span className="text-sm">{cls.class}</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-32 h-2 bg-accent rounded-full">
-                          <div className="h-full bg-orange-500 rounded-full" style={{ width: `${cls.avg}%` }} />
-                        </div>
-                        <span className="text-sm font-medium">{cls.avg}%</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-
-            <Card className="p-4">
-              <h3 className="font-semibold mb-4">Fee Collection</h3>
-              {totalFees === 0 ? (
-                <p className="text-sm text-muted-foreground">No data</p>
-              ) : (
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Collected</span>
-                      <span className="font-medium text-green-500">${stats.feeCollection.collected.toLocaleString()}</span>
-                    </div>
-                    <div className="w-full h-3 bg-accent rounded-full">
-                      <div className="h-full bg-green-500 rounded-full" style={{ width: `${collectedPercent}%` }} />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-sm mb-1">
-                      <span>Pending</span>
-                      <span className="font-medium text-red-500">${stats.feeCollection.pending.toLocaleString()}</span>
-                    </div>
-                    <div className="w-full h-3 bg-accent rounded-full">
-                      <div className="h-full bg-red-500 rounded-full" style={{ width: `${pendingPercent}%` }} />
-                    </div>
-                  </div>
-                </div>
-              )}
-            </Card>
-          </div>
-        </>
+      {!selectedClassId && !loading && (
+        <Card className="p-12 text-center text-muted-foreground text-sm">
+          Select a class above to view performance analytics.
+        </Card>
       )}
     </div>
   );
 }
-

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { formatCurrency } from '@/lib/utils'
 import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -290,7 +291,7 @@ function GeneralLedgerTab() {
                 {entry.debits.map((d, i) => (
                   <div key={i} className="flex justify-between text-muted-foreground">
                     <span>{d.account}</span>
-                    <span>${d.amount}</span>
+                    <span>${formatCurrency(d.amount)}</span>
                   </div>
                 ))}
               </div>
@@ -299,7 +300,7 @@ function GeneralLedgerTab() {
                 {entry.credits.map((c, i) => (
                   <div key={i} className="flex justify-between text-muted-foreground">
                     <span>{c.account}</span>
-                    <span>${c.amount}</span>
+                    <span>${formatCurrency(c.amount)}</span>
                   </div>
                 ))}
               </div>
@@ -642,7 +643,7 @@ function ProcurementTab() {
                 </div>
                 <div className="text-sm text-muted-foreground mt-1">
                   {o.items.map((item, i) => (
-                    <span key={i}>{item.name} x{item.qty} (${item.price}){i < o.items.length - 1 ? ', ' : ''}</span>
+                    <span key={i}>{item.name} x{item.qty} (${formatCurrency(item.price)}){i < o.items.length - 1 ? ', ' : ''}</span>
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">{new Date(o.date).toLocaleDateString()}</p>
@@ -839,7 +840,7 @@ function FeeAutomationTab() {
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-lg font-bold">${r.amount}</p>
+                <p className="text-lg font-bold">${formatCurrency(r.amount)}</p>
               </div>
             </div>
           </Card>
