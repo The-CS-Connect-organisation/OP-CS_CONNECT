@@ -3,19 +3,19 @@
   "name": "EduVault ERP - School Management Platform",
   "icons": [
     {
-      "src": "/favicon.png",
+      "src": "/OP-CS_CONNECT/favicon.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/logo.png",
+      "src": "/OP-CS_CONNECT/logo.png",
       "sizes": "512x512",
       "type": "image/png"
     }
   ],
-  "start_url": "/",
+  "start_url": "/OP-CS_CONNECT/",
   "background_color": "#ffffff",
   "display": "standalone",
-  "scope": "/",
+  "scope": "/OP-CS_CONNECT/",
   "theme_color": "#f97316"
 }

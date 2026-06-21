@@ -1,0 +1,1 @@
+import{at as o}from"./index-BR325hob.js";import{R as r}from"./RoomBookingView-Zzq57MIe.js";import"./Card-Bwxi6wp9.js";import"./Input-Bf77Ctx0.js";import"./Skeleton-BH5z06dE.js";import"./plus-DkTbWrJp.js";import"./monitor-CSWvB9Q4.js";import"./check-l-yMRc5t.js";function f(){return o.jsx(r,{role:"teacher"})}export{f as default};
