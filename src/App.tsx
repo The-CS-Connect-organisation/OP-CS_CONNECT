@@ -3,7 +3,7 @@ import Loader from "./components/ui/loader"
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore, useThemeStore } from './lib/store'
-const Login = lazy(() => import('./pages/auth/LoginAnimated'))
+import Login from './pages/auth/LoginAnimated'
 const Landing = lazy(() => import('./pages/Landing'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
 const Photos = lazy(() => import('./pages/Photos'))
