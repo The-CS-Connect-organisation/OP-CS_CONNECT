@@ -1,5 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Search, BookOpen, Download, Clock, Star, Filter, X, ChevronLeft, ChevronRight, Book, FileText, ExternalLink, Loader2 } from 'lucide-react'
 import { useAuthStore } from '../../lib/store'
 import { api } from '../../lib/api'
@@ -39,6 +40,7 @@ const LANGUAGES = ['english', 'hindi', 'spanish', 'french', 'german', 'russian',
 
 const CSLibrary = () => {
   const { user } = useAuthStore()
+  const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
   const [books, setBooks] = useState<Book[]>([])
   const [selectedBook, setSelectedBook] = useState<Book | null>(null)
@@ -179,6 +181,12 @@ const CSLibrary = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
+              <button
+                onClick={() => navigate(-1)}
+                className="p-2 rounded-lg hover:bg-muted transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
               <div className="p-2 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500">
                 <BookOpen className="w-6 h-6 text-white" />
               </div>
