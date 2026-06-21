@@ -67,10 +67,19 @@ export default function AdminCounselling() {
   const [activeTab, setActiveTab] = useState('sessions');
   const [search, setSearch] = useState('');
 
-  const [sessions, setSessions] = useState<CounsellingSession[]>([]);
-  const [referrals, setReferrals] = useState<Referral[]>([]);
-  const [carePlans, setCarePlans] = useState<CarePlan[]>([]);
-  const [grievances, setGrievances] = useState<Grievance[]>([]);
+  const [sessions, setSessions] = useState<CounsellingSession[]>([
+  { id: 's1', studentName: 'Rahul Sharma', counsellor: 'Dr. Emily', date: '2026-06-18', type: 'academic', notes: 'Discussed study plan for exams', status: 'completed' },
+  { id: 's2', studentName: 'Priya Patel', counsellor: 'Mr. David', date: '2026-06-22', type: 'behavioral', notes: 'Initial intake session', status: 'scheduled' }
+]);
+  const [referrals, setReferrals] = useState<Referral[]>([
+  { id: 'r1', studentName: 'Aarav Kumar', referredBy: 'Ms. Johnson', date: '2026-06-15', reason: 'Declining academic performance', status: 'pending', priority: 'high' }
+]);
+  const [carePlans, setCarePlans] = useState<CarePlan[]>([
+  { id: 'cp1', studentName: 'Sneha Gupta', goals: 'Improve attendance', interventions: 'Weekly check-ins', reviewDate: '2026-07-01', status: 'active' }
+]);
+  const [grievances, setGrievances] = useState<Grievance[]>([
+  { id: 'g1', studentName: 'Anonymous', subject: 'Bullying Incident', description: 'Incident in the cafeteria', status: 'investigating', date: '2026-06-10' }
+]);
 
   const [showSessionForm, setShowSessionForm] = useState(false);
   const [sessionForm, setSessionForm] = useState({ studentName: '', counsellor: '', date: '', type: '', notes: '', status: 'scheduled' });

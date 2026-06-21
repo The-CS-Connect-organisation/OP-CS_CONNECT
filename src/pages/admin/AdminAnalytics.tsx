@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { api } from '../../lib/api';
+import { api, apiFetch } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { BarChart3, TrendingUp, AlertTriangle, Users } from 'lucide-react';
@@ -35,12 +35,11 @@ export default function AdminAnalytics() {
     if (!selectedClassId) { setAnalytics(null); return; }
     setLoading(true);
     setError('');
-    fetch(`/api/v1/analytics/class/${selectedClassId}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
+    apiFetch(`/analytics/class/${selectedClassId}`, {
+      
     })
-      .then(r => { if (!r.ok) throw new Error(`${r.status}`); return r.json(); })
-      .then(data => { setAnalytics(data); setLoading(false); })
-      .catch(err => { setError(`Failed to load analytics: ${err.message}`); setLoading(false); });
+      .then((data: any) => { setAnalytics(data.analytics || data); setLoading(false); })
+      .catch((err: any) => { setError(`Failed to load analytics: ${err.message}`); setLoading(false); });
   }, [selectedClassId]);
 
   const stats = [

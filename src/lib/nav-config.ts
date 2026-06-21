@@ -36,6 +36,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Academics',
       items: [
+        { icon: BookOpen, label: 'Homework', path: '/student/homework' },
         { icon: ClipboardList, label: 'Assignments', path: '/student/assignments' },
         { icon: BarChart3, label: 'Grades', path: '/student/grades' },
         { icon: Calendar, label: 'Timetable', path: '/student/timetable' },
@@ -56,6 +57,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Community',
       items: [
+        { icon: MessageSquare, label: 'Messages', path: '/student/messages' },
         { icon: Globe, label: 'Community', path: '/student/community' },
         { icon: Megaphone, label: 'Announcements', path: '/student/announcements' },
         { icon: Bus, label: 'Bus Tracking', path: '/student/bus-tracking' },
@@ -91,6 +93,8 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Teaching',
       items: [
+        { icon: MessageSquare, label: 'Messages', path: '/teacher/messages' },
+        { icon: BookOpen, label: 'Homework', path: '/teacher/homework' },
         { icon: ClipboardList, label: 'Assignments', path: '/teacher/assignments' },
         { icon: UserCheck, label: 'Attendance', path: '/teacher/attendance' },
         { icon: FileCheck, label: 'Grading', path: '/teacher/grading' },
@@ -109,14 +113,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: PieChart, label: 'Performance', path: '/teacher/performance-reports' },
       ]
     },
-    {
-      label: 'Communication',
-      items: [
-        { icon: MessageSquare, label: 'Messages', path: '/teacher/messages' },
-        { icon: Bell, label: 'Notifications', path: '/teacher/notifications' },
-        { icon: Radio, label: 'Comms Hub', path: '/teacher/comms-hub' },
-      ]
-    },
+    
     {
       label: 'Finance',
       items: [
@@ -142,6 +139,8 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Management',
       items: [
+        { icon: MessageSquare, label: 'Messages', path: '/admin/messages' },
+        { icon: UserPlus, label: 'Create Account', path: '/admin/create-account' },
         { icon: Users, label: 'Users', path: '/admin/users' },
         { icon: UserPlus, label: 'Create Account', path: '/admin/create-account' },
         { icon: Landmark, label: 'Accounts', path: '/admin/accounts' },
@@ -153,6 +152,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Academic',
       items: [
+        { icon: BookOpen, label: 'Homework', path: '/admin/homework' },
         { icon: FileText, label: 'Exams', path: '/admin/exams' },
         { icon: CreditCard, label: 'Fees & Billing', path: '/admin/fees' },
         { icon: BookOpen, label: 'SIS', path: '/admin/sis' },
@@ -184,17 +184,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: Building2, label: 'ERP System', path: '/admin/erp' },
       ]
     },
-    {
-      label: 'Communications',
-      items: [
-        { icon: RadioTower, label: 'Communications', path: '/admin/comms' },
-        { icon: Sparkles, label: 'AI Lab', path: '/admin/ai' },
-        { icon: Radio, label: 'Comms Hub', path: '/admin/comms-hub' },
-        { icon: FileText, label: 'Circulars', path: '/admin/circulars' },
-        { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
-        { icon: Library, label: 'CS Library', path: '/cs-library' },
-      ]
-    },
+    
     {
       label: 'Transport',
       items: [
@@ -246,6 +236,8 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'My Children',
       items: [
+        { icon: MessageSquare, label: 'Messages', path: '/parent/messages' },
+        { icon: BookOpen, label: 'Homework', path: '/parent/homework' },
         { icon: UserCheck, label: 'Attendance', path: '/parent/attendance' },
         { icon: BarChart3, label: 'Grades', path: '/parent/grades' },
         { icon: Calendar, label: 'Timetable', path: '/parent/timetable' },
@@ -309,12 +301,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: BarChart3, label: 'Analytics', path: '/coordinator/analytics' },
       ]
     },
-    {
-      label: 'Communication',
-      items: [
-        { icon: Radio, label: 'Broadcast', path: '/coordinator/broadcast' },
-      ]
-    },
+    
     {
       label: 'Tools',
       items: [
@@ -340,6 +327,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Operations',
       items: [
+        { icon: MessageSquare, label: 'Messages', path: '/manager/messages' },
         { icon: Wallet, label: 'Finance', path: '/manager/finance' },
         { icon: Bus, label: 'Transport', path: '/manager/transport' },
         { icon: Calendar, label: 'Events', path: '/manager/events' },
@@ -375,17 +363,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: BookCopy, label: 'Library Management', path: '/manager/library' },
       ]
     },
-    {
-      label: 'Communications',
-      items: [
-        { icon: RadioTower, label: 'Comms', path: '/manager/comms' },
-        { icon: FileText, label: 'Circulars', path: '/manager/circulars' },
-        { icon: Megaphone, label: 'Announcements', path: '/manager/announcements' },
-        { icon: MessageSquare, label: 'Messages', path: '/manager/messages' },
-        { icon: Radio, label: 'Comms Hub', path: '/manager/comms-hub' },
-        { icon: Bell, label: 'Notifications', path: '/manager/notifications' },
-      ]
-    },
+    
     {
       label: 'Analytics & Tools',
       items: [

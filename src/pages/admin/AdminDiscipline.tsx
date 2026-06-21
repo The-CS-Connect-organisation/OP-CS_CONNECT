@@ -74,10 +74,18 @@ export default function AdminDiscipline() {
   const [activeTab, setActiveTab] = useState('incidents');
   const [search, setSearch] = useState('');
 
-  const [incidents, setIncidents] = useState<DisciplineIncident[]>([]);
-  const [bips, setBips] = useState<BIP[]>([]);
-  const [detentions, setDetentions] = useState<Detention[]>([]);
-  const [positive, setPositive] = useState<PositiveBehaviour[]>([]);
+  const [incidents, setIncidents] = useState<DisciplineIncident[]>([
+  { id: 'di1', studentName: 'Rohan Verma', date: '2026-06-18', type: 'Disruptive', description: 'Disrupting class repeatedly', severity: 'Medium', status: 'resolved', reportedBy: 'Mr. Smith', action: 'Warning' }
+]);
+  const [bips, setBips] = useState<BIP[]>([
+  { id: 'bip1', studentName: 'Aman Singh', targetBehaviours: 'Interrupting, Out of seat', strategies: 'Token economy', goals: 'Stay in seat for 30 mins', startDate: '2026-04-10', reviewDate: '2026-07-10', status: 'active' }
+]);
+  const [detentions, setDetentions] = useState<Detention[]>([
+  { id: 'det1', studentName: 'Rohan Verma', date: '2026-06-20', time: '15:30', duration: '1 hr', reason: 'Late assignments', assignedBy: 'Ms. Johnson', status: 'scheduled' }
+]);
+  const [positive, setPositive] = useState<PositiveBehaviour[]>([
+  { id: 'pb1', studentName: 'Priya Patel', date: '2026-06-19', behaviour: 'Leadership', description: 'Helped organize the class project', recognisedBy: 'Mr. Smith', points: 5 }
+]);
 
   const [showIncidentForm, setShowIncidentForm] = useState(false);
   const [editIncident, setEditIncident] = useState<DisciplineIncident | null>(null);
