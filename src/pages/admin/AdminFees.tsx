@@ -90,9 +90,9 @@ export default function AdminFees() {
 
       // Generate dummy fee heads if none
       setFeeHeads([
-        { id: 'fh1', name: 'Tuition Fee', amount: 50000, frequency: 'term' },
-        { id: 'fh2', name: 'Transport', amount: 12000, frequency: 'term' },
-        { id: 'fh3', name: 'Lab Fee', amount: 5000, frequency: 'annual' },
+        { id: 'fh1', name: 'Tuition Fee', class: 'all', amount: 50000, frequency: 'term' },
+        { id: 'fh2', name: 'Transport', class: 'all', amount: 12000, frequency: 'term' },
+        { id: 'fh3', name: 'Lab Fee', class: 'all', amount: 5000, frequency: 'annual' },
       ]);
 
       // Generate defaulters based on fees
@@ -145,15 +145,9 @@ export default function AdminFees() {
       if (paymentForm.transactionId) payload.transactionId = paymentForm.transactionId;
 
       await api.createPayment(payload);
-      const res = { ok: true };
-      if (res.ok) {
-        setShowPaymentForm(false);
-        setPaymentForm(EMPTY_PAYMENT_FORM);
-        load();
-      } else {
-        const data = await res.json().catch(() => ({}));
-        setError(data?.message ?? `Error ${res.status}`);
-      }
+      setShowPaymentForm(false);
+      setPaymentForm(EMPTY_PAYMENT_FORM);
+      load();
     } catch {
       setError('Network error. Please try again.');
     } finally {

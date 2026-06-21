@@ -40,7 +40,7 @@ interface WorkOrder {
   assignedTo: string;
   location: string;
   createdAt: string;
-  completedAt: string;
+  completedAt?: string;
 }
 
 interface Inspection {
