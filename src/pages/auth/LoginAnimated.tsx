@@ -434,8 +434,16 @@ function LoginPage() {
       </div>
 
       {/* Right Login Section */}
-      <div className="flex items-start justify-center pt-24 lg:pt-32 p-8 bg-background/10 backdrop-blur-[2px]">
-        <div className="w-full max-w-[420px]">
+      <div className="relative flex items-start justify-center pt-24 lg:pt-32 p-8 bg-background/10 backdrop-blur-[2px] overflow-hidden">
+        {/* Animated background shapes */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-20 left-10 size-20 bg-primary/5 rounded-full blur-xl animate-[float-gentle_8s_ease-in-out_infinite]" />
+          <div className="absolute top-40 right-20 size-32 bg-primary/5 rounded-full blur-2xl animate-[float-gentle_12s_ease-in-out_infinite_reverse]" />
+          <div className="absolute bottom-40 left-1/4 size-24 bg-amber-500/5 rounded-full blur-xl animate-[float-gentle_10s_ease-in-out_infinite_2s]" />
+          <div className="absolute bottom-20 right-1/4 size-16 bg-primary/5 rounded-full blur-lg animate-[float-gentle_7s_ease-in-out_infinite_1s]" />
+          <div className="absolute top-1/2 left-1/3 size-12 bg-amber-500/5 rounded-full blur-md animate-[float-gentle_9s_ease-in-out_infinite_3s]" />
+        </div>
+        <div className="w-full max-w-[420px] relative z-10">
           {/* Mobile Logo */}
           <div className="lg:hidden flex items-center justify-center gap-2 text-lg font-semibold mb-12">
             <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -446,7 +454,7 @@ function LoginPage() {
 
           {/* Header - moved down */}
           <div className="text-center mb-10 mt-8 pt-4">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome back! (v2)</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">Welcome back!</h1>
             <p className="text-muted-foreground text-sm">Sign in to your Cornerstone account</p>
           </div>
 
@@ -518,6 +526,24 @@ function LoginPage() {
           <div className="text-center text-sm text-muted-foreground mt-8">
             Don&apos;t have an account?{" "}
             <a href="#" className="text-foreground font-medium hover:underline">Sign Up</a>
+          </div>
+
+          {/* Animated decorative elements below form */}
+          <div className="mt-12 flex items-center justify-center gap-3 pointer-events-none">
+            <div className="size-3 rounded-full bg-primary/20 animate-[float-gentle_6s_ease-in-out_infinite]" />
+            <div className="size-2 rounded-full bg-amber-500/20 animate-[float-gentle_8s_ease-in-out_infinite_1s]" />
+            <div className="size-4 rounded-full bg-primary/15 animate-[float-gentle_7s_ease-in-out_infinite_0.5s]" />
+            <div className="size-2 rounded-full bg-amber-500/20 animate-[float-gentle_9s_ease-in-out_infinite_2s]" />
+            <div className="size-3 rounded-full bg-primary/20 animate-[float-gentle_6s_ease-in-out_infinite_1.5s]" />
+          </div>
+          <div className="mt-4 flex items-center justify-center gap-2 pointer-events-none">
+            {[...Array(3)].map((_, i) => (
+              <div
+                key={i}
+                className="h-1 rounded-full bg-gradient-to-r from-primary/30 to-amber-500/30 animate-pulse"
+                style={{ width: `${20 + i * 20}px`, animationDelay: `${i * 0.3}s` }}
+              />
+            ))}
           </div>
         </div>
       </div>
