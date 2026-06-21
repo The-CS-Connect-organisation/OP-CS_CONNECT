@@ -1,6 +1,6 @@
 import { type UserRole } from './store'
 import {
-  Home, Zap, CalendarDays, ClipboardList, BarChart3, Calendar, UserCheck,
+  Home, Zap, CalendarDays, ClipboardList, BarChart3, Calendar, UserCheck, UserPlus,
   FileText, FileSpreadsheet, CreditCard, Sparkles, Brain, Target, StickyNote,
   Share2, Library, PenTool, MessageSquare, Globe, Megaphone, Bus,
   Award, Star, User, FileCheck, BookOpen, TrendingUp, PieChart, Bell,
@@ -39,7 +39,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: ClipboardList, label: 'Assignments', path: '/student/assignments' },
         { icon: BarChart3, label: 'Grades', path: '/student/grades' },
         { icon: Calendar, label: 'Timetable', path: '/student/timetable' },
-        { icon: UserCheck, label: 'Attendance', path: '/student/attendance' },
+        { icon: UserCheck, UserPlus, label: 'Attendance', path: '/student/attendance' },
         { icon: FileText, label: 'Exams', path: '/student/exams' },
         { icon: CreditCard, label: 'Fees', path: '/student/fees' },
       ]
@@ -92,7 +92,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
       label: 'Teaching',
       items: [
         { icon: ClipboardList, label: 'Assignments', path: '/teacher/assignments' },
-        { icon: UserCheck, label: 'Attendance', path: '/teacher/attendance' },
+        { icon: UserCheck, UserPlus, label: 'Attendance', path: '/teacher/attendance' },
         { icon: FileCheck, label: 'Grading', path: '/teacher/grading' },
         { icon: StickyNote, label: 'Class Notes', path: '/teacher/notes' },
         { icon: FileText, label: 'Exams', path: '/teacher/exams' },
@@ -143,6 +143,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
       label: 'Management',
       items: [
         { icon: Users, label: 'Users', path: '/admin/users' },
+        { icon: UserPlus, label: 'Create Account', path: '/admin/create-account' },
         { icon: Landmark, label: 'Accounts', path: '/admin/accounts' },
         { icon: Calendar, label: 'Timetable', path: '/admin/timetable' },
         { icon: Megaphone, label: 'Announcements', path: '/admin/announcements' },
@@ -244,7 +245,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'My Children',
       items: [
-        { icon: UserCheck, label: 'Attendance', path: '/parent/attendance' },
+        { icon: UserCheck, UserPlus, label: 'Attendance', path: '/parent/attendance' },
         { icon: BarChart3, label: 'Grades', path: '/parent/grades' },
         { icon: Calendar, label: 'Timetable', path: '/parent/timetable' },
         { icon: CreditCard, label: 'Fees', path: '/parent/fees' },
@@ -348,7 +349,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Teaching',
       items: [
-        { icon: UserCheck, label: 'Attendance', path: '/manager/attendance' },
+        { icon: UserCheck, UserPlus, label: 'Attendance', path: '/manager/attendance' },
         { icon: FileCheck, label: 'Grading', path: '/manager/grading' },
         { icon: StickyNote, label: 'Notes', path: '/manager/notes' },
         { icon: Cap, label: 'Reports', path: '/manager/reports' },

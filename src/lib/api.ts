@@ -7,7 +7,8 @@ function authHeaders(): Record<string, string> {
   const headers: Record<string, string> = {};
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
-  } else if (userId) {
+  }
+  if (userId) {
     headers['x-user-id'] = userId;
   }
   return headers;
