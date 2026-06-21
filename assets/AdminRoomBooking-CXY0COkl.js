@@ -1,1 +1,0 @@
-import{at as o}from"./index-BDa_nQe8.js";import{R as i}from"./RoomBookingView-BUSCIDgB.js";import"./Card-Df2g293T.js";import"./Input-CgYINP98.js";import"./Skeleton-BR0NTDjp.js";import"./plus-r_ZGBmvg.js";import"./monitor-CYoXuLiT.js";import"./check-DF-AVG-R.js";function f(){return o.jsx(i,{role:"admin"})}export{f as default};
