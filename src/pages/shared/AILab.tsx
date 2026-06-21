@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuthStore } from "@/lib/store";
 import { api, apiFetch } from "@/lib/api";
 import {
-  Send, Loader2, Sparkles, Brain, Zap, RotateCcw,
+  Send, Loader2, Sparkles, Brain,
   Trash2, MessageSquare, ChevronDown, X, History,
-  AlertTriangle, Bot, User, Paperclip, FileText, Copy, Check
+  Bot, User, Copy, Check
 } from "lucide-react";
 
 interface ChatMessage {
@@ -19,11 +19,8 @@ interface ChatMessage {
 }
 
 const MODEL_CONFIG: Record<string, { id: string; name: string; subtitle: string; provider: string; icon: React.ElementType; gradient: string; pill: string; dot: string }> = {
-  gemini: { id: "gemini", name: "Gemini Flash", subtitle: "Fast & Smart", provider: "Google", icon: Zap, gradient: "from-orange-500 to-amber-400", pill: "bg-orange-50 text-orange-600 border-orange-200", dot: "bg-orange-500" },
-  "gpt-oss-120b": { id: "gpt-oss-120b", name: "GPT-OSS 120B", subtitle: "Powerful", provider: "Cerebras", icon: Brain, gradient: "from-orange-600 to-amber-500", pill: "bg-orange-50 text-orange-600 border-violet-200", dot: "bg-orange-500" },
   "llama-3.3-70b": { id: "llama-3.3-70b", name: "Llama 3.3 70B", subtitle: "Versatile", provider: "Groq", icon: Sparkles, gradient: "from-emerald-500 to-teal-400", pill: "bg-emerald-50 text-emerald-600 border-emerald-200", dot: "bg-emerald-500" },
-  "qwen-3-235b": { id: "qwen-3-235b", name: "Qwen 3 235B", subtitle: "Deep Reasoning", provider: "Cerebras", icon: Brain, gradient: "from-orange-500 to-amber-400", pill: "bg-orange-50 text-orange-600 border-orange-200", dot: "bg-orange-500" },
-  compound: { id: "compound", name: "Groq Compound", subtitle: "Agentic", provider: "Groq", icon: Sparkles, gradient: "from-rose-500 to-pink-400", pill: "bg-rose-50 text-rose-600 border-rose-200", dot: "bg-rose-500" },
+  compound: { id: "compound", name: "Groq Compound", subtitle: "Agentic", provider: "Groq", icon: Brain, gradient: "from-rose-500 to-pink-400", pill: "bg-rose-50 text-rose-600 border-rose-200", dot: "bg-rose-500" },
 };
 
 const SYSTEM_PROMPTS: Record<string, string> = {
@@ -84,27 +81,6 @@ const PARTICLES = [
   { x: 58, y: 88, size: 8, color: "#818cf8", delay: 0.8 },
 ];
 
-const AdvancedWarningModal = ({ onConfirm, onCancel }: { onConfirm: () => void; onCancel: () => void }) => (
-  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-    className="fixed inset-0 z-[200] flex items-center justify-center bg-black/20 backdrop-blur-sm" onClick={onCancel}>
-    <motion.div initial={{ scale: 0.92, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }}
-      exit={{ scale: 0.92, opacity: 0 }} onClick={(e) => e.stopPropagation()}
-      className="bg-background border border-border rounded-3xl p-6 max-w-sm w-full mx-4 shadow-2xl">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
-          <AlertTriangle size={18} className="text-amber-500" />
-        </div>
-        <div><h3 className="font-bold text-sm">Advanced Mode</h3><p className="text-xs text-muted-foreground">School-funded resource</p></div>
-      </div>
-      <p className="text-sm text-muted-foreground leading-relaxed mb-6">Advanced mode runs a significantly larger model funded by the school. Please use it responsibly.</p>
-      <div className="flex gap-3">
-        <button onClick={onCancel} className="flex-1 py-2.5 rounded-2xl border border-border text-sm text-muted-foreground hover:bg-accent transition-all font-medium">Cancel</button>
-        <button onClick={onConfirm} className="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-500 text-white text-sm font-bold hover:opacity-90 shadow-lg transition-all">I understand</button>
-      </div>
-    </motion.div>
-  </motion.div>
-);
-
 const SplashScreen = ({ onEnter }: { onEnter: () => void }) => (
   <motion.div className="fixed inset-0 z-[100] flex items-center justify-center"
     style={{ background: "linear-gradient(135deg, #f0f4ff 0%, #ffffff 50%, #f5f0ff 100%)" }}
@@ -136,11 +112,11 @@ const SplashScreen = ({ onEnter }: { onEnter: () => void }) => (
         <p className="text-[11px] text-muted-foreground tracking-[0.28em] uppercase font-semibold mt-3">Cornerstone School &middot; AI Studio</p>
       </motion.div>
       <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.85, duration: 0.6 }} className="flex gap-3 mt-8">
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 border border-orange-200 shadow-sm">
-          <Zap size={12} className="text-orange-500" /><span className="text-xs text-orange-600 font-bold">Gemini Flash</span>
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 shadow-sm">
+          <Sparkles size={12} className="text-emerald-500" /><span className="text-xs text-emerald-600 font-bold">Llama 3.3 70B</span>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-orange-50 border border-violet-200 shadow-sm">
-          <Brain size={12} className="text-orange-500" /><span className="text-xs text-orange-600 font-bold">Qwen-3 235B</span>
+        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-rose-50 border border-rose-200 shadow-sm">
+          <Brain size={12} className="text-rose-500" /><span className="text-xs text-rose-600 font-bold">Groq Compound</span>
         </div>
       </motion.div>
       <motion.button onClick={onEnter} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
@@ -160,13 +136,13 @@ export default function AILab() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  const [mode, setMode] = useState("gemini");
+  const [mode, setMode] = useState("llama-3.3-70b");
   const [showHistory, setShowHistory] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
-  const [showAdvancedWarning, setShowAdvancedWarning] = useState(false);
   const [showModelMenu, setShowModelMenu] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [studentContext, setStudentContext] = useState<string>("");
   const chatEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -174,6 +150,28 @@ export default function AILab() {
   const MIcon = m?.icon || Sparkles;
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages, loading]);
+
+  useEffect(() => {
+    if (user?.role !== "student" || !user?.id) return;
+    const loadStudentData = async () => {
+      try {
+        const [grades, attendance, fees] = await Promise.all([
+          api.getStudentGrades(user.id).catch(() => null),
+          api.getStudentAttendance(user.id).catch(() => null),
+          api.getStudentFees(user.id).catch(() => null),
+        ]);
+        const parts: string[] = [];
+        if (grades?.grades) parts.push(`GRADES: ${JSON.stringify(grades.grades)}`);
+        if (grades?.summary) parts.push(`GRADE SUMMARY: ${JSON.stringify(grades.summary)}`);
+        if (attendance?.records) parts.push(`ATTENDANCE: ${JSON.stringify(attendance.records)}`);
+        if (attendance?.summary) parts.push(`ATTENDANCE SUMMARY: ${JSON.stringify(attendance.summary)}`);
+        if (fees?.history) parts.push(`FEES: ${JSON.stringify(fees.history)}`);
+        if (fees?.summary) parts.push(`FEE SUMMARY: ${JSON.stringify(fees.summary)}`);
+        setStudentContext(parts.join("\n"));
+      } catch {}
+    };
+    loadStudentData();
+  }, [user?.id, user?.role]);
 
   useEffect(() => {
     if (!showModelMenu) return;
@@ -184,11 +182,7 @@ export default function AILab() {
 
   const handleModeSelect = (id: string) => {
     setShowModelMenu(false);
-    if (id === "qwen-3-235b" && mode !== "qwen-3-235b") {
-      setShowAdvancedWarning(true);
-    } else {
-      setMode(id);
-    }
+    setMode(id);
   };
 
   const handleSend = async () => {
@@ -202,7 +196,8 @@ export default function AILab() {
     setLoading(true);
 
     try {
-      const systemPrompt = SYSTEM_PROMPTS[user?.role || "default"] || SYSTEM_PROMPTS.default;
+      let systemPrompt = SYSTEM_PROMPTS[user?.role || "default"] || SYSTEM_PROMPTS.default;
+      if (studentContext) systemPrompt += `\n\nHere is the student's current academic data (use this to answer questions):\n${studentContext}`;
       const res = await api.chatAI(newMessages.map((x) => ({ role: x.role, content: x.content })), mode, systemPrompt);
       const responseText =
         res?.response ||
@@ -240,7 +235,7 @@ export default function AILab() {
 
   return (
     <div className="flex bg-background" style={{ height: "calc(100vh - 64px)", overflow: "hidden", maxWidth: "100vw", position: "relative" }}>
-      <AnimatePresence>{showAdvancedWarning && <AdvancedWarningModal onConfirm={() => { setMode("qwen-3-235b"); setShowAdvancedWarning(false); }} onCancel={() => setShowAdvancedWarning(false)} />}</AnimatePresence>
+
 
       {/* History Sidebar */}
       <AnimatePresence>
@@ -331,7 +326,7 @@ export default function AILab() {
                       })}
                     </div>
                     <div className="px-4 py-2.5 border-t border-border bg-accent/30">
-                      <p className="text-[10px] text-muted-foreground leading-relaxed">Powered by Cerebras &middot; Groq fallback &middot; Gemini default</p>
+                      <p className="text-[10px] text-muted-foreground leading-relaxed">Powered by Groq &middot; Llama 3.3 70B &middot; Groq Compound</p>
                     </div>
                   </motion.div>
                 )}
