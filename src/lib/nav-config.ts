@@ -39,7 +39,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: ClipboardList, label: 'Assignments', path: '/student/assignments' },
         { icon: BarChart3, label: 'Grades', path: '/student/grades' },
         { icon: Calendar, label: 'Timetable', path: '/student/timetable' },
-        { icon: UserCheck, UserPlus, label: 'Attendance', path: '/student/attendance' },
+        { icon: UserCheck, label: 'Attendance', path: '/student/attendance' },
         { icon: FileText, label: 'Exams', path: '/student/exams' },
         { icon: CreditCard, label: 'Fees', path: '/student/fees' },
       ]
@@ -92,7 +92,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
       label: 'Teaching',
       items: [
         { icon: ClipboardList, label: 'Assignments', path: '/teacher/assignments' },
-        { icon: UserCheck, UserPlus, label: 'Attendance', path: '/teacher/attendance' },
+        { icon: UserCheck, label: 'Attendance', path: '/teacher/attendance' },
         { icon: FileCheck, label: 'Grading', path: '/teacher/grading' },
         { icon: StickyNote, label: 'Class Notes', path: '/teacher/notes' },
         { icon: FileText, label: 'Exams', path: '/teacher/exams' },
@@ -245,7 +245,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'My Children',
       items: [
-        { icon: UserCheck, UserPlus, label: 'Attendance', path: '/parent/attendance' },
+        { icon: UserCheck, label: 'Attendance', path: '/parent/attendance' },
         { icon: BarChart3, label: 'Grades', path: '/parent/grades' },
         { icon: Calendar, label: 'Timetable', path: '/parent/timetable' },
         { icon: CreditCard, label: 'Fees', path: '/parent/fees' },
@@ -349,7 +349,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Teaching',
       items: [
-        { icon: UserCheck, UserPlus, label: 'Attendance', path: '/manager/attendance' },
+        { icon: UserCheck, label: 'Attendance', path: '/manager/attendance' },
         { icon: FileCheck, label: 'Grading', path: '/manager/grading' },
         { icon: StickyNote, label: 'Notes', path: '/manager/notes' },
         { icon: Cap, label: 'Reports', path: '/manager/reports' },
