@@ -68,6 +68,7 @@ const AdminAnonymousReports = lazy(() => import('./pages/admin/AdminAnonymousRep
 const AdminClinic = lazy(() => import('./pages/admin/AdminClinic'))
 const AdminITHelpdesk = lazy(() => import('./pages/admin/AdminITHelpdesk'))
 const AdminSkipBus = lazy(() => import('./pages/admin/AdminSkipBus'))
+const AdminClubs = lazy(() => import('./pages/admin/AdminClubs'))
 const AdminFeeInstallments = lazy(() => import('./pages/admin/AdminFeeInstallments'))
 const ParentDashboard = lazy(() => import('./pages/parent/ParentDashboard'))
 const ParentAttendance = lazy(() => import('./pages/parent/ParentAttendance'))
@@ -281,6 +282,7 @@ function App() {
             <Route path="bus-assignment" element={<AdminBusAssignment />} />
             <Route path="lost-found" element={<AdminLostFound />} />
             <Route path="anonymous-report" element={<AdminAnonymousReports />} />
+            <Route path="clubs" element={<AdminClubs />} />
             <Route path="clinic" element={<AdminClinic />} />
             <Route path="e-portfolio" element={<AdminPortfolio />} />
             <Route path="it-helpdesk" element={<AdminITHelpdesk />} />

@@ -133,8 +133,17 @@ export const api = {
   deleteEvent: (id: string) => apiFetch(`/events/${id}`, { method: 'DELETE' }),
 
   // Clubs
-  getClubs: () => apiFetch('/clubs'),
+  getClubs: (params?: Record<string, string>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiFetch(`/clubs${query}`);
+  },
   createClub: (data: any) => apiFetch('/clubs', { method: 'POST', body: JSON.stringify(data) }),
+  approveClub: (id: string) => apiFetch(`/clubs/${id}/approve`, { method: 'PUT' }),
+  rejectClub: (id: string) => apiFetch(`/clubs/${id}/reject`, { method: 'PUT' }),
+  joinClub: (clubId: string, userId: string) => apiFetch(`/clubs/${clubId}/join`, { method: 'POST', body: JSON.stringify({ userId }) }),
+  leaveClub: (clubId: string, userId: string) => apiFetch(`/clubs/${clubId}/leave`, { method: 'POST', body: JSON.stringify({ userId }) }),
+  approveJoinRequest: (clubId: string, userId: string) => apiFetch(`/clubs/${clubId}/join/${userId}/approve`, { method: 'PUT' }),
+  rejectJoinRequest: (clubId: string, userId: string) => apiFetch(`/clubs/${clubId}/join/${userId}/reject`, { method: 'PUT' }),
 
   // Messages
   getMessages: (userId: string) => apiFetch(`/messages/${userId}`),

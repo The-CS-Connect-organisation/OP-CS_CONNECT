@@ -230,6 +230,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: AlertTriangle, label: 'Anonymous Report', path: '/admin/anonymous-report' },
         { icon: Stethoscope, label: 'School Clinic', path: '/admin/clinic' },
         { icon: Headphones, label: 'IT Helpdesk', path: '/admin/it-helpdesk' },
+        { icon: Users, label: 'Manage Clubs', path: '/admin/clubs' },
         { icon: SkipForward, label: 'Skip the Bus', path: '/admin/skip-bus' },
         { icon: Receipt, label: 'Fee Installments', path: '/admin/fee-installments' },
       ]
