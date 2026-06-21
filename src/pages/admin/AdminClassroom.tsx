@@ -45,7 +45,7 @@ const getHeaders = () => ({
   Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
 });
 
-async function apiFetch(path: string, options: RequestInit = {}) {
+async function localApiFetch(path: string, options: RequestInit = {}) {
   const res = await fetch(`/api/v1${path}`, {
     ...options,
     headers: {
@@ -82,7 +82,7 @@ export default function AdminClassroom() {
   const loadClasses = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await apiFetch('/classes/detailed');
+      const data = await localApiFetch('/classes/detailed');
       setClassList(data);
     } catch (e: any) {
       setError(e.message);
@@ -129,19 +129,19 @@ export default function AdminClassroom() {
 
       if (modal.kind === 'add-class') {
         if (!className.trim() || !classGrade) throw new Error('Name and grade are required');
-        await apiFetch('/classes', { method: 'POST', body: JSON.stringify({ name: className.trim(), grade: Number(classGrade) }) });
+        await localApiFetch('/classes', { method: 'POST', body: JSON.stringify({ name: className.trim(), grade: Number(classGrade) }) });
       } else if (modal.kind === 'edit-class') {
-        await apiFetch(`/classes/${modal.cls.id}`, { method: 'PATCH', body: JSON.stringify({ name: className.trim(), grade: Number(classGrade) }) });
+        await localApiFetch(`/classes/${modal.cls.id}`, { method: 'PATCH', body: JSON.stringify({ name: className.trim(), grade: Number(classGrade) }) });
       } else if (modal.kind === 'add-section') {
         if (!sectionName.trim()) throw new Error('Section name is required');
-        await apiFetch('/sections', { method: 'POST', body: JSON.stringify({ name: sectionName.trim(), classId: modal.classId, capacity: Number(sectionCapacity) }) });
+        await localApiFetch('/sections', { method: 'POST', body: JSON.stringify({ name: sectionName.trim(), classId: modal.classId, capacity: Number(sectionCapacity) }) });
       } else if (modal.kind === 'edit-section') {
-        await apiFetch(`/sections/${modal.section.id}`, { method: 'PATCH', body: JSON.stringify({ name: sectionName.trim(), capacity: Number(sectionCapacity) }) });
+        await localApiFetch(`/sections/${modal.section.id}`, { method: 'PATCH', body: JSON.stringify({ name: sectionName.trim(), capacity: Number(sectionCapacity) }) });
       } else if (modal.kind === 'add-subject') {
         if (!subjectName.trim() || !subjectCode.trim()) throw new Error('Name and code are required');
-        await apiFetch('/subjects', { method: 'POST', body: JSON.stringify({ name: subjectName.trim(), code: subjectCode.trim(), classId: modal.classId, isElective: subjectElective }) });
+        await localApiFetch('/subjects', { method: 'POST', body: JSON.stringify({ name: subjectName.trim(), code: subjectCode.trim(), classId: modal.classId, isElective: subjectElective }) });
       } else if (modal.kind === 'edit-subject') {
-        await apiFetch(`/subjects/${modal.subject.id}`, { method: 'PATCH', body: JSON.stringify({ name: subjectName.trim(), code: subjectCode.trim(), isElective: subjectElective }) });
+        await localApiFetch(`/subjects/${modal.subject.id}`, { method: 'PATCH', body: JSON.stringify({ name: subjectName.trim(), code: subjectCode.trim(), isElective: subjectElective }) });
       }
 
       setModal(null);
@@ -156,7 +156,7 @@ export default function AdminClassroom() {
   async function handleDelete(type: 'class' | 'section' | 'subject', id: string, label: string) {
     if (!confirm(`Delete "${label}"? This cannot be undone.`)) return;
     try {
-      await apiFetch(`/${type === 'class' ? 'classes' : type === 'section' ? 'sections' : 'subjects'}/${id}`, { method: 'DELETE' });
+      await localApiFetch(`/${type === 'class' ? 'classes' : type === 'section' ? 'sections' : 'subjects'}/${id}`, { method: 'DELETE' });
       loadClasses();
     } catch (e: any) {
       alert(e.message);

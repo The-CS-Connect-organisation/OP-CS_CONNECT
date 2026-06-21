@@ -78,11 +78,21 @@ export default function AdminHealth() {
   const [activeTab, setActiveTab] = useState('records');
   const [search, setSearch] = useState('');
 
-  const [records, setRecords] = useState<HealthRecord[]>([]);
-  const [immunisations, setImmunisations] = useState<Immunisation[]>([]);
-  const [ieps, setIeps] = useState<IEP[]>([]);
-  const [screenings, setScreenings] = useState<Screening[]>([]);
-  const [visits, setVisits] = useState<NurseVisit[]>([]);
+  const [records, setRecords] = useState<HealthRecord[]>([
+  { id: 'hr1', studentName: 'Rahul Sharma', condition: 'Asthma', medication: 'Inhaler as needed', allergies: 'Peanuts', bloodType: 'O+', notes: 'Keep inhaler in backpack' }
+]);
+  const [immunisations, setImmunisations] = useState<Immunisation[]>([
+  { id: 'im1', studentName: 'Priya Patel', vaccine: 'COVID-19', dateGiven: '2025-10-15', dose: 'Booster', nextDue: '2026-10-15', administeredBy: 'Dr. Smith' }
+]);
+  const [ieps, setIeps] = useState<IEP[]>([
+  { id: 'iep1', studentName: 'Aarav Kumar', disability: 'Dyslexia', accommodations: 'Extra time on tests', goals: 'Improve reading fluency', reviewDate: '2026-08-01', status: 'active' }
+]);
+  const [screenings, setScreenings] = useState<Screening[]>([
+  { id: 'sc1', studentName: 'Rahul Sharma', type: 'Vision', date: '2026-05-10', result: 'Pass - 20/20', notes: 'No issues detected' }
+]);
+  const [visits, setVisits] = useState<NurseVisit[]>([
+  { id: 'nv1', studentName: 'Sneha Gupta', date: '2026-06-20', time: '10:30 AM', reason: 'Headache', treatment: 'Rest & Paracetamol', nurse: 'Nurse Jane', status: 'resolved' }
+]);
 
   const [showRecordForm, setShowRecordForm] = useState(false);
   const [editRecord, setEditRecord] = useState<HealthRecord | null>(null);
