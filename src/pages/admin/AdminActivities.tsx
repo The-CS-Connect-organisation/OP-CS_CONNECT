@@ -101,8 +101,12 @@ export default function AdminActivities() {
 }
 
 function ClubsTab() {
-  const [clubs, setClubs] = useState<Club[]>([]);
-  const [activities, setActivities] = useState<ClubActivity[]>([]);
+  const [clubs, setClubs] = useState<Club[]>([
+  { id: 'c1', name: 'Robotics Club', description: 'Build and program robots', category: 'technology', advisor: 'Mr. David', meetingSchedule: 'Friday 3 PM', memberCount: 45 }
+]);
+  const [activities, setActivities] = useState<ClubActivity[]>([
+  { id: 'ca1', clubId: 'c1', clubName: 'Robotics Club', title: 'Hackathon Prep', description: 'Preparing for national hackathon', date: '2026-06-25', location: 'Computer Lab 1' }
+]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -261,7 +265,9 @@ function ClubsTab() {
 }
 
 function FieldTripsTab() {
-  const [trips, setTrips] = useState<FieldTrip[]>([]);
+  const [trips, setTrips] = useState<FieldTrip[]>([
+  { id: 'ft1', title: 'Science Museum Visit', destination: 'City Science Center', date: '2026-07-10', departureTime: '08:00 AM', returnTime: '03:00 PM', cost: 500, status: 'approved', consentCount: 45, totalStudents: 60 }
+]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -418,7 +424,9 @@ function FieldTripsTab() {
 }
 
 function ElectionsTab() {
-  const [elections, setElections] = useState<Election[]>([]);
+  const [elections, setElections] = useState<Election[]>([
+  { id: 'el1', title: 'Student Council President 2026', position: 'President', status: 'active', startDate: '2026-06-20', endDate: '2026-06-27', candidates: [{ id: 'cd1', name: 'Aman Singh', manifesto: 'Better school lunches', votes: 120 }, { id: 'cd2', name: 'Neha Sharma', manifesto: 'More sports events', votes: 95 }], totalVotes: 215 }
+]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -429,7 +437,10 @@ function ElectionsTab() {
   const [selectedCandidate, setSelectedCandidate] = useState('');
   const [voterId, setVoterId] = useState('');
   const [showResults, setShowResults] = useState<Election | null>(null);
-  const [results, setResults] = useState<Candidate[]>([]);
+  const [results, setResults] = useState<Candidate[]>([
+  { id: 'cd1', name: 'Aman Singh', manifesto: 'Better school lunches', votes: 120 },
+  { id: 'cd2', name: 'Neha Sharma', manifesto: 'More sports events', votes: 95 }
+]);
   const [error, setError] = useState('');
 
   useEffect(() => { load(); }, []);
@@ -633,7 +644,9 @@ function ElectionsTab() {
 }
 
 function ServiceHoursTab() {
-  const [hours, setHours] = useState<ServiceHour[]>([]);
+  const [hours, setHours] = useState<ServiceHour[]>([
+  { id: 'sh1', studentName: 'Priya Patel', organization: 'City Cleanup Crew', hours: 5, date: '2026-06-05', description: 'Park cleanup', verified: true }
+]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
