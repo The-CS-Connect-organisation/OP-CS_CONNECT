@@ -339,10 +339,10 @@ export default function AppGuide() {
                 thousands of users across multiple school roles — from students checking
                 their grades to administrators managing institutional operations.
               </p>
-              <p className="text-gray-500 text-sm">
+              <p className="text-gray-700 text-base md:text-lg font-medium">
                 Built by{' '}
-                <span className="font-semibold text-gray-700">Navaneeth Nalabothu</span> and{' '}
-                <span className="font-semibold text-gray-700">Rishith Manchala</span>
+                <span className="font-semibold text-gray-900">Rishith Manchala</span> and{' '}
+                <span className="font-semibold text-gray-900">Navaneeth Nalabothu</span>
               </p>
             </div>
           </div>
