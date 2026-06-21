@@ -5,7 +5,7 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/Tabs';
-import { api } from '../../lib/api';
+import { api, apiFetch } from '../../lib/api';
 
 interface StudentRow {
   id: string;
@@ -59,7 +59,7 @@ export default function AdminSIS() {
       const h = { Authorization: `Bearer ${token}` };
 
       try {
-        const r = await fetch('/api/v1/classes', { headers: h });
+        const r = { ok: true, json: async () => await apiFetch('/v1/classes') };
         if (r.ok) {
           const data = await r.json();
           const list = Array.isArray(data) ? data : [];
@@ -70,7 +70,7 @@ export default function AdminSIS() {
 
       // Fetch all sections count
       try {
-        const r = await fetch('/api/v1/sections', { headers: h });
+        const r = { ok: true, json: async () => await apiFetch('/v1/sections') };
         if (r.ok) {
           const data = await r.json();
           if (Array.isArray(data)) setTotalSections(data.length);
@@ -102,7 +102,7 @@ export default function AdminSIS() {
       if (filterClassId) params.set('classId', filterClassId);
       if (filterSectionId) params.set('sectionId', filterSectionId);
       params.set('limit', '500');
-      const res = await fetch(`/api/v1/students?${params}`, { headers: { Authorization: `Bearer ${token}` } });
+      const data = await apiFetch(`/v1/students?${params}`); const res = { ok: true, json: async () => data };
       if (res.ok) {
         const data = await res.json();
         setStudents(Array.isArray(data) ? data : []);

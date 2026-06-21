@@ -117,7 +117,9 @@ export default function AdminEnrolment() {
 }
 
 function ApplicationsTab() {
-  const [apps, setApps] = useState<EnrolmentApplication[]>([]);
+  const [apps, setApps] = useState<EnrolmentApplication[]>([
+  { id: 'app1', studentName: 'Karan Mehra', studentId: 'u123', grade: '11-Science', status: 'under-review', submittedDate: '2026-06-01', documents: ['Transcripts', 'ID'], notes: 'Missing recommendation letter' }
+]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -237,7 +239,9 @@ function ApplicationsTab() {
 }
 
 function OffersTab() {
-  const [offers, setOffers] = useState<AdmissionOffer[]>([]);
+  const [offers, setOffers] = useState<AdmissionOffer[]>([
+  { id: 'off1', studentName: 'Sanya Gupta', studentId: 'u124', program: 'Regular', tuitionFee: 50000, status: 'accepted', offerDate: '2026-06-15', responseDeadline: '2026-06-30' }
+]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -356,7 +360,9 @@ function OffersTab() {
 }
 
 function WaitlistTab() {
-  const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
+  const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([
+  { id: 'wl1', studentName: 'Arjun Reddy', studentId: 'u125', priority: 1, status: 'active', addedDate: '2026-05-20', notes: 'Sibling already enrolled' }
+]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -464,7 +470,9 @@ function WaitlistTab() {
 }
 
 function CapacityTab() {
-  const [capacities, setCapacities] = useState<SchoolCapacity[]>([]);
+  const [capacities, setCapacities] = useState<SchoolCapacity[]>([
+  { id: 'cap1', grade: '10-A', capacity: 40, enrolled: 38, available: 2 }
+]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ grade: '', capacity: 0 });
@@ -550,7 +558,9 @@ function CapacityTab() {
 }
 
 function WithdrawalsTab() {
-  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([
+  { id: 'wd1', studentName: 'Neha Sharma', studentId: 'u126', reason: 'Relocation', date: '2026-06-10', status: 'pending', processedDate: '' }
+]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -645,7 +655,9 @@ function WithdrawalsTab() {
 }
 
 function ToursTab() {
-  const [tours, setTours] = useState<SchoolTour[]>([]);
+  const [tours, setTours] = useState<SchoolTour[]>([
+  { id: 't1', studentName: 'Verma Family', studentId: 'N/A', date: '2026-06-25', time: '10:00 AM', status: 'scheduled', notes: 'Interested in sports facilities' }
+]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
@@ -748,7 +760,9 @@ function ToursTab() {
 }
 
 function ScholarshipsTab() {
-  const [scholarships, setScholarships] = useState<Scholarship[]>([]);
+  const [scholarships, setScholarships] = useState<Scholarship[]>([
+  { id: 'sch1', name: 'Academic Excellence', amount: 20000, criteria: 'Above 95% overall', deadline: '2026-08-01', available: 5, awarded: 2 }
+]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);

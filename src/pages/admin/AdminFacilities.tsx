@@ -119,11 +119,23 @@ interface SafetyIncident {
 export default function AdminFacilities() {
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
-  const [inspections, setInspections] = useState<Inspection[]>([]);
+  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([
+  { id: 'wo1', title: 'AC Repair', description: 'AC not cooling in Room 101', priority: 'high', status: 'open', assignedTo: 'Maintenance Team', location: 'Room 101', createdAt: '2026-06-20', completedAt: undefined },
+  { id: 'wo2', title: 'Broken Window', description: 'Window latch broken', priority: 'medium', status: 'in-progress', assignedTo: 'John Doe', location: 'Room 102', createdAt: '2026-06-19', completedAt: undefined }
+]);
+  const [inspections, setInspections] = useState<Inspection[]>([
+  { id: 'i1', title: 'Fire Safety Check', area: 'Main Block', conductedBy: 'John Doe', date: '2026-06-15', findings: 'All extinguishers up to date.', rating: 'pass', nextDue: '2026-12-15' },
+  { id: 'i2', title: 'HVAC Inspection', area: 'Science Wing', conductedBy: 'Jane Smith', date: '2026-06-18', findings: 'Filter replacement needed.', rating: 'conditional', nextDue: '2026-09-18' }
+]);
   const [energyReadings, setEnergyReadings] = useState<EnergyReading[]>([]);
-  const [supplies, setSupplies] = useState<SupplyItem[]>([]);
-  const [cleaningSchedules, setCleaningSchedules] = useState<CleaningSchedule[]>([]);
+  const [supplies, setSupplies] = useState<SupplyItem[]>([
+  { id: 's1', name: 'Whiteboard Markers', category: 'stationery', quantity: 50, minThreshold: 20, unit: 'boxes', lastRestocked: '2026-05-10' },
+  { id: 's2', name: 'Hand Sanitizer', category: 'cleaning', quantity: 15, minThreshold: 30, unit: 'bottles', lastRestocked: '2026-04-20' }
+]);
+  const [cleaningSchedules, setCleaningSchedules] = useState<CleaningSchedule[]>([
+  { id: 'c1', area: 'Main Block - Ground Floor', assignedTo: 'Cleaning Staff A', frequency: 'daily', lastCleaned: '2026-06-20', nextDue: '2026-06-21', status: 'completed' },
+  { id: 'c2', area: 'Science Lab', assignedTo: 'Cleaning Staff B', frequency: 'weekly', lastCleaned: '2026-06-15', nextDue: '2026-06-22', status: 'pending' }
+]);
   const [visitorLogs, setVisitorLogs] = useState<VisitorLog[]>([]);
   const [emergencyDrills, setEmergencyDrills] = useState<EmergencyDrill[]>([]);
   const [safetyIncidents, setSafetyIncidents] = useState<SafetyIncident[]>([]);

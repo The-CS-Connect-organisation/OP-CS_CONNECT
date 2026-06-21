@@ -7,6 +7,7 @@ import Login from './pages/auth/LoginAnimated'
 const Landing = lazy(() => import('./pages/Landing'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
 const Photos = lazy(() => import('./pages/Photos'))
+const Homework = lazy(() => import('./pages/shared/Homework'))
 const StudentDashboard = lazy(() => import('./pages/student/Dashboard'))
 const StudentAssignments = lazy(() => import('./pages/student/Assignments'))
 const StudentTimetable = lazy(() => import('./pages/student/Timetable'))
@@ -209,9 +210,13 @@ function App() {
           <Route path="/student" element={roleGuard(['student'])}>
             <Route index element={<StudentDashboard />} />
             <Route path="daily-briefing" element={<StudentDailyBriefing />} />
+            <Route path="messages" element={<QuickMessenger />} />
+            <Route path="homework" element={<Homework />} />
+            <Route path="homework" element={<Homework />} />
             <Route path="assignments" element={<StudentAssignments />} />
             <Route path="grades" element={<StudentGrades />} />
             <Route path="timetable" element={<StudentTimetable />} />
+            <Route path="homework" element={<Homework />} />
             <Route path="attendance" element={<StudentAttendance />} />
             <Route path="notes" element={<StudentNotes />} />
             <Route path="shared-notes" element={<SharedNotes />} />
@@ -267,6 +272,8 @@ function App() {
           {/* ADMIN */}
           <Route path="/admin" element={roleGuard(['admin'])}>
             <Route index element={<AdminDashboard />} />
+            <Route path="homework" element={<Homework />} />
+            <Route path="messages" element={<QuickMessenger />} />
             <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="calendar" element={<AdminCalendar />} />
             <Route path="users" element={<AdminUsers />} />
@@ -320,6 +327,7 @@ function App() {
           {/* PARENT */}
           <Route path="/parent" element={roleGuard(['parent'])}>
             <Route index element={<ParentDashboard />} />
+            <Route path="messages" element={<QuickMessenger />} />
             <Route path="attendance" element={<ParentAttendance />} />
             <Route path="grades" element={<ParentGrades />} />
             <Route path="timetable" element={<ParentTimetable />} />
