@@ -69,7 +69,6 @@ export default function ManagerAuctionHouse() {
 
   const resetForm = () => {
     setForm({ title: '', description: '', eventName: '', talentsNeeded: [], deadline: '', rolesNeeded: '' })
-    setNewTalent('')
   }
 
   const handleCreate = async () => {
