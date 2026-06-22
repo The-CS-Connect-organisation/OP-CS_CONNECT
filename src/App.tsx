@@ -81,6 +81,8 @@ const ParentExamSyllabus = lazy(() => import('./pages/parent/ExamSyllabus'))
 const ParentProfile = lazy(() => import('./pages/parent/ParentProfile'))
 const ParentCounselling = lazy(() => import('./pages/parent/ParentCounselling'))
 const ParentHealth = lazy(() => import('./pages/parent/ParentHealth'))
+const ParentDigitalFridge = lazy(() => import('./pages/parent/DigitalFridge'))
+const ParentBookHeavyAlerts = lazy(() => import('./pages/parent/BookHeavyAlerts'))
 const DriverProfile = lazy(() => import('./pages/driver/DriverProfile'))
 const LibrarianDashboard = lazy(() => import('./pages/librarian/LibrarianDashboard'))
 const ManagerUsers = lazy(() => import('./pages/manager/ManagerUsers'))
@@ -109,6 +111,9 @@ const ManagerLibrary = lazy(() => import('./pages/manager/ManagerLibrary'))
 const ManagerERP = lazy(() => import('./pages/manager/ManagerERP'))
 const ManagerComms = lazy(() => import('./pages/manager/ManagerComms'))
 // Admin Phase 1+2
+const AdminAuctionHouse = lazy(() => import('./pages/manager/ManagerAuctionHouse'))
+const TeacherAuctionHouse = lazy(() => import('./pages/manager/ManagerAuctionHouse'))
+const ManagerAuctionHouse = lazy(() => import('./pages/manager/ManagerAuctionHouse'))
 const AdminCirculars = lazy(() => import('./pages/admin/AdminCirculars'))
 const AdminSIS = lazy(() => import('./pages/admin/AdminSIS'))
 const AdminClassroom = lazy(() => import('./pages/admin/AdminClassroom'))
@@ -122,6 +127,12 @@ const TeacherClassroom = lazy(() => import('./pages/teacher/TeacherClassroom'))
 const TeacherExamResults = lazy(() => import('./pages/teacher/TeacherExamResults'))
 const LibrarianManagement = lazy(() => import('./pages/librarian/LibrarianManagement'))
 const StudentExercises = lazy(() => import('./pages/student/Exercises'))
+const StudentAuctionHouse = lazy(() => import('./pages/student/AuctionHouse'))
+const StudentCourses = lazy(() => import('./pages/student/Courses'))
+const StudentActivities = lazy(() => import('./pages/student/Activities'))
+const StudentSupplyAlerts = lazy(() => import('./pages/student/SupplyAlerts'))
+const StudentAssignmentDetails = lazy(() => import('./pages/student/AssignmentDetails'))
+const UniversalInbox = lazy(() => import('./pages/shared/UniversalInbox'))
 const StudentLostAndFound = lazy(() => import('./pages/student/StudentLostAndFound'))
 const StudentITHelpdesk = lazy(() => import('./pages/student/StudentITHelpdesk'))
 const StudentClinicVisits = lazy(() => import('./pages/student/StudentClinicVisits'))
@@ -162,6 +173,8 @@ const ManagerAssetTracking = lazy(() => import('./pages/manager/ManagerAssetTrac
 const TeacherRoomBooking = lazy(() => import('./pages/teacher/TeacherRoomBooking'))
 const TeacherAssetTracking = lazy(() => import('./pages/teacher/TeacherAssetTracking'))
 const TeacherSalary = lazy(() => import('./pages/teacher/TeacherSalary'))
+const TeacherEnterGrades = lazy(() => import('./pages/teacher/EnterGrades'))
+const TeacherGradeSubmissions = lazy(() => import('./pages/teacher/GradeSubmissions'))
 
 const GP = (title: string, description: string, icon: string, category: string, role: string) => (
   <GenericPage title={title} description={description} icon={icon as any} category={category} role={role as any} />
@@ -212,11 +225,9 @@ function App() {
             <Route path="daily-briefing" element={<StudentDailyBriefing />} />
             <Route path="messages" element={<QuickMessenger />} />
             <Route path="homework" element={<Homework />} />
-            <Route path="homework" element={<Homework />} />
             <Route path="assignments" element={<StudentAssignments />} />
             <Route path="grades" element={<StudentGrades />} />
             <Route path="timetable" element={<StudentTimetable />} />
-            <Route path="homework" element={<Homework />} />
             <Route path="attendance" element={<StudentAttendance />} />
             <Route path="notes" element={<StudentNotes />} />
             <Route path="shared-notes" element={<SharedNotes />} />
@@ -228,6 +239,8 @@ function App() {
             <Route path="exams" element={<StudentExams />} />
             <Route path="exam-syllabus" element={<StudentExamSyllabus />} />
             <Route path="bus-tracking" element={<StudentBusTracking />} />
+            <Route path="auction-house" element={<StudentAuctionHouse />} />
+            <Route path="inbox" element={<UniversalInbox />} />
             <Route path="ai" element={<AILab />} />
             <Route path="community" element={<StudentCommunity />} />
             <Route path="comms-hub" element={<CommunicationHub />} />
@@ -236,6 +249,10 @@ function App() {
             <Route path="accolades" element={<Accolades />} />
             <Route path="profile" element={<StudentProfile />} />
             <Route path="exercises" element={<StudentExercises />} />
+            <Route path="courses" element={<StudentCourses />} />
+            <Route path="activities" element={<StudentActivities />} />
+            <Route path="supply-alerts" element={<StudentSupplyAlerts />} />
+            <Route path="assignment-details" element={<StudentAssignmentDetails />} />
             <Route path="counselling" element={<StudentCounselling />} />
             <Route path="health" element={<StudentHealth />} />
             <Route path="lost-found" element={<StudentLostAndFound />} />
@@ -249,8 +266,11 @@ function App() {
           <Route path="/teacher" element={roleGuard(['teacher'])}>
             <Route index element={<TeacherDashboard />} />
             <Route path="assignments" element={<TeacherManageAssignments />} />
+            <Route path="homework" element={<Homework />} />
             <Route path="attendance" element={<TeacherMarkAttendance />} />
             <Route path="grading" element={<TeacherGrading />} />
+            <Route path="enter-grades" element={<TeacherEnterGrades />} />
+            <Route path="grade-submissions" element={<TeacherGradeSubmissions />} />
             <Route path="notes" element={<TeacherUploadNotes />} />
             <Route path="exams" element={<TeacherManageExams />} />
             <Route path="exam-syllabus" element={<TeacherExamSyllabus />} />
@@ -310,10 +330,12 @@ function App() {
             <Route path="health" element={<AdminHealth />} />
             <Route path="discipline" element={<AdminDiscipline />} />
             <Route path="activities" element={<AdminActivities />} />
+            <Route path="auction-house" element={<AdminAuctionHouse />} />
             <Route path="portfolio" element={<AdminPortfolio />} />
             <Route path="enrolment" element={<AdminEnrolment />} />
             {/* Admin Phase 4 */}
             <Route path="facilities" element={<AdminFacilities />} />
+            <Route path="transport" element={<GenericPage title="Transport" description="Transport & bus management" icon="Bus" category="Facilities" role="admin" />} />
                         <Route path="food-service" element={<AdminFoodService />} />
             <Route path="athletics" element={<AdminAthletics />} />
             <Route path="alumni" element={<AdminAlumni />} />
@@ -328,6 +350,7 @@ function App() {
           <Route path="/parent" element={roleGuard(['parent'])}>
             <Route index element={<ParentDashboard />} />
             <Route path="messages" element={<QuickMessenger />} />
+            <Route path="homework" element={<Homework />} />
             <Route path="attendance" element={<ParentAttendance />} />
             <Route path="grades" element={<ParentGrades />} />
             <Route path="timetable" element={<ParentTimetable />} />
@@ -337,6 +360,8 @@ function App() {
             <Route path="exam-syllabus" element={<ParentExamSyllabus />} />
             <Route path="counselling" element={<ParentCounselling />} />
             <Route path="health" element={<ParentHealth />} />
+            <Route path="digital-fridge" element={<ParentDigitalFridge />} />
+            <Route path="book-heavy-alerts" element={<ParentBookHeavyAlerts />} />
             <Route path="profile" element={<ParentProfile />} />
           </Route>
 
@@ -356,6 +381,10 @@ function App() {
           {/* COORDINATOR */}
           <Route path="/coordinator" element={roleGuard(['coordinator'])}>
             <Route index element={<CoordinatorDashboard />} />
+            <Route path="schools" element={<GenericPage title="Schools" description="Multi-school management" icon="Building2" category="Management" role="coordinator" />} />
+            <Route path="staff" element={<GenericPage title="Staff" description="Staff management" icon="Users" category="Management" role="coordinator" />} />
+            <Route path="analytics" element={<GenericPage title="Analytics" description="Performance analytics" icon="BarChart3" category="Analytics" role="coordinator" />} />
+            <Route path="ai" element={<AILab />} />
           </Route>
 
           {/* MANAGER */}
@@ -396,10 +425,12 @@ function App() {
             <Route path="health" element={<ManagerHealth />} />
             <Route path="discipline" element={<ManagerDiscipline />} />
             <Route path="activities" element={<ManagerActivities />} />
+            <Route path="auction-house" element={<ManagerAuctionHouse />} />
             <Route path="portfolio" element={<ManagerPortfolio />} />
             <Route path="enrolment" element={<ManagerEnrolment />} />
             {/* Manager Phase 4 */}
             <Route path="facilities" element={<ManagerFacilities />} />
+            <Route path="transport" element={<GenericPage title="Transport" description="Transport & bus management" icon="Bus" category="Facilities" role="manager" />} />
                         <Route path="food-service" element={<ManagerFoodService />} />
             <Route path="athletics" element={<ManagerAthletics />} />
             <Route path="alumni" element={<ManagerAlumni />} />
