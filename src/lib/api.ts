@@ -1070,4 +1070,25 @@ export const api = {
   createSkipBusRequest: (data: any) => apiFetch('/skip-bus', { method: 'POST', body: JSON.stringify(data) }),
   approveSkipBusRequest: (id: string) => apiFetch(`/skip-bus/${id}/approve`, { method: 'PUT' }),
   rejectSkipBusRequest: (id: string) => apiFetch(`/skip-bus/${id}/reject`, { method: 'PUT' }),
+
+  // ========== AUCTION HOUSE ==========
+  getAuctionListings: (params?: Record<string, string>) => {
+    const query = params ? '?' + new URLSearchParams(params).toString() : '';
+    return apiFetch(`/auction-house/listings${query}`);
+  },
+  getAuctionListing: (id: string) => apiFetch(`/auction-house/listings/${id}`),
+  createAuctionListing: (data: any) => apiFetch('/auction-house/listings', { method: 'POST', body: JSON.stringify(data) }),
+  updateAuctionListing: (id: string, data: any) => apiFetch(`/auction-house/listings/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteAuctionListing: (id: string) => apiFetch(`/auction-house/listings/${id}`, { method: 'DELETE' }),
+  submitToAuction: (listingId: string, data: any) => apiFetch(`/auction-house/listings/${listingId}/submit`, { method: 'POST', body: JSON.stringify(data) }),
+  updateSubmissionStatus: (listingId: string, submissionId: string, data: any) =>
+    apiFetch(`/auction-house/listings/${listingId}/submissions/${submissionId}/status`, { method: 'PUT', body: JSON.stringify(data) }),
+  getMyAuctionSubmissions: (studentId: string) => apiFetch(`/auction-house/my-submissions/${studentId}`),
+
+  // ========== UNIVERSAL INBOX ==========
+  getInbox: (userId: string) => apiFetch(`/auction-house/inbox/${userId}`),
+  createInboxItem: (data: any) => apiFetch('/auction-house/inbox', { method: 'POST', body: JSON.stringify(data) }),
+  markInboxItemRead: (id: string) => apiFetch(`/auction-house/inbox/${id}/read`, { method: 'PUT' }),
+  markAllInboxRead: (userId: string) => apiFetch(`/auction-house/inbox/read-all/${userId}`, { method: 'PUT' }),
+  deleteInboxItem: (id: string) => apiFetch(`/auction-house/inbox/${id}`, { method: 'DELETE' }),
 };

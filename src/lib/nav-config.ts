@@ -10,7 +10,7 @@ import {
   Search, AlertTriangle, Stethoscope, Headphones, SkipForward,
   MapPin, Shield, Settings, Eye, Briefcase, BookMarked, HelpCircle,
   ThumbsUp, Printer, Gauge, Navigation, CircleUser, Route, ChevronDown,
-  GraduationCap as Cap, type LucideIcon
+  GraduationCap as Cap, Gavel, Inbox, type LucideIcon
 } from 'lucide-react'
 
 export interface NavItem {
@@ -76,6 +76,13 @@ export const navSections: Record<UserRole, NavSection[]> = {
       ]
     },
     {
+      label: 'Opportunities',
+      items: [
+        { icon: Gavel, label: 'Auction House', path: '/student/auction-house' },
+        { icon: Inbox, label: 'Inbox', path: '/student/inbox' },
+      ]
+    },
+    {
       label: 'Profile',
       items: [
         { icon: Award, label: 'Achievements', path: '/student/achievements' },
@@ -93,6 +100,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Teaching',
       items: [
+        { icon: Gavel, label: 'Auction House', path: '/teacher/auction-house' },
         { icon: MessageSquare, label: 'Messages', path: '/teacher/messages' },
         { icon: BookOpen, label: 'Homework', path: '/teacher/homework' },
         { icon: ClipboardList, label: 'Assignments', path: '/teacher/assignments' },
@@ -194,6 +202,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Student Services',
       items: [
+        { icon: Gavel, label: 'Auction House', path: '/admin/auction-house' },
         { icon: MessageSquare, label: 'Counselling', path: '/admin/counselling' },
         { icon: HeartPulse, label: 'Health Services', path: '/admin/health' },
         { icon: Scale, label: 'Discipline', path: '/admin/discipline' },
@@ -377,6 +386,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Student Services',
       items: [
+        { icon: Gavel, label: 'Auction House', path: '/manager/auction-house' },
         { icon: MessageSquare, label: 'Counselling', path: '/manager/counselling' },
         { icon: HeartPulse, label: 'Health', path: '/manager/health' },
         { icon: Scale, label: 'Discipline', path: '/manager/discipline' },
