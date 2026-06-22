@@ -27,12 +27,12 @@ export const mockSubjects = [
 ];
 
 export const mockAssignments = [
-  { id: 'a1', title: 'Quadratic Equations Worksheet', subject: 'Mathematics', dueDate: '2025-01-20', status: 'pending', maxMarks: 50, description: 'Solve all problems from Chapter 5', color: '#8b5cf6' },
-  { id: 'a2', title: 'Physics Lab Report', subject: 'Physics', dueDate: '2025-01-18', status: 'submitted', maxMarks: 30, scoredMarks: 27, description: "Write lab report for Ohm's Law experiment", color: '#3b82f6' },
-  { id: 'a3', title: 'Organic Chemistry Notes', subject: 'Chemistry', dueDate: '2025-01-22', status: 'pending', maxMarks: 20, description: 'Prepare comprehensive notes on alkanes', color: '#10b981' },
-  { id: 'a4', title: 'Essay: Modern Poetry', subject: 'English', dueDate: '2025-01-15', status: 'graded', maxMarks: 40, scoredMarks: 36, description: 'Write a 1000-word essay on modern Indian poetry', color: '#f59e0b' },
-  { id: 'a5', title: 'Data Structures Assignment', subject: 'Computer Science', dueDate: '2025-01-25', status: 'pending', maxMarks: 60, description: 'Implement linked list and binary tree', color: '#6366f1' },
-  { id: 'a6', title: 'Cell Biology Diagram', subject: 'Biology', dueDate: '2025-01-17', status: 'late', maxMarks: 25, description: 'Draw and label cell organelles', color: '#ec4899' },
+  { id: 'a1', title: 'Quadratic Equations Worksheet', subject: 'Mathematics', dueDate: '2026-01-20', status: 'pending', maxMarks: 50, description: 'Solve all problems from Chapter 5', color: '#8b5cf6' },
+  { id: 'a2', title: 'Physics Lab Report', subject: 'Physics', dueDate: '2026-01-18', status: 'submitted', maxMarks: 30, scoredMarks: 27, description: "Write lab report for Ohm's Law experiment", color: '#3b82f6' },
+  { id: 'a3', title: 'Organic Chemistry Notes', subject: 'Chemistry', dueDate: '2026-01-22', status: 'pending', maxMarks: 20, description: 'Prepare comprehensive notes on alkanes', color: '#10b981' },
+  { id: 'a4', title: 'Essay: Modern Poetry', subject: 'English', dueDate: '2026-01-15', status: 'graded', maxMarks: 40, scoredMarks: 36, description: 'Write a 1000-word essay on modern Indian poetry', color: '#f59e0b' },
+  { id: 'a5', title: 'Data Structures Assignment', subject: 'Computer Science', dueDate: '2026-01-25', status: 'pending', maxMarks: 60, description: 'Implement linked list and binary tree', color: '#6366f1' },
+  { id: 'a6', title: 'Cell Biology Diagram', subject: 'Biology', dueDate: '2026-01-17', status: 'late', maxMarks: 25, description: 'Draw and label cell organelles', color: '#ec4899' },
 ];
 
 export const mockGrades = [
@@ -65,9 +65,9 @@ export const mockTimetable = [
 ];
 
 export const mockFeeData = [
-  { term: 'Term 1', amount: 25000, paid: 25000, due: 0, status: 'paid', date: '2024-06-15' },
-  { term: 'Term 2', amount: 25000, paid: 15000, due: 10000, status: 'partial', date: '2024-10-01' },
-  { term: 'Term 3', amount: 25000, paid: 0, due: 25000, status: 'unpaid', date: '2025-02-01' },
+  { term: 'Term 1', amount: 25000, paid: 25000, due: 0, status: 'paid', date: '2026-06-15' },
+  { term: 'Term 2', amount: 25000, paid: 15000, due: 10000, status: 'partial', date: '2026-10-01' },
+  { term: 'Term 3', amount: 25000, paid: 0, due: 25000, status: 'unpaid', date: '2027-02-01' },
 ];
 
 export const mockSchools = [
@@ -84,10 +84,10 @@ export const mockRoutes = [
 ];
 
 export const mockEvents = [
-  { id: 'e1', title: 'Annual Sports Day', date: '2025-02-15', type: 'event', description: 'Inter-house athletic competition' },
-  { id: 'e2', title: 'Science Exhibition', date: '2025-01-28', type: 'academic', description: 'Student science projects showcase' },
-  { id: 'e3', title: 'Parent-Teacher Meeting', date: '2025-02-05', type: 'meeting', description: 'Mid-term PTM for all classes' },
-  { id: 'e4', title: 'Republic Day Celebration', date: '2025-01-26', type: 'holiday', description: 'School holiday - Republic Day' },
+  { id: 'e1', title: 'Annual Sports Day', date: '2026-02-15', type: 'event', description: 'Inter-house athletic competition' },
+  { id: 'e2', title: 'Science Exhibition', date: '2026-01-28', type: 'academic', description: 'Student science projects showcase' },
+  { id: 'e3', title: 'Parent-Teacher Meeting', date: '2026-02-05', type: 'meeting', description: 'Mid-term PTM for all classes' },
+  { id: 'e4', title: 'Republic Day Celebration', date: '2026-01-26', type: 'holiday', description: 'School holiday - Republic Day' },
 ];
 
 export const mockClubs = [
@@ -117,12 +117,12 @@ export const mockRevenueData = [
 ];
 
 export const mockExamSchedule = [
-  { id: 'ex1', subject: 'Mathematics', date: '2025-02-10', time: '09:00 - 12:00', room: 'Hall A', type: 'Final' },
-  { id: 'ex2', subject: 'Physics', date: '2025-02-12', time: '09:00 - 12:00', room: 'Hall A', type: 'Final' },
-  { id: 'ex3', subject: 'Chemistry', date: '2025-02-14', time: '09:00 - 12:00', room: 'Hall B', type: 'Final' },
-  { id: 'ex4', subject: 'English', date: '2025-02-17', time: '09:00 - 12:00', room: 'Hall A', type: 'Final' },
-  { id: 'ex5', subject: 'Biology', date: '2025-02-19', time: '09:00 - 12:00', room: 'Hall B', type: 'Final' },
-  { id: 'ex6', subject: 'Computer Science', date: '2025-02-21', time: '09:00 - 12:00', room: 'IT Lab', type: 'Final' },
+  { id: 'ex1', subject: 'Mathematics', date: '2026-02-10', time: '09:00 - 12:00', room: 'Hall A', type: 'Final' },
+  { id: 'ex2', subject: 'Physics', date: '2026-02-12', time: '09:00 - 12:00', room: 'Hall A', type: 'Final' },
+  { id: 'ex3', subject: 'Chemistry', date: '2026-02-14', time: '09:00 - 12:00', room: 'Hall B', type: 'Final' },
+  { id: 'ex4', subject: 'English', date: '2026-02-17', time: '09:00 - 12:00', room: 'Hall A', type: 'Final' },
+  { id: 'ex5', subject: 'Biology', date: '2026-02-19', time: '09:00 - 12:00', room: 'Hall B', type: 'Final' },
+  { id: 'ex6', subject: 'Computer Science', date: '2026-02-21', time: '09:00 - 12:00', room: 'IT Lab', type: 'Final' },
 ];
 
 export const mockDriverStudents = [

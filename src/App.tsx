@@ -111,8 +111,6 @@ const ManagerLibrary = lazy(() => import('./pages/manager/ManagerLibrary'))
 const ManagerERP = lazy(() => import('./pages/manager/ManagerERP'))
 const ManagerComms = lazy(() => import('./pages/manager/ManagerComms'))
 // Admin Phase 1+2
-const AdminAuctionHouse = lazy(() => import('./pages/manager/ManagerAuctionHouse'))
-const TeacherAuctionHouse = lazy(() => import('./pages/manager/ManagerAuctionHouse'))
 const ManagerAuctionHouse = lazy(() => import('./pages/manager/ManagerAuctionHouse'))
 const AdminCirculars = lazy(() => import('./pages/admin/AdminCirculars'))
 const AdminSIS = lazy(() => import('./pages/admin/AdminSIS'))
@@ -175,10 +173,6 @@ const TeacherAssetTracking = lazy(() => import('./pages/teacher/TeacherAssetTrac
 const TeacherSalary = lazy(() => import('./pages/teacher/TeacherSalary'))
 const TeacherEnterGrades = lazy(() => import('./pages/teacher/EnterGrades'))
 const TeacherGradeSubmissions = lazy(() => import('./pages/teacher/GradeSubmissions'))
-
-const GP = (title: string, description: string, icon: string, category: string, role: string) => (
-  <GenericPage title={title} description={description} icon={icon as any} category={category} role={role as any} />
-)
 
 function RouteMissRedirect() {
   return <Navigate to="/404page" replace />
@@ -292,8 +286,6 @@ function App() {
           {/* ADMIN */}
           <Route path="/admin" element={roleGuard(['admin'])}>
             <Route index element={<AdminDashboard />} />
-            <Route path="homework" element={<Homework />} />
-            <Route path="messages" element={<QuickMessenger />} />
             <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="calendar" element={<AdminCalendar />} />
             <Route path="users" element={<AdminUsers />} />
@@ -330,7 +322,7 @@ function App() {
             <Route path="health" element={<AdminHealth />} />
             <Route path="discipline" element={<AdminDiscipline />} />
             <Route path="activities" element={<AdminActivities />} />
-            <Route path="auction-house" element={<AdminAuctionHouse />} />
+            <Route path="auction-house" element={<ManagerAuctionHouse />} />
             <Route path="portfolio" element={<AdminPortfolio />} />
             <Route path="enrolment" element={<AdminEnrolment />} />
             {/* Admin Phase 4 */}
@@ -349,8 +341,6 @@ function App() {
           {/* PARENT */}
           <Route path="/parent" element={roleGuard(['parent'])}>
             <Route index element={<ParentDashboard />} />
-            <Route path="messages" element={<QuickMessenger />} />
-            <Route path="homework" element={<Homework />} />
             <Route path="attendance" element={<ParentAttendance />} />
             <Route path="grades" element={<ParentGrades />} />
             <Route path="timetable" element={<ParentTimetable />} />
