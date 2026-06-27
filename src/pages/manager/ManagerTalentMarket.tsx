@@ -26,7 +26,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 }
 
-export default function ManagerAuctionHouse() {
+export default function ManagerTalentMarket() {
   const { user } = useAuthStore()
   const [listings, setListings] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -42,7 +42,6 @@ export default function ManagerAuctionHouse() {
     eventName: '',
     talentsNeeded: [] as string[],
     deadline: '',
-    rolesNeeded: '',
   })
   const commonTalents = ['Singing', 'Dancing', 'Acting', 'Art', 'Coding', 'Photography', 'Writing', 'Sports', 'Music', 'Debate', 'Anchoring', 'Design']
 
@@ -53,10 +52,10 @@ export default function ManagerAuctionHouse() {
   const fetchListings = async () => {
     setLoading(true)
     try {
-      const data = await api.getAuctionListings().catch(() => [])
+      const data = await api.getTalentMarketListings().catch(() => [])
       setListings(Array.isArray(data) ? data : [])
     } catch (err) {
-      console.error('[ManagerAuctionHouse] Error:', err)
+      console.error('[ManagerTalentMarket] Error:', err)
     } finally {
       setLoading(false)
     }
@@ -68,20 +67,19 @@ export default function ManagerAuctionHouse() {
   )
 
   const resetForm = () => {
-    setForm({ title: '', description: '', eventName: '', talentsNeeded: [], deadline: '', rolesNeeded: '' })
+    setForm({ title: '', description: '', eventName: '', talentsNeeded: [], deadline: '' })
   }
 
   const handleCreate = async () => {
     if (!form.title.trim() || !form.description.trim()) return
     setSaving(true)
     try {
-      await api.createAuctionListing({
+      await api.createTalentMarketListing({
         title: form.title,
         description: form.description,
         eventName: form.eventName,
         talentsNeeded: form.talentsNeeded,
         deadline: form.deadline || null,
-        rolesNeeded: form.rolesNeeded ? form.rolesNeeded.split(',').map(r => r.trim()) : [],
         createdBy: user?.id || '',
         createdByName: user?.name || '',
         status: 'open',
@@ -98,7 +96,7 @@ export default function ManagerAuctionHouse() {
 
   const handleCloseListing = async (id: string) => {
     try {
-      await api.updateAuctionListing(id, { status: 'closed' })
+      await api.updateTalentMarketListing(id, { status: 'closed' })
       fetchListings()
     } catch (err) {
       console.error('Failed to close listing:', err)
@@ -108,7 +106,7 @@ export default function ManagerAuctionHouse() {
   const handleDeleteListing = async (id: string) => {
     if (!confirm('Are you sure you want to delete this listing?')) return
     try {
-      await api.deleteAuctionListing(id)
+      await api.deleteTalentMarketListing(id)
       fetchListings()
     } catch (err) {
       console.error('Failed to delete listing:', err)
@@ -153,10 +151,10 @@ export default function ManagerAuctionHouse() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Gavel className="w-6 h-6 text-orange-500" />
-            Auction House
+            Talent Market
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Create talent auctions, review submissions, and build teams for events
+            Create talent calls, review submissions, and build teams for events
           </p>
         </div>
         <Button onClick={() => { resetForm(); setShowCreateModal(true) }} className="bg-orange-500 hover:bg-orange-600">
@@ -169,7 +167,7 @@ export default function ManagerAuctionHouse() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
-            placeholder="Search auctions..."
+            placeholder="Search talent calls..."
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             className="pl-9"
@@ -181,10 +179,10 @@ export default function ManagerAuctionHouse() {
       {filteredListings.length === 0 ? (
         <motion.div variants={itemVariants} className="text-center py-16">
           <Gavel className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Auctions Yet</h3>
-          <p className="text-sm text-muted-foreground mb-4">Create your first talent auction to find the best talent for your event!</p>
+          <h3 className="text-lg font-semibold mb-2">No Talent Calls Yet</h3>
+          <p className="text-sm text-muted-foreground mb-4">Create your first talent call to find the best talent for your event!</p>
           <Button onClick={() => { resetForm(); setShowCreateModal(true) }} className="bg-orange-500 hover:bg-orange-600">
-            <Plus className="w-4 h-4 mr-1" /> Create Auction
+            <Plus className="w-4 h-4 mr-1" />                       Create Talent Call
           </Button>
         </motion.div>
       ) : (
@@ -264,7 +262,7 @@ export default function ManagerAuctionHouse() {
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-bold">Create Auction</h2>
+                  <h2 className="text-lg font-bold">Create Talent Call</h2>
                   <button onClick={() => setShowCreateModal(false)} className="p-1 rounded-lg hover:bg-accent">
                     <XCircle className="w-5 h-5" />
                   </button>
@@ -324,14 +322,6 @@ export default function ManagerAuctionHouse() {
                       ))}
                     </div>
                   </div>
-                  <div>
-                    <label className="text-sm font-medium mb-1 block">Roles Needed (comma separated)</label>
-                    <Input
-                      placeholder="e.g., Lead Singer, Guitarist, Dancer"
-                      value={form.rolesNeeded}
-                      onChange={e => setForm(prev => ({ ...prev, rolesNeeded: e.target.value }))}
-                    />
-                  </div>
                   <div className="flex gap-2 justify-end pt-2">
                     <Button variant="outline" onClick={() => setShowCreateModal(false)}>Cancel</Button>
                     <Button
@@ -340,7 +330,7 @@ export default function ManagerAuctionHouse() {
                       className="bg-orange-500 hover:bg-orange-600"
                     >
                       {saving ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Plus className="w-4 h-4 mr-1" />}
-                      Create Auction
+                      Create Talent Call
                     </Button>
                   </div>
                 </div>

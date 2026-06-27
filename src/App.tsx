@@ -111,7 +111,7 @@ const ManagerLibrary = lazy(() => import('./pages/manager/ManagerLibrary'))
 const ManagerERP = lazy(() => import('./pages/manager/ManagerERP'))
 const ManagerComms = lazy(() => import('./pages/manager/ManagerComms'))
 // Admin Phase 1+2
-const ManagerAuctionHouse = lazy(() => import('./pages/manager/ManagerAuctionHouse'))
+const ManagerTalentMarket = lazy(() => import('./pages/manager/ManagerTalentMarket'))
 const AdminCirculars = lazy(() => import('./pages/admin/AdminCirculars'))
 const AdminSIS = lazy(() => import('./pages/admin/AdminSIS'))
 const AdminClassroom = lazy(() => import('./pages/admin/AdminClassroom'))
@@ -125,7 +125,7 @@ const TeacherClassroom = lazy(() => import('./pages/teacher/TeacherClassroom'))
 const TeacherExamResults = lazy(() => import('./pages/teacher/TeacherExamResults'))
 const LibrarianManagement = lazy(() => import('./pages/librarian/LibrarianManagement'))
 const StudentExercises = lazy(() => import('./pages/student/Exercises'))
-const StudentAuctionHouse = lazy(() => import('./pages/student/AuctionHouse'))
+const StudentTalentMarket = lazy(() => import('./pages/student/TalentMarket'))
 const StudentCourses = lazy(() => import('./pages/student/Courses'))
 const StudentActivities = lazy(() => import('./pages/student/Activities'))
 const StudentSupplyAlerts = lazy(() => import('./pages/student/SupplyAlerts'))
@@ -233,7 +233,7 @@ function App() {
             <Route path="exams" element={<StudentExams />} />
             <Route path="exam-syllabus" element={<StudentExamSyllabus />} />
             <Route path="bus-tracking" element={<StudentBusTracking />} />
-            <Route path="auction-house" element={<StudentAuctionHouse />} />
+            <Route path="talent-market" element={<StudentTalentMarket />} />
             <Route path="inbox" element={<UniversalInbox />} />
             <Route path="ai" element={<AILab />} />
             <Route path="community" element={<StudentCommunity />} />
@@ -277,6 +277,8 @@ function App() {
             <Route path="comms-hub" element={<CommunicationHub />} />
             <Route path="ai" element={<AILab />} />
             <Route path="classroom" element={<TeacherClassroom />} />
+            <Route path="talent-market" element={<ManagerTalentMarket />} />
+
             <Route path="exam-results" element={<TeacherExamResults />} />
             <Route path="room-booking" element={<TeacherRoomBooking />} />
             <Route path="asset-tracking" element={<TeacherAssetTracking />} />
@@ -322,7 +324,7 @@ function App() {
             <Route path="health" element={<AdminHealth />} />
             <Route path="discipline" element={<AdminDiscipline />} />
             <Route path="activities" element={<AdminActivities />} />
-            <Route path="auction-house" element={<ManagerAuctionHouse />} />
+            <Route path="talent-market" element={<ManagerTalentMarket />} />
             <Route path="portfolio" element={<AdminPortfolio />} />
             <Route path="enrolment" element={<AdminEnrolment />} />
             {/* Admin Phase 4 */}
@@ -415,7 +417,7 @@ function App() {
             <Route path="health" element={<ManagerHealth />} />
             <Route path="discipline" element={<ManagerDiscipline />} />
             <Route path="activities" element={<ManagerActivities />} />
-            <Route path="auction-house" element={<ManagerAuctionHouse />} />
+            <Route path="talent-market" element={<ManagerTalentMarket />} />
             <Route path="portfolio" element={<ManagerPortfolio />} />
             <Route path="enrolment" element={<ManagerEnrolment />} />
             {/* Manager Phase 4 */}

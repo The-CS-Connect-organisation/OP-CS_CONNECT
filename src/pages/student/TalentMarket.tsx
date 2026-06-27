@@ -36,7 +36,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 }
 
-export default function AuctionHouse() {
+export default function TalentMarket() {
   const { user } = useAuthStore()
   const [listings, setListings] = useState<any[]>([])
   const [mySubmissions, setMySubmissions] = useState<any[]>([])
@@ -55,22 +55,22 @@ export default function AuctionHouse() {
 
   useEffect(() => {
     fetchData()
-  }, [])
+  }, [viewMode]) // BUG-7 fix: re-fetch when switching between Browse and My Submissions
 
   const fetchData = async () => {
     setLoading(true)
     try {
       const [listingsData] = await Promise.all([
-        api.getAuctionListings({ status: 'open' }).catch(() => []),
+        api.getTalentMarketListings({ status: 'open' }).catch(() => []),
       ])
       setListings(Array.isArray(listingsData) ? listingsData : [])
       
       if (user?.id) {
-        const myData = await api.getMyAuctionSubmissions(user.id).catch(() => [])
+        const myData = await api.getMyTalentMarketSubmissions(user.id).catch(() => [])
         setMySubmissions(Array.isArray(myData) ? myData : [])
       }
     } catch (err) {
-      console.error('[AuctionHouse] Error:', err)
+      console.error('[TalentMarket] Error:', err)
     } finally {
       setLoading(false)
     }
@@ -88,7 +88,7 @@ export default function AuctionHouse() {
     if (!selectedListing || !user) return
     setSubmitting(true)
     try {
-      await api.submitToAuction(selectedListing.id, {
+      await api.submitToTalentMarket(selectedListing.id, {
         studentId: user.id,
         studentName: user.name,
         portfolioUrl: submitForm.portfolioUrl,
@@ -100,6 +100,7 @@ export default function AuctionHouse() {
         title: 'New Auction Submission',
         message: `${user.name} has submitted their portfolio for "${selectedListing.title}"`,
         type: 'auction_update',
+        relatedId: selectedListing.id, // BUG-4 fix: include listing ID for navigation/linking
       })
       setShowSubmitModal(false)
       setSubmitForm({ message: '', portfolioUrl: '', talentTags: [] })
@@ -135,10 +136,10 @@ export default function AuctionHouse() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
             <Gavel className="w-6 h-6 text-orange-500" />
-            Auction House
+            Talent Market
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Discover talent opportunities and showcase your skills for upcoming events
+            Discover talent opportunities and showcase your skills for upcoming events and projects
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -168,7 +169,7 @@ export default function AuctionHouse() {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search auctions by title, event, or description..."
+                placeholder="Search talent calls by title, event, or description..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="pl-9"
@@ -193,7 +194,7 @@ export default function AuctionHouse() {
           {filteredListings.length === 0 ? (
             <motion.div variants={itemVariants} className="text-center py-16">
               <Gavel className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Open Auctions</h3>
+              <h3 className="text-lg font-semibold mb-2">No Open Talent Calls</h3>
               <p className="text-sm text-muted-foreground">No talent calls are open right now. Check back later!</p>
             </motion.div>
           ) : (
@@ -283,7 +284,7 @@ export default function AuctionHouse() {
             <Card>
               <CardContent className="p-8 text-center">
                 <Send className="w-12 h-12 mx-auto text-muted-foreground/30 mb-3" />
-                <p className="text-sm text-muted-foreground">You haven't applied to any auctions yet</p>
+                <p className="text-sm text-muted-foreground">You haven't applied to any talent calls yet</p>
               </CardContent>
             </Card>
           ) : (

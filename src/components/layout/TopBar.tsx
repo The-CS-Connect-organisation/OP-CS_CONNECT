@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom'
 import { navSections } from '@/lib/nav-config'
 import {
   Bell, Search, Sparkles, Menu,
+  Inbox,
   X, Check, AlertCircle, Info, CheckCircle2, GraduationCap, ArrowRight,
   User, Settings, LogOut
 } from 'lucide-react'
@@ -139,6 +140,17 @@ export default function TopBar() {
           <div className="flex items-center -mr-2">
             <StarWarsToggle checked={isDark} onChange={toggleTheme} scale={0.35} />
           </div>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate(`/${user.role}/inbox`)}
+            className="p-2 rounded-xl bg-secondary/60 border border-border/50 shadow-sm hover:bg-accent/80 transition-all duration-200 relative"
+            title="Inbox"
+          >
+            <Inbox className="w-5 h-5" />
+          </motion.button>
+
 
           <div className="relative">
             <motion.button

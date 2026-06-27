@@ -1072,23 +1072,23 @@ export const api = {
   rejectSkipBusRequest: (id: string) => apiFetch(`/skip-bus/${id}/reject`, { method: 'PUT' }),
 
   // ========== AUCTION HOUSE ==========
-  getAuctionListings: (params?: Record<string, string>) => {
+  getTalentMarketListings: (params?: Record<string, string>) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
-    return apiFetch(`/auction-house/listings${query}`);
+    return apiFetch(`/talent-market/listings${query}`);
   },
-  getAuctionListing: (id: string) => apiFetch(`/auction-house/listings/${id}`),
-  createAuctionListing: (data: any) => apiFetch('/auction-house/listings', { method: 'POST', body: JSON.stringify(data) }),
-  updateAuctionListing: (id: string, data: any) => apiFetch(`/auction-house/listings/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  deleteAuctionListing: (id: string) => apiFetch(`/auction-house/listings/${id}`, { method: 'DELETE' }),
-  submitToAuction: (listingId: string, data: any) => apiFetch(`/auction-house/listings/${listingId}/submit`, { method: 'POST', body: JSON.stringify(data) }),
+  getTalentMarketListing: (id: string) => apiFetch(`/talent-market/listings/${id}`),
+  createTalentMarketListing: (data: any) => apiFetch('/talent-market/listings', { method: 'POST', body: JSON.stringify(data) }),
+  updateTalentMarketListing: (id: string, data: any) => apiFetch(`/talent-market/listings/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteTalentMarketListing: (id: string) => apiFetch(`/talent-market/listings/${id}`, { method: 'DELETE' }),
+  submitToTalentMarket: (listingId: string, data: any) => apiFetch(`/talent-market/listings/${listingId}/submit`, { method: 'POST', body: JSON.stringify(data) }),
   updateSubmissionStatus: (listingId: string, submissionId: string, data: any) =>
-    apiFetch(`/auction-house/listings/${listingId}/submissions/${submissionId}/status`, { method: 'PUT', body: JSON.stringify(data) }),
-  getMyAuctionSubmissions: (studentId: string) => apiFetch(`/auction-house/my-submissions/${studentId}`),
+    apiFetch(`/talent-market/listings/${listingId}/submissions/${submissionId}/status`, { method: 'PUT', body: JSON.stringify(data) }),
+  getMyTalentMarketSubmissions: (studentId: string) => apiFetch(`/talent-market/my-submissions/${studentId}`),
 
   // ========== UNIVERSAL INBOX ==========
-  getInbox: (userId: string) => apiFetch(`/auction-house/inbox/${userId}`),
-  createInboxItem: (data: any) => apiFetch('/auction-house/inbox', { method: 'POST', body: JSON.stringify(data) }),
-  markInboxItemRead: (id: string) => apiFetch(`/auction-house/inbox/${id}/read`, { method: 'PUT' }),
-  markAllInboxRead: (userId: string) => apiFetch(`/auction-house/inbox/read-all/${userId}`, { method: 'PUT' }),
-  deleteInboxItem: (id: string) => apiFetch(`/auction-house/inbox/${id}`, { method: 'DELETE' }),
+  getInbox: (userId: string) => apiFetch(`/talent-market/inbox/${userId}`),
+  createInboxItem: (data: any) => apiFetch('/talent-market/inbox', { method: 'POST', body: JSON.stringify(data) }),
+  markInboxItemRead: (id: string) => apiFetch(`/talent-market/inbox/${id}/read`, { method: 'PUT' }),
+  markAllInboxRead: (userId: string) => apiFetch(`/talent-market/inbox/read-all/${userId}`, { method: 'PUT' }),
+  deleteInboxItem: (id: string) => apiFetch(`/talent-market/inbox/${id}`, { method: 'DELETE' }),
 };

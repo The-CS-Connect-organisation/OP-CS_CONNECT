@@ -171,7 +171,7 @@ export default function UniversalInbox() {
               <Bell className="w-3 h-3 mr-1" /> Notifications
             </TabsTrigger>
             <TabsTrigger value="auction_update" className="text-xs">
-              <Gavel className="w-3 h-3 mr-1" /> Auctions
+              <Gavel className="w-3 h-3 mr-1" /> Market
             </TabsTrigger>
           </TabsList>
 

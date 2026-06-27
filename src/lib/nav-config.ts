@@ -78,7 +78,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Opportunities',
       items: [
-        { icon: Gavel, label: 'Auction House', path: '/student/auction-house' },
+        { icon: Gavel, label: 'Talent Market', path: '/student/talent-market' },
         { icon: Inbox, label: 'Inbox', path: '/student/inbox' },
       ]
     },
@@ -100,7 +100,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Teaching',
       items: [
-        { icon: Gavel, label: 'Auction House', path: '/teacher/auction-house' },
+        { icon: Gavel, label: 'Talent Market', path: '/teacher/talent-market' },
         { icon: MessageSquare, label: 'Messages', path: '/teacher/messages' },
         { icon: BookOpen, label: 'Homework', path: '/teacher/homework' },
         { icon: ClipboardList, label: 'Assignments', path: '/teacher/assignments' },
@@ -202,7 +202,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Student Services',
       items: [
-        { icon: Gavel, label: 'Auction House', path: '/admin/auction-house' },
+        { icon: Gavel, label: 'Talent Market', path: '/admin/talent-market' },
         { icon: MessageSquare, label: 'Counselling', path: '/admin/counselling' },
         { icon: HeartPulse, label: 'Health Services', path: '/admin/health' },
         { icon: Scale, label: 'Discipline', path: '/admin/discipline' },
@@ -386,7 +386,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Student Services',
       items: [
-        { icon: Gavel, label: 'Auction House', path: '/manager/auction-house' },
+        { icon: Gavel, label: 'Talent Market', path: '/manager/talent-market' },
         { icon: MessageSquare, label: 'Counselling', path: '/manager/counselling' },
         { icon: HeartPulse, label: 'Health', path: '/manager/health' },
         { icon: Scale, label: 'Discipline', path: '/manager/discipline' },
