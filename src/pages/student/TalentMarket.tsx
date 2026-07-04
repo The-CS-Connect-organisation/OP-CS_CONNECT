@@ -97,7 +97,7 @@ export default function TalentMarket() {
       })
       await api.createInboxItem({
         userId: selectedListing.createdBy,
-        title: 'New Auction Submission',
+        title: 'New Talent Submission',
         message: `${user.name} has submitted their portfolio for "${selectedListing.title}"`,
         type: 'auction_update',
         relatedId: selectedListing.id, // BUG-4 fix: include listing ID for navigation/linking

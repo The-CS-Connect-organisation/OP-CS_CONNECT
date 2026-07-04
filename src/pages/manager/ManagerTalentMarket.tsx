@@ -158,7 +158,7 @@ export default function ManagerTalentMarket() {
           </p>
         </div>
         <Button onClick={() => { resetForm(); setShowCreateModal(true) }} className="bg-orange-500 hover:bg-orange-600">
-          <Plus className="w-4 h-4 mr-1" /> New Auction
+          <Plus className="w-4 h-4 mr-1" /> Create Talent Call
         </Button>
       </motion.div>
 
