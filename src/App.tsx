@@ -288,6 +288,7 @@ function App() {
           {/* ADMIN */}
           <Route path="/admin" element={roleGuard(['admin'])}>
             <Route index element={<AdminDashboard />} />
+            <Route path="messages" element={<QuickMessenger />} />
             <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="calendar" element={<AdminCalendar />} />
             <Route path="users" element={<AdminUsers />} />
@@ -343,6 +344,7 @@ function App() {
           {/* PARENT */}
           <Route path="/parent" element={roleGuard(['parent'])}>
             <Route index element={<ParentDashboard />} />
+            <Route path="messages" element={<QuickMessenger />} />
             <Route path="attendance" element={<ParentAttendance />} />
             <Route path="grades" element={<ParentGrades />} />
             <Route path="timetable" element={<ParentTimetable />} />
