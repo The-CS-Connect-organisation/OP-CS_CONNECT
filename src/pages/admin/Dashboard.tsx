@@ -95,7 +95,7 @@ export default function AdminDashboard() {
         if (Array.isArray(d)) setLiveData((p: any) => ({ ...p, onLeave: d.filter((r: any) => r.status === 'approved').length }))
       }).catch(logErr('getLeaveRequests')),
       Promise.allSettled([
-        api.getAnnouncements().then((d: any) => Array.isArray(d) ? d.slice(0, 3) : []).catch(logErr('getAnnouncements')),
+        api.getAnnouncements().then((d: any) => Array.isArray(d) ? d : []).catch(logErr('getAnnouncements')),
       ]).then(([annRes]) => {
         const ann = (annRes as any).value || []
         const activities = ann.map((a: any, i: number) => ({ id: i + 1, action: a.title || 'Announcement', detail: a.content?.substring(0, 40) || '', time: new Date(a.createdAt || a.date || Date.now()).toLocaleDateString(), type: 'info' as const }))
