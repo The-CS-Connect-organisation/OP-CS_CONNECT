@@ -150,7 +150,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: MessageSquare, label: 'Messages', path: '/admin/messages' },
         { icon: UserPlus, label: 'Create Account', path: '/admin/create-account' },
         { icon: Users, label: 'Users', path: '/admin/users' },
-        { icon: UserPlus, label: 'Create Account', path: '/admin/create-account' },
         { icon: Landmark, label: 'Accounts', path: '/admin/accounts' },
         { icon: Calendar, label: 'Timetable', path: '/admin/timetable' },
         { icon: Megaphone, label: 'Announcements', path: '/admin/announcements' },

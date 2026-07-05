@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { api } from '@/lib/api'
 import AIChatPanel from '@/components/ai/AIChatPanel'
@@ -57,6 +58,7 @@ const itemVariants = {
 
 
 export default function AdminDashboard() {
+  const navigate = useNavigate()
   const { user } = useAuthStore()
   const [showAI, setShowAI] = useState(false)
   const [liveData, setLiveData] = useState<any>({
@@ -127,7 +129,7 @@ export default function AdminDashboard() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => window.location.href = '/admin/create-account'}>
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => navigate('/admin/create-account')}>
                 <UserPlus className="w-4 h-4" />
                 Add User
               </Button>
@@ -361,7 +363,7 @@ export default function AdminDashboard() {
                       key={action.label}
                       whileHover={{ scale: 1.03, y: -2 }}
                       whileTap={{ scale: 0.97 }}
-                      onClick={() => window.location.href = action.href}
+                      onClick={() => navigate(action.href)}
                       className="flex items-center gap-3 p-4 rounded-xl border border-border/50 hover:border-primary/30 bg-card/50 hover:bg-accent/50 transition-all"
                     >
                     <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br", action.color)}>

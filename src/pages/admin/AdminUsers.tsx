@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -19,6 +20,7 @@ interface UserRecord {
 }
 
 export default function AdminUsers() {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<UserRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -66,7 +68,7 @@ export default function AdminUsers() {
           <h1 className="text-2xl font-bold">User Management</h1>
           <p className="text-muted-foreground">Manage all users</p>
         </div>
-        <Button onClick={() => window.location.href = '/admin/create-account'}><Plus className="w-4 h-4 mr-2" />Add User</Button>
+        <Button onClick={() => navigate('/admin/create-account')}><Plus className="w-4 h-4 mr-2" />Add User</Button>
       </div>
 
       <div className="flex gap-4">

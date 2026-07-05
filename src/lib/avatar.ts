@@ -42,7 +42,8 @@ export function generateAvatarSvg(name: string, size = 40): string {
   return `data:image/svg+xml;base64,${btoa(svg)}`
 }
 
-export function getAvatarUrl(user: { name?: string; avatar?: string | null }, size = 40): string {
-  if (user?.avatar) return user.avatar
+export function getAvatarUrl(user: { name?: string; avatar?: string | null; avatarUrl?: string | null }, size = 40): string {
+  if (user?.avatarUrl) return user.avatarUrl
+  if (user?.avatar && user.avatar.startsWith('http')) return user.avatar
   return generateAvatarSvg(user?.name || '?', size)
 }
