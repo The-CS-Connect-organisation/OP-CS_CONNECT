@@ -35,9 +35,7 @@ export default function AdminAnalytics() {
     if (!selectedClassId) { setAnalytics(null); return; }
     setLoading(true);
     setError('');
-    apiFetch(`/analytics/class/${selectedClassId}`, {
-      
-    })
+    apiFetch(`/analytics/class/${selectedClassId}`)
       .then((data: any) => { setAnalytics(data.analytics || data); setLoading(false); })
       .catch((err: any) => { setError(`Failed to load analytics: ${err.message}`); setLoading(false); });
   }, [selectedClassId]);

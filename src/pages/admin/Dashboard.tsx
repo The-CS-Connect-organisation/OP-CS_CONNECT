@@ -127,7 +127,7 @@ export default function AdminDashboard() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => window.location.href = '/admin/users'}>
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={() => window.location.href = '/admin/create-account'}>
                 <UserPlus className="w-4 h-4" />
                 Add User
               </Button>
@@ -191,18 +191,7 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={(() => {
-  if (liveData.monthlyTrend?.length) return liveData.monthlyTrend;
-  const rev = liveData.totalRevenue || 100000;
-  return [
-    { month: 'Jan', collected: rev * 0.15, expenses: rev * 0.10 },
-    { month: 'Feb', collected: rev * 0.20, expenses: rev * 0.12 },
-    { month: 'Mar', collected: rev * 0.35, expenses: rev * 0.18 },
-    { month: 'Apr', collected: rev * 0.60, expenses: rev * 0.30 },
-    { month: 'May', collected: rev * 0.85, expenses: rev * 0.45 },
-    { month: 'Current', collected: rev, expenses: rev * 0.50 }
-  ];
-})()}>
+                    <AreaChart data={liveData.monthlyTrend?.length ? liveData.monthlyTrend : [{ month: 'Current', revenue: liveData.totalRevenue || 0, expenses: 0 }]}>
                       <defs>
                         <linearGradient id="revGradient" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
@@ -217,7 +206,7 @@ export default function AdminDashboard() {
                       <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <Tooltip contentStyle={{ backgroundColor: 'hsl(var(--card))', border: '1px solid hsl(var(--border))', borderRadius: '12px', fontSize: '12px' }} formatter={(v: number) => [formatCurrency(v), '']} />
-                      <Area type="monotone" dataKey="collected" stroke="#10b981" fill="url(#revGradient)" strokeWidth={2} name="Collected" />
+                      <Area type="monotone" dataKey="revenue" stroke="#10b981" fill="url(#revGradient)" strokeWidth={2} name="Revenue" />
                       <Area type="monotone" dataKey="expenses" stroke="#ef4444" fill="url(#expGradient)" strokeWidth={2} name="Expenses" />
                     </AreaChart>
                   </ResponsiveContainer>
@@ -226,7 +215,11 @@ export default function AdminDashboard() {
                   <Brain className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
                   <div>
                     <p className="text-xs font-medium text-orange-500">AI Financial Insight</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Revenue is 12% above projections. Expenses are well-controlled. Recommend allocating surplus to science lab upgrade and digital library expansion.</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {liveData.totalRevenue > liveData.expenses
+                        ? `Revenue is exceeding expenses by ${formatCurrency(liveData.totalRevenue - liveData.expenses)}. Excellent financial health.`
+                        : `Expenses are exceeding revenue. Review recent spending across departments.`}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -285,17 +278,14 @@ export default function AdminDashboard() {
               <CardContent>
                 <div className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={(() => {
-  const current = liveData.students || 0;
-  return [
-    { month: 'Jan', students: Math.floor(current * 0.8) },
-    { month: 'Feb', students: Math.floor(current * 0.85) },
-    { month: 'Mar', students: Math.floor(current * 0.9) },
-    { month: 'Apr', students: Math.floor(current * 0.95) },
-    { month: 'May', students: Math.floor(current * 0.98) },
-    { month: 'Current', students: current }
-  ];
-})()}>
+                    <LineChart data={[
+                      { month: 'Jan', students: Math.max(0, liveData.students - 45) },
+                      { month: 'Feb', students: Math.max(0, liveData.students - 38) },
+                      { month: 'Mar', students: Math.max(0, liveData.students - 25) },
+                      { month: 'Apr', students: Math.max(0, liveData.students - 12) },
+                      { month: 'May', students: Math.max(0, liveData.students - 4) },
+                      { month: 'Jun', students: liveData.students }
+                    ]}>
                       <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
                       <XAxis dataKey="month" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />

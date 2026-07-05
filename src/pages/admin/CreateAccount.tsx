@@ -82,6 +82,9 @@ export default function CreateAccount() {
       await api.createUser(data)
       setSuccess(true)
       setForm({ name: '', email: '', password: '', role: 'student', class: '', subjects: [] })
+      setTimeout(() => {
+        window.location.href = '/admin/users'
+      }, 1500)
     } catch (err: any) {
       setError(err.message || 'Failed to create account')
     } finally {
