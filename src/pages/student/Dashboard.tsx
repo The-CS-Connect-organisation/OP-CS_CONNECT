@@ -107,7 +107,7 @@ export default function StudentDashboard() {
                 <Avatar src={user?.avatar} alt={user?.name || ''} size="lg" />
                 <div>
                   <h1 className="text-2xl font-bold">Welcome back, {user?.name?.split(' ')[0]}! 🎓</h1>
-                  <p className="text-muted-foreground text-sm">{user?.class ? `${user.class} •` : ''} Roll No: {user?.rollNo || '—'}</p>
+                  <p className="text-muted-foreground text-sm">{user?.class ? `${user.class} •` : ''}{user?.rollNo ? `Roll No: ${user.rollNo}` : ''}</p>
                   {todaysStatus && (
                     <div className="flex items-center gap-1.5 mt-1.5">
                       <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Today:</span>

@@ -670,7 +670,7 @@ export default function TeacherMySection() {
                                     </span>
 
                                     {/* Attendance Status Buttons */}
-                                    <span className="flex items-center gap-1 ml-2 pl-2 border-l border-border">
+                                    <span className="flex items-center gap-1.5 ml-3 pl-3 border-l border-border">
                                       {[
                                         { key: 'present', icon: Check, color: 'text-emerald-600', bg: 'bg-emerald-100' },
                                         { key: 'late', icon: Clock, color: 'text-amber-600', bg: 'bg-amber-100' },
@@ -681,14 +681,15 @@ export default function TeacherMySection() {
                                           <button
                                             key={key}
                                             onClick={() => setAttendanceMarks(prev => ({ ...prev, [student.id]: key }))}
-                                            className={`p-1 rounded-md transition-all ${
+                                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                                               isActive
-                                                ? `${bg} ${color} shadow-sm scale-110`
+                                                ? `${bg} ${color} shadow-sm scale-105`
                                                 : 'text-muted-foreground/40 hover:text-muted-foreground hover:bg-accent'
                                             }`}
                                             title={key.charAt(0).toUpperCase() + key.slice(1)}
                                           >
-                                            <Icon className="w-3.5 h-3.5" />
+                                            <Icon className="w-4 h-4 mr-1 inline" />
+                                            {key.charAt(0).toUpperCase() + key.slice(1)}
                                           </button>
                                         )
                                       })}
