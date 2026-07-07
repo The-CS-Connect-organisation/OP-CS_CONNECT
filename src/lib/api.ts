@@ -1073,12 +1073,6 @@ export const api = {
   claimLostFoundItem: (id: string) => apiFetch(`/lost-found/${id}/claim`, { method: 'PUT' }),
   archiveLostFoundItem: (id: string) => apiFetch(`/lost-found/${id}/archive`, { method: 'PUT' }),
 
-  // Admin - Skip Bus
-  getSkipBusRequests: () => apiFetch('/skip-bus'),
-  createSkipBusRequest: (data: any) => apiFetch('/skip-bus', { method: 'POST', body: JSON.stringify(data) }),
-  approveSkipBusRequest: (id: string) => apiFetch(`/skip-bus/${id}/approve`, { method: 'PUT' }),
-  rejectSkipBusRequest: (id: string) => apiFetch(`/skip-bus/${id}/reject`, { method: 'PUT' }),
-
   // ========== AUCTION HOUSE ==========
   getTalentMarketListings: (params?: Record<string, string>) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';

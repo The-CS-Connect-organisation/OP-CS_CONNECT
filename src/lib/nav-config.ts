@@ -7,7 +7,7 @@ import {
   Radio, Users, Landmark, Wallet, Clock, Receipt, DollarSign, Building2,
   RadioTower, BookCopy, HeartPulse, Scale, Trophy, FolderOpen,
   GraduationCap, Truck, UtensilsCrossed,   Dumbbell, Handshake, Cog, Monitor,
-  Search, AlertTriangle, Stethoscope, Headphones, SkipForward,
+  Search, AlertTriangle, Stethoscope, Headphones,
   MapPin, Shield, Settings, Eye, Briefcase, BookMarked, HelpCircle,
   ThumbsUp, Printer, Gauge, Navigation, CircleUser, Route, ChevronDown,
   GraduationCap as Cap, Gavel, Inbox, type LucideIcon
@@ -71,7 +71,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: Search, label: 'Lost & Found', path: '/student/lost-found' },
         { icon: Headphones, label: 'IT Helpdesk', path: '/student/it-helpdesk' },
         { icon: Stethoscope, label: 'Clinic', path: '/student/clinic' },
-        { icon: SkipForward, label: 'Skip Bus', path: '/student/skip-bus' },
         { icon: AlertTriangle, label: 'Anonymous Report', path: '/student/anonymous-report' },
       ]
     },
@@ -230,7 +229,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: Stethoscope, label: 'School Clinic', path: '/admin/clinic' },
         { icon: Headphones, label: 'IT Helpdesk', path: '/admin/it-helpdesk' },
         { icon: Users, label: 'Manage Clubs', path: '/admin/clubs' },
-        { icon: SkipForward, label: 'Skip the Bus', path: '/admin/skip-bus' },
         { icon: Receipt, label: 'Fee Installments', path: '/admin/fee-installments' },
       ]
     },

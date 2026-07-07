@@ -69,7 +69,6 @@ const AdminLostFound = lazy(() => import('./pages/admin/AdminLostFound'))
 const AdminAnonymousReports = lazy(() => import('./pages/admin/AdminAnonymousReports'))
 const AdminClinic = lazy(() => import('./pages/admin/AdminClinic'))
 const AdminITHelpdesk = lazy(() => import('./pages/admin/AdminITHelpdesk'))
-const AdminSkipBus = lazy(() => import('./pages/admin/AdminSkipBus'))
 const AdminClubs = lazy(() => import('./pages/admin/AdminClubs'))
 const AdminFeeInstallments = lazy(() => import('./pages/admin/AdminFeeInstallments'))
 const ParentDashboard = lazy(() => import('./pages/parent/ParentDashboard'))
@@ -136,7 +135,6 @@ const UniversalInbox = lazy(() => import('./pages/shared/UniversalInbox'))
 const StudentLostAndFound = lazy(() => import('./pages/student/StudentLostAndFound'))
 const StudentITHelpdesk = lazy(() => import('./pages/student/StudentITHelpdesk'))
 const StudentClinicVisits = lazy(() => import('./pages/student/StudentClinicVisits'))
-const StudentSkipBus = lazy(() => import('./pages/student/StudentSkipBus'))
 const StudentAnonymousReports = lazy(() => import('./pages/student/StudentAnonymousReports'))
 // Admin Phase 3
 const AdminCounselling = lazy(() => import('./pages/admin/AdminCounselling'))
@@ -257,7 +255,6 @@ function App() {
             <Route path="lost-found" element={<StudentLostAndFound />} />
             <Route path="it-helpdesk" element={<StudentITHelpdesk />} />
             <Route path="clinic" element={<StudentClinicVisits />} />
-            <Route path="skip-bus" element={<StudentSkipBus />} />
             <Route path="anonymous-report" element={<StudentAnonymousReports />} />
           </Route>
 
@@ -314,7 +311,6 @@ function App() {
             <Route path="clinic" element={<AdminClinic />} />
             <Route path="e-portfolio" element={<AdminPortfolio />} />
             <Route path="it-helpdesk" element={<AdminITHelpdesk />} />
-            <Route path="skip-bus" element={<AdminSkipBus />} />
             <Route path="fee-installments" element={<AdminFeeInstallments />} />
             {/* Admin Phase 1+2 */}
             <Route path="circulars" element={<AdminCirculars />} />
