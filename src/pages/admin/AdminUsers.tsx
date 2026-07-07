@@ -52,6 +52,7 @@ export default function AdminUsers() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
 
   const [form, setForm] = useState({ ...emptyForm });
   const [creating, setCreating] = useState(false);
@@ -104,7 +105,27 @@ export default function AdminUsers() {
   };
 
   const openCreateModal = () => {
+    setEditingUserId(null);
     setForm({ ...emptyForm });
+    setSuccess(false);
+    setError('');
+    setShowCreateModal(true);
+  };
+
+  const openEditModal = (user: UserRecord) => {
+    setEditingUserId(user.id);
+    setForm({
+      name: user.name,
+      email: user.email,
+      password: '',
+      role: user.role,
+      class: user.class || '',
+      subjects: [],
+      rollNo: '', admissionNo: '', phone: user.phone || '', address: '',
+      dateOfBirth: '', bloodGroup: '', aadharNo: '', penNo: '', apaarId: '',
+      religion: '', nationality: 'Indian', schoolHouse: '', houseLocation: '',
+      fatherName: '', fatherPhone: '', motherName: '', motherPhone: '',
+    });
     setSuccess(false);
     setError('');
     setShowCreateModal(true);
@@ -135,9 +156,13 @@ export default function AdminUsers() {
       const data: Record<string, any> = {
         name: form.name,
         email: form.email,
-        password: form.password,
         role: form.role,
       };
+      if (editingUserId) {
+        if (form.password) data.password = form.password;
+      } else {
+        data.password = form.password || 'changeme123';
+      }
       if (form.role === 'student') {
         data.class = form.class;
         data.rollNo = form.rollNo;
@@ -163,14 +188,22 @@ export default function AdminUsers() {
         data.class = form.class;
         if (form.subjects.length > 0) data.subjects = form.subjects;
       }
-      await api.createUser(data);
+
+      if (editingUserId) {
+        await api.updateUser(editingUserId, data);
+      } else {
+        await api.createUser(data);
+      }
+
       setSuccess(true);
       setTimeout(() => {
         setShowCreateModal(false);
+        setEditingUserId(null);
+        setForm({ ...emptyForm });
         loadUsers();
       }, 1000);
     } catch (err: any) {
-      setError(err.message || 'Failed to create account');
+      setError(err.message || 'Failed to save user');
     } finally {
       setCreating(false);
     }
@@ -229,7 +262,7 @@ export default function AdminUsers() {
                 <div className="flex items-center gap-2">
                   <Badge className={getRoleColor(user.role)}>{user.role}</Badge>
                   <Badge variant="secondary">{user.status}</Badge>
-                  <button className="p-2 hover:bg-accent rounded"><Edit className="w-4 h-4" /></button>
+                  <button onClick={() => openEditModal(user)} className="p-2 hover:bg-accent rounded"><Edit className="w-4 h-4" /></button>
                   <button onClick={() => handleDelete(user.id, user.name)} className="p-2 hover:bg-red-100 rounded text-red-500"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
@@ -246,7 +279,7 @@ export default function AdminUsers() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-start justify-center pt-10 pb-10 bg-black/50 overflow-y-auto"
-            onClick={() => { if (!creating) setShowCreateModal(false); }}
+            onClick={() => { if (!creating) { setShowCreateModal(false); setEditingUserId(null); setForm({ ...emptyForm }); } }}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -256,15 +289,15 @@ export default function AdminUsers() {
               className="w-full max-w-3xl bg-background rounded-xl shadow-2xl border p-6 relative"
             >
               <button
-                onClick={() => setShowCreateModal(false)}
+                onClick={() => { setShowCreateModal(false); setEditingUserId(null); setForm({ ...emptyForm }); }}
                 className="absolute right-4 top-4 p-1 hover:bg-accent rounded-lg"
               >
                 <X className="w-5 h-5" />
               </button>
 
               <div className="mb-6">
-                <h2 className="text-xl font-bold">Create Account</h2>
-                <p className="text-sm text-muted-foreground mt-1">Add a new user to the system</p>
+                <h2 className="text-xl font-bold">{editingUserId ? 'Edit User' : 'Create Account'}</h2>
+                <p className="text-sm text-muted-foreground mt-1">{editingUserId ? 'Update user details' : 'Add a new user to the system'}</p>
               </div>
 
               {success && (
@@ -276,7 +309,7 @@ export default function AdminUsers() {
                   <div className="flex items-center gap-3">
                     <CheckCircle2 className="w-5 h-5 text-emerald-500 flex-shrink-0" />
                     <div>
-                      <p className="text-sm font-medium text-emerald-700">Account created successfully</p>
+                      <p className="text-sm font-medium text-emerald-700">{editingUserId ? 'User updated successfully' : 'Account created successfully'}</p>
                       <p className="text-xs text-emerald-600 mt-0.5">Redirecting...</p>
                     </div>
                   </div>
@@ -313,7 +346,7 @@ export default function AdminUsers() {
                   <label className="block text-sm font-medium mb-1.5 flex items-center gap-1.5">
                     <Lock className="w-3.5 h-3.5 text-muted-foreground" />Password
                   </label>
-                  <input type="password" required value={form.password} onChange={e => updateField('password', e.target.value)} placeholder="Minimum 6 characters" className="input-field" />
+                  <input type="password" required={!editingUserId} value={form.password} onChange={e => updateField('password', e.target.value)} placeholder={editingUserId ? 'Leave blank to keep current' : 'Minimum 6 characters'} className="input-field" />
                 </div>
 
                 <div>
@@ -485,11 +518,11 @@ export default function AdminUsers() {
                 )}
 
                 <div className="flex gap-3 justify-end pt-2 border-t">
-                  <Button type="button" variant="outline" onClick={() => setShowCreateModal(false)} disabled={creating}>
+                  <Button type="button" variant="outline" onClick={() => { setShowCreateModal(false); setEditingUserId(null); setForm({ ...emptyForm }); }} disabled={creating}>
                     Cancel
                   </Button>
                   <Button type="submit" disabled={creating}>
-                    {creating ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Creating...</> : <><UserPlus className="w-4 h-4 mr-2" /> Create Account</>}
+                    {creating ? <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Saving...</> : <><UserPlus className="w-4 h-4 mr-2" /> {editingUserId ? 'Save Changes' : 'Create Account'}</>}
                   </Button>
                 </div>
               </form>
