@@ -42,6 +42,16 @@ export default function AdminUsers() {
     }
   };
 
+  const handleDelete = async (id: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to delete ${name}? This cannot be undone.`)) return;
+    try {
+      await api.deleteUser(id);
+      setUsers(prev => prev.filter(u => u.id !== id));
+    } catch {
+      alert('Failed to delete user');
+    }
+  };
+
   const filteredUsers = users.filter(u => {
     const matchesSearch = (u.name ?? '').toLowerCase().includes(searchQuery.toLowerCase()) || (u.email ?? '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = filterRole === 'all' || u.role === filterRole;
@@ -115,7 +125,7 @@ export default function AdminUsers() {
                   <Badge className={getRoleColor(user.role)}>{user.role}</Badge>
                   <Badge variant="secondary">{user.status}</Badge>
                   <button className="p-2 hover:bg-accent rounded"><Edit className="w-4 h-4" /></button>
-                  <button className="p-2 hover:bg-red-100 rounded text-red-500"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => handleDelete(user.id, user.name)} className="p-2 hover:bg-red-100 rounded text-red-500"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             </Card>
