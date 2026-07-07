@@ -254,22 +254,35 @@ export default function AdminClassroom() {
                             <p className="text-sm text-muted-foreground">No sections yet.</p>
                           ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                              {cls.sections.map(sec => (
+                              {cls.sections.map(sec => {
+                                const assignedTeacher = teachers.find(t => t.id === (sec as any).teacherId);
+                                return (
                                 <div key={sec.id} className="border rounded-md p-3 bg-card flex items-center justify-between">
-                                  <div>
+                                  <div className="min-w-0 flex-1">
                                     <div className="font-medium text-sm">Section {sec.name}</div>
                                     <div className="text-xs text-muted-foreground">{sec.studentCount}/{sec.capacity} students</div>
+                                    <div className="mt-1">
+                                      {assignedTeacher ? (
+                                        <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded font-medium">
+                                          Assigned — {assignedTeacher.name}
+                                        </span>
+                                      ) : (
+                                        <span className="inline-flex items-center gap-1 text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-1.5 py-0.5 rounded">
+                                          Unassigned
+                                        </span>
+                                      )}
+                                    </div>
                                   </div>
-                                  <div className="flex gap-1">
-                                    <button onClick={() => openModal({ kind: 'edit-section', section: sec, classId: cls.id })} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
+                                  <div className="flex gap-1 shrink-0">
+                                    <button onClick={() => openModal({ kind: 'edit-section', section: sec, classId: cls.id })} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground" title="Edit section">
                                       <Pencil className="h-3 w-3" />
                                     </button>
-                                    <button onClick={() => handleDelete('section', sec.id, `Section ${sec.name}`)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
+                                    <button onClick={() => handleDelete('section', sec.id, `Section ${sec.name}`)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive" title="Delete section">
                                       <Trash2 className="h-3 w-3" />
                                     </button>
                                   </div>
                                 </div>
-                              ))}
+                              )})}
                             </div>
                           )}
                         </div>
