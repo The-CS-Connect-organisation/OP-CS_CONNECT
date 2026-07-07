@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import { useAuthStore } from '@/lib/store';
 import { api } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -76,6 +77,7 @@ interface Location {
 }
 
 export default function StudentBusTracking() {
+  const { user } = useAuthStore();
   const [routes, setRoutes] = useState<BusData[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRoute, setSelectedRoute] = useState<string | null>(null);
@@ -115,7 +117,16 @@ export default function StudentBusTracking() {
           ? r.stops.map((s: any) => typeof s === 'string' ? { name: s, time: '--:--', reached: false } : s)
           : [],
       })) : [];
-      setRoutes(mapped);
+      // Only show the route(s) assigned to this student
+      const studentRouteId = user?.routeId;
+      const filtered = studentRouteId
+        ? mapped.filter(r => r.id === studentRouteId)
+        : mapped;
+      setRoutes(filtered);
+      // Auto-select the student's assigned route
+      if (filtered.length === 1) {
+        setSelectedRoute(filtered[0].id);
+      }
     } catch {
       // error
     } finally {
