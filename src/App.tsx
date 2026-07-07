@@ -70,7 +70,6 @@ const AdminAnonymousReports = lazy(() => import('./pages/admin/AdminAnonymousRep
 const AdminClinic = lazy(() => import('./pages/admin/AdminClinic'))
 const AdminITHelpdesk = lazy(() => import('./pages/admin/AdminITHelpdesk'))
 const AdminClubs = lazy(() => import('./pages/admin/AdminClubs'))
-const AdminFeeInstallments = lazy(() => import('./pages/admin/AdminFeeInstallments'))
 const ParentDashboard = lazy(() => import('./pages/parent/ParentDashboard'))
 const ParentAttendance = lazy(() => import('./pages/parent/ParentAttendance'))
 const ParentGrades = lazy(() => import('./pages/parent/ParentGrades'))
@@ -311,7 +310,7 @@ function App() {
             <Route path="clinic" element={<AdminClinic />} />
             <Route path="e-portfolio" element={<AdminPortfolio />} />
             <Route path="it-helpdesk" element={<AdminITHelpdesk />} />
-            <Route path="fee-installments" element={<AdminFeeInstallments />} />
+            <Route path="fee-installments" element={<Navigate to="/admin/fees" replace />} />
             {/* Admin Phase 1+2 */}
             <Route path="circulars" element={<AdminCirculars />} />
             <Route path="sis" element={<AdminSIS />} />
