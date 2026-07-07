@@ -36,6 +36,7 @@ export default function ManagerTalentMarket() {
   const [showDetail, setShowDetail] = useState(false)
   const [saving, setSaving] = useState(false)
   
+  const [customTalent, setCustomTalent] = useState('')
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -44,6 +45,14 @@ export default function ManagerTalentMarket() {
     deadline: '',
   })
   const commonTalents = ['Singing', 'Dancing', 'Acting', 'Art', 'Coding', 'Photography', 'Writing', 'Sports', 'Music', 'Debate', 'Anchoring', 'Design']
+
+  const addCustomTalent = () => {
+    const t = customTalent.trim()
+    if (t && !form.talentsNeeded.includes(t)) {
+      setForm(prev => ({ ...prev, talentsNeeded: [...prev.talentsNeeded, t] }))
+    }
+    setCustomTalent('')
+  }
 
   useEffect(() => {
     fetchListings()
@@ -309,6 +318,18 @@ export default function ManagerTalentMarket() {
                           {t} ×
                         </Badge>
                       ))}
+                    </div>
+                    <div className="flex gap-2 mb-2">
+                      <Input
+                        placeholder="Add custom talent..."
+                        value={customTalent}
+                        onChange={e => setCustomTalent(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomTalent(); } }}
+                        className="flex-1"
+                      />
+                      <Button type="button" variant="outline" size="sm" onClick={addCustomTalent} disabled={!customTalent.trim()}>
+                        <Plus className="w-3 h-3 mr-1" /> Add
+                      </Button>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {commonTalents.filter(t => !form.talentsNeeded.includes(t)).map(t => (
