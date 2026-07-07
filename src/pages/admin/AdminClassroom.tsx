@@ -81,6 +81,18 @@ export default function AdminClassroom() {
   const [subjectElective, setSubjectElective] = useState(false);
   const [teachers, setTeachers] = useState<any[]>([]);
 
+  const assignedTeacherIds = new Set<string>();
+  const teacherSectionMap = new Map<string, string>();
+  classList.forEach(cls =>
+    cls.sections.forEach(sec => {
+      const tid = (sec as any).teacherId;
+      if (tid) {
+        assignedTeacherIds.add(tid);
+        teacherSectionMap.set(tid, `${cls.name} — Section ${sec.name}`);
+      }
+    })
+  );
+
   const loadClasses = useCallback(async () => {
     setLoading(true);
     try {
@@ -372,12 +384,18 @@ export default function AdminClassroom() {
                     <input type="number" min={1} value={sectionCapacity} onChange={e => setSectionCapacity(e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Assign Section</label>
+                    <label className="block text-sm font-medium mb-1">Assign Teacher</label>
                     <select value={sectionTeacherId} onChange={e => setSectionTeacherId(e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
                       <option value="">Select a teacher...</option>
-                      {teachers.map(t => (
-                        <option key={t.id} value={t.id}>{t.name} {t.class ? `— ${t.class}` : ''}</option>
-                      ))}
+                      {teachers.map(t => {
+                        const isAssigned = assignedTeacherIds.has(t.id) && t.id !== sectionTeacherId;
+                        const location = teacherSectionMap.get(t.id);
+                        return (
+                          <option key={t.id} value={t.id} disabled={isAssigned}>
+                            {t.name}{location ? ` (${location})` : ''}{isAssigned ? ' — already assigned' : ''}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
                 </>
