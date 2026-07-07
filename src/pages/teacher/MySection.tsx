@@ -102,6 +102,7 @@ export default function TeacherMySection() {
       setSection(sectionData)
       setAllStudents(Array.isArray(studentsData) ? studentsData : [])
 
+      const allStudents = Array.isArray(studentsData) ? studentsData : []
       if (sectionData) {
         const membersData = await api.getSectionMembers(sectionData.id).catch(() => [])
         setMembers(Array.isArray(membersData) ? membersData.map((s: any) => ({
@@ -109,6 +110,17 @@ export default function TeacherMySection() {
           attendancePercent: s.attendancePercent ?? null,
           overallGrade: s.overallGrade ?? null,
         })) : [])
+      } else if (user?.class) {
+        const teacherClasses: string[] = Array.isArray(user.classes) ? user.classes : [user.class].filter(Boolean)
+        const classStudents = allStudents.filter((s: any) =>
+          teacherClasses.some((c: string) => s.class === c)
+        ).map((s: any) => ({
+          ...s,
+          attendancePercent: s.attendancePercent ?? null,
+          overallGrade: s.overallGrade ?? null,
+        }))
+        setMembers(classStudents)
+        setSection({ name: teacherClasses.join(', ') })
       } else {
         setMembers([])
       }
@@ -118,7 +130,7 @@ export default function TeacherMySection() {
     } finally {
       setLoading(false)
     }
-  }, [teacherId])
+  }, [teacherId, user?.class, user?.classes])
 
   // Load attendance for the selected date
   const loadAttendanceForDate = useCallback(async (date: string, classSection: any) => {
@@ -308,15 +320,17 @@ export default function TeacherMySection() {
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setShowManageModal(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-shadow font-medium"
-          >
-            <UserPlus className="w-4 h-4" />
-            Manage Members
-          </motion.button>
+          {section?.id && (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setShowManageModal(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 transition-shadow font-medium"
+            >
+              <UserPlus className="w-4 h-4" />
+              Manage Members
+            </motion.button>
+          )}
 
         </div>
       </motion.div>
