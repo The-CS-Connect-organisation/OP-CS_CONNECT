@@ -20,6 +20,7 @@ interface Subject {
   name: string;
   code: string;
   isElective: boolean;
+  teacherId?: string;
 }
 
 interface ClassData {
@@ -327,27 +328,54 @@ export default function AdminClassroom() {
                             <p className="text-sm text-muted-foreground">No subjects yet.</p>
                           ) : (
                             <div className="space-y-1.5">
-                              {cls.subjects.map(subj => (
-                                <div key={subj.id} className="border rounded-md px-3 py-2 bg-card flex items-center justify-between">
-                                  <div className="flex items-center gap-3">
-                                    <div>
+                              {cls.subjects.map(subj => {
+                                const assignedSubjectTeacher = teachers.find(t => t.id === subj.teacherId);
+                                return (
+                                <div key={subj.id} className="border rounded-md p-3 bg-card">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <div className="flex items-center gap-2">
                                       <span className="font-medium text-sm">{subj.name}</span>
-                                      <span className="ml-2 text-xs text-muted-foreground">{subj.code}</span>
+                                      <span className="text-xs text-muted-foreground">{subj.code}</span>
+                                      {subj.isElective && (
+                                        <span className="text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-1.5 py-0.5 rounded">Elective</span>
+                                      )}
                                     </div>
-                                    {subj.isElective && (
-                                      <span className="text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-1.5 py-0.5 rounded">Elective</span>
-                                    )}
+                                    <div className="flex gap-1">
+                                      <button onClick={() => openModal({ kind: 'edit-subject', subject: subj, classId: cls.id })} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
+                                        <Pencil className="h-3 w-3" />
+                                      </button>
+                                      <button onClick={() => handleDelete('subject', subj.id, subj.name)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
+                                        <Trash2 className="h-3 w-3" />
+                                      </button>
+                                    </div>
                                   </div>
-                                  <div className="flex gap-1">
-                                    <button onClick={() => openModal({ kind: 'edit-subject', subject: subj, classId: cls.id })} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
-                                      <Pencil className="h-3 w-3" />
-                                    </button>
-                                    <button onClick={() => handleDelete('subject', subj.id, subj.name)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
-                                      <Trash2 className="h-3 w-3" />
-                                    </button>
+                                  <div>
+                                    <label className="block text-[11px] font-medium text-muted-foreground mb-1">Assign Teacher</label>
+                                    <select
+                                      value={subj.teacherId || ''}
+                                      onChange={async (e) => {
+                                        const tid = e.target.value || undefined;
+                                        try {
+                                          await localApiFetch(`/subjects/${subj.id}`, { method: 'PATCH', body: JSON.stringify({ teacherId: tid }) });
+                                          loadClasses();
+                                        } catch { alert('Failed to assign teacher'); }
+                                      }}
+                                      className="w-full text-sm border rounded px-2 py-1.5 bg-background"
+                                    >
+                                      <option value="">— None —</option>
+                                      {teachers.length === 0 && <option disabled>No teachers found</option>}
+                                      {teachers.map(t => {
+                                        const isAssigned = assignedTeacherIds.has(t.id) && t.id !== subj.teacherId;
+                                        return (
+                                          <option key={t.id} value={t.id} disabled={isAssigned}>
+                                            {t.name}{isAssigned ? ' (already assigned)' : ''}
+                                          </option>
+                                        );
+                                      })}
+                                    </select>
                                   </div>
                                 </div>
-                              ))}
+                              )})}
                             </div>
                           )}
                         </div>
