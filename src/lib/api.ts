@@ -85,6 +85,14 @@ export const api = {
   getTeacher: (id: string) => apiFetch(`/teachers/${id}`),
   getTeacherClasses: (id: string) => apiFetch(`/teachers/${id}/classes`),
 
+  // Sections
+  getMySection: (teacherId: string) => apiFetch(`/v1/sections/my/${teacherId}`),
+  getSectionMembers: (sectionId: string) => apiFetch(`/v1/sections/${sectionId}/members`),
+  addSectionMember: (sectionId: string, studentId: string) =>
+    apiFetch(`/v1/sections/${sectionId}/members`, { method: 'POST', body: JSON.stringify({ studentId }) }),
+  removeSectionMember: (sectionId: string, studentId: string) =>
+    apiFetch(`/v1/sections/${sectionId}/members/${studentId}`, { method: 'DELETE' }),
+
   // Subjects
   getSubjects: () => apiFetch('/subjects'),
   getSubject: (id: string) => apiFetch(`/subjects/${id}`),

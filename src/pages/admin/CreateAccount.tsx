@@ -121,7 +121,7 @@ export default function CreateAccount() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium mb-1.5">Class / Section</label>
-            <input type="text" value={form.class} onChange={e => updateField('class', e.target.value)} placeholder="e.g. 10-A, Sigma Boy, or anything" className="input-field" />
+            <input type="text" value={form.class} onChange={e => updateField('class', e.target.value)} placeholder="e.g. 10-A" className="input-field" />
           </div>
           <div>
             <label className="block text-sm font-medium mb-1.5">Roll No</label>
@@ -244,7 +244,7 @@ export default function CreateAccount() {
           <GraduationCap className="w-3.5 h-3.5 text-muted-foreground" />
           Assigned Class / Section
         </label>
-        <input type="text" value={form.class} onChange={e => updateField('class', e.target.value)} placeholder="e.g. 10-A, Sigma Boy, or anything" className="input-field" />
+        <input type="text" value={form.class} onChange={e => updateField('class', e.target.value)} placeholder="e.g. 10-A" className="input-field" />
       </div>
       <div>
         <label className="block text-sm font-medium mb-2 flex items-center gap-1.5">

@@ -106,7 +106,7 @@ export default function Signup() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-1">Class / Section</label>
-                    <input type="text" value={form.class} onChange={e => update('class', e.target.value)} placeholder="e.g. 10-A, Sigma Boy, or anything" className="input-field" />
+                    <input type="text" value={form.class} onChange={e => update('class', e.target.value)} placeholder="e.g. 10-A" className="input-field" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-1">Roll No</label>
@@ -191,7 +191,7 @@ export default function Signup() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1"><GraduationCap className="w-3.5 h-3.5 inline mr-1" />Class / Section</label>
-                  <input type="text" value={form.class} onChange={e => update('class', e.target.value)} placeholder="e.g. 10-A, Sigma Boy, or anything" className="input-field" />
+                  <input type="text" value={form.class} onChange={e => update('class', e.target.value)} placeholder="e.g. 10-A" className="input-field" />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2"><BookOpen className="w-3.5 h-3.5 inline mr-1" />Subjects</label>
