@@ -108,6 +108,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: FileCheck, label: 'Grading', path: '/teacher/grading' },
         { icon: StickyNote, label: 'Class Notes', path: '/teacher/notes' },
         { icon: FileText, label: 'Exams', path: '/teacher/exams' },
+        { icon: BookOpen, label: 'Exam Syllabus', path: '/teacher/exam-syllabus' },
         { icon: Cap, label: 'Report Cards', path: '/teacher/report-cards' },
         { icon: BookOpen, label: 'Classroom', path: '/teacher/classroom' },
         { icon: BarChart3, label: 'Exam Results', path: '/teacher/exam-results' },
@@ -149,7 +150,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
       items: [
         { icon: MessageSquare, label: 'Messages', path: '/admin/messages' },
         { icon: Users, label: 'Users', path: '/admin/users' },
-        { icon: Landmark, label: 'Accounts', path: '/admin/accounts' },
+        { icon: Landmark, label: 'Accounts', path: '/admin/fees' },
         { icon: Calendar, label: 'Timetable', path: '/admin/timetable' },
         { icon: Megaphone, label: 'Announcements', path: '/admin/announcements' },
         { icon: Wallet, label: 'Payroll & HR', path: '/admin/payroll' },

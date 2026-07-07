@@ -18,6 +18,7 @@ interface Exam {
   location: string;
   type: 'midterm' | 'final' | 'quiz' | 'test';
   totalMarks: number;
+  syllabus?: string;
   status: 'scheduled' | 'ongoing' | 'completed';
 }
 
@@ -26,7 +27,7 @@ export default function TeacherManageExams() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title: '', subject: 'Math', class: '10-A', date: '', time: '', duration: 60, location: '', type: 'test' as Exam['type'], totalMarks: 100 });
+  const [form, setForm] = useState({ title: '', subject: 'Math', class: '10-A', date: '', time: '', duration: 60, location: '', type: 'test' as Exam['type'], totalMarks: 100, syllabus: '' });
 
   useEffect(() => {
     loadExams();
@@ -49,7 +50,7 @@ export default function TeacherManageExams() {
     try {
       const newExam = await api.createExam({ ...form, teacherId: user?.id });
       setExams(prev => [...prev, newExam]);
-      setForm({ title: '', subject: 'Math', class: '10-A', date: '', time: '', duration: 60, location: '', type: 'test', totalMarks: 100 });
+      setForm({ title: '', subject: 'Math', class: '10-A', date: '', time: '', duration: 60, location: '', type: 'test', totalMarks: 100, syllabus: '' });
       setShowForm(false);
     } catch {
       // error
@@ -111,6 +112,9 @@ export default function TeacherManageExams() {
             <input type="text" placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
             <input type="number" placeholder="Total Marks" value={form.totalMarks} onChange={(e) => setForm({ ...form, totalMarks: parseInt(e.target.value) || 100 })} className="px-3 py-2 rounded-lg border bg-background" />
           </div>
+          <div className="mt-4">
+            <textarea placeholder="Syllabus / Portion (topics covered)" value={form.syllabus} onChange={(e) => setForm({ ...form, syllabus: e.target.value })} className="w-full px-3 py-2 rounded-lg border bg-background" rows={3} />
+          </div>
           <div className="flex gap-2 mt-4">
             <Button onClick={handleCreate}>Schedule</Button>
             <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
@@ -150,6 +154,7 @@ export default function TeacherManageExams() {
                       <span>{exam.totalMarks} marks</span>
                     </div>
                   </div>
+                  {exam.syllabus && <p className="text-sm text-muted-foreground mt-2">Syllabus: {exam.syllabus}</p>}
                 </div>
                 <div className="flex gap-2">
                   <button className="p-2 hover:bg-accent rounded"><Edit className="w-4 h-4" /></button>
