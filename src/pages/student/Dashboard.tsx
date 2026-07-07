@@ -13,6 +13,7 @@ import {
   BookOpen, ClipboardList, Calendar, BarChart3, UserCheck,
   CreditCard, Trophy, Sparkles, TrendingUp, TrendingDown,
   Clock, AlertCircle, CheckCircle2, ArrowUpRight, Brain,
+  X,
   Target, Zap, GraduationCap, Star, Loader2, Sun
 } from 'lucide-react'
 import {
@@ -56,11 +57,21 @@ export default function StudentDashboard() {
   const { grades, attendance, assignments, subjects, fees, clubs, timetable, events, isLoading, fetchStudentData } = useDataStore()
   const [showAI, setShowAI] = useState(false)
   const [recentAnns, setRecentAnns] = useState<any[]>([])
+  const [todaysStatus, setTodaysStatus] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'overview' | 'academics' | 'schedule'>('overview')
   const navigate = useNavigate()
 
+  // Fetch today's attendance status
   useEffect(() => {
-    if (user?.id) fetchStudentData(user.id)
+    if (user?.id) {
+      fetchStudentData(user.id)
+      api.getStudentAttendance(user.id).then((data: any) => {
+        const records = Array.isArray(data) ? data : []
+        const today = new Date().toISOString().split('T')[0]
+        const todayRecord = records.find((r: any) => r.date === today)
+        setTodaysStatus(todayRecord?.status || null)
+      }).catch(() => {})
+    }
   }, [user?.id, fetchStudentData])
 
   const totalFees = fees.reduce((a: number, f: any) => a + (f.amount || 0), 0)
@@ -97,6 +108,21 @@ export default function StudentDashboard() {
                 <div>
                   <h1 className="text-2xl font-bold">Welcome back, {user?.name?.split(' ')[0]}! 🎓</h1>
                   <p className="text-muted-foreground text-sm">{user?.class ? `${user.class} •` : ''} Roll No: {user?.rollNo || '—'}</p>
+                  {todaysStatus && (
+                    <div className="flex items-center gap-1.5 mt-1.5">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Today:</span>
+                      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                        todaysStatus === 'present' ? 'bg-emerald-100 text-emerald-700' :
+                        todaysStatus === 'late' ? 'bg-amber-100 text-amber-700' :
+                        'bg-rose-100 text-rose-700'
+                      }`}>
+                        {todaysStatus === 'present' && <CheckCircle2 className="w-2.5 h-2.5" />}
+                        {todaysStatus === 'late' && <Clock className="w-2.5 h-2.5" />}
+                        {todaysStatus === 'absent' && <X className="w-2.5 h-2.5" />}
+                        {todaysStatus}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
               <p className="text-sm text-muted-foreground mt-2 max-w-lg">

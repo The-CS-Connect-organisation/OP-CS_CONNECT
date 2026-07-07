@@ -13,7 +13,7 @@ export default function TeacherManageAssignments() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [teacherClasses, setTeacherClasses] = useState<string[]>(['10-A']);
-  const teacherSubjects = (user?.subjects?.length ? user.subjects : ['Math', 'Science', 'English', 'History', 'Geography', 'Art']);
+  const teacherSubjects = (user?.subjects?.length ? user.subjects : ['Math', 'Physics', 'Chemistry', 'Biology', 'English', 'Computer Science', 'History', 'Geography', 'Art', 'Physical Education', 'Economics', 'Accounting']);
   const [form, setForm] = useState({ title: '', description: '', subject: teacherSubjects[0] || 'Math', class: '10-A', dueDate: '', points: 100 });
 
   useEffect(() => {

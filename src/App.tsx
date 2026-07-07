@@ -58,7 +58,6 @@ const TeacherPerformanceReports = lazy(() => import('./pages/teacher/Performance
 const AdminAnalytics = lazy(() => import('./pages/admin/AdminAnalytics'))
 const AdminCalendar = lazy(() => import('./pages/admin/AdminCalendar'))
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'))
-const AdminAccounts = lazy(() => import('./pages/admin/AdminAccounts'))
 const AdminTimetable = lazy(() => import('./pages/admin/AdminTimetable'))
 const AdminAnnouncements = lazy(() => import('./pages/admin/AdminAnnouncements'))
 const AdminPayroll = lazy(() => import('./pages/admin/AdminPayroll'))
@@ -294,7 +293,7 @@ function App() {
             <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="calendar" element={<AdminCalendar />} />
             <Route path="users" element={<AdminUsers />} />
-            <Route path="accounts" element={<AdminAccounts />} />
+            <Route path="accounts" element={<Navigate to="/admin/fees" replace />} />
             <Route path="timetable" element={<AdminTimetable />} />
             <Route path="announcements" element={<AdminAnnouncements />} />
             <Route path="payroll" element={<AdminPayroll />} />

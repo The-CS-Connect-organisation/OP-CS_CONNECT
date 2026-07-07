@@ -24,6 +24,12 @@ import {
   UserCheck,
   UserX,
   GraduationCap,
+  Check,
+  X,
+  Clock,
+  Save,
+  Pencil,
+  CalendarDays,
 } from 'lucide-react'
 
 interface Student {
@@ -66,12 +72,22 @@ export default function TeacherMySection() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedGender, setSelectedGender] = useState('all')
-  const [sortBy, setSortBy] = useState<'name' | 'rollNo' | 'attendance'>('name')
+  const [sortBy, setSortBy] = useState<'name' | 'rollNo' | 'attendance'>('rollNo')
   const [showManageModal, setShowManageModal] = useState(false)
   const [manageSearch, setManageSearch] = useState('')
   const [submitting, setSubmitting] = useState<string | null>(null)
   const [error, setError] = useState('')
   const [successMsg, setSuccessMsg] = useState('')
+
+  // Attendance marking state
+  const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split('T')[0])
+  const [attendanceMarks, setAttendanceMarks] = useState<Record<string, string>>({})
+  const [attendanceSaving, setAttendanceSaving] = useState(false)
+
+  // Roll number editing state
+  const [editingRollNo, setEditingRollNo] = useState<string | null>(null)
+  const [rollNoValues, setRollNoValues] = useState<Record<string, string>>({})
+  const [rollSaving, setRollSaving] = useState<string | null>(null)
 
   const teacherId = user?.id || ''
 
@@ -103,6 +119,78 @@ export default function TeacherMySection() {
       setLoading(false)
     }
   }, [teacherId])
+
+  // Load attendance for the selected date
+  const loadAttendanceForDate = useCallback(async (date: string, classSection: any) => {
+    if (!classSection?.name) return
+    try {
+      const res = await api.getClassAttendance(classSection.name, date)
+      const data = Array.isArray(res.data) ? res.data : Array.isArray(res) ? res : []
+      const marks: Record<string, string> = {}
+      data.forEach((s: any) => {
+        marks[s.id] = s.status && s.status !== 'unmarked' ? s.status : 'present'
+      })
+      setAttendanceMarks(marks)
+    } catch {
+      // If no attendance exists for this date, default to 'present' for all
+      const marks: Record<string, string> = {}
+      members.forEach(m => { marks[m.id] = 'present' })
+      setAttendanceMarks(marks)
+    }
+  }, [members])
+
+  // Load attendance when date or section changes
+  useEffect(() => {
+    if (section) {
+      loadAttendanceForDate(attendanceDate, section)
+    }
+  }, [attendanceDate, section, loadAttendanceForDate])
+
+  // Save attendance
+  const handleSaveAttendance = async () => {
+    if (!section) return
+    setAttendanceSaving(true)
+    try {
+      const entries = members.map(m => ({
+        studentId: m.id,
+        status: attendanceMarks[m.id] || 'present',
+      }))
+      await api.markAttendance({ class: section.name, date: attendanceDate, entries })
+      setSuccessMsg(`Attendance saved for ${section.name} on ${attendanceDate}`)
+      setTimeout(() => setSuccessMsg(''), 3000)
+    } catch (err: any) {
+      setError(err?.message || 'Failed to save attendance')
+    } finally {
+      setAttendanceSaving(false)
+    }
+  }
+
+  // Mark all students with a status
+  const handleMarkAll = (status: string) => {
+    const newMarks: Record<string, string> = {}
+    members.forEach(m => { newMarks[m.id] = status })
+    setAttendanceMarks(newMarks)
+  }
+
+  // Save roll number
+  const handleRollNoSave = async (studentId: string) => {
+    const newRollNo = rollNoValues[studentId]
+    if (!newRollNo || newRollNo.trim() === '') return
+    setRollSaving(studentId)
+    try {
+      await api.updateUser(studentId, { rollNo: newRollNo.trim() })
+      setMembers(prev => prev.map(m => m.id === studentId ? { ...m, rollNo: newRollNo.trim() } : m))
+      setEditingRollNo(null)
+      // Auto-sort by roll number after updating
+      setSortBy('rollNo')
+      setSuccessMsg('Roll number updated')
+      setTimeout(() => setSuccessMsg(''), 2000)
+    } catch (err: any) {
+      setError(err?.message || 'Failed to update roll number')
+    } finally {
+      setRollSaving(null)
+    }
+  }
 
   useEffect(() => {
     fetchAll()
@@ -229,6 +317,7 @@ export default function TeacherMySection() {
             <UserPlus className="w-4 h-4" />
             Manage Members
           </motion.button>
+
         </div>
       </motion.div>
 
@@ -352,6 +441,58 @@ export default function TeacherMySection() {
             </div>
           </motion.div>
 
+          {/* Attendance Toolbar */}
+          <motion.div variants={itemVariants}>
+            <Card className="border border-orange-200 dark:border-orange-800 bg-orange-50/30 dark:bg-orange-900/10">
+              <CardContent className="p-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div className="flex items-center gap-2">
+                    <CalendarDays className="w-4 h-4 text-orange-500" />
+                    <span className="text-sm font-medium">Mark Attendance</span>
+                  </div>
+                  <input
+                    type="date"
+                    value={attendanceDate}
+                    onChange={(e) => setAttendanceDate(e.target.value)}
+                    className="bg-background border border-border rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-orange-500"
+                  />
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <button
+                      onClick={() => handleMarkAll('present')}
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors"
+                    >
+                      <Check className="w-3 h-3 inline mr-1" />All Present
+                    </button>
+                    <button
+                      onClick={() => handleMarkAll('late')}
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
+                    >
+                      <Clock className="w-3 h-3 inline mr-1" />All Late
+                    </button>
+                    <button
+                      onClick={() => handleMarkAll('absent')}
+                      className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-rose-100 text-rose-700 hover:bg-rose-200 transition-colors"
+                    >
+                      <X className="w-3 h-3 inline mr-1" />All Absent
+                    </button>
+                  </div>
+                  <div className="flex-1" />
+                  <button
+                    onClick={handleSaveAttendance}
+                    disabled={attendanceSaving}
+                    className="px-4 py-1.5 rounded-lg text-xs font-medium bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/20 hover:shadow-orange-500/35 transition-all disabled:opacity-50"
+                  >
+                    {attendanceSaving ? (
+                      <><Loader2 className="w-3 h-3 animate-spin inline mr-1" />Saving...</>
+                    ) : (
+                      <><Save className="w-3 h-3 inline mr-1" />Save Attendance</>
+                    )}
+                  </button>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
           {/* Student List */}
           <motion.div variants={itemVariants}>
             {loading ? (
@@ -407,16 +548,9 @@ export default function TeacherMySection() {
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-start justify-between gap-3">
                                     <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2">
-                                        <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-                                          {student.name || 'Unknown'}
-                                        </h3>
-                                        {student.rollNo && (
-                                          <span className="text-xs text-muted-foreground font-mono">
-                                            #{student.rollNo}
-                                          </span>
-                                        )}
-                                      </div>
+                                      <h3 className="font-semibold text-gray-900 dark:text-white truncate">
+                                        {student.name || 'Unknown'}
+                                      </h3>
                                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
                                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                                           <Mail className="w-3 h-3" />
@@ -475,6 +609,76 @@ export default function TeacherMySection() {
                                     <span className="flex items-center gap-1">
                                       {getAttendanceIcon(student.attendancePercent)}
                                       Attendance: {student.attendancePercent ?? 'N/A'}%
+                                    </span>
+
+                                    {/* Roll Number Box - Click to edit */}
+                                    <span className="flex items-center gap-1">
+                                      {editingRollNo === student.id ? (
+                                        <div className="flex items-center gap-0.5 bg-background border border-orange-300 rounded-md px-1.5 py-0.5">
+                                          <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mr-0.5">No:</span>
+                                          <input
+                                            type="text"
+                                            value={rollNoValues[student.id] || student.rollNo || ''}
+                                            onChange={(e) => setRollNoValues(prev => ({ ...prev, [student.id]: e.target.value }))}
+                                            className="w-12 text-xs text-center bg-transparent focus:outline-none font-mono"
+                                            autoFocus
+                                            onKeyDown={(e) => {
+                                              if (e.key === 'Enter') handleRollNoSave(student.id)
+                                              if (e.key === 'Escape') setEditingRollNo(null)
+                                            }}
+                                          />
+                                          <button
+                                            onClick={() => handleRollNoSave(student.id)}
+                                            disabled={rollSaving === student.id}
+                                            className="p-0.5 rounded text-emerald-500 hover:bg-emerald-50"
+                                          >
+                                            {rollSaving === student.id ? <Loader2 className="w-2.5 h-2.5 animate-spin" /> : <Check className="w-2.5 h-2.5" />}
+                                          </button>
+                                          <button
+                                            onClick={() => setEditingRollNo(null)}
+                                            className="p-0.5 rounded text-muted-foreground hover:bg-accent"
+                                          >
+                                            <X className="w-2.5 h-2.5" />
+                                          </button>
+                                        </div>
+                                      ) : (
+                                        <button
+                                          onClick={() => {
+                                            setEditingRollNo(student.id)
+                                            setRollNoValues(prev => ({ ...prev, [student.id]: student.rollNo || '' }))
+                                          }}
+                                          className="flex items-center gap-1 px-2 py-1 rounded-md border border-border bg-muted/30 hover:bg-muted hover:border-orange-300 transition-all group text-xs font-mono"
+                                        >
+                                          <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">No:</span>
+                                          <span className="font-medium">{student.rollNo || '—'}</span>
+                                          <Pencil className="w-2.5 h-2.5 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground" />
+                                        </button>
+                                      )}
+                                    </span>
+
+                                    {/* Attendance Status Buttons */}
+                                    <span className="flex items-center gap-1 ml-2 pl-2 border-l border-border">
+                                      {[
+                                        { key: 'present', icon: Check, color: 'text-emerald-600', bg: 'bg-emerald-100' },
+                                        { key: 'late', icon: Clock, color: 'text-amber-600', bg: 'bg-amber-100' },
+                                        { key: 'absent', icon: X, color: 'text-rose-600', bg: 'bg-rose-100' },
+                                      ].map(({ key, icon: Icon, color, bg }) => {
+                                        const isActive = attendanceMarks[student.id] === key
+                                        return (
+                                          <button
+                                            key={key}
+                                            onClick={() => setAttendanceMarks(prev => ({ ...prev, [student.id]: key }))}
+                                            className={`p-1 rounded-md transition-all ${
+                                              isActive
+                                                ? `${bg} ${color} shadow-sm scale-110`
+                                                : 'text-muted-foreground/40 hover:text-muted-foreground hover:bg-accent'
+                                            }`}
+                                            title={key.charAt(0).toUpperCase() + key.slice(1)}
+                                          >
+                                            <Icon className="w-3.5 h-3.5" />
+                                          </button>
+                                        )
+                                      })}
                                     </span>
 
                                     {student.overallGrade && (

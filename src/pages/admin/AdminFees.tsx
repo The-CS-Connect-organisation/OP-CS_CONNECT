@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { CreditCard, AlertTriangle, TrendingDown, DollarSign, Phone, X, Plus, Search, Receipt, Calendar, User, Check, Loader2, CheckCircle2, Trash2, Eye, EyeOff } from 'lucide-react';
+import { CreditCard, AlertTriangle, TrendingDown, DollarSign, Phone, X, Plus, Search, Receipt, Calendar, User, Check, Loader2, CheckCircle2, Trash2, Eye, EyeOff, Landmark } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -241,8 +241,8 @@ export default function AdminFees() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Fees & Installments</h1>
-          <p className="text-muted-foreground">Manage fee accounts and installment plans</p>
+          <h1 className="text-2xl font-bold">Accounts</h1>
+          <p className="text-muted-foreground">Manage fee accounts, billing, and installment plans</p>
         </div>
       </div>
 
@@ -257,7 +257,7 @@ export default function AdminFees() {
           }`}
         >
           <DollarSign className="w-4 h-4" />
-          <span>Accounts</span>
+          <span>Overview</span>
           {activeTab === 'accounts' && (
             <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-orange-500 rounded-full" />
           )}
@@ -270,8 +270,8 @@ export default function AdminFees() {
               : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
           }`}
         >
-          <Receipt className="w-4 h-4" />
-          <span>Installments</span>
+          <Landmark className="w-4 h-4" />
+          <span>Accounts</span>
           {activeTab === 'installments' && (
             <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-orange-500 rounded-full" />
           )}

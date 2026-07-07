@@ -40,7 +40,7 @@ const bloodGroupOptions = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const emptyForm = {
   name: '', email: '', password: '', role: 'student',
   class: '', subjects: [] as string[],
-  rollNo: '', admissionNo: '', phone: '', address: '',
+  admissionNo: '', phone: '', address: '',
   dateOfBirth: '', bloodGroup: '', aadharNo: '', penNo: '', apaarId: '',
   religion: '', nationality: 'Indian', schoolHouse: '', houseLocation: '',
   fatherName: '', fatherPhone: '', motherName: '', motherPhone: '',
@@ -121,7 +121,7 @@ export default function AdminUsers() {
       role: user.role,
       class: user.class || '',
       subjects: [],
-      rollNo: '', admissionNo: '', phone: user.phone || '', address: '',
+      admissionNo: '', phone: user.phone || '', address: '',
       dateOfBirth: '', bloodGroup: '', aadharNo: '', penNo: '', apaarId: '',
       religion: '', nationality: 'Indian', schoolHouse: '', houseLocation: '',
       fatherName: '', fatherPhone: '', motherName: '', motherPhone: '',
@@ -165,7 +165,6 @@ export default function AdminUsers() {
       }
       if (form.role === 'student') {
         data.class = form.class;
-        data.rollNo = form.rollNo;
         data.admissionNo = form.admissionNo;
         data.phone = form.phone;
         data.address = form.address;
@@ -362,14 +361,10 @@ export default function AdminUsers() {
                   <div className="space-y-5">
                     <div className="border-t pt-4">
                       <h3 className="text-sm font-semibold flex items-center gap-2 mb-3"><GraduationCap className="w-4 h-4 text-muted-foreground" />Academic Info</h3>
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium mb-1.5">Class / Section</label>
                           <input type="text" value={form.class} onChange={e => updateField('class', e.target.value)} placeholder="e.g. 10-A" className="input-field" />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium mb-1.5">Roll No</label>
-                          <input type="text" value={form.rollNo} onChange={e => updateField('rollNo', e.target.value)} placeholder="e.g. 1001" className="input-field" />
                         </div>
                         <div>
                           <label className="block text-sm font-medium mb-1.5">Admission No</label>
