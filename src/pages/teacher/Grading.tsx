@@ -6,16 +6,15 @@ import { Badge } from "@/components/ui/Badge";
 import { useAuthStore } from "@/lib/store";
 import { api, apiFetch } from "@/lib/api";
 import {
-  FileCheck, Loader2, ChevronDown, Star, MessageSquare,
-  Save, Eye, CheckCircle2, AlertTriangle, Filter
+  FileCheck, Loader2,
+  Save, CheckCircle2, AlertTriangle
 } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/Avatar";
 import { getAvatarUrl, getInitials } from "@/lib/avatar";
 
-const CLASSES = ["10-A", "10-B"];
-
 export default function Grading() {
   const { user } = useAuthStore();
+  const [teacherClasses, setTeacherClasses] = useState<string[]>(['10-A', '10-B']);
   const [selectedClass, setSelectedClass] = useState("10-A");
   const [assignments, setAssignments] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
@@ -28,6 +27,20 @@ export default function Grading() {
 
   useEffect(() => {
     (async () => {
+      if (user?.id) {
+        try {
+          const classData = await api.getTeacherClasses(user.id);
+          if (classData?.classes?.length) {
+            setTeacherClasses(classData.classes);
+            setSelectedClass(classData.classes[0]);
+          }
+        } catch {}
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    (async () => {
       try {
         setLoading(true);
         const [assignData, studentData] = await Promise.all([
@@ -36,7 +49,7 @@ export default function Grading() {
         ]);
         setAssignments(Array.isArray(assignData) ? assignData : []);
         setStudents(Array.isArray(studentData) ? studentData : []);
-        if (assignData.length > 0 && !selectedAssignment) {
+        if (assignData?.length > 0) {
           setSelectedAssignment(assignData[0].id);
         }
       } catch {
@@ -76,12 +89,13 @@ export default function Grading() {
     }
   };
 
-  const getGradeFromMarks = (marks: number) => {
-    if (marks >= 90) return "A+";
-    if (marks >= 80) return "A";
-    if (marks >= 70) return "B+";
-    if (marks >= 60) return "B";
-    if (marks >= 50) return "C";
+  const getGradeFromMarks = (marks: number, maxMarks: number = 100) => {
+    const pct = maxMarks > 0 ? (marks / maxMarks) * 100 : 0;
+    if (pct >= 90) return "A+";
+    if (pct >= 80) return "A";
+    if (pct >= 70) return "B+";
+    if (pct >= 60) return "B";
+    if (pct >= 50) return "C";
     return "D";
   };
 
@@ -107,7 +121,7 @@ export default function Grading() {
               onChange={(e) => setSelectedClass(e.target.value)}
               className="bg-background border border-border rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-orange-500"
             >
-              {CLASSES.map((c) => <option key={c} value={c}>{c}</option>)}
+              {teacherClasses.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
         </Card>
@@ -222,11 +236,11 @@ export default function Grading() {
                     <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Marks</label>
-                        <input
-                          type="number"
-                          min="0"
-                          max="100"
-                          placeholder="Enter marks"
+                          <input
+                            type="number"
+                            min="0"
+                            max={currentAssignment?.points || currentAssignment?.maxMarks || 100}
+                            placeholder="Enter marks"
                           value={gradeData.marks}
                           onChange={(e) =>
                             setGradingData((prev) => ({
@@ -238,7 +252,7 @@ export default function Grading() {
                         />
                         {gradeData.marks && (
                           <span className="text-xs text-muted-foreground mt-1">
-                            Grade: {getGradeFromMarks(parseInt(gradeData.marks))}
+                            Grade: {getGradeFromMarks(parseInt(gradeData.marks), currentAssignment?.points || currentAssignment?.maxMarks || 100)} / {currentAssignment?.points || currentAssignment?.maxMarks || 100}
                           </span>
                         )}
                       </div>

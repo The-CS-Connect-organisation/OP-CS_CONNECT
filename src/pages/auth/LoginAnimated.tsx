@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { Eye, EyeOff, Mail, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/lib/store";
+import { Link } from "react-router-dom";
 
 interface PupilProps {
   size?: number;
@@ -525,7 +526,7 @@ function LoginPage() {
           {/* Sign Up Link */}
           <div className="text-center text-sm text-muted-foreground mt-8">
             Don&apos;t have an account?{" "}
-            <a href="#" className="text-foreground font-medium hover:underline">Sign Up</a>
+            <Link to="/signup" className="text-foreground font-medium hover:underline">Sign Up</Link>
           </div>
 
           {/* Animated decorative elements below form */}

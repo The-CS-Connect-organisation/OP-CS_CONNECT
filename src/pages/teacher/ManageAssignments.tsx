@@ -5,36 +5,37 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { ClipboardList, Plus, Edit, Trash2, Calendar, Clock, Users, FileText } from 'lucide-react';
-
-interface Assignment {
-  id: string;
-  title: string;
-  description: string;
-  subject: string;
-  class: string;
-  dueDate: string;
-  totalMarks: number;
-  status: 'draft' | 'published' | 'completed';
-  submissions: number;
-  createdAt: string;
-}
+import { ClipboardList, Plus, Edit, Trash2, Calendar, Users, FileText } from 'lucide-react';
 
 export default function TeacherManageAssignments() {
   const { user } = useAuthStore();
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [assignments, setAssignments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title: '', description: '', subject: 'Math', class: '10-A', dueDate: '', totalMarks: 100 });
+  const [teacherClasses, setTeacherClasses] = useState<string[]>(['10-A']);
+  const [form, setForm] = useState({ title: '', description: '', subject: 'Math', class: '10-A', dueDate: '', points: 100 });
 
   useEffect(() => {
-    loadAssignments();
+    init();
   }, []);
+
+  const init = async () => {
+    try {
+      if (user?.id) {
+        const classData = await api.getTeacherClasses(user.id);
+        if (classData?.classes?.length) {
+          setTeacherClasses(classData.classes);
+          setForm(f => ({ ...f, class: classData.classes[0] }));
+        }
+      }
+    } catch {}
+    loadAssignments();
+  };
 
   const loadAssignments = async () => {
     try {
       setLoading(true);
-      const data = await api.getAssignments({ class: '10-A' });
+      const data = await api.getAssignments();
       setAssignments(Array.isArray(data) ? data : []);
     } catch {
       // error
@@ -46,9 +47,16 @@ export default function TeacherManageAssignments() {
   const handleCreate = async () => {
     if (!form.title.trim()) return;
     try {
-      const newAssignment = await api.createAssignment({ ...form, teacherId: user?.id });
+      const newAssignment = await api.createAssignment({
+        title: form.title,
+        description: form.description,
+        subject: form.subject,
+        className: form.class,
+        dueDate: form.dueDate,
+        points: form.points
+      });
       setAssignments(prev => [...prev, newAssignment]);
-      setForm({ title: '', description: '', subject: 'Math', class: '10-A', dueDate: '', totalMarks: 100 });
+      setForm({ title: '', description: '', subject: 'Math', class: teacherClasses[0] || '10-A', dueDate: '', points: 100 });
       setShowForm(false);
     } catch {
       // error
@@ -67,7 +75,7 @@ export default function TeacherManageAssignments() {
   const handlePublish = async (id: string) => {
     try {
       await api.publishAssignment(id);
-      setAssignments(prev => prev.map(a => a.id === id ? { ...a, status: 'published' } : a));
+      setAssignments(prev => prev.map(a => a.id === id ? { ...a, published: true } : a));
     } catch {
       // error
     }
@@ -95,10 +103,10 @@ export default function TeacherManageAssignments() {
               {['Math', 'Science', 'English', 'History', 'Geography', 'Art'].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <select value={form.class} onChange={(e) => setForm({ ...form, class: e.target.value })} className="px-3 py-2 rounded-lg border bg-background">
-              {['10-A', '10-B', '11-A', '11-B', '12-A', '12-B'].map(c => <option key={c} value={c}>{c}</option>)}
+              {teacherClasses.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
             <input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
-            <input type="number" placeholder="Total Marks" value={form.totalMarks} onChange={(e) => setForm({ ...form, totalMarks: parseInt(e.target.value) || 100 })} className="px-3 py-2 rounded-lg border bg-background" />
+            <input type="number" placeholder="Total Marks" value={form.points} onChange={(e) => setForm({ ...form, points: parseInt(e.target.value) || 100 })} className="px-3 py-2 rounded-lg border bg-background" />
             <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="px-3 py-2 rounded-lg border bg-background md:col-span-2" />
           </div>
           <div className="flex gap-2 mt-4">
@@ -120,19 +128,19 @@ export default function TeacherManageAssignments() {
                     <FileText className="w-5 h-5 text-orange-500" />
                     <h3 className="font-semibold text-lg">{assignment.title}</h3>
                     <Badge variant="secondary">{assignment.subject}</Badge>
-                    <Badge className={assignment.status === 'published' ? 'bg-green-100 text-green-700' : assignment.status === 'draft' ? 'bg-gray-100 text-gray-700' : 'bg-blue-100 text-blue-700'}>
-                      {assignment.status}
+                    <Badge className={assignment.published ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}>
+                      {assignment.published ? 'published' : 'draft'}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mb-3">{assignment.description}</p>
                   <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1"><Calendar className="w-4 h-4" />Due: {assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString() : 'Not set'}</span>
-                    <span className="flex items-center gap-1"><Users className="w-4 h-4" />{assignment.submissions} submissions</span>
-                    <span className="flex items-center gap-1"><ClipboardList className="w-4 h-4" />{assignment.totalMarks} marks</span>
+                    <span className="flex items-center gap-1"><Users className="w-4 h-4" />{(assignment.submissions || []).length} submissions</span>
+                    <span className="flex items-center gap-1"><ClipboardList className="w-4 h-4" />{assignment.points || assignment.maxMarks} marks</span>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  {assignment.status === 'draft' && (
+                  {!assignment.published && (
                     <Button size="sm" onClick={() => handlePublish(assignment.id)}>Publish</Button>
                   )}
                   <button className="p-2 hover:bg-accent rounded"><Edit className="w-4 h-4" /></button>

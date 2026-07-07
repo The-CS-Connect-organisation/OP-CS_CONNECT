@@ -4,6 +4,7 @@ import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore, useThemeStore } from './lib/store'
 import Login from './pages/auth/LoginAnimated'
+import Signup from './pages/auth/Signup'
 const Landing = lazy(() => import('./pages/Landing'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
 const Photos = lazy(() => import('./pages/Photos'))
@@ -212,6 +213,9 @@ function App() {
           <Route path="/photos" element={<Photos />} />
           <Route path="/login" element={
             isAuthenticated ? <Navigate to={getDashboardRoute()} replace /> : <Login />
+          } />
+          <Route path="/signup" element={
+            isAuthenticated ? <Navigate to={getDashboardRoute()} replace /> : <Signup />
           } />
 
           {/* STUDENT */}
