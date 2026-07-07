@@ -359,9 +359,9 @@ export default function AdminClassroom() {
                     <input type="number" min={1} value={sectionCapacity} onChange={e => setSectionCapacity(e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Assigned Teacher</label>
+                    <label className="block text-sm font-medium mb-1">Assign Section</label>
                     <select value={sectionTeacherId} onChange={e => setSectionTeacherId(e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
-                      <option value="">No teacher (unassigned)</option>
+                      <option value="">Select a teacher...</option>
                       {teachers.map(t => (
                         <option key={t.id} value={t.id}>{t.name} {t.class ? `— ${t.class}` : ''}</option>
                       ))}
