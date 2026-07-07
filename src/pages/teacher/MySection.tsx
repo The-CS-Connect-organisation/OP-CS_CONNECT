@@ -25,7 +25,6 @@ import {
   UserX,
   GraduationCap,
   Check,
-  X,
   Clock,
   Save,
   Pencil,
@@ -111,7 +110,7 @@ export default function TeacherMySection() {
           overallGrade: s.overallGrade ?? null,
         })) : [])
       } else if (user?.class) {
-        const teacherClasses: string[] = Array.isArray(user.classes) ? user.classes : [user.class].filter(Boolean)
+        const teacherClasses: string[] = Array.isArray((user as any).classes) ? (user as any).classes : [user.class].filter(Boolean)
         const classStudents = allStudents.filter((s: any) =>
           teacherClasses.some((c: string) => s.class === c)
         ).map((s: any) => ({
@@ -130,7 +129,7 @@ export default function TeacherMySection() {
     } finally {
       setLoading(false)
     }
-  }, [teacherId, user?.class, user?.classes])
+  }, [teacherId, user?.class])
 
   // Load attendance for the selected date
   const loadAttendanceForDate = useCallback(async (date: string, classSection: any) => {
