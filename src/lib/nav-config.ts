@@ -217,7 +217,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: UtensilsCrossed, label: 'Food Service', path: '/admin/food-service' },
         { icon: Dumbbell, label: 'Athletics', path: '/admin/athletics' },
         { icon: Handshake, label: 'Alumni', path: '/admin/alumni' },
-        { icon: Cog, label: 'Platform', path: '/admin/platform' },
       ]
     },
     {
@@ -400,7 +399,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: UtensilsCrossed, label: 'Food Service', path: '/manager/food-service' },
         { icon: Dumbbell, label: 'Athletics', path: '/manager/athletics' },
         { icon: Handshake, label: 'Alumni', path: '/manager/alumni' },
-        { icon: Cog, label: 'Platform', path: '/manager/platform' },
       ]
     },
     {
