@@ -41,17 +41,16 @@ type ModalType =
   | { kind: 'edit-subject'; subject: Subject; classId: string }
   | null;
 
-const getHeaders = () => ({
-  'Content-Type': 'application/json',
-  Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-});
-
 async function localApiFetch(path: string, options: RequestInit = {}) {
-  const res = await fetch(`/api/v1${path}`, {
+  const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? '/api' : 'https://op-csconnect-backend-production.up.railway.app/api');
+  const token = localStorage.getItem('eduvault-token');
+  const userId = localStorage.getItem('eduvault-user-id');
+  const res = await fetch(`${API_BASE}/v1${path}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(userId ? { 'x-user-id': userId } : {}),
       ...(options.headers || {}),
     },
   });
