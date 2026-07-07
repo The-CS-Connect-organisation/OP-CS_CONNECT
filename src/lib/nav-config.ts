@@ -158,7 +158,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Academic',
       items: [
-        { icon: BookOpen, label: 'Homework', path: '/admin/homework' },
         { icon: FileText, label: 'Exams', path: '/admin/exams' },
         { icon: CreditCard, label: 'Fees & Billing', path: '/admin/fees' },
         { icon: BookOpen, label: 'SIS', path: '/admin/sis' },
@@ -227,7 +226,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: Stethoscope, label: 'School Clinic', path: '/admin/clinic' },
         { icon: Headphones, label: 'IT Helpdesk', path: '/admin/it-helpdesk' },
         { icon: Users, label: 'Manage Clubs', path: '/admin/clubs' },
-        { icon: Receipt, label: 'Fee Installments', path: '/admin/fee-installments' },
+        { icon: Receipt, label: 'Installments', path: '/admin/fees?tab=installments' },
       ]
     },
   ],
