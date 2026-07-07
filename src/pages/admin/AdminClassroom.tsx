@@ -269,41 +269,45 @@ export default function AdminClassroom() {
                               {cls.sections.map(sec => {
                                 const assignedTeacher = teachers.find(t => t.id === (sec as any).teacherId);
                                 return (
-                                <div key={sec.id} className="border rounded-md p-3 bg-card flex items-center justify-between">
-                                  <div className="min-w-0 flex-1">
-                                    <div className="font-medium text-sm">Section {sec.name}</div>
-                                    <div className="text-xs text-muted-foreground">{sec.studentCount}/{sec.capacity} students</div>
-                                    <div className="mt-1.5">
-                                      <select
-                                        value={(sec as any).teacherId || ''}
-                                        onChange={async (e) => {
-                                          const tid = e.target.value || undefined;
-                                          try {
-                                            await localApiFetch(`/sections/${sec.id}`, { method: 'PATCH', body: JSON.stringify({ teacherId: tid }) });
-                                            loadClasses();
-                                          } catch { alert('Failed to assign teacher'); }
-                                        }}
-                                        className="w-full text-xs border rounded px-1.5 py-1 bg-background"
-                                      >
-                                        <option value="">Unassigned</option>
-                                        {teachers.map(t => {
-                                          const isAssigned = assignedTeacherIds.has(t.id) && t.id !== (sec as any).teacherId;
-                                          return (
-                                            <option key={t.id} value={t.id} disabled={isAssigned}>
-                                              {t.name}{isAssigned ? ' (assigned elsewhere)' : ''}
-                                            </option>
-                                          );
-                                        })}
-                                      </select>
+                                <div key={sec.id} className="border rounded-md p-3 bg-card">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <div>
+                                      <span className="font-medium text-sm">Section {sec.name}</span>
+                                      <span className="ml-2 text-xs text-muted-foreground">{sec.studentCount}/{sec.capacity} students</span>
+                                    </div>
+                                    <div className="flex gap-1">
+                                      <button onClick={() => openModal({ kind: 'edit-section', section: sec, classId: cls.id })} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground" title="Edit section">
+                                        <Pencil className="h-3 w-3" />
+                                      </button>
+                                      <button onClick={() => handleDelete('section', sec.id, `Section ${sec.name}`)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive" title="Delete section">
+                                        <Trash2 className="h-3 w-3" />
+                                      </button>
                                     </div>
                                   </div>
-                                  <div className="flex gap-1 shrink-0">
-                                    <button onClick={() => openModal({ kind: 'edit-section', section: sec, classId: cls.id })} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground" title="Edit section">
-                                      <Pencil className="h-3 w-3" />
-                                    </button>
-                                    <button onClick={() => handleDelete('section', sec.id, `Section ${sec.name}`)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive" title="Delete section">
-                                      <Trash2 className="h-3 w-3" />
-                                    </button>
+                                  <div>
+                                    <label className="block text-[11px] font-medium text-muted-foreground mb-1">Assign Teacher</label>
+                                    <select
+                                      value={(sec as any).teacherId || ''}
+                                      onChange={async (e) => {
+                                        const tid = e.target.value || undefined;
+                                        try {
+                                          await localApiFetch(`/sections/${sec.id}`, { method: 'PATCH', body: JSON.stringify({ teacherId: tid }) });
+                                          loadClasses();
+                                        } catch { alert('Failed to assign teacher'); }
+                                      }}
+                                      className="w-full text-sm border rounded px-2 py-1.5 bg-background"
+                                    >
+                                      <option value="">— None —</option>
+                                      {teachers.length === 0 && <option disabled>No teachers found</option>}
+                                      {teachers.map(t => {
+                                        const isAssigned = assignedTeacherIds.has(t.id) && t.id !== (sec as any).teacherId;
+                                        return (
+                                          <option key={t.id} value={t.id} disabled={isAssigned}>
+                                            {t.name}{isAssigned ? ' (already assigned)' : ''}
+                                          </option>
+                                        );
+                                      })}
+                                    </select>
                                   </div>
                                 </div>
                               )})}
