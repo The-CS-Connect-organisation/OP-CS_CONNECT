@@ -1,8 +1,9 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { useAuthStore } from '@/lib/store'
+import { api } from '@/lib/api'
 import {
   BookOpen,
   Clock,
@@ -17,6 +18,7 @@ import {
   ChevronDown,
   MessageSquare,
   Paperclip,
+  Loader2,
 } from 'lucide-react'
 
 interface HomeworkItem {
@@ -35,116 +37,18 @@ interface HomeworkItem {
   subjectColor: string
 }
 
-const mockHomework: HomeworkItem[] = [
-  {
-    id: 'hw1',
-    title: 'Quadratic Equations Practice',
-    subject: 'Mathematics',
-    description: 'Solve problems 1-20 from Chapter 5: Quadratic Equations. Show all steps clearly.',
-    dueDate: '2026-02-20',
-    assignedDate: '2026-02-13',
-    status: 'pending',
-    maxScore: 50,
-    attachments: 2,
-    teacherName: 'Dr. Rajesh Gupta',
-    subjectColor: '#8b5cf6',
-  },
-  {
-    id: 'hw2',
-    title: 'Physics Lab Report - Ohm\'s Law',
-    subject: 'Physics',
-    description: 'Write a comprehensive lab report on the Ohm\'s Law experiment conducted in class.',
-    dueDate: '2026-02-18',
-    assignedDate: '2026-02-11',
-    status: 'submitted',
-    maxScore: 30,
-    attachments: 1,
-    teacherName: 'Prof. Sunita Verma',
-    subjectColor: '#3b82f6',
-  },
-  {
-    id: 'hw3',
-    title: 'Organic Chemistry Nomenclature',
-    subject: 'Chemistry',
-    description: 'Complete the nomenclature worksheet on alkanes, alkenes, and alkynes.',
-    dueDate: '2026-02-22',
-    assignedDate: '2026-02-15',
-    status: 'pending',
-    maxScore: 25,
-    attachments: 3,
-    teacherName: 'Mr. Anil Desai',
-    subjectColor: '#10b981',
-  },
-  {
-    id: 'hw4',
-    title: 'Essay: Modern Indian Poetry',
-    subject: 'English',
-    description: 'Write a 1000-word analytical essay on modern Indian poetry since 1950.',
-    dueDate: '2026-02-15',
-    assignedDate: '2026-02-08',
-    status: 'graded',
-    score: 36,
-    maxScore: 40,
-    feedback: 'Excellent analysis and structure. Could improve on citations.',
-    attachments: 0,
-    teacherName: 'Ms. Lakshmi Rao',
-    subjectColor: '#f59e0b',
-  },
-  {
-    id: 'hw5',
-    title: 'Data Structures - Linked Lists',
-    subject: 'Computer Science',
-    description: 'Implement singly and doubly linked lists with insertion, deletion, and traversal operations.',
-    dueDate: '2026-02-25',
-    assignedDate: '2026-02-17',
-    status: 'pending',
-    maxScore: 60,
-    attachments: 4,
-    teacherName: 'Mr. Vikash Singh',
-    subjectColor: '#6366f1',
-  },
-  {
-    id: 'hw6',
-    title: 'Cell Biology Diagrams',
-    subject: 'Biology',
-    description: 'Draw and label the structure of plant and animal cells, including all organelles.',
-    dueDate: '2026-02-17',
-    assignedDate: '2026-02-10',
-    status: 'late',
-    maxScore: 25,
-    attachments: 0,
-    teacherName: 'Dr. Meena Krishnan',
-    subjectColor: '#ec4899',
-  },
-  {
-    id: 'hw7',
-    title: 'Trigonometric Identities',
-    subject: 'Mathematics',
-    description: 'Prove 15 trigonometric identities from the worksheet. Use proper mathematical notation.',
-    dueDate: '2026-02-27',
-    assignedDate: '2026-02-20',
-    status: 'pending',
-    maxScore: 45,
-    attachments: 1,
-    teacherName: 'Dr. Rajesh Gupta',
-    subjectColor: '#8b5cf6',
-  },
-  {
-    id: 'hw8',
-    title: 'History Essay: Industrial Revolution',
-    subject: 'History',
-    description: 'Discuss the social and economic impact of the Industrial Revolution in Europe.',
-    dueDate: '2026-02-28',
-    assignedDate: '2026-02-21',
-    status: 'pending',
-    maxScore: 35,
-    attachments: 2,
-    teacherName: 'Mr. Amit Verma',
-    subjectColor: '#ef4444',
-  },
-]
-
-const subjects = ['All', 'Mathematics', 'Physics', 'Chemistry', 'English', 'Computer Science', 'Biology', 'History']
+const subjectColors: Record<string, string> = {
+  'Mathematics': '#8b5cf6',
+  'Math': '#8b5cf6',
+  'Physics': '#3b82f6',
+  'Chemistry': '#10b981',
+  'English': '#f59e0b',
+  'Computer Science': '#6366f1',
+  'CS': '#6366f1',
+  'Biology': '#ec4899',
+  'History': '#ef4444',
+  'General': '#64748b',
+}
 const statusFilters = ['all', 'pending', 'submitted', 'graded', 'late'] as const
 
 const statusConfig: Record<string, { label: string; icon: any; color: string; variant: string }> = {
@@ -181,11 +85,66 @@ export default function HomeworkPage() {
   const [activeSubject, setActiveSubject] = useState('All')
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [assignments, setAssignments] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState<string | null>(null)
 
   const isTeacherOrAdmin = user?.role === 'teacher' || user?.role === 'admin' || user?.role === 'manager'
 
+  useEffect(() => {
+    let mounted = true
+    async function fetchAssignments() {
+      try {
+        setLoading(true)
+        setFetchError(null)
+        const params: Record<string, string> = {}
+        if (user?.class) params.class = user.class
+        if (user?.id && user.role === 'student') params.studentId = user.id
+        const data = await api.getAssignments(params)
+        // Handle both plain array response and wrapped { success, assignments } format
+        const list = Array.isArray(data) ? data : (data?.assignments ?? [])
+        if (mounted) setAssignments(list)
+      } catch (err: any) {
+        console.error('Failed to fetch assignments:', err)
+        if (mounted) {
+          setAssignments([])
+          setFetchError(err?.message || 'Failed to load homework. Please try again.')
+        }
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+    if (user?.id) fetchAssignments()
+    else setLoading(false)
+    return () => { mounted = false }
+  }, [user?.id, user?.class, user?.role])
+
+  const homeworkItems: HomeworkItem[] = useMemo(() => {
+    return assignments.map((a: any) => ({
+      id: a.id,
+      title: a.title || 'Untitled Assignment',
+      subject: a.subject || a.subjectId || 'General',
+      description: a.description || '',
+      dueDate: a.dueDate || a.due_date || '',
+      assignedDate: a.createdAt || a.assignedDate || '',
+      status: a.studentStatus || 'pending',
+      score: a.scoredMarks ?? a.score,
+      maxScore: a.points || a.maxMarks || a.maxScore || 100,
+      feedback: a.feedback || null,
+      attachments: a.attachments || 0,
+      teacherName: a.teacherName || 'Teacher',
+      subjectColor: subjectColors[a.subject] || subjectColors[a.subjectId] || '#6366f1',
+    }))
+  }, [assignments])
+
+  const allSubjects = useMemo(() => {
+    const subs = new Set<string>()
+    homeworkItems.forEach(h => subs.add(h.subject))
+    return ['All', ...Array.from(subs).sort()]
+  }, [homeworkItems])
+
   const filteredHomework = useMemo(() => {
-    return mockHomework.filter((hw) => {
+    return homeworkItems.filter((hw) => {
       const matchesStatus = activeStatus === 'all' || hw.status === activeStatus
       const matchesSubject = activeSubject === 'All' || hw.subject === activeSubject
       const matchesSearch =
@@ -194,15 +153,16 @@ export default function HomeworkPage() {
         hw.teacherName.toLowerCase().includes(searchQuery.toLowerCase())
       return matchesStatus && matchesSubject && matchesSearch
     })
-  }, [activeStatus, activeSubject, searchQuery])
+  }, [homeworkItems, activeStatus, activeSubject, searchQuery])
 
   const stats = useMemo(() => {
-    const total = mockHomework.length
-    const completed = mockHomework.filter((h) => h.status === 'graded').length
-    const pending = mockHomework.filter((h) => h.status === 'pending').length
-    const late = mockHomework.filter((h) => h.status === 'late').length
-    return { total, completed, pending, late }
-  }, [])
+    const total = homeworkItems.length
+    const completed = homeworkItems.filter((h) => h.status === 'graded').length
+    const submitted = homeworkItems.filter((h) => h.status === 'submitted').length
+    const pending = homeworkItems.filter((h) => h.status === 'pending').length
+    const late = homeworkItems.filter((h) => h.status === 'late').length
+    return { total, completed: completed || submitted, pending, late }
+  }, [homeworkItems])
 
   return (
     <motion.div
@@ -277,7 +237,7 @@ export default function HomeworkPage() {
             onChange={(e) => setActiveSubject(e.target.value)}
             className="pl-10 pr-8 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500 transition-all appearance-none cursor-pointer"
           >
-            {subjects.map((s) => (
+            {allSubjects.map((s) => (
               <option key={s} value={s}>{s === 'All' ? 'All Subjects' : s}</option>
             ))}
           </select>
@@ -310,10 +270,23 @@ export default function HomeworkPage() {
         })}
       </motion.div>
 
+      {/* Loading State */}
+      {loading && (
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardContent className="py-16 text-center">
+              <Loader2 className="w-10 h-10 mx-auto mb-4 text-orange-500 animate-spin" />
+              <p className="text-muted-foreground text-lg font-medium">Loading homework...</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
       {/* Homework List */}
-      <motion.div variants={containerVariants} className="space-y-3">
-        <AnimatePresence mode="popLayout">
-          {filteredHomework.length === 0 ? (
+      {!loading && (
+        <motion.div variants={containerVariants} className="space-y-3">
+          <AnimatePresence mode="popLayout">
+            {filteredHomework.length === 0 ? (
             <motion.div
               key="empty"
               initial={{ opacity: 0 }}
@@ -325,9 +298,13 @@ export default function HomeworkPage() {
                   <BookOpen className="w-14 h-14 mx-auto mb-4 text-muted-foreground/30" />
                   <p className="text-muted-foreground text-lg font-medium">No homework found</p>
                   <p className="text-muted-foreground/60 text-sm mt-1">
-                    {searchQuery
-                      ? 'Try a different search term'
-                      : 'All caught up! No pending homework in this category'}
+                    {fetchError
+                      ? fetchError
+                      : searchQuery
+                        ? 'Try a different search term'
+                        : homeworkItems.length === 0
+                          ? 'No homework has been assigned yet. Check back later!'
+                          : 'All caught up! No pending homework in this category'}
                   </p>
                 </CardContent>
               </Card>
@@ -485,6 +462,7 @@ export default function HomeworkPage() {
           )}
         </AnimatePresence>
       </motion.div>
+      )}
     </motion.div>
   )
 }
