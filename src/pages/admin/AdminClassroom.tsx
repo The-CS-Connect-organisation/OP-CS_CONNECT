@@ -80,7 +80,23 @@ export default function AdminClassroom() {
   const [subjectName, setSubjectName] = useState('');
   const [subjectCode, setSubjectCode] = useState('');
   const [subjectElective, setSubjectElective] = useState(false);
+  const [subjectTeacherId, setSubjectTeacherId] = useState('');
   const [teachers, setTeachers] = useState<any[]>([]);
+
+  const PREDEFINED_SUBJECTS = [
+    { name: 'Mathematics', code: 'MATH' },
+    { name: 'Physics', code: 'PHY' },
+    { name: 'Chemistry', code: 'CHEM' },
+    { name: 'Biology', code: 'BIO' },
+    { name: 'English', code: 'ENG' },
+    { name: 'Computer Science', code: 'CS' },
+    { name: 'History', code: 'HIST' },
+    { name: 'Geography', code: 'GEO' },
+    { name: 'Art', code: 'ART' },
+    { name: 'Physical Education', code: 'PE' },
+    { name: 'Economics', code: 'ECON' },
+    { name: 'Accounting', code: 'ACCT' },
+  ];
 
   const assignedTeacherIds = new Set<string>();
   const teacherSectionMap = new Map<string, string>();
@@ -136,8 +152,8 @@ export default function AdminClassroom() {
     if (m?.kind === 'edit-class') { setClassName(m.cls.name); setClassGrade(String(m.cls.grade)); }
     if (m?.kind === 'add-section') { setSectionName(''); setSectionCapacity('40'); setSectionTeacherId(''); }
     if (m?.kind === 'edit-section') { setSectionName(m.section.name); setSectionCapacity(String(m.section.capacity)); setSectionTeacherId((m.section as any).teacherId || ''); }
-    if (m?.kind === 'add-subject') { setSubjectName(''); setSubjectCode(''); setSubjectElective(false); }
-    if (m?.kind === 'edit-subject') { setSubjectName(m.subject.name); setSubjectCode(m.subject.code); setSubjectElective(m.subject.isElective); }
+    if (m?.kind === 'add-subject') { setSubjectName(''); setSubjectCode(''); setSubjectElective(false); setSubjectTeacherId(''); }
+    if (m?.kind === 'edit-subject') { setSubjectName(m.subject.name); setSubjectCode(m.subject.code); setSubjectElective(m.subject.isElective); setSubjectTeacherId(m.subject.teacherId || ''); }
   }
 
   async function handleSubmit() {
@@ -158,9 +174,10 @@ export default function AdminClassroom() {
         await localApiFetch(`/sections/${modal.section.id}`, { method: 'PATCH', body: JSON.stringify({ name: sectionName.trim(), capacity: Number(sectionCapacity), teacherId: sectionTeacherId || undefined }) });
       } else if (modal.kind === 'add-subject') {
         if (!subjectName.trim() || !subjectCode.trim()) throw new Error('Name and code are required');
-        await localApiFetch('/subjects', { method: 'POST', body: JSON.stringify({ name: subjectName.trim(), code: subjectCode.trim(), classId: modal.classId, isElective: subjectElective }) });
+        if (!subjectTeacherId) throw new Error('Please select a teacher for this subject');
+        await localApiFetch('/subjects', { method: 'POST', body: JSON.stringify({ name: subjectName.trim(), code: subjectCode.trim(), classId: modal.classId, isElective: subjectElective, teacherId: subjectTeacherId }) });
       } else if (modal.kind === 'edit-subject') {
-        await localApiFetch(`/subjects/${modal.subject.id}`, { method: 'PATCH', body: JSON.stringify({ name: subjectName.trim(), code: subjectCode.trim(), isElective: subjectElective }) });
+        await localApiFetch(`/subjects/${modal.subject.id}`, { method: 'PATCH', body: JSON.stringify({ name: subjectName.trim(), code: subjectCode.trim(), isElective: subjectElective, teacherId: subjectTeacherId || undefined }) });
       }
 
       setModal(null);
@@ -321,7 +338,7 @@ export default function AdminClassroom() {
                           <div className="flex justify-between items-center mb-3">
                             <span className="text-sm font-medium">Subjects</span>
                             <button onClick={() => openModal({ kind: 'add-subject', classId: cls.id, className: cls.name })} className="flex items-center gap-1 text-xs bg-primary text-primary-foreground px-2.5 py-1.5 rounded-md hover:opacity-90">
-                              <Plus className="h-3 w-3" /> Add Subject
+                              <Plus className="h-3 w-3" /> Add Subject & Teacher
                             </button>
                           </div>
                           {cls.subjects.length === 0 ? (
@@ -447,12 +464,26 @@ export default function AdminClassroom() {
               {(modal.kind === 'add-subject' || modal.kind === 'edit-subject') && (
                 <>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Subject Name</label>
-                    <input value={subjectName} onChange={e => setSubjectName(e.target.value)} placeholder="e.g. Mathematics" className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <label className="block text-sm font-medium mb-1">Subject *</label>
+                    <select value={subjectName} onChange={e => {
+                      const subj = PREDEFINED_SUBJECTS.find(s => s.name === e.target.value);
+                      setSubjectName(e.target.value);
+                      setSubjectCode(subj?.code || '');
+                    }} className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
+                      <option value="">Select a subject...</option>
+                      {PREDEFINED_SUBJECTS.map(s => (
+                        <option key={s.name} value={s.name}>{s.name}</option>
+                      ))}
+                    </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Subject Code</label>
-                    <input value={subjectCode} onChange={e => setSubjectCode(e.target.value)} placeholder="e.g. C10-MAT" className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <label className="block text-sm font-medium mb-1">Assign Teacher *</label>
+                    <select value={subjectTeacherId} onChange={e => setSubjectTeacherId(e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
+                      <option value="">Select a teacher...</option>
+                      {teachers.map(t => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
                   </div>
                   <div className="flex items-center gap-2">
                     <input type="checkbox" id="elective" checked={subjectElective} onChange={e => setSubjectElective(e.target.checked)} className="h-4 w-4" />

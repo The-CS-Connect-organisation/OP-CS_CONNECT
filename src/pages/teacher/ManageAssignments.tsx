@@ -13,7 +13,8 @@ export default function TeacherManageAssignments() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [teacherClasses, setTeacherClasses] = useState<string[]>(['10-A']);
-  const [form, setForm] = useState({ title: '', description: '', subject: 'Math', class: '10-A', dueDate: '', points: 100 });
+  const teacherSubjects = (user?.subjects?.length ? user.subjects : ['Math', 'Science', 'English', 'History', 'Geography', 'Art']);
+  const [form, setForm] = useState({ title: '', description: '', subject: teacherSubjects[0] || 'Math', class: '10-A', dueDate: '', points: 100 });
 
   useEffect(() => {
     init();
@@ -100,7 +101,7 @@ export default function TeacherManageAssignments() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input type="text" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
             <select value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className="px-3 py-2 rounded-lg border bg-background">
-              {['Math', 'Science', 'English', 'History', 'Geography', 'Art'].map(s => <option key={s} value={s}>{s}</option>)}
+              {teacherSubjects.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
             <select value={form.class} onChange={(e) => setForm({ ...form, class: e.target.value })} className="px-3 py-2 rounded-lg border bg-background">
               {teacherClasses.map(c => <option key={c} value={c}>{c}</option>)}

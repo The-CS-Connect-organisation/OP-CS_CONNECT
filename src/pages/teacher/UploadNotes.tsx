@@ -11,11 +11,12 @@ import {
   File, FileUp, BookOpen
 } from "lucide-react";
 
-const SUBJECTS = ["Math", "Physics", "Chemistry", "English", "CS", "Biology"];
+const DEFAULT_SUBJECTS = ["Math", "Physics", "Chemistry", "English", "CS", "Biology"];
 const CLASSES = ["10-A", "10-B"];
 
 export default function UploadNotes() {
   const { user } = useAuthStore();
+  const teacherSubjects = (user?.subjects?.length ? user.subjects : DEFAULT_SUBJECTS);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [notes, setNotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -26,7 +27,7 @@ export default function UploadNotes() {
 
   const [form, setForm] = useState({
     title: "",
-    subject: "Math",
+    subject: (user?.subjects?.length ? user.subjects[0] : "Math"),
     class: "10-A",
     description: "",
     content: "",
@@ -141,7 +142,7 @@ export default function UploadNotes() {
           className="bg-background border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500"
         >
           <option value="all">All Subjects</option>
-          {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
+          {DEFAULT_SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
         <Button
           onClick={() => setShowForm(!showForm)}
@@ -180,7 +181,7 @@ export default function UploadNotes() {
                       onChange={(e) => setForm((p) => ({ ...p, subject: e.target.value }))}
                       className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500 mt-1"
                     >
-                      {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
+                      {teacherSubjects.map((s) => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
                   <div>

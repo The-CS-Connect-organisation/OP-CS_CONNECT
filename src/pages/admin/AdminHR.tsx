@@ -48,7 +48,8 @@ const DEPT_COLORS: Record<string, string> = {
 };
 
 const EMPTY_FORM = {
-  userId: '', employeeId: '', department: 'ACADEMIC' as string,
+  userId: '', firstName: '', lastName: '', email: '',
+  employeeId: '', department: 'ACADEMIC' as string,
   designation: '', dateOfJoining: '', qualification: '',
   specialization: '', experience: '', phone: '',
 };
@@ -182,18 +183,22 @@ function StaffDirectoryTab() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setFormError('');
-    if (!form.employeeId || !form.designation || !form.dateOfJoining) {
-      setFormError('Employee ID, Designation and Date of Joining are required.');
+    if (!form.firstName || !form.lastName || !form.email || !form.employeeId || !form.designation || !form.dateOfJoining) {
+      setFormError('First Name, Last Name, Email, Employee ID, Designation and Date of Joining are required.');
       return;
     }
     setSubmitting(true);
     try {
       const payload: Record<string, unknown> = {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
         employeeId: form.employeeId,
         department: form.department,
         designation: form.designation,
         dateOfJoining: form.dateOfJoining,
       };
+      if (form.phone) payload.phone = form.phone;
       if (form.qualification) payload.qualification = form.qualification;
       if (form.specialization) payload.specialization = form.specialization;
       if (form.experience) payload.experience = parseInt(form.experience);
@@ -221,6 +226,9 @@ function StaffDirectoryTab() {
     setEditingId(profile.id);
     setForm({
       userId: '',
+      firstName: profile.firstName || '',
+      lastName: profile.lastName || '',
+      email: profile.email || '',
       employeeId: profile.employeeId,
       department: profile.department || 'ACADEMIC',
       designation: profile.designation,
@@ -325,6 +333,20 @@ function StaffDirectoryTab() {
           <div className="bg-card rounded-xl p-6 w-full max-w-lg shadow-xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <h2 className="text-lg font-semibold mb-4">{editingId ? 'Edit Staff Profile' : 'Add Staff Profile'}</h2>
             <form onSubmit={handleSubmit} className="space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium mb-1">First Name *</label>
+                  <input value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} className="w-full border rounded-md px-3 py-2 text-sm bg-background" placeholder="John" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium mb-1">Last Name *</label>
+                  <input value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} className="w-full border rounded-md px-3 py-2 text-sm bg-background" placeholder="Doe" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1">Email *</label>
+                <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="w-full border rounded-md px-3 py-2 text-sm bg-background" placeholder="john@school.edu" />
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium mb-1">Employee ID *</label>
