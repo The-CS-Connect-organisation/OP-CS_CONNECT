@@ -37,25 +37,26 @@ interface HomeworkItem {
   subjectColor: string
 }
 
-const subjectColors: Record<string, string> = {
-  'Mathematics': '#8b5cf6',
-  'Math': '#8b5cf6',
-  'Physics': '#3b82f6',
-  'Chemistry': '#10b981',
-  'English': '#f59e0b',
-  'Computer Science': '#6366f1',
-  'CS': '#6366f1',
-  'Biology': '#ec4899',
-  'History': '#ef4444',
-  'General': '#64748b',
+const SUBJECT_HUES = [262, 217, 156, 180, 22, 48, 280, 142, 340, 190, 200];
+function getSubjectColor(subject: string): string {
+  let hash = 0;
+  for (let i = 0; i < subject.length; i++) {
+    hash = subject.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = SUBJECT_HUES[Math.abs(hash) % SUBJECT_HUES.length];
+  return `hsl(${hue}, 60%, 50%)`;
 }
-const statusFilters = ['all', 'pending', 'submitted', 'graded', 'late'] as const
 
-const statusConfig: Record<string, { label: string; icon: any; color: string; variant: string }> = {
-  pending: { label: 'Pending', icon: Clock, color: 'text-amber-500', variant: 'warning' },
-  submitted: { label: 'Submitted', icon: Send, color: 'text-blue-500', variant: 'info' },
-  graded: { label: 'Graded', icon: CheckCircle2, color: 'text-emerald-500', variant: 'success' },
-  late: { label: 'Late', icon: AlertCircle, color: 'text-red-500', variant: 'destructive' },
+const STATUS_FILTERS = ['all', 'pending', 'submitted', 'graded', 'late'] as const;
+
+function getStatusConfig(status: string): { label: string; icon: any; variant: string } {
+  switch (status) {
+    case 'pending': return { label: 'Pending', icon: Clock, variant: 'warning' };
+    case 'submitted': return { label: 'Submitted', icon: Send, variant: 'info' };
+    case 'graded': return { label: 'Graded', icon: CheckCircle2, variant: 'success' };
+    case 'late': return { label: 'Late', icon: AlertCircle, variant: 'destructive' };
+    default: return { label: 'Pending', icon: Clock, variant: 'warning' };
+  }
 }
 
 const containerVariants = {
@@ -133,7 +134,7 @@ export default function HomeworkPage() {
       feedback: a.feedback || null,
       attachments: a.attachments || 0,
       teacherName: a.teacherName || 'Teacher',
-      subjectColor: subjectColors[a.subject] || subjectColors[a.subjectId] || '#6366f1',
+      subjectColor: getSubjectColor(a.subject || a.subjectId || 'General'),
     }))
   }, [assignments])
 
@@ -247,10 +248,10 @@ export default function HomeworkPage() {
 
       {/* Status Tabs */}
       <motion.div variants={itemVariants} className="flex gap-2 overflow-x-auto pb-2">
-        {statusFilters.map((status) => {
+        {STATUS_FILTERS.map((status) => {
           const config = status === 'all'
             ? { label: 'All', icon: Filter, color: '' }
-            : statusConfig[status]
+            : getStatusConfig(status)
           const Icon = config.icon
           const isActive = activeStatus === status
           return (
@@ -311,7 +312,7 @@ export default function HomeworkPage() {
             </motion.div>
           ) : (
             filteredHomework.map((hw) => {
-              const statusConf = statusConfig[hw.status]
+              const statusConf = getStatusConfig(hw.status)
               const StatusIcon = statusConf.icon
               const daysInfo = getDaysRemaining(hw.dueDate)
               const isExpanded = expandedId === hw.id
