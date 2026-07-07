@@ -273,16 +273,28 @@ export default function AdminClassroom() {
                                   <div className="min-w-0 flex-1">
                                     <div className="font-medium text-sm">Section {sec.name}</div>
                                     <div className="text-xs text-muted-foreground">{sec.studentCount}/{sec.capacity} students</div>
-                                    <div className="mt-1">
-                                      {assignedTeacher ? (
-                                        <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-1.5 py-0.5 rounded font-medium">
-                                          Assigned — {assignedTeacher.name}
-                                        </span>
-                                      ) : (
-                                        <span className="inline-flex items-center gap-1 text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 px-1.5 py-0.5 rounded">
-                                          Unassigned
-                                        </span>
-                                      )}
+                                    <div className="mt-1.5">
+                                      <select
+                                        value={(sec as any).teacherId || ''}
+                                        onChange={async (e) => {
+                                          const tid = e.target.value || undefined;
+                                          try {
+                                            await localApiFetch(`/sections/${sec.id}`, { method: 'PATCH', body: JSON.stringify({ teacherId: tid }) });
+                                            loadClasses();
+                                          } catch { alert('Failed to assign teacher'); }
+                                        }}
+                                        className="w-full text-xs border rounded px-1.5 py-1 bg-background"
+                                      >
+                                        <option value="">Unassigned</option>
+                                        {teachers.map(t => {
+                                          const isAssigned = assignedTeacherIds.has(t.id) && t.id !== (sec as any).teacherId;
+                                          return (
+                                            <option key={t.id} value={t.id} disabled={isAssigned}>
+                                              {t.name}{isAssigned ? ' (assigned elsewhere)' : ''}
+                                            </option>
+                                          );
+                                        })}
+                                      </select>
                                     </div>
                                   </div>
                                   <div className="flex gap-1 shrink-0">
