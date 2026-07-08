@@ -553,7 +553,7 @@ export default function AdminClassroom() {
                   </div>
                   <div className="border-t pt-4">
                     <h3 className="text-sm font-semibold mb-3">Assign Subject Teachers</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-1">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       {PREDEFINED_SUBJECTS.map(subj => (
                         <div key={subj.name} className="flex items-center gap-2 p-2 rounded-lg border bg-muted/10">
                           <span className="text-sm font-medium min-w-[120px] shrink-0">{subj.name}</span>
@@ -562,7 +562,8 @@ export default function AdminClassroom() {
                             onChange={e => setSubjectTeachers(prev => ({ ...prev, [subj.name]: e.target.value }))}
                             className="flex-1 text-sm border rounded px-2 py-1.5 bg-background"
                           >
-                            <option value="">— None —</option>
+                            <option value="">— Not assigned —</option>
+                            <option value="none">— None —</option>
                             {teachers.map(t => (
                               <option key={t.id} value={t.id}>{t.name}</option>
                             ))}
