@@ -85,6 +85,7 @@ export default function AdminClassroom() {
   const [subjectElective, setSubjectElective] = useState(false);
   const [subjectTeacherId, setSubjectTeacherId] = useState('');
   const [subjectSectionId, setSubjectSectionId] = useState('');
+  const [subjectTeachers, setSubjectTeachers] = useState<Record<string, string>>({});
   const [teachers, setTeachers] = useState<any[]>([]);
 
   const PREDEFINED_SUBJECTS = [
@@ -154,7 +155,13 @@ export default function AdminClassroom() {
     setModal(m);
     if (m?.kind === 'add-class') { setClassName(''); setClassGrade(''); setClassTeacherId(''); }
     if (m?.kind === 'edit-class') { setClassName(m.cls.name); setClassGrade(String(m.cls.grade)); setClassTeacherId(m.cls.classTeacherId || ''); }
-    if (m?.kind === 'add-section') { setSectionName(''); setSectionCapacity('40'); setSectionTeacherId(''); }
+    if (m?.kind === 'add-section') {
+      setSectionName(''); setSectionCapacity('40'); setSectionTeacherId('');
+      const cls = classList.find(c => c.id === m.classId);
+      const initial: Record<string, string> = {};
+      cls?.subjects?.forEach(s => { initial[s.name] = s.teacherId || ''; });
+      setSubjectTeachers(initial);
+    }
     if (m?.kind === 'edit-section') { setSectionName(m.section.name); setSectionCapacity(String(m.section.capacity)); setSectionTeacherId((m.section as any).teacherId || ''); }
     if (m?.kind === 'add-subject') { setSubjectName(''); setSubjectCode(''); setSubjectElective(false); setSubjectTeacherId(''); setSubjectSectionId(''); }
     if (m?.kind === 'edit-subject') { setSubjectName(m.subject.name); setSubjectCode(m.subject.code); setSubjectElective(m.subject.isElective); setSubjectTeacherId(m.subject.teacherId || ''); setSubjectSectionId(m.subject.sectionId || ''); }
@@ -173,7 +180,19 @@ export default function AdminClassroom() {
         await localApiFetch(`/classes/${modal.cls.id}`, { method: 'PATCH', body: JSON.stringify({ name: className.trim(), grade: Number(classGrade), classTeacherId: classTeacherId || undefined }) });
       } else if (modal.kind === 'add-section') {
         if (!sectionName.trim()) throw new Error('Section name is required');
-        await localApiFetch('/sections', { method: 'POST', body: JSON.stringify({ name: sectionName.trim(), classId: modal.classId, capacity: Number(sectionCapacity), teacherId: sectionTeacherId || undefined }) });
+        const section = await localApiFetch('/sections', { method: 'POST', body: JSON.stringify({ name: sectionName.trim(), classId: modal.classId, capacity: Number(sectionCapacity), teacherId: sectionTeacherId || undefined }) });
+        const newSectionId = section.id;
+        const cls = classList.find(c => c.id === modal.classId);
+        for (const subjDef of PREDEFINED_SUBJECTS) {
+          const teacherId = subjectTeachers[subjDef.name];
+          if (!teacherId) continue;
+          const existing = cls?.subjects?.find(s => s.name === subjDef.name && (!s.sectionId || s.sectionId === newSectionId));
+          if (existing) {
+            await localApiFetch(`/subjects/${existing.id}`, { method: 'PATCH', body: JSON.stringify({ teacherId, sectionId: newSectionId }) });
+          } else {
+            await localApiFetch('/subjects', { method: 'POST', body: JSON.stringify({ name: subjDef.name, code: subjDef.code, classId: modal.classId, isElective: false, teacherId, sectionId: newSectionId }) });
+          }
+        }
       } else if (modal.kind === 'edit-section') {
         await localApiFetch(`/sections/${modal.section.id}`, { method: 'PATCH', body: JSON.stringify({ name: sectionName.trim(), capacity: Number(sectionCapacity), teacherId: sectionTeacherId || undefined }) });
       } else if (modal.kind === 'add-subject') {
@@ -441,7 +460,7 @@ export default function AdminClassroom() {
       {/* Modal */}
       {modal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setModal(null)}>
-          <div className="bg-card border rounded-xl shadow-xl w-full max-w-md mx-4 p-6" onClick={e => e.stopPropagation()}>
+          <div className="bg-card border rounded-xl shadow-xl w-full mx-4 p-6 max-h-[90vh] overflow-y-auto" style={{ maxWidth: modal?.kind === 'add-section' ? '640px' : '448px' }} onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">
                 {modal.kind === 'add-class' && 'Add Class'}
@@ -476,7 +495,7 @@ export default function AdminClassroom() {
                   </div>
                 </>
               )}
-              {(modal.kind === 'add-section' || modal.kind === 'edit-section') && (
+              {modal.kind === 'edit-section' && (
                 <>
                   <div>
                     <label className="block text-sm font-medium mb-1">Section Name</label>
@@ -500,6 +519,57 @@ export default function AdminClassroom() {
                         );
                       })}
                     </select>
+                  </div>
+                </>
+              )}
+
+              {modal.kind === 'add-section' && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Section Name</label>
+                      <input value={sectionName} onChange={e => setSectionName(e.target.value)} placeholder="e.g. A" className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">Capacity</label>
+                      <input type="number" min={1} value={sectionCapacity} onChange={e => setSectionCapacity(e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Assign Class Teacher</label>
+                    <select value={sectionTeacherId} onChange={e => setSectionTeacherId(e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
+                      <option value="">Select a class teacher...</option>
+                      {teachers.map(t => {
+                        const isAssigned = assignedTeacherIds.has(t.id) && t.id !== sectionTeacherId;
+                        const location = teacherSectionMap.get(t.id);
+                        return (
+                          <option key={t.id} value={t.id} disabled={isAssigned}>
+                            {t.name}{location ? ` (${location})` : ''}{isAssigned ? ' — already assigned' : ''}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div className="border-t pt-4">
+                    <h3 className="text-sm font-semibold mb-3">Assign Subject Teachers</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto pr-1">
+                      {PREDEFINED_SUBJECTS.map(subj => (
+                        <div key={subj.name} className="flex items-center gap-2 p-2 rounded-lg border bg-muted/10">
+                          <span className="text-sm font-medium min-w-[120px] shrink-0">{subj.name}</span>
+                          <select
+                            value={subjectTeachers[subj.name] || ''}
+                            onChange={e => setSubjectTeachers(prev => ({ ...prev, [subj.name]: e.target.value }))}
+                            className="flex-1 text-sm border rounded px-2 py-1.5 bg-background"
+                          >
+                            <option value="">— Not assigned —</option>
+                            {teachers.map(t => (
+                              <option key={t.id} value={t.id}>{t.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">Select teachers for subjects that will be taught in this section. Only subjects with a teacher assigned will be created.</p>
                   </div>
                 </>
               )}
