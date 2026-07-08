@@ -17,6 +17,7 @@ export interface User {
   classIds?: string[];
   routeId?: string;
   class?: string;
+  sectionId?: string;
   subjects?: string[];
   gpa?: number;
   attendance?: number;
@@ -331,11 +332,12 @@ export const useDataStore = create<DataState>()((set, get) => ({
 
       // Fetch non-essential data individually (don't let one failure block others)
       const className = student.class || '10-A';
+      const sectionId = useAuthStore.getState().user?.sectionId;
       const [subjects, events, rawClubs, rawAssignments, rawTimetable, messages, notifications] = await Promise.all([
         api.getSubjects().catch(() => []),
         api.getEvents().catch(() => []),
         api.getClubs().catch(() => []),
-        api.getAssignments({ class: className, studentId }).catch(() => []),
+        api.getAssignments({ class: className, studentId, ...(sectionId ? { sectionId } : {}) }).catch(() => []),
         api.getTimetable(className).catch(() => []),
         api.getMessages(studentId).catch(() => []),
         api.getNotifications(studentId).catch(() => []),
@@ -343,7 +345,11 @@ export const useDataStore = create<DataState>()((set, get) => ({
 
       const subjectMap: Record<string, string> = {};
       toArray(subjects).forEach((s: any) => { subjectMap[s.id] = s.name; });
-      const assignments = toArray(rawAssignments).map((a: any) => ({
+      const filteredAssignments = toArray(rawAssignments).filter((a: any) => {
+        const ids = a.sectionIds;
+        return !ids || ids.length === 0 || (sectionId && ids.includes(sectionId));
+      });
+      const assignments = filteredAssignments.map((a: any) => ({
         ...a,
         subject: subjectMap[a.subjectId] || a.subjectId,
         dueDate: a.dueDate,

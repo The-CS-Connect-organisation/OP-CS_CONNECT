@@ -100,10 +100,21 @@ export default function HomeworkPage() {
         setFetchError(null)
         const params: Record<string, string> = {}
         if (user?.class) params.class = user.class
-        if (user?.id && user.role === 'student') params.studentId = user.id
+        if (user?.id && user.role === 'student') {
+          params.studentId = user.id
+          if (user.sectionId) params.sectionId = user.sectionId
+        }
         const data = await api.getAssignments(params)
         // Handle both plain array response and wrapped { success, assignments } format
-        const list = Array.isArray(data) ? data : (data?.assignments ?? [])
+        let list = Array.isArray(data) ? data : (data?.assignments ?? [])
+        // Client-side section filter: if the assignment targets specific sections,
+        // only show it if the student belongs to one of those sections
+        if (user?.sectionId) {
+          list = list.filter((a: any) => {
+            const ids = a.sectionIds
+            return !ids || ids.length === 0 || ids.includes(user.sectionId)
+          })
+        }
         if (mounted) setAssignments(list)
       } catch (err: any) {
         console.error('Failed to fetch assignments:', err)
@@ -118,7 +129,7 @@ export default function HomeworkPage() {
     if (user?.id) fetchAssignments()
     else setLoading(false)
     return () => { mounted = false }
-  }, [user?.id, user?.class, user?.role])
+  }, [user?.id, user?.class, user?.role, user?.sectionId])
 
   const homeworkItems: HomeworkItem[] = useMemo(() => {
     return assignments.map((a: any) => ({

@@ -5,7 +5,28 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { ClipboardList, Plus, Edit, Trash2, Calendar, Users, FileText } from 'lucide-react';
+import { ClipboardList, Plus, Edit, Trash2, Calendar, Users, FileText, CheckSquare, Square } from 'lucide-react';
+
+const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? '/api' : 'https://op-csconnect-backend-production.up.railway.app/api');
+
+async function localApiFetch(path: string, options: RequestInit = {}) {
+  const token = localStorage.getItem('eduvault-token');
+  const userId = localStorage.getItem('eduvault-user-id');
+  const res = await fetch(`${API_BASE}/v1${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(userId ? { 'x-user-id': userId } : {}),
+      ...(options.headers || {}),
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Request failed');
+  }
+  return res.json();
+}
 
 export default function TeacherManageAssignments() {
   const { user } = useAuthStore();
@@ -13,6 +34,8 @@ export default function TeacherManageAssignments() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [teacherClasses, setTeacherClasses] = useState<string[]>(['10-A']);
+  const [classSections, setClassSections] = useState<Record<string, { id: string; name: string }[]>>({});
+  const [selectedSections, setSelectedSections] = useState<string[]>([]);
   const teacherSubjects = (user?.subjects?.length ? user.subjects : ['Math', 'Physics', 'Chemistry', 'Biology', 'English', 'Computer Science', 'History', 'Geography', 'Art', 'Physical Education', 'Economics', 'Accounting']);
   const [form, setForm] = useState({ title: '', description: '', subject: teacherSubjects[0] || 'Math', class: '10-A', dueDate: '', points: 100 });
 
@@ -30,7 +53,20 @@ export default function TeacherManageAssignments() {
         }
       }
     } catch {}
+    loadSections();
     loadAssignments();
+  };
+
+  const loadSections = async () => {
+    try {
+      const data = await localApiFetch('/classes/detailed');
+      const map: Record<string, { id: string; name: string }[]> = {};
+      (Array.isArray(data) ? data : []).forEach((cls: any) => {
+        const sections = (cls.sections || []).map((s: any) => ({ id: s.id, name: s.name }));
+        if (sections.length > 0) map[cls.name] = sections;
+      });
+      setClassSections(map);
+    } catch {}
   };
 
   const loadAssignments = async () => {
@@ -39,10 +75,20 @@ export default function TeacherManageAssignments() {
       const data = await api.getAssignments();
       setAssignments(Array.isArray(data) ? data : []);
     } catch {
-      // error
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleClassChange = (className: string) => {
+    setForm({ ...form, class: className });
+    setSelectedSections([]);
+  };
+
+  const toggleSection = (sectionId: string) => {
+    setSelectedSections(prev =>
+      prev.includes(sectionId) ? prev.filter(id => id !== sectionId) : [...prev, sectionId]
+    );
   };
 
   const handleCreate = async () => {
@@ -54,13 +100,14 @@ export default function TeacherManageAssignments() {
         subject: form.subject,
         className: form.class,
         dueDate: form.dueDate,
-        points: form.points
+        points: form.points,
+        sectionIds: selectedSections.length > 0 ? selectedSections : undefined,
       });
       setAssignments(prev => [...prev, newAssignment]);
       setForm({ title: '', description: '', subject: 'Math', class: teacherClasses[0] || '10-A', dueDate: '', points: 100 });
+      setSelectedSections([]);
       setShowForm(false);
     } catch {
-      // error
     }
   };
 
@@ -69,7 +116,6 @@ export default function TeacherManageAssignments() {
       await api.deleteAssignment(id);
       setAssignments(prev => prev.filter(a => a.id !== id));
     } catch {
-      // error
     }
   };
 
@@ -78,9 +124,11 @@ export default function TeacherManageAssignments() {
       await api.publishAssignment(id);
       setAssignments(prev => prev.map(a => a.id === id ? { ...a, published: true } : a));
     } catch {
-      // error
     }
   };
+
+  const currentSections = classSections[form.class] || [];
+  const showSectionPicker = currentSections.length > 0;
 
   return (
     <div className="p-6 space-y-6">
@@ -103,12 +151,38 @@ export default function TeacherManageAssignments() {
             <select value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className="px-3 py-2 rounded-lg border bg-background">
               {teacherSubjects.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-            <select value={form.class} onChange={(e) => setForm({ ...form, class: e.target.value })} className="px-3 py-2 rounded-lg border bg-background">
+            <select value={form.class} onChange={(e) => handleClassChange(e.target.value)} className="px-3 py-2 rounded-lg border bg-background">
               {teacherClasses.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
             <input type="date" value={form.dueDate} onChange={(e) => setForm({ ...form, dueDate: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
             <input type="number" placeholder="Total Marks" value={form.points} onChange={(e) => setForm({ ...form, points: parseInt(e.target.value) || 100 })} className="px-3 py-2 rounded-lg border bg-background" />
             <textarea placeholder="Description" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="px-3 py-2 rounded-lg border bg-background md:col-span-2" />
+            {showSectionPicker && (
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-2">Assign to Sections</label>
+                <p className="text-xs text-muted-foreground mb-2">Select which sections receive this assignment (leave empty for all)</p>
+                <div className="flex flex-wrap gap-2">
+                  {currentSections.map(sec => {
+                    const isSelected = selectedSections.includes(sec.id);
+                    return (
+                      <button
+                        key={sec.id}
+                        type="button"
+                        onClick={() => toggleSection(sec.id)}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium border transition-all ${
+                          isSelected
+                            ? 'bg-orange-50 dark:bg-orange-900/20 border-orange-300 dark:border-orange-700 text-orange-700 dark:text-orange-400'
+                            : 'bg-background border-border text-muted-foreground hover:border-orange-200 hover:text-foreground'
+                        }`}
+                      >
+                        {isSelected ? <CheckSquare className="w-4 h-4" /> : <Square className="w-4 h-4" />}
+                        Section {sec.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex gap-2 mt-4">
             <Button onClick={handleCreate}>Create</Button>
@@ -138,6 +212,12 @@ export default function TeacherManageAssignments() {
                     <span className="flex items-center gap-1"><Calendar className="w-4 h-4" />Due: {assignment.dueDate ? new Date(assignment.dueDate).toLocaleDateString() : 'Not set'}</span>
                     <span className="flex items-center gap-1"><Users className="w-4 h-4" />{(assignment.submissions || []).length} submissions</span>
                     <span className="flex items-center gap-1"><ClipboardList className="w-4 h-4" />{assignment.points || assignment.maxMarks} marks</span>
+                    {assignment.sectionIds?.length > 0 && (
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <CheckSquare className="w-3.5 h-3.5" />
+                        {assignment.sectionIds.length} section(s)
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex gap-2">
