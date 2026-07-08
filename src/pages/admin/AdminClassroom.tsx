@@ -315,7 +315,7 @@ export default function AdminClassroom() {
                                     </div>
                                   </div>
                                   <div>
-                                    <label className="block text-[11px] font-medium text-muted-foreground mb-1">Assign Teacher</label>
+                                    <label className="block text-[11px] font-medium text-muted-foreground mb-1">Assign Class Teacher</label>
                                     <select
                                       value={(sec as any).teacherId || ''}
                                       onChange={async (e) => {
@@ -473,9 +473,9 @@ export default function AdminClassroom() {
                     <input type="number" min={1} value={sectionCapacity} onChange={e => setSectionCapacity(e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Assign Teacher</label>
+                    <label className="block text-sm font-medium mb-1">Assign Class Teacher</label>
                     <select value={sectionTeacherId} onChange={e => setSectionTeacherId(e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
-                      <option value="">Select a teacher...</option>
+                      <option value="">Select a class teacher...</option>
                       {teachers.map(t => {
                         const isAssigned = assignedTeacherIds.has(t.id) && t.id !== sectionTeacherId;
                         const location = teacherSectionMap.get(t.id);

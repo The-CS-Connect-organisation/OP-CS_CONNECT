@@ -26,6 +26,7 @@ export default function TeacherTimetable() {
   const [teachers, setTeachers] = useState<DropdownOption[]>([]);
   const [courses, setCourses] = useState<DropdownOption[]>([]);
   const [rooms, setRooms] = useState<DropdownOption[]>([]);
+  const [teacherClassMap, setTeacherClassMap] = useState<Record<string, boolean>>({});
 
   const teacherId = user?.id || '';
 
@@ -95,6 +96,13 @@ export default function TeacherTimetable() {
         setIsClassTeacher(first.classTeacherId === teacherId || first.isClassTeacher);
       }
 
+      const map: Record<string, boolean> = {};
+      assignedClasses.forEach((c: any) => {
+        const name = c.name || c.className;
+        if (name) map[name] = c.classTeacherId === teacherId || c.isClassTeacher;
+      });
+      setTeacherClassMap(map);
+
       const names = assignedClasses.map((c: any) => c.name || c.className).filter(Boolean);
       setClassList(names);
 
@@ -122,7 +130,7 @@ export default function TeacherTimetable() {
     if (cls) {
       setSelectedClassId(cls.id);
       setSelectedClassName(className);
-      setIsClassTeacher(cls.classTeacherId === teacherId || cls.isClassTeacher);
+      setIsClassTeacher(teacherClassMap[className] || cls.classTeacherId === teacherId || cls.isClassTeacher);
     }
   };
 
