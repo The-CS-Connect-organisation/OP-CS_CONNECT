@@ -1,4 +1,5 @@
 import Loader from "./components/ui/loader"
+import ErrorBoundary from './components/ui/ErrorBoundary'
 
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
@@ -197,12 +198,13 @@ function App() {
   const roleGuard = (allowedRoles: string[]) => {
     if (!isAuthenticated || !user) return <Navigate to="/login" replace />
     if (!allowedRoles.includes(user.role)) return <Navigate to={getDashboardRoute()} replace />
-    return <DashboardLayout />
+    return <ErrorBoundary><DashboardLayout /></ErrorBoundary>
   }
 
   return (
     <div className="aurora-bg">
-      <Suspense fallback={<div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-gray-900"><Loader variant="dots" size="lg" /></div>}>
+      <ErrorBoundary>
+        <Suspense fallback={<div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-gray-900"><Loader variant="dots" size="lg" /></div>}>
         <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/about" element={<AboutPage />} />
@@ -441,6 +443,7 @@ function App() {
           <Route path="*" element={<RouteMissRedirect />} />
         </Routes>
       </Suspense>
+      </ErrorBoundary>
     </div>
   )
 }

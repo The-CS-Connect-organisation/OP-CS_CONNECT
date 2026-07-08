@@ -6,6 +6,29 @@ import App from './App'
 import './index.css'
 import { useThemeStore } from './lib/store'
 
+// Global handlers to prevent blank white screen from chunk load failures
+window.addEventListener('unhandledrejection', (event) => {
+  if (
+    event.reason?.name === 'ChunkLoadError' ||
+    /Loading chunk .* failed/.test(event.reason?.message) ||
+    /Failed to fetch dynamically/.test(event.reason?.message)
+  ) {
+    event.preventDefault()
+    console.warn('[ChunkLoadError] Caught globally — user can retry via ErrorBoundary')
+  }
+})
+
+window.addEventListener('error', (event) => {
+  if (
+    event.error?.name === 'ChunkLoadError' ||
+    /Loading chunk .* failed/.test(event.error?.message) ||
+    /Failed to fetch dynamically/.test(event.error?.message)
+  ) {
+    event.preventDefault()
+    console.warn('[ChunkLoadError] Caught globally — user can retry via ErrorBoundary')
+  }
+})
+
 function ThemeInitializer() {
   const isDark = useThemeStore((s) => s.isDark)
   React.useEffect(() => {
@@ -16,15 +39,12 @@ function ThemeInitializer() {
     }
   }, [isDark])
 
-
   return null
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <HashRouter>
-      <ThemeInitializer />
-      <App />
-    </HashRouter>
-  </React.StrictMode>
+  <HashRouter>
+    <ThemeInitializer />
+    <App />
+  </HashRouter>
 )
