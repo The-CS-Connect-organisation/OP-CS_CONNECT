@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Plus, Sparkles } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { api } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
-import { TimetableView, BulkWizard } from '../../components/timetable';
-import type { TimetableEntry, DropdownOption, SubjectTeacherMap } from '../../components/timetable';
+import { GridView } from '../../components/timetable';
+import type { TimetableEntry, SubjectTeacherMap } from '../../components/timetable';
 import { DAYS, DEFAULT_PERIODS } from '../../components/timetable';
 
 const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? '/api' : 'https://op-csconnect-backend-production.up.railway.app/api');
@@ -28,242 +28,168 @@ async function localApiFetch(path: string, options: RequestInit = {}) {
   return res.json();
 }
 
-interface User { id: string; name: string; email: string; role: string; }
-interface Course { id: string; name: string; code: string; }
-interface Room { id: string; name: string; }
-
-const extractArray = (data: any): any[] => {
-  if (Array.isArray(data)) return data;
-  if (data && Array.isArray(data.data)) return data.data;
-  if (data && Array.isArray(data.users)) return data.users;
-  if (data && Array.isArray(data.courses)) return data.courses;
-  if (data && Array.isArray(data.rooms)) return data.rooms;
-  return [];
-};
+interface SectionOption { id: string; label: string; }
 
 export default function AdminTimetable() {
   const [entries, setEntries] = useState<TimetableEntry[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedClass, setSelectedClass] = useState('');
-  const [classList, setClassList] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedSection, setSelectedSection] = useState('');
+  const [sectionOptions, setSectionOptions] = useState<SectionOption[]>([]);
   const [subjectTeacherMap, setSubjectTeacherMap] = useState<SubjectTeacherMap>({});
-  const [showForm, setShowForm] = useState(false);
-  const [showWizard, setShowWizard] = useState(false);
-  const [form, setForm] = useState({ day: 'Monday', time: '09:00', subject: '', teacher: '', room: '' });
+  const [showCreate, setShowCreate] = useState(false);
+  const [createName, setCreateName] = useState('');
+  const [createSection, setCreateSection] = useState('');
+  const [timetableName, setTimetableName] = useState('');
 
-  useEffect(() => { loadAllData(); }, []);
-  useEffect(() => { if (selectedClass) loadTimetable(); }, [selectedClass]);
+  useEffect(() => { loadSections(); }, []);
 
-  const loadAllData = async () => {
-    setLoading(true);
+  const loadSections = async () => {
     try {
-      const [classDetailed, ...rest] = await Promise.allSettled([
-        localApiFetch('/classes/detailed'),
-        api.getUsers(),
-        api.getCourses(),
-        api.getRooms(),
-        selectedClass ? api.getTimetable(selectedClass) : Promise.resolve([]),
-      ]);
-      const [usersResult, coursesResult, roomsResult, timetableResult] = rest;
-
-      // Build class list and subject→teacher map from actual class data
-      let classNames: string[] = [];
-      const subjectTeacher: SubjectTeacherMap = {};
-
-      if (classDetailed.status === 'fulfilled') {
-        const detailed = Array.isArray(classDetailed.value) ? classDetailed.value : [];
-        classNames = detailed.map((c: any) => c.name).filter(Boolean);
-        detailed.forEach((cls: any) => {
-          (cls.subjects || []).forEach((subj: any) => {
-            if (subj.teacherId && subj.name) {
-              subjectTeacher[subj.name] = subj.teacherId;
-            }
-          });
+      const detailed = await localApiFetch('/classes/detailed');
+      const opts: SectionOption[] = [];
+      (Array.isArray(detailed) ? detailed : []).forEach((cls: any) => {
+        (cls.sections || []).forEach((sec: any) => {
+          opts.push({ id: sec.id, label: `${cls.name} — Section ${sec.name}` });
         });
-      }
-
-      let usersData = usersResult.status === 'fulfilled' ? extractArray(usersResult.value) : [];
-      let coursesData = coursesResult.status === 'fulfilled' ? extractArray(coursesResult.value) : [];
-      let roomsData = roomsResult.status === 'fulfilled' ? extractArray(roomsResult.value) : [];
-      let timetableData = timetableResult.status === 'fulfilled' ? extractArray(timetableResult.value) : [];
-
-      if (usersData.length === 0) {
-        usersData = [
-          { id: 't1', name: 'Mr. Smith', email: 'smith@school.com', role: 'teacher' },
-          { id: 't2', name: 'Ms. Johnson', email: 'johnson@school.com', role: 'teacher' }
-        ];
-      }
-      if (coursesData.length === 0) {
-        coursesData = [
-          { id: 'c1', name: 'Mathematics', code: 'MATH' },
-          { id: 'c2', name: 'Physics', code: 'PHY' },
-          { id: 'c3', name: 'English', code: 'ENG' },
-          { id: 'c4', name: 'Chemistry', code: 'CHEM' },
-          { id: 'c5', name: 'Computer Science', code: 'CS' }
-        ];
-      }
-      if (roomsData.length === 0) {
-        roomsData = [
-          { id: 'r1', name: 'Room 101' },
-          { id: 'r2', name: 'Room 102' },
-          { id: 'r3', name: 'Science Lab' }
-        ];
-      }
-
-      // Convert teacher IDs in subjectTeacherMap to names
-      const teacherIdToName: Record<string, string> = {};
-      usersData.forEach((u: any) => { teacherIdToName[u.id] = u.name; });
-      Object.keys(subjectTeacher).forEach(subj => {
-        const id = subjectTeacher[subj];
-        if (teacherIdToName[id]) subjectTeacher[subj] = teacherIdToName[id];
       });
-
-      setSubjectTeacherMap(subjectTeacher);
-      setUsers(usersData);
-      setCourses(coursesData);
-      setRooms(roomsData);
-      setEntries(timetableData as TimetableEntry[]);
-
-      if (classNames.length > 0) {
-        setClassList(classNames);
-        if (!selectedClass) setSelectedClass(classNames[0]);
-      } else {
-        const classes = [...new Set<string>(
-          coursesData.map((c: any) => c.class || c.name?.split(' ')[0]).filter(Boolean)
-        )];
-        if (classes.length === 0) classes.push(...new Set<string>(timetableData.map((e: any) => e.class).filter(Boolean)));
-        if (classes.length === 0) classes.push('10-A', '10-B', '11-A', '11-B', '12-A', '12-B');
-        setClassList(classes);
-        if (!selectedClass && classes.length > 0) setSelectedClass(classes[0]);
-      }
-    } catch {
-      setClassList(['10-A', '10-B', '11-A', '11-B', '12-A', '12-B']);
-      if (!selectedClass) setSelectedClass('10-A');
-    } finally { setLoading(false); }
+      setSectionOptions(opts);
+    } catch { setSectionOptions([]); }
   };
 
-  const loadTimetable = async () => {
-    setLoading(true);
-    try { setEntries(extractArray(await api.getTimetable(selectedClass)) as TimetableEntry[]); }
-    catch { setEntries([]); }
-    finally { setLoading(false); }
-  };
-
-  const handleAdd = async () => {
-    if (!form.subject || !form.teacher) return;
+  const loadSectionTeachers = async (sectionLabel: string) => {
     try {
-      const newEntry = await api.createTimetableEntry({ ...form, class: selectedClass });
-      setEntries(prev => [...prev, newEntry]);
-      setShowForm(false);
-      setForm({ day: 'Monday', time: '09:00', subject: '', teacher: '', room: '' });
-    } catch (err) { console.error('[AdminTimetable] Failed to add entry:', err); }
+      const detailed = await localApiFetch('/classes/detailed');
+      const usersData = await api.getUsers().catch(() => []);
+      const teachers = Array.isArray(usersData) ? usersData : usersData?.data ?? [];
+      const teacherIdToName: Record<string, string> = {};
+      teachers.forEach((u: any) => { teacherIdToName[u.id] = u.name; });
+
+      const map: SubjectTeacherMap = {};
+      (Array.isArray(detailed) ? detailed : []).forEach((cls: any) => {
+        (cls.subjects || []).forEach((subj: any) => {
+          if (subj.teacherId && subj.name) {
+            const sectionMatch = !subj.sectionId ||
+              cls.sections?.some((s: any) => s.id === subj.sectionId && `${cls.name} — Section ${s.name}` === sectionLabel);
+            if (sectionMatch) {
+              map[subj.name] = teacherIdToName[subj.teacherId] || subj.teacherId;
+            }
+          }
+        });
+      });
+      setSubjectTeacherMap(map);
+    } catch { setSubjectTeacherMap({}); }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleCreate = async () => {
+    if (!createName.trim() || !createSection) return;
+    const sec = sectionOptions.find(s => s.id === createSection);
+    if (!sec) return;
+    setTimetableName(createName.trim());
+    setSelectedSection(sec.label);
+    setShowCreate(false);
+    setCreateName('');
+    setCreateSection('');
+    setEntries([]);
+    await loadSectionTeachers(sec.label);
+  };
+
+  const handleAssignSlot = async (day: string, time: string, data: { teacher: string; subject: string; room: string }) => {
+    try {
+      const newEntry = await api.createTimetableEntry({ ...data, day, time, class: selectedSection });
+      setEntries(prev => [...prev, newEntry]);
+    } catch (err) { console.error('[AdminTimetable] Failed to assign slot:', err); }
+  };
+
+  const handleDeleteEntry = async (id: string) => {
     try {
       await api.deleteTimetableEntry(id);
       setEntries(prev => prev.filter(e => e.id !== id));
     } catch (err) { console.error('[AdminTimetable] Failed to delete entry:', err); }
   };
 
-  const handleAssignSlot = async (day: string, time: string, data: { teacher: string; subject: string; room: string }) => {
-    try {
-      const newEntry = await api.createTimetableEntry({ ...data, day, time, class: selectedClass });
-      setEntries(prev => [...prev, newEntry]);
-    } catch (err) { console.error('[AdminTimetable] Failed to assign slot:', err); }
-  };
-
-  const handleBulkSave = async (newEntries: Omit<TimetableEntry, 'id'>[]) => {
-    try {
-      const created = await Promise.all(newEntries.map(e => api.createTimetableEntry(e)));
-      setEntries(prev => [...prev, ...created]);
-      setShowWizard(false);
-    } catch (err) { console.error('[AdminTimetable] Failed to bulk save:', err); }
-  };
-
-  const teachers: DropdownOption[] = users.filter(u => u.role?.toLowerCase() === 'teacher').map(t => ({ id: t.id, name: t.name }));
-  const courseOpts: DropdownOption[] = courses.map(c => ({ id: c.id, name: c.name }));
-  const roomOpts: DropdownOption[] = rooms.map(r => ({ id: r.id, name: r.name }));
+  const courseOpts = Object.keys(subjectTeacherMap).map(name => ({ id: name, name }));
 
   return (
     <div className="p-6 space-y-6">
-      {showWizard && (
-        <BulkWizard
-          classList={classList}
-          teachers={teachers}
-          courses={courseOpts}
-          rooms={roomOpts}
-          onSave={handleBulkSave}
-          onClose={() => setShowWizard(false)}
-        />
-      )}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">Timetable Manager</h1>
+          <p className="text-muted-foreground text-sm mt-1">Create and manage class timetables</p>
+        </div>
+        <Button onClick={() => setShowCreate(true)}>
+          <Plus className="w-4 h-4 mr-2" /> Create Timetable
+        </Button>
+      </div>
 
-      <TimetableView
-        entries={entries}
-        loading={loading}
-        classList={classList}
-        selectedClass={selectedClass}
-        onClassChange={setSelectedClass}
-        title="Timetable Manager"
-        subtitle="Manage school timetable — class teachers can also edit from their panel"
-        crud={{
-          onDeleteEntry: handleDelete,
-          onAssignSlot: handleAssignSlot,
-        }}
-        teachers={teachers}
-        courses={courseOpts}
-        rooms={roomOpts}
-        subjectTeacherMap={subjectTeacherMap}
-      />
-
-      {showForm && (
-        <Card className="p-4">
-          <h3 className="font-semibold mb-4">Add Timetable Entry</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <select value={form.day} onChange={e => setForm({ ...form, day: e.target.value })} className="px-3 py-2 rounded-lg border bg-background">
-              {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
-            </select>
-            <select value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} className="px-3 py-2 rounded-lg border bg-background">
-              {DEFAULT_PERIODS.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
-            <select value={form.subject} onChange={e => {
-              const val = e.target.value;
-              setForm(prev => ({
-                ...prev,
-                subject: val,
-                teacher: subjectTeacherMap[val] || prev.teacher,
-              }));
-            }} className="px-3 py-2 rounded-lg border bg-background">
-              <option value="">Select subject</option>
-              {courseOpts.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
-            </select>
-            <select value={form.teacher} onChange={e => setForm({ ...form, teacher: e.target.value })} className="px-3 py-2 rounded-lg border bg-background">
-              <option value="">Select teacher</option>
-              {teachers.map(t => <option key={t.id} value={t.name}>{t.name}</option>)}
-            </select>
-            <select value={form.room} onChange={e => setForm({ ...form, room: e.target.value })} className="px-3 py-2 rounded-lg border bg-background">
-              <option value="">Select room</option>
-              {roomOpts.map(r => <option key={r.id} value={r.name}>{r.name}</option>)}
-            </select>
-          </div>
-          <div className="flex gap-2 mt-4">
-            <Button onClick={handleAdd}>Add</Button>
-            <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
+      {!timetableName && !loading && (
+        <Card>
+          <div className="py-16 text-center">
+            <p className="text-muted-foreground text-lg font-medium">No timetable created yet</p>
+            <p className="text-muted-foreground/60 text-sm mt-1">Click "Create Timetable" to get started</p>
           </div>
         </Card>
       )}
 
-      <div className="flex gap-2">
-        <Button onClick={() => setShowForm(prev => !prev)}>
-          <Plus className="w-4 h-4 mr-2" />{showForm ? 'Close Form' : 'Add Entry'}
-        </Button>
-        <Button variant="outline" onClick={() => setShowWizard(true)}>
-          <Sparkles className="w-4 h-4 mr-2" />Generate
-        </Button>
-      </div>
+      {timetableName && (
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900/30">
+              <Plus className="w-5 h-5 text-orange-500" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold">{timetableName}</h2>
+              <p className="text-sm text-muted-foreground">{selectedSection}</p>
+            </div>
+          </div>
+
+          <Card className="p-4">
+            <GridView
+              entries={entries}
+              timeSlots={DEFAULT_PERIODS}
+              onAssignSlot={handleAssignSlot}
+              onDeleteEntry={handleDeleteEntry}
+              courses={courseOpts}
+              subjectTeacherMap={subjectTeacherMap}
+            />
+          </Card>
+        </div>
+      )}
+
+      {showCreate && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setShowCreate(false)}>
+          <div className="bg-card border rounded-xl shadow-xl w-full max-w-md mx-4 p-6" onClick={e => e.stopPropagation()}>
+            <h2 className="text-lg font-semibold mb-4">Create Timetable</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Timetable Name</label>
+                <input
+                  value={createName}
+                  onChange={e => setCreateName(e.target.value)}
+                  placeholder="e.g. Term 1 Timetable"
+                  className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Section</label>
+                <select
+                  value={createSection}
+                  onChange={e => setCreateSection(e.target.value)}
+                  className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="">Select a section...</option>
+                  {sectionOptions.map(s => (
+                    <option key={s.id} value={s.id}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button onClick={() => setShowCreate(false)} className="flex-1 border rounded-md py-2 text-sm text-muted-foreground hover:bg-muted">Cancel</button>
+                <button onClick={handleCreate} disabled={!createName.trim() || !createSection} className="flex-1 bg-primary text-primary-foreground rounded-md py-2 text-sm hover:opacity-90 disabled:opacity-60">Create</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
