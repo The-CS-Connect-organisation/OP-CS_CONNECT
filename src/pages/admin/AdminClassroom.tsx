@@ -21,6 +21,7 @@ interface Subject {
   code: string;
   isElective: boolean;
   teacherId?: string;
+  sectionId?: string;
 }
 
 interface ClassData {
@@ -83,6 +84,7 @@ export default function AdminClassroom() {
   const [subjectCode, setSubjectCode] = useState('');
   const [subjectElective, setSubjectElective] = useState(false);
   const [subjectTeacherId, setSubjectTeacherId] = useState('');
+  const [subjectSectionId, setSubjectSectionId] = useState('');
   const [teachers, setTeachers] = useState<any[]>([]);
 
   const PREDEFINED_SUBJECTS = [
@@ -154,8 +156,8 @@ export default function AdminClassroom() {
     if (m?.kind === 'edit-class') { setClassName(m.cls.name); setClassGrade(String(m.cls.grade)); setClassTeacherId(m.cls.classTeacherId || ''); }
     if (m?.kind === 'add-section') { setSectionName(''); setSectionCapacity('40'); setSectionTeacherId(''); }
     if (m?.kind === 'edit-section') { setSectionName(m.section.name); setSectionCapacity(String(m.section.capacity)); setSectionTeacherId((m.section as any).teacherId || ''); }
-    if (m?.kind === 'add-subject') { setSubjectName(''); setSubjectCode(''); setSubjectElective(false); setSubjectTeacherId(''); }
-    if (m?.kind === 'edit-subject') { setSubjectName(m.subject.name); setSubjectCode(m.subject.code); setSubjectElective(m.subject.isElective); setSubjectTeacherId(m.subject.teacherId || ''); }
+    if (m?.kind === 'add-subject') { setSubjectName(''); setSubjectCode(''); setSubjectElective(false); setSubjectTeacherId(''); setSubjectSectionId(''); }
+    if (m?.kind === 'edit-subject') { setSubjectName(m.subject.name); setSubjectCode(m.subject.code); setSubjectElective(m.subject.isElective); setSubjectTeacherId(m.subject.teacherId || ''); setSubjectSectionId(m.subject.sectionId || ''); }
   }
 
   async function handleSubmit() {
@@ -177,9 +179,9 @@ export default function AdminClassroom() {
       } else if (modal.kind === 'add-subject') {
         if (!subjectName.trim() || !subjectCode.trim()) throw new Error('Name and code are required');
         if (!subjectTeacherId) throw new Error('Please select a teacher for this subject');
-        await localApiFetch('/subjects', { method: 'POST', body: JSON.stringify({ name: subjectName.trim(), code: subjectCode.trim(), classId: modal.classId, isElective: subjectElective, teacherId: subjectTeacherId }) });
+        await localApiFetch('/subjects', { method: 'POST', body: JSON.stringify({ name: subjectName.trim(), code: subjectCode.trim(), classId: modal.classId, isElective: subjectElective, teacherId: subjectTeacherId, sectionId: subjectSectionId || undefined }) });
       } else if (modal.kind === 'edit-subject') {
-        await localApiFetch(`/subjects/${modal.subject.id}`, { method: 'PATCH', body: JSON.stringify({ name: subjectName.trim(), code: subjectCode.trim(), isElective: subjectElective, teacherId: subjectTeacherId || undefined }) });
+        await localApiFetch(`/subjects/${modal.subject.id}`, { method: 'PATCH', body: JSON.stringify({ name: subjectName.trim(), code: subjectCode.trim(), isElective: subjectElective, teacherId: subjectTeacherId || undefined, sectionId: subjectSectionId || undefined }) });
       }
 
       setModal(null);
@@ -357,6 +359,7 @@ export default function AdminClassroom() {
                             <div className="space-y-1.5">
                               {cls.subjects.map(subj => {
                                 const assignedSubjectTeacher = teachers.find(t => t.id === subj.teacherId);
+                                const subjectSection = cls.sections.find(s => s.id === subj.sectionId);
                                 return (
                                 <div key={subj.id} className="border rounded-md p-3 bg-card">
                                   <div className="flex items-center justify-between mb-1">
@@ -365,6 +368,11 @@ export default function AdminClassroom() {
                                       <span className="text-xs text-muted-foreground">{subj.code}</span>
                                       {subj.isElective && (
                                         <span className="text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-1.5 py-0.5 rounded">Elective</span>
+                                      )}
+                                      {subjectSection ? (
+                                        <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 py-0.5 rounded">Sec {subjectSection.name}</span>
+                                      ) : (
+                                        <span className="text-xs bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded">All sections</span>
                                       )}
                                     </div>
                                     <div className="flex gap-1">
@@ -504,6 +512,19 @@ export default function AdminClassroom() {
                         <option key={t.id} value={t.id}>{t.name}</option>
                       ))}
                     </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Assign to Section</label>
+                    <select value={subjectSectionId} onChange={e => setSubjectSectionId(e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
+                      <option value="">All Sections</option>
+                      {(() => {
+                        const cls = classList.find(c => c.id === modal.classId);
+                        return cls?.sections.map(sec => (
+                          <option key={sec.id} value={sec.id}>Section {sec.name}</option>
+                        ));
+                      })()}
+                    </select>
+                    <p className="text-xs text-muted-foreground mt-1">Choose a specific section or leave as "All Sections"</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <input type="checkbox" id="elective" checked={subjectElective} onChange={e => setSubjectElective(e.target.checked)} className="h-4 w-4" />
