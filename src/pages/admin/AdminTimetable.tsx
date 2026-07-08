@@ -4,8 +4,29 @@ import { api } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { TimetableView, BulkWizard } from '../../components/timetable';
-import type { TimetableEntry, DropdownOption } from '../../components/timetable';
+import type { TimetableEntry, DropdownOption, SubjectTeacherMap } from '../../components/timetable';
 import { DAYS, DEFAULT_PERIODS } from '../../components/timetable';
+
+const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? '/api' : 'https://op-csconnect-backend-production.up.railway.app/api');
+
+async function localApiFetch(path: string, options: RequestInit = {}) {
+  const token = localStorage.getItem('eduvault-token');
+  const userId = localStorage.getItem('eduvault-user-id');
+  const res = await fetch(`${API_BASE}/v1${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(userId ? { 'x-user-id': userId } : {}),
+      ...(options.headers || {}),
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Request failed');
+  }
+  return res.json();
+}
 
 interface User { id: string; name: string; email: string; role: string; }
 interface Course { id: string; name: string; code: string; }
@@ -28,6 +49,7 @@ export default function AdminTimetable() {
   const [loading, setLoading] = useState(true);
   const [selectedClass, setSelectedClass] = useState('');
   const [classList, setClassList] = useState<string[]>([]);
+  const [subjectTeacherMap, setSubjectTeacherMap] = useState<SubjectTeacherMap>({});
   const [showForm, setShowForm] = useState(false);
   const [showWizard, setShowWizard] = useState(false);
   const [form, setForm] = useState({ day: 'Monday', time: '09:00', subject: '', teacher: '', room: '' });
@@ -38,13 +60,31 @@ export default function AdminTimetable() {
   const loadAllData = async () => {
     setLoading(true);
     try {
-      const results = await Promise.allSettled([
+      const [classDetailed, ...rest] = await Promise.allSettled([
+        localApiFetch('/classes/detailed'),
         api.getUsers(),
         api.getCourses(),
         api.getRooms(),
         selectedClass ? api.getTimetable(selectedClass) : Promise.resolve([]),
       ]);
-      const [usersResult, coursesResult, roomsResult, timetableResult] = results;
+      const [usersResult, coursesResult, roomsResult, timetableResult] = rest;
+
+      // Build class list and subject→teacher map from actual class data
+      let classNames: string[] = [];
+      const subjectTeacher: SubjectTeacherMap = {};
+
+      if (classDetailed.status === 'fulfilled') {
+        const detailed = Array.isArray(classDetailed.value) ? classDetailed.value : [];
+        classNames = detailed.map((c: any) => c.name).filter(Boolean);
+        detailed.forEach((cls: any) => {
+          (cls.subjects || []).forEach((subj: any) => {
+            if (subj.teacherId && subj.name) {
+              subjectTeacher[subj.name] = subj.teacherId;
+            }
+          });
+        });
+      }
+
       let usersData = usersResult.status === 'fulfilled' ? extractArray(usersResult.value) : [];
       let coursesData = coursesResult.status === 'fulfilled' ? extractArray(coursesResult.value) : [];
       let roomsData = roomsResult.status === 'fulfilled' ? extractArray(roomsResult.value) : [];
@@ -58,11 +98,11 @@ export default function AdminTimetable() {
       }
       if (coursesData.length === 0) {
         coursesData = [
-          { id: 'c1', name: 'Mathematics 101', code: 'MTH101' },
-          { id: 'c2', name: 'Physics 201', code: 'PHY201' },
-          { id: 'c3', name: 'English Lit', code: 'ENG101' },
-          { id: 'c4', name: 'Chemistry Lab', code: 'CHE101' },
-          { id: 'c5', name: 'Computer Science', code: 'CS101' }
+          { id: 'c1', name: 'Mathematics', code: 'MATH' },
+          { id: 'c2', name: 'Physics', code: 'PHY' },
+          { id: 'c3', name: 'English', code: 'ENG' },
+          { id: 'c4', name: 'Chemistry', code: 'CHEM' },
+          { id: 'c5', name: 'Computer Science', code: 'CS' }
         ];
       }
       if (roomsData.length === 0) {
@@ -73,19 +113,32 @@ export default function AdminTimetable() {
         ];
       }
 
+      // Convert teacher IDs in subjectTeacherMap to names
+      const teacherIdToName: Record<string, string> = {};
+      usersData.forEach((u: any) => { teacherIdToName[u.id] = u.name; });
+      Object.keys(subjectTeacher).forEach(subj => {
+        const id = subjectTeacher[subj];
+        if (teacherIdToName[id]) subjectTeacher[subj] = teacherIdToName[id];
+      });
 
+      setSubjectTeacherMap(subjectTeacher);
       setUsers(usersData);
       setCourses(coursesData);
       setRooms(roomsData);
       setEntries(timetableData as TimetableEntry[]);
 
-      const classes = [...new Set<string>(
-        coursesData.map((c: any) => c.class || c.name?.split(' ')[0]).filter(Boolean)
-      )];
-      if (classes.length === 0) classes.push(...new Set<string>(timetableData.map((e: any) => e.class).filter(Boolean)));
-      if (classes.length === 0) classes.push('10-A', '10-B', '11-A', '11-B', '12-A', '12-B');
-      setClassList(classes);
-      if (!selectedClass && classes.length > 0) setSelectedClass(classes[0]);
+      if (classNames.length > 0) {
+        setClassList(classNames);
+        if (!selectedClass) setSelectedClass(classNames[0]);
+      } else {
+        const classes = [...new Set<string>(
+          coursesData.map((c: any) => c.class || c.name?.split(' ')[0]).filter(Boolean)
+        )];
+        if (classes.length === 0) classes.push(...new Set<string>(timetableData.map((e: any) => e.class).filter(Boolean)));
+        if (classes.length === 0) classes.push('10-A', '10-B', '11-A', '11-B', '12-A', '12-B');
+        setClassList(classes);
+        if (!selectedClass && classes.length > 0) setSelectedClass(classes[0]);
+      }
     } catch {
       setClassList(['10-A', '10-B', '11-A', '11-B', '12-A', '12-B']);
       if (!selectedClass) setSelectedClass('10-A');
@@ -163,6 +216,7 @@ export default function AdminTimetable() {
         teachers={teachers}
         courses={courseOpts}
         rooms={roomOpts}
+        subjectTeacherMap={subjectTeacherMap}
       />
 
       {showForm && (
@@ -175,7 +229,14 @@ export default function AdminTimetable() {
             <select value={form.time} onChange={e => setForm({ ...form, time: e.target.value })} className="px-3 py-2 rounded-lg border bg-background">
               {DEFAULT_PERIODS.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
-            <select value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })} className="px-3 py-2 rounded-lg border bg-background">
+            <select value={form.subject} onChange={e => {
+              const val = e.target.value;
+              setForm(prev => ({
+                ...prev,
+                subject: val,
+                teacher: subjectTeacherMap[val] || prev.teacher,
+              }));
+            }} className="px-3 py-2 rounded-lg border bg-background">
               <option value="">Select subject</option>
               {courseOpts.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
             </select>

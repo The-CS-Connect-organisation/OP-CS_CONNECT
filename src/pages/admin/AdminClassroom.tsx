@@ -356,58 +356,72 @@ export default function AdminClassroom() {
                           {cls.subjects.length === 0 ? (
                             <p className="text-sm text-muted-foreground">No subjects yet.</p>
                           ) : (
-                            <div className="space-y-1.5">
+                            <div className="space-y-3">
                               {cls.subjects.map(subj => {
                                 const assignedSubjectTeacher = teachers.find(t => t.id === subj.teacherId);
                                 const subjectSection = cls.sections.find(s => s.id === subj.sectionId);
                                 return (
-                                <div key={subj.id} className="border rounded-md p-3 bg-card">
-                                  <div className="flex items-center justify-between mb-1">
-                                    <div className="flex items-center gap-2">
-                                      <span className="font-medium text-sm">{subj.name}</span>
-                                      <span className="text-xs text-muted-foreground">{subj.code}</span>
+                                <div key={subj.id} className="border rounded-lg bg-card overflow-hidden">
+                                  <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/20">
+                                    <div className="flex items-center gap-3">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-semibold text-sm">{subj.name}</span>
+                                        <span className="text-xs text-muted-foreground">{subj.code}</span>
+                                      </div>
                                       {subj.isElective && (
-                                        <span className="text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-1.5 py-0.5 rounded">Elective</span>
+                                        <span className="text-xs bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 px-1.5 py-0.5 rounded font-medium">Elective</span>
                                       )}
                                       {subjectSection ? (
-                                        <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 py-0.5 rounded">Sec {subjectSection.name}</span>
+                                        <span className="text-xs bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 px-1.5 py-0.5 rounded font-medium">Sec {subjectSection.name}</span>
                                       ) : (
-                                        <span className="text-xs bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded">All sections</span>
+                                        <span className="text-xs bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 px-1.5 py-0.5 rounded font-medium">All sections</span>
+                                      )}
+                                      {assignedSubjectTeacher && (
+                                        <span className="text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2 py-0.5 rounded-full font-medium">
+                                          👤 {assignedSubjectTeacher.name}
+                                        </span>
                                       )}
                                     </div>
                                     <div className="flex gap-1">
-                                      <button onClick={() => openModal({ kind: 'edit-subject', subject: subj, classId: cls.id })} className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
-                                        <Pencil className="h-3 w-3" />
+                                      <button onClick={() => openModal({ kind: 'edit-subject', subject: subj, classId: cls.id })} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground">
+                                        <Pencil className="h-3.5 w-3.5" />
                                       </button>
-                                      <button onClick={() => handleDelete('subject', subj.id, subj.name)} className="p-1 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
-                                        <Trash2 className="h-3 w-3" />
+                                      <button onClick={() => handleDelete('subject', subj.id, subj.name)} className="p-1.5 rounded hover:bg-destructive/10 text-muted-foreground hover:text-destructive">
+                                        <Trash2 className="h-3.5 w-3.5" />
                                       </button>
                                     </div>
                                   </div>
-                                  <div>
-                                    <label className="block text-[11px] font-medium text-muted-foreground mb-1">Assign Teacher</label>
-                                    <select
-                                      value={subj.teacherId || ''}
-                                      onChange={async (e) => {
-                                        const tid = e.target.value || undefined;
-                                        try {
-                                          await localApiFetch(`/subjects/${subj.id}`, { method: 'PATCH', body: JSON.stringify({ teacherId: tid }) });
-                                          loadClasses();
-                                        } catch { alert('Failed to assign teacher'); }
-                                      }}
-                                      className="w-full text-sm border rounded px-2 py-1.5 bg-background"
-                                    >
-                                      <option value="">— None —</option>
-                                      {teachers.length === 0 && <option disabled>No teachers found</option>}
-                                      {teachers.map(t => {
-                                        const isAssigned = assignedTeacherIds.has(t.id) && t.id !== subj.teacherId;
-                                        return (
-                                          <option key={t.id} value={t.id} disabled={isAssigned}>
-                                            {t.name}{isAssigned ? ' (already assigned)' : ''}
-                                          </option>
-                                        );
-                                      })}
-                                    </select>
+                                  <div className="p-4">
+                                    <div className="border-2 border-dashed border-muted-foreground/20 rounded-lg p-4 bg-muted/10">
+                                      <label className="block text-sm font-semibold text-foreground mb-3">
+                                        Assign Subject Teacher
+                                      </label>
+                                      <select
+                                        value={subj.teacherId || ''}
+                                        onChange={async (e) => {
+                                          const tid = e.target.value || undefined;
+                                          try {
+                                            await localApiFetch(`/subjects/${subj.id}`, { method: 'PATCH', body: JSON.stringify({ teacherId: tid }) });
+                                            loadClasses();
+                                          } catch { alert('Failed to assign teacher'); }
+                                        }}
+                                        className="w-full text-base border rounded-md px-4 py-3 bg-background focus:outline-none focus:ring-2 focus:ring-primary"
+                                      >
+                                        <option value="">— Select a teacher —</option>
+                                        {teachers.length === 0 && <option disabled>No teachers found</option>}
+                                        {teachers.map(t => {
+                                          const isAssigned = assignedTeacherIds.has(t.id) && t.id !== subj.teacherId;
+                                          return (
+                                            <option key={t.id} value={t.id} disabled={isAssigned}>
+                                              {t.name}{isAssigned ? ' (already assigned to another section)' : ''}
+                                            </option>
+                                          );
+                                        })}
+                                      </select>
+                                      {!assignedSubjectTeacher && (
+                                        <p className="text-xs text-muted-foreground mt-2">No teacher assigned yet. Select a teacher above to assign them to this subject.</p>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               )})}

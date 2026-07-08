@@ -100,6 +100,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
       label: 'Teaching',
       items: [
         { icon: Users, label: 'My Section', path: '/teacher/my-section' },
+        { icon: User, label: 'My Schedule', path: '/teacher/my-schedule' },
         { icon: Calendar, label: 'Timetable', path: '/teacher/timetable' },
         { icon: Gavel, label: 'Talent Market', path: '/teacher/talent-market' },
         { icon: MessageSquare, label: 'Messages', path: '/teacher/messages' },

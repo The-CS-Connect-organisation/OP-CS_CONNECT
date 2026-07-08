@@ -287,6 +287,7 @@ function App() {
             <Route path="asset-tracking" element={<TeacherAssetTracking />} />
             <Route path="salary" element={<TeacherSalary />} />
             <Route path="my-section" element={<TeacherMySection />} />
+            <Route path="my-schedule" element={<TeacherTimetable />} />
             <Route path="timetable" element={<TeacherTimetable />} />
           </Route>
 

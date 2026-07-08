@@ -57,7 +57,12 @@ export default function Sidebar() {
               "text-[10px] font-semibold uppercase tracking-widest text-orange-300/40 px-2 py-1",
               collapsed && "hidden"
             )}>{section.label}</p>
-            {section.items.map((item) => (
+            {section.items.filter(item => {
+              if (user.role === 'teacher' && item.path === '/teacher/timetable') {
+                return !!(user.sectionId || user.classIds?.length);
+              }
+              return true;
+            }).map((item) => (
               <NavLink
                 key={item.path}
                 to={item.path}
