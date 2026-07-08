@@ -6,7 +6,28 @@ import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { TimetableView } from '../../components/timetable';
-import type { TimetableEntry, DropdownOption } from '../../components/timetable';
+import type { TimetableEntry, DropdownOption, SubjectTeacherMap } from '../../components/timetable';
+
+const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? '/api' : 'https://op-csconnect-backend-production.up.railway.app/api');
+
+async function localApiFetch(path: string, options: RequestInit = {}) {
+  const token = localStorage.getItem('eduvault-token');
+  const userId = localStorage.getItem('eduvault-user-id');
+  const res = await fetch(`${API_BASE}/v1${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(userId ? { 'x-user-id': userId } : {}),
+      ...(options.headers || {}),
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || 'Request failed');
+  }
+  return res.json();
+}
 
 const extractArray = (data: any): any[] => {
   if (Array.isArray(data)) return data;
@@ -27,6 +48,7 @@ export default function TeacherTimetable() {
   const [courses, setCourses] = useState<DropdownOption[]>([]);
   const [rooms, setRooms] = useState<DropdownOption[]>([]);
   const [teacherClassMap, setTeacherClassMap] = useState<Record<string, boolean>>({});
+  const [subjectTeacherMap, setSubjectTeacherMap] = useState<SubjectTeacherMap>({});
 
   const teacherId = user?.id || '';
 
@@ -106,11 +128,32 @@ export default function TeacherTimetable() {
       const names = assignedClasses.map((c: any) => c.name || c.className).filter(Boolean);
       setClassList(names);
 
+      // Build subject→teacher map from class data
+      loadSubjectTeacherMap(assignedClasses, teachersList);
+
     } catch {
       setClassList([]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadSubjectTeacherMap = async (assignedClasses: any[], teacherList: any[]) => {
+    try {
+      const classNames = assignedClasses.map((c: any) => c.name || c.className).filter(Boolean);
+      if (classNames.length === 0) return;
+      const detailed = await localApiFetch('/classes/detailed');
+      const subjectTeacher: SubjectTeacherMap = {};
+      (Array.isArray(detailed) ? detailed : []).forEach((cls: any) => {
+        (cls.subjects || []).forEach((subj: any) => {
+          if (subj.teacherId && subj.name) {
+            const found = (teacherList || []).find((t: any) => t.id === subj.teacherId);
+            if (found) subjectTeacher[subj.name] = found.name;
+          }
+        });
+      });
+      setSubjectTeacherMap(subjectTeacher);
+    } catch {}
   };
 
   const loadTimetable = async () => {
@@ -217,6 +260,7 @@ export default function TeacherTimetable() {
           teachers={teachers}
           courses={courses}
           rooms={rooms}
+          subjectTeacherMap={subjectTeacherMap}
         />
       )}
     </motion.div>

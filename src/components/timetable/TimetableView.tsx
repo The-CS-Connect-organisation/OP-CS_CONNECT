@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { GridView } from './GridView';
 import { KanbanView } from './KanbanView';
 import { exportTimetablePDF } from './TimetablePDF';
-import type { TimetableEntry, ViewMode, DropdownOption, CRUDHandlers } from './types';
+import type { TimetableEntry, ViewMode, DropdownOption, CRUDHandlers, SubjectTeacherMap } from './types';
 import { DAYS, DEFAULT_PERIODS } from './types';
 
 interface TimetableViewProps {
@@ -23,6 +23,7 @@ interface TimetableViewProps {
   teachers?: DropdownOption[];
   courses?: DropdownOption[];
   rooms?: DropdownOption[];
+  subjectTeacherMap?: SubjectTeacherMap;
   timeSlots?: string[];
   title?: string;
   subtitle?: string;
@@ -54,6 +55,7 @@ export function TimetableView({
   teachers,
   courses,
   rooms,
+  subjectTeacherMap,
   timeSlots = DEFAULT_PERIODS,
   title,
   subtitle,
@@ -125,12 +127,12 @@ export function TimetableView({
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-64 w-full" />
         </div>
-      ) : !hasEntries ? (
+      ) : !hasEntries && !crud ? (
         <Card className="p-12 text-center">
           <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30 text-muted-foreground" />
           <p className="text-lg font-medium text-muted-foreground">No timetable entries</p>
           <p className="text-sm text-muted-foreground/60 mt-1">
-            {crud?.onAddEntry ? 'Add entries or select a different class' : 'No schedule available for this class'}
+            No schedule available for this class
           </p>
         </Card>
       ) : (
@@ -152,6 +154,7 @@ export function TimetableView({
                   teachers={teachers}
                   courses={courses}
                   rooms={rooms}
+                  subjectTeacherMap={subjectTeacherMap}
                 />
               )}
 

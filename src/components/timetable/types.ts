@@ -29,6 +29,10 @@ export interface CRUDHandlers {
   onAssignSlot?: (day: string, time: string, data: { teacher: string; subject: string; room: string }) => void;
 }
 
+export interface SubjectTeacherMap {
+  [subjectName: string]: string; // subject name → teacher name
+}
+
 export const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 export const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
 export const DEFAULT_PERIODS = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'];

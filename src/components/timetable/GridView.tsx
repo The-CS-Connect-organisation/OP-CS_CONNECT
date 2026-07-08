@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { cn } from '@/lib/utils';
-import type { TimetableEntry, DropdownOption, CRUDHandlers } from './types';
+import type { TimetableEntry, DropdownOption, CRUDHandlers, SubjectTeacherMap } from './types';
 import { DAYS } from './types';
 
 interface GridViewProps {
@@ -15,10 +15,11 @@ interface GridViewProps {
   teachers?: DropdownOption[];
   courses?: DropdownOption[];
   rooms?: DropdownOption[];
+  subjectTeacherMap?: SubjectTeacherMap;
   compact?: boolean;
 }
 
-export function GridView({ entries, timeSlots, onAssignSlot, onDeleteEntry, teachers, courses, rooms, compact }: GridViewProps) {
+export function GridView({ entries, timeSlots, onAssignSlot, onDeleteEntry, teachers, courses, rooms, subjectTeacherMap, compact }: GridViewProps) {
   const [assignSlot, setAssignSlot] = useState<{ day: string; time: string } | null>(null);
   const [assignTeacher, setAssignTeacher] = useState('');
   const [assignSubject, setAssignSubject] = useState('');
@@ -84,7 +85,13 @@ export function GridView({ entries, timeSlots, onAssignSlot, onDeleteEntry, teac
                       <div className="p-2 bg-background border rounded-lg space-y-1.5 min-w-[160px] shadow-sm">
                         <select
                           value={assignSubject}
-                          onChange={e => setAssignSubject(e.target.value)}
+                          onChange={e => {
+                            const val = e.target.value;
+                            setAssignSubject(val);
+                            if (subjectTeacherMap && subjectTeacherMap[val]) {
+                              setAssignTeacher(subjectTeacherMap[val]);
+                            }
+                          }}
                           className="w-full px-2 py-1 text-xs rounded border bg-background"
                         >
                           <option value="">Subject</option>
