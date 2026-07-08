@@ -35,4 +35,8 @@ export interface SubjectTeacherMap {
 
 export const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 export const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
-export const DEFAULT_PERIODS = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00'];
+export const DEFAULT_PERIODS = ['08:20', '09:00', '09:40', '10:30', '11:10', '11:50', '13:00', '13:40', '14:20'];
+export const BREAK_SLOTS: Record<string, string> = {
+  '10:20': 'Snack Break (10 min)',
+  '12:30': 'Lunch Break (30 min)',
+};
