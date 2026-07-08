@@ -184,13 +184,13 @@ export default function AdminClassroom() {
         const newSectionId = section.id;
         const cls = classList.find(c => c.id === modal.classId);
         for (const subjDef of PREDEFINED_SUBJECTS) {
-          const teacherId = subjectTeachers[subjDef.name];
-          if (!teacherId) continue;
+          const raw = subjectTeachers[subjDef.name];
+          if (!raw || raw === 'none') continue;
           const existing = cls?.subjects?.find(s => s.name === subjDef.name && (!s.sectionId || s.sectionId === newSectionId));
           if (existing) {
-            await localApiFetch(`/subjects/${existing.id}`, { method: 'PATCH', body: JSON.stringify({ teacherId, sectionId: newSectionId }) });
+            await localApiFetch(`/subjects/${existing.id}`, { method: 'PATCH', body: JSON.stringify({ teacherId: raw, sectionId: newSectionId }) });
           } else {
-            await localApiFetch('/subjects', { method: 'POST', body: JSON.stringify({ name: subjDef.name, code: subjDef.code, classId: modal.classId, isElective: false, teacherId, sectionId: newSectionId }) });
+            await localApiFetch('/subjects', { method: 'POST', body: JSON.stringify({ name: subjDef.name, code: subjDef.code, classId: modal.classId, isElective: false, teacherId: raw, sectionId: newSectionId }) });
           }
         }
       } else if (modal.kind === 'edit-section') {
@@ -346,7 +346,8 @@ export default function AdminClassroom() {
                                       }}
                                       className="w-full text-sm border rounded px-2 py-1.5 bg-background"
                                     >
-                                      <option value="">— None —</option>
+                          <option value="">— Not assigned —</option>
+                            <option value="none">— None —</option>
                                       {teachers.length === 0 && <option disabled>No teachers found</option>}
                                       {teachers.map(t => {
                                         const isAssigned = assignedTeacherIds.has(t.id) && t.id !== (sec as any).teacherId;
@@ -561,7 +562,7 @@ export default function AdminClassroom() {
                             onChange={e => setSubjectTeachers(prev => ({ ...prev, [subj.name]: e.target.value }))}
                             className="flex-1 text-sm border rounded px-2 py-1.5 bg-background"
                           >
-                            <option value="">— Not assigned —</option>
+                            <option value="">— None —</option>
                             {teachers.map(t => (
                               <option key={t.id} value={t.id}>{t.name}</option>
                             ))}
