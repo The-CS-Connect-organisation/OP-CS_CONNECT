@@ -1073,6 +1073,10 @@ export const api = {
   claimLostFoundItem: (id: string) => apiFetch(`/lost-found/${id}/claim`, { method: 'PUT' }),
   archiveLostFoundItem: (id: string) => apiFetch(`/lost-found/${id}/archive`, { method: 'PUT' }),
 
+  // ========== TEACHER TIMETABLE ==========
+  getTeacherAssignedClasses: (teacherId: string) => apiFetch(`/v1/teachers/${teacherId}/classes`),
+  getClass: (classId: string) => apiFetch(`/v1/classes/${classId}`),
+
   // ========== AUCTION HOUSE ==========
   getTalentMarketListings: (params?: Record<string, string>) => {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';

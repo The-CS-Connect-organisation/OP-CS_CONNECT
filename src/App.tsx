@@ -123,6 +123,7 @@ const AdminComms = lazy(() => import('./pages/admin/AdminComms'))
 const TeacherClassroom = lazy(() => import('./pages/teacher/TeacherClassroom'))
 const TeacherExamResults = lazy(() => import('./pages/teacher/TeacherExamResults'))
 const TeacherMySection = lazy(() => import('./pages/teacher/MySection'))
+const TeacherTimetable = lazy(() => import('./pages/teacher/Timetable'))
 const LibrarianManagement = lazy(() => import('./pages/librarian/LibrarianManagement'))
 const StudentExercises = lazy(() => import('./pages/student/Exercises'))
 const StudentTalentMarket = lazy(() => import('./pages/student/TalentMarket'))
@@ -286,6 +287,7 @@ function App() {
             <Route path="asset-tracking" element={<TeacherAssetTracking />} />
             <Route path="salary" element={<TeacherSalary />} />
             <Route path="my-section" element={<TeacherMySection />} />
+            <Route path="timetable" element={<TeacherTimetable />} />
           </Route>
 
           {/* ADMIN */}

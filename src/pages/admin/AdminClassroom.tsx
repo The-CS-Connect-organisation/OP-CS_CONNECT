@@ -31,6 +31,7 @@ interface ClassData {
   studentCount: number;
   sections: Section[];
   subjects: Subject[];
+  classTeacherId?: string;
 }
 
 type ModalType =
@@ -74,6 +75,7 @@ export default function AdminClassroom() {
 
   const [className, setClassName] = useState('');
   const [classGrade, setClassGrade] = useState('');
+  const [classTeacherId, setClassTeacherId] = useState('');
   const [sectionName, setSectionName] = useState('');
   const [sectionCapacity, setSectionCapacity] = useState('40');
   const [sectionTeacherId, setSectionTeacherId] = useState('');
@@ -148,8 +150,8 @@ export default function AdminClassroom() {
   function openModal(m: ModalType) {
     setFormError('');
     setModal(m);
-    if (m?.kind === 'add-class') { setClassName(''); setClassGrade(''); }
-    if (m?.kind === 'edit-class') { setClassName(m.cls.name); setClassGrade(String(m.cls.grade)); }
+    if (m?.kind === 'add-class') { setClassName(''); setClassGrade(''); setClassTeacherId(''); }
+    if (m?.kind === 'edit-class') { setClassName(m.cls.name); setClassGrade(String(m.cls.grade)); setClassTeacherId(m.cls.classTeacherId || ''); }
     if (m?.kind === 'add-section') { setSectionName(''); setSectionCapacity('40'); setSectionTeacherId(''); }
     if (m?.kind === 'edit-section') { setSectionName(m.section.name); setSectionCapacity(String(m.section.capacity)); setSectionTeacherId((m.section as any).teacherId || ''); }
     if (m?.kind === 'add-subject') { setSubjectName(''); setSubjectCode(''); setSubjectElective(false); setSubjectTeacherId(''); }
@@ -164,9 +166,9 @@ export default function AdminClassroom() {
 
       if (modal.kind === 'add-class') {
         if (!className.trim() || !classGrade) throw new Error('Name and grade are required');
-        await localApiFetch('/classes', { method: 'POST', body: JSON.stringify({ name: className.trim(), grade: Number(classGrade) }) });
+        await localApiFetch('/classes', { method: 'POST', body: JSON.stringify({ name: className.trim(), grade: Number(classGrade), classTeacherId: classTeacherId || undefined }) });
       } else if (modal.kind === 'edit-class') {
-        await localApiFetch(`/classes/${modal.cls.id}`, { method: 'PATCH', body: JSON.stringify({ name: className.trim(), grade: Number(classGrade) }) });
+        await localApiFetch(`/classes/${modal.cls.id}`, { method: 'PATCH', body: JSON.stringify({ name: className.trim(), grade: Number(classGrade), classTeacherId: classTeacherId || undefined }) });
       } else if (modal.kind === 'add-section') {
         if (!sectionName.trim()) throw new Error('Section name is required');
         await localApiFetch('/sections', { method: 'POST', body: JSON.stringify({ name: sectionName.trim(), classId: modal.classId, capacity: Number(sectionCapacity), teacherId: sectionTeacherId || undefined }) });
@@ -249,6 +251,14 @@ export default function AdminClassroom() {
                         <span className="font-medium text-foreground">{cls.subjects.length}</span> subjects
                       </span>
                     </div>
+                    {(() => {
+                      const ct = teachers.find(t => t.id === cls.classTeacherId);
+                      return ct ? (
+                        <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full font-medium truncate max-w-[160px] shrink-0" title="Class Teacher">
+                          👤 {ct.name}
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
                   <div className="flex items-center gap-1">
                     <button onClick={() => openModal({ kind: 'edit-class', cls })} className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground" title="Edit class">
@@ -431,6 +441,16 @@ export default function AdminClassroom() {
                   <div>
                     <label className="block text-sm font-medium mb-1">Grade (1–12)</label>
                     <input type="number" min={1} max={12} value={classGrade} onChange={e => setClassGrade(e.target.value)} placeholder="e.g. 1" className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary" />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Assign Class Teacher</label>
+                    <select value={classTeacherId} onChange={e => setClassTeacherId(e.target.value)} className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
+                      <option value="">Select a class teacher...</option>
+                      {teachers.map(t => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-muted-foreground mt-1">The class teacher can edit the timetable. They can also be a subject teacher.</p>
                   </div>
                 </>
               )}

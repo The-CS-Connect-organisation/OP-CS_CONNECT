@@ -155,7 +155,7 @@ export default function AdminTimetable() {
         selectedClass={selectedClass}
         onClassChange={setSelectedClass}
         title="Timetable Manager"
-        subtitle="Manage school timetable"
+        subtitle="Manage school timetable — class teachers can also edit from their panel"
         crud={{
           onDeleteEntry: handleDelete,
           onAssignSlot: handleAssignSlot,
