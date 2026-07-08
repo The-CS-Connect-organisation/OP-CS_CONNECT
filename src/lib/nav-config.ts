@@ -160,7 +160,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
       label: 'Academic',
       items: [
         { icon: FileText, label: 'Exams', path: '/admin/exams' },
-        { icon: CreditCard, label: 'Fees & Billing', path: '/admin/fees' },
         { icon: BookOpen, label: 'SIS', path: '/admin/sis' },
         { icon: ClipboardList, label: 'Classroom', path: '/admin/classroom' },
       ]
