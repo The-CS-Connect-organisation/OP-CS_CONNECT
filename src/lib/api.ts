@@ -299,6 +299,10 @@ export const api = {
   createTimetableEntry: (data: any) => apiFetch('/timetable', { method: 'POST', body: JSON.stringify(data) }),
   deleteTimetableEntry: (id: string) => apiFetch(`/timetable/${id}`, { method: 'DELETE' }),
 
+  // CSAI Timetable Agent
+  csAITimetable: (data: { message: string; className?: string; allClassesTimetables?: any; subjects?: any[]; teachers?: any[]; bellSchedule?: any }) =>
+    apiFetch('/cs-ai/timetable', { method: 'POST', body: JSON.stringify(data) }),
+
   // Analytics
   getClassAnalytics: (className: string) => apiFetch(`/analytics/class/${className}`),
   getStudentProgress: (className: string) => apiFetch(`/analytics/progress?class=${className}`),
