@@ -106,6 +106,14 @@ export default function AdminClassroom() {
   const [subjectSectionId, setSubjectSectionId] = useState('');
   const [teachers, setTeachers] = useState<any[]>([]);
 
+  // Helpers for subject name matching (handle both 'Math' and 'Mathematics' for backward compat)
+  function teacherTeachesSubject(teacher: any, subjectName: string): boolean {
+    const subs = teacher.subjects || [];
+    if (subs.includes(subjectName)) return true;
+    if (subjectName === 'Mathematics' && subs.includes('Math')) return true;
+    return false;
+  }
+
   const PREDEFINED_SUBJECTS = [
     { name: 'Mathematics', code: 'MATH' },
     { name: 'Physics', code: 'PHY' },
@@ -552,15 +560,15 @@ export default function AdminClassroom() {
                   </div>
                   <div className="border-t pt-4 mt-2">
                     <label className="block text-sm font-semibold mb-3">Assign Subject Teachers</label>
-                    <div className="space-y-3">
-                      {SECTION_SUBJECT_TEACHER_FIELDS.map(field => {
-                        const filteredTeachers = teachers.filter(t => t.subjects?.includes(field.key));
+                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                      {PREDEFINED_SUBJECTS.map(subj => {
+                        const filteredTeachers = teachers.filter(t => teacherTeachesSubject(t, subj.name));
                         return (
-                          <div key={field.key}>
-                            <label className="block text-xs font-medium mb-1">{field.label}</label>
-                            <select value={sectionSubjectTeachers[field.key] || ''} onChange={e => setSectionSubjectTeachers(prev => ({ ...prev, [field.key]: e.target.value }))} className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
+                          <div key={subj.name} className="flex items-center gap-3">
+                            <label className="text-sm text-muted-foreground w-28 shrink-0">{subj.name}</label>
+                            <select value={sectionSubjectTeachers[subj.name] || ''} onChange={e => setSectionSubjectTeachers(prev => ({ ...prev, [subj.name]: e.target.value }))} className="flex-1 text-sm border rounded-md px-3 py-2 bg-background focus:outline-none focus:ring-2 focus:ring-primary">
                               <option value="">— None —</option>
-                              {filteredTeachers.length === 0 && <option disabled>No {field.key} teachers found</option>}
+                              {filteredTeachers.length === 0 && <option disabled>No teachers found</option>}
                               {filteredTeachers.map(t => (
                                 <option key={t.id} value={t.id}>{t.name}</option>
                               ))}
@@ -602,16 +610,16 @@ export default function AdminClassroom() {
                   </div>
                   <div className="border-t pt-4">
                     <h3 className="text-sm font-semibold mb-3">Assign Subject Teachers</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
                       {PREDEFINED_SUBJECTS.map(subj => {
-                        const filteredTeachers = teachers.filter(t => t.subjects?.includes(subj.name));
+                        const filteredTeachers = teachers.filter(t => teacherTeachesSubject(t, subj.name));
                         return (
-                        <div key={subj.name} className="flex items-center gap-2 p-2 rounded-lg border bg-muted/10">
-                          <span className="text-sm font-medium min-w-[120px] shrink-0">{subj.name}</span>
+                        <div key={subj.name} className="flex items-center gap-3">
+                          <label className="text-sm text-muted-foreground w-28 shrink-0">{subj.name}</label>
                           <select
                             value={sectionSubjectTeachers[subj.name] || ''}
                             onChange={e => setSectionSubjectTeachers(prev => ({ ...prev, [subj.name]: e.target.value }))}
-                            className="flex-1 text-sm border rounded px-2 py-1.5 bg-background"
+                            className="flex-1 text-sm border rounded-md px-3 py-2 bg-background focus:outline-none focus:ring-2 focus:ring-primary"
                           >
                             <option value="">— None —</option>
                             {filteredTeachers.length === 0 && <option disabled>No teachers found</option>}
@@ -622,7 +630,7 @@ export default function AdminClassroom() {
                         </div>
                       )})}
                     </div>
-                    <p className="text-xs text-muted-foreground mt-2">Select teachers for subjects that will be taught in this section. Only subjects with a teacher assigned will be created.</p>
+                    <p className="text-xs text-muted-foreground mt-3">Select teachers for subjects taught in this section. Only subjects with a teacher assigned will be created.</p>
                   </div>
                 </>
               )}
