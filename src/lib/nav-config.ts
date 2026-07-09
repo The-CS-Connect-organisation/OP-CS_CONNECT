@@ -48,7 +48,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Tools',
       items: [
-        { icon: Sparkles, label: 'AI Tools', path: '/student/ai' },
+        { icon: Sparkles, label: 'AI Lab', path: '/student/ai' },
         { icon: StickyNote, label: 'Notes', path: '/student/notes' },
         { icon: Library, label: 'CS Library', path: '/cs-library' },
         { icon: PenTool, label: 'Exercises', path: '/student/exercises' },
@@ -64,7 +64,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
       ]
     },
     {
-      label: 'Services',
+      label: 'Student Services',
       items: [
         { icon: MessageSquare, label: 'Counselling', path: '/student/counselling' },
         { icon: HeartPulse, label: 'Health', path: '/student/health' },

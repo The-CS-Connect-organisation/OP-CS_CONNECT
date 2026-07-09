@@ -20,7 +20,7 @@ export default function StudentAnonymousReports() {
   const refresh = async () => {
     try {
       const data = await api.getAnonymousReports();
-      setReports(Array.isArray(data) ? data.filter((r: any) => !r.anonymous || r.reportedBy === user?.id) : []);
+      setReports(Array.isArray(data) ? data.filter((r: any) => r.reportedBy === user?.id) : []);
     } catch { /* ignore */ }
     setLoading(false);
   };
@@ -36,7 +36,7 @@ export default function StudentAnonymousReports() {
         description,
         category,
         anonymous,
-        reportedBy: anonymous ? 'Anonymous' : user?.name || 'Unknown',
+        reportedBy: user?.id || 'Unknown',
         date: new Date().toISOString(),
         status: 'pending',
       });
@@ -147,7 +147,7 @@ export default function StudentAnonymousReports() {
                   </div>
                   <p className="text-muted-foreground mb-2">{report.description}</p>
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1"><User className="w-4 h-4" />{report.reportedBy}</span>
+                    <span className="flex items-center gap-1"><User className="w-4 h-4" />{report.anonymous ? 'Anonymous' : report.reportedBy}</span>
                     <span className="flex items-center gap-1"><Calendar className="w-4 h-4" />{new Date(report.date).toLocaleDateString()}</span>
                     <Badge className={report.status === 'pending' ? 'bg-orange-100 text-orange-700' : report.status === 'resolved' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}>{report.status}</Badge>
                   </div>

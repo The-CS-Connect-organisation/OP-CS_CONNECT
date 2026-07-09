@@ -62,77 +62,8 @@ const MsgContent = ({ text }: { text: string }) => {
   );
 };
 
-const Particle = ({ x, y, size, color, delay }: { x: number; y: number; size: number; color: string; delay: number }) => (
-  <motion.div className="absolute rounded-full pointer-events-none"
-    style={{ left: `${x}%`, top: `${y}%`, width: size, height: size, background: color, filter: "blur(1px)" }}
-    animate={{ y: [0, -28, 0], opacity: [0, 0.7, 0], scale: [0.8, 1.3, 0.8] }}
-    transition={{ duration: 4 + Math.random() * 3, repeat: Infinity, delay, ease: "easeInOut" }}
-  />
-);
-
-const PARTICLES = [
-  { x: 12, y: 72, size: 8, color: "#3b82f6", delay: 0 },
-  { x: 82, y: 58, size: 6, color: "#8b5cf6", delay: 1 },
-  { x: 22, y: 28, size: 10, color: "#06b6d4", delay: 2 },
-  { x: 68, y: 82, size: 7, color: "#a78bfa", delay: 0.5 },
-  { x: 48, y: 18, size: 5, color: "#3b82f6", delay: 1.5 },
-  { x: 88, y: 32, size: 9, color: "#7c3aed", delay: 2.5 },
-  { x: 8, y: 48, size: 6, color: "#60a5fa", delay: 3 },
-  { x: 58, y: 88, size: 8, color: "#818cf8", delay: 0.8 },
-];
-
-const SplashScreen = ({ onEnter }: { onEnter: () => void }) => (
-  <motion.div className="fixed inset-0 z-[100] flex items-center justify-center"
-    style={{ background: "linear-gradient(135deg, #f0f4ff 0%, #ffffff 50%, #f5f0ff 100%)" }}
-    exit={{ opacity: 0, scale: 1.03 }} transition={{ duration: 0.5 }}>
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {PARTICLES.map((p, i) => <Particle key={i} {...p} />)}
-      <motion.div className="absolute w-[600px] h-[600px] rounded-full bg-orange-100 blur-[120px] opacity-50"
-        animate={{ scale: [1, 1.12, 1], x: [0, 30, 0] }} transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-        style={{ top: "-10%", left: "-10%" }} />
-      <motion.div className="absolute w-[500px] h-[500px] rounded-full bg-orange-100 blur-[120px] opacity-40"
-        animate={{ scale: [1, 1.15, 1], x: [0, -25, 0] }} transition={{ duration: 11, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-        style={{ bottom: "-10%", right: "-10%" }} />
-    </div>
-    <div className="relative flex flex-col items-center text-center px-6 w-full max-w-md">
-      <motion.div initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }} className="mb-6 relative flex items-center justify-center">
-        <motion.div className="absolute w-40 h-40 rounded-full bg-orange-200 blur-3xl opacity-40"
-          animate={{ scale: [1, 1.4, 1] }} transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut" }} />
-        <motion.div className="w-28 h-28 rounded-3xl bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white"
-          animate={{ y: [0, -6, 0] }} transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}>
-          <Sparkles className="w-14 h-14" />
-        </motion.div>
-      </motion.div>
-      <motion.div initial={{ y: 28, opacity: 0 }} animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.45, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
-        <h1 className="text-7xl font-black tracking-tighter leading-none select-none">
-          CS<span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-600">AI</span>
-        </h1>
-        <p className="text-[11px] text-muted-foreground tracking-[0.28em] uppercase font-semibold mt-3">Cornerstone School &middot; AI Studio</p>
-      </motion.div>
-      <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.85, duration: 0.6 }} className="flex gap-3 mt-8">
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 shadow-sm">
-          <Sparkles size={12} className="text-emerald-500" /><span className="text-xs text-emerald-600 font-bold">Llama 3.3 70B</span>
-        </div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-rose-50 border border-rose-200 shadow-sm">
-          <Brain size={12} className="text-rose-500" /><span className="text-xs text-rose-600 font-bold">Groq Compound</span>
-        </div>
-      </motion.div>
-      <motion.button onClick={onEnter} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 1.3, duration: 0.5 }} whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}
-        className="mt-10 px-14 py-4 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 text-white text-sm font-bold tracking-wide shadow-xl shadow-orange-200/60 transition-all">
-        Enter Lab
-      </motion.button>
-      <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1.9 }}
-        className="text-[10px] text-muted-foreground/40 mt-5 tracking-widest uppercase">CSAI can make mistakes. Verify important information.</motion.p>
-    </div>
-  </motion.div>
-);
-
 export default function AILab() {
   const { user } = useAuthStore();
-  const [showSplash, setShowSplash] = useState(true);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -228,10 +159,6 @@ export default function AILab() {
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 2000);
   };
-
-  if (showSplash) {
-    return <AnimatePresence mode="wait"><SplashScreen key="splash" onEnter={() => setShowSplash(false)} /></AnimatePresence>;
-  }
 
   return (
     <div className="flex bg-background" style={{ height: "calc(100vh - 64px)", overflow: "hidden", maxWidth: "100vw", position: "relative" }}>

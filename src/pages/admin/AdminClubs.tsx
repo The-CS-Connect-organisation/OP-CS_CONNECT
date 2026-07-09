@@ -3,7 +3,9 @@ import { api } from '@/lib/api'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { Check, X, Clock, Users, Search, Loader2, RefreshCw } from 'lucide-react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog'
+import { Label } from '@/components/ui/Label'
+import { Check, X, Clock, Users, Search, Loader2, RefreshCw, Camera } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { ScrollArea } from '@/components/ui/ScrollArea'
 import { cn } from '@/lib/utils'
@@ -30,6 +32,9 @@ export default function AdminClubs() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [tab, setTab] = useState<'pending' | 'approved'>('pending')
+  const [editAvatarClub, setEditAvatarClub] = useState<Club | null>(null)
+  const [avatarUrl, setAvatarUrl] = useState('')
+  const [savingAvatar, setSavingAvatar] = useState(false)
 
   const loadData = async () => {
     setLoading(true)
@@ -57,6 +62,17 @@ export default function AdminClubs() {
       await api.rejectClub(id)
       loadData()
     } catch { }
+  }
+
+  const handleEditAvatar = async () => {
+    if (!editAvatarClub || !avatarUrl.trim()) return
+    setSavingAvatar(true)
+    try {
+      await api.updateClub(editAvatarClub.id, { avatar: avatarUrl.trim() })
+      setEditAvatarClub(null)
+      setAvatarUrl('')
+      loadData()
+    } catch { } finally { setSavingAvatar(false) }
   }
 
   const list = tab === 'pending' ? pendingClubs : approvedClubs
@@ -103,10 +119,15 @@ export default function AdminClubs() {
             {filtered.map(club => (
               <div key={club.id} className="bg-card border border-border/50 rounded-lg p-4 hover:shadow-sm transition-shadow">
                 <div className="flex items-start gap-4">
-                  <Avatar className="w-12 h-12">
-                    <AvatarImage src={club.avatar} />
-                    <AvatarFallback className="bg-gradient-to-br from-orange-500 to-amber-600 text-white">{(club.name || '??').slice(0, 2).toUpperCase()}</AvatarFallback>
-                  </Avatar>
+                  <div className="relative group">
+                    <Avatar className="w-12 h-12">
+                      <AvatarImage src={club.avatar} />
+                      <AvatarFallback className="bg-gradient-to-br from-orange-500 to-amber-600 text-white">{(club.name || '??').slice(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <button onClick={() => { setEditAvatarClub(club); setAvatarUrl(club.avatar || '') }} className="absolute -bottom-1 -right-1 p-1 rounded-full bg-orange-500 text-white opacity-0 group-hover:opacity-100 transition-opacity shadow-sm hover:bg-orange-600">
+                      <Camera className="w-3 h-3" />
+                    </button>
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold text-gray-900">{club.name}</h3>
@@ -141,6 +162,36 @@ export default function AdminClubs() {
           </div>
         </ScrollArea>
       )}
+
+      <Dialog open={!!editAvatarClub} onOpenChange={(o) => { if (!o) setEditAvatarClub(null) }}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Camera className="w-4 h-4 text-orange-500" />
+              Edit Club Avatar
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="flex justify-center">
+              <Avatar className="w-20 h-20">
+                <AvatarImage src={avatarUrl} />
+                <AvatarFallback className="bg-gradient-to-br from-orange-500 to-amber-600 text-white text-lg">{(editAvatarClub?.name || '??').slice(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Avatar Image URL</Label>
+              <Input value={avatarUrl} onChange={e => setAvatarUrl(e.target.value)} placeholder="https://example.com/avatar.png" className="h-9 text-sm" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditAvatarClub(null)} className="h-9 text-sm">Cancel</Button>
+            <Button onClick={handleEditAvatar} disabled={!avatarUrl.trim() || savingAvatar} className="h-9 text-sm bg-orange-600 hover:bg-orange-700 gap-1.5">
+              {savingAvatar && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              Save Avatar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

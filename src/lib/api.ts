@@ -148,6 +148,7 @@ export const api = {
   createClub: (data: any) => apiFetch('/clubs', { method: 'POST', body: JSON.stringify(data) }),
   approveClub: (id: string) => apiFetch(`/clubs/${id}/approve`, { method: 'PUT' }),
   rejectClub: (id: string) => apiFetch(`/clubs/${id}/reject`, { method: 'PUT' }),
+  updateClub: (id: string, data: any) => apiFetch(`/clubs/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   joinClub: (clubId: string, userId: string) => apiFetch(`/clubs/${clubId}/join`, { method: 'POST', body: JSON.stringify({ userId }) }),
   leaveClub: (clubId: string, userId: string) => apiFetch(`/clubs/${clubId}/leave`, { method: 'POST', body: JSON.stringify({ userId }) }),
   approveJoinRequest: (clubId: string, userId: string) => apiFetch(`/clubs/${clubId}/join/${userId}/approve`, { method: 'PUT' }),

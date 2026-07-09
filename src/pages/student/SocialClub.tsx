@@ -59,7 +59,7 @@ export default function SocialClub() {
   const [searchQuery, setSearchQuery] = useState('')
   const [visibleCount, setVisibleCount] = useState(POSTS_PER_PAGE)
   const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [createForm, setCreateForm] = useState({ name: '', description: '', category: 'Technology', meetingDay: '', meetingTime: '' })
+  const [createForm, setCreateForm] = useState({ name: '', description: '', category: 'Technology', meetingDay: '', meetingTime: '', avatar: '' })
   const [creating, setCreating] = useState(false)
   const [joinRequests, setJoinRequests] = useState<string[]>([])
 
@@ -141,10 +141,10 @@ export default function SocialClub() {
         leadName: user.name,
         createdBy: user.id,
         members: [user.id],
-        avatar: user.avatar || '',
+        avatar: createForm.avatar || user.avatar || '',
       })
       setShowCreateDialog(false)
-      setCreateForm({ name: '', description: '', category: 'Technology', meetingDay: '', meetingTime: '' })
+      setCreateForm({ name: '', description: '', category: 'Technology', meetingDay: '', meetingTime: '', avatar: '' })
       loadData()
     } catch { } finally { setCreating(false) }
   }
@@ -416,6 +416,10 @@ export default function SocialClub() {
             <div className="space-y-1.5">
               <Label className="text-xs">Club Name *</Label>
               <Input value={createForm.name} onChange={e => setCreateForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g. Photography Club" className="h-9 text-sm" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">Club Avatar URL</Label>
+              <Input value={createForm.avatar} onChange={e => setCreateForm(f => ({ ...f, avatar: e.target.value }))} placeholder="https://example.com/logo.png (optional)" className="h-9 text-sm" />
             </div>
             <div className="space-y-1.5">
               <Label className="text-xs">Description</Label>

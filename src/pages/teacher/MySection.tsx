@@ -216,7 +216,7 @@ export default function TeacherMySection() {
         s.admissionNo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         s.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         s.rollNo?.toLowerCase().includes(searchQuery.toLowerCase())
-      const matchesGender = selectedGender === 'all' || s.gender === selectedGender
+      const matchesGender = selectedGender === 'all' || s.gender?.toUpperCase() === selectedGender
       return matchesSearch && matchesGender
     }).sort((a, b) => {
       if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '')
