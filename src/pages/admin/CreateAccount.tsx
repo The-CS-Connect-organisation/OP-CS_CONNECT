@@ -29,7 +29,7 @@ const roleOptions = [
   { value: 'manager', label: 'Manager' },
 ]
 
-const subjectOptions = ['Math', 'Physics', 'Chemistry', 'Biology', 'English', 'Computer Science', 'History', 'Geography', 'Art', 'Physical Education', 'Economics', 'Accounting']
+const subjectOptions = ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English', 'Computer Science', 'History', 'Geography', 'Civics', 'Art', 'Physical Education', 'Economics', 'Accounting']
 
 const bloodGroupOptions = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
 
@@ -96,7 +96,6 @@ export default function CreateAccount() {
         data.fatherPhone = form.fatherPhone
         data.motherName = form.motherName
         data.motherPhone = form.motherPhone
-        if (form.subjects.length > 0) data.subjects = form.subjects
       }
       if (form.role === 'teacher') {
         data.class = form.class
@@ -130,20 +129,6 @@ export default function CreateAccount() {
           <div>
             <label className="block text-sm font-medium mb-1.5">Admission No</label>
             <input type="text" value={form.admissionNo} onChange={e => updateField('admissionNo', e.target.value)} placeholder="e.g. ADM-2024-001" className="input-field" />
-          </div>
-        </div>
-        <div className="mt-3">
-          <label className="block text-sm font-medium mb-2">Subjects</label>
-          <div className="flex flex-wrap gap-2">
-            {subjectOptions.map(subject => {
-              const selected = form.subjects.includes(subject)
-              return (
-                <button key={subject} type="button" onClick={() => toggleSubject(subject)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${selected ? 'badge-pink' : 'badge-default hover:bg-black-06'}`}>
-                  {subject}
-                </button>
-              )
-            })}
           </div>
         </div>
       </div>
@@ -256,7 +241,7 @@ export default function CreateAccount() {
             const selected = form.subjects.includes(subject)
             return (
               <button key={subject} type="button" onClick={() => toggleSubject(subject)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${selected ? 'badge-pink' : 'badge-default hover:bg-black-06'}`}>
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${selected ? 'bg-primary/10 text-primary border border-primary/20' : 'bg-muted text-muted-foreground border border-transparent hover:bg-muted/80'}`}>
                 {subject}
               </button>
             )
