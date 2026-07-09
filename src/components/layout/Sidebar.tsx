@@ -1,10 +1,13 @@
-import React from 'react'
+import React, { useCallback } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuthStore, useSidebarStore } from '@/lib/store'
 import { navSections, roleLabels } from '@/lib/nav-config'
 import { cn } from '@/lib/utils'
-import { LogOut, X, ChevronLeft, ChevronRight, GraduationCap } from 'lucide-react'
+import { LogOut, X, ChevronLeft, ChevronRight, GraduationCap, Briefcase } from 'lucide-react'
+import styled from 'styled-components'
+
+const staffRoles = ['teacher', 'admin', 'manager', 'librarian']
 
 export default function Sidebar() {
   const { user, logout } = useAuthStore()
@@ -14,11 +17,16 @@ export default function Sidebar() {
   if (!user) return null
 
   const sections = navSections[user.role] || []
+  const isStaff = staffRoles.includes(user.role)
 
   const handleLogout = () => {
     logout()
     navigate('/login')
   }
+
+  const handleEducatorDesk = useCallback(() => {
+    window.open('/educator-desk', '_blank')
+  }, [])
 
   const sidebarContent = (collapsed: boolean) => (
     <div className={cn(
@@ -94,6 +102,20 @@ export default function Sidebar() {
         ))}
       </nav>
 
+      {/* EducatorDesk Button - Staff only */}
+      {isStaff && (
+        <div className={cn("shrink-0", collapsed ? "px-1 py-2" : "px-3 py-2")}>
+          <StyledEducatorBtn onClick={handleEducatorDesk} className="w-full">
+            <div className="box-button">
+              <div className="button">
+                <Briefcase className="w-4 h-4" />
+                <span>EducatorDesk</span>
+              </div>
+            </div>
+          </StyledEducatorBtn>
+        </div>
+      )}
+
       {/* Footer */}
       <div className={cn("border-t border-orange-900/20 shrink-0", collapsed ? "px-1 py-3" : "px-3 py-3")}>
         <button onClick={handleLogout} className={cn(
@@ -106,6 +128,57 @@ export default function Sidebar() {
       </div>
     </div>
   )
+
+  const StyledEducatorBtn = styled.button`
+    cursor: pointer;
+    border: none;
+    background: none;
+    padding: 0;
+    width: 100%;
+    user-select: none;
+
+    .box-button {
+      cursor: pointer;
+      border: 3px solid #fbbf24;
+      background-color: rgba(251, 191, 36, 0.15);
+      padding-bottom: 8px;
+      transition: 0.1s ease-in-out;
+      user-select: none;
+      border-radius: 8px;
+    }
+
+    .button {
+      background-color: rgba(251, 191, 36, 0.2);
+      border: 3px solid rgba(251, 191, 36, 0.4);
+      padding: 6px 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+      border-radius: 5px;
+    }
+
+    .button span {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: #fbbf24;
+    }
+
+    .button svg {
+      color: #fbbf24;
+    }
+
+    .box-button:active {
+      padding: 0;
+      margin-bottom: 8px;
+      transform: translateY(8px);
+    }
+
+    .box-button:hover {
+      background-color: rgba(251, 191, 36, 0.25);
+    }
+  `
 
   return (
     <>

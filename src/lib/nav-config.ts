@@ -4,11 +4,11 @@ import {
   FileText, FileSpreadsheet, CreditCard, Sparkles, Brain, Target, StickyNote,
   Share2, Library, PenTool, MessageSquare, Globe, Megaphone, Bus,
   Award, Star, User, FileCheck, BookOpen, TrendingUp, PieChart, Bell,
-  Radio, Users, Landmark, Wallet, Clock, Receipt, DollarSign, Building2,
+  Radio, Users, Clock, Building2,
   RadioTower, BookCopy, HeartPulse, Scale, Trophy, FolderOpen,
   GraduationCap, Truck, UtensilsCrossed,   Dumbbell, Handshake, Cog, Monitor,
   Search, AlertTriangle, Stethoscope, Headphones,
-  MapPin, Shield, Settings, Eye, Briefcase, BookMarked, HelpCircle,
+  MapPin, Shield, Settings, Eye, BookMarked, HelpCircle,
   ThumbsUp, Printer, Gauge, Navigation, CircleUser, Route, ChevronDown,
   GraduationCap as Cap, Gavel, Inbox, type LucideIcon
 } from 'lucide-react'
@@ -126,12 +126,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
     },
     
     {
-      label: 'Finance',
-      items: [
-        { icon: DollarSign, label: 'My Salary', path: '/teacher/salary' },
-      ]
-    },
-    {
       label: 'Tools',
       items: [
         { icon: Sparkles, label: 'AI Lab', path: '/teacher/ai' },
@@ -152,10 +146,8 @@ export const navSections: Record<UserRole, NavSection[]> = {
       items: [
         { icon: MessageSquare, label: 'Messages', path: '/admin/messages' },
         { icon: Users, label: 'Users', path: '/admin/users' },
-        { icon: Landmark, label: 'Accounts', path: '/admin/fees' },
         { icon: Calendar, label: 'Timetable', path: '/admin/timetable' },
         { icon: Megaphone, label: 'Announcements', path: '/admin/announcements' },
-        { icon: Wallet, label: 'Payroll & HR', path: '/admin/payroll' },
       ]
     },
     {
@@ -167,31 +159,11 @@ export const navSections: Record<UserRole, NavSection[]> = {
       ]
     },
     {
-      label: 'Finance',
-      items: [
-        { icon: Receipt, label: 'Invoicing', path: '/admin/invoicing' },
-        { icon: DollarSign, label: 'Finance Suite', path: '/admin/finance-full' },
-      ]
-    },
-    {
-      label: 'HR & Staff',
-      items: [
-        { icon: Users, label: 'Human Resources', path: '/admin/hr' },
-      ]
-    },
-    {
       label: 'Library',
       items: [
         { icon: BookCopy, label: 'Library Management', path: '/admin/library' },
       ]
     },
-    {
-      label: 'ERP & CRM',
-      items: [
-        { icon: Building2, label: 'ERP System', path: '/admin/erp' },
-      ]
-    },
-    
     {
       label: 'Transport',
       items: [
@@ -326,14 +298,12 @@ export const navSections: Record<UserRole, NavSection[]> = {
       items: [
         { icon: Users, label: 'User Management', path: '/manager/users' },
         { icon: Cap, label: 'Academics', path: '/manager/academics' },
-        { icon: Briefcase, label: 'HR', path: '/manager/hr' },
       ]
     },
     {
       label: 'Operations',
       items: [
         { icon: MessageSquare, label: 'Messages', path: '/manager/messages' },
-        { icon: Wallet, label: 'Finance', path: '/manager/finance' },
         { icon: Bus, label: 'Transport', path: '/manager/transport' },
         { icon: Calendar, label: 'Events', path: '/manager/events' },
         { icon: FileText, label: 'Exams', path: '/manager/exams' },
@@ -356,13 +326,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
       ]
     },
     {
-      label: 'Finance & Invoicing',
-      items: [
-        { icon: Receipt, label: 'Invoicing', path: '/manager/invoicing' },
-        { icon: Building2, label: 'ERP', path: '/manager/erp' },
-      ]
-    },
-    {
       label: 'Library',
       items: [
         { icon: BookCopy, label: 'Library Management', path: '/manager/library' },
@@ -374,8 +337,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
       items: [
         { icon: BarChart3, label: 'Analytics', path: '/manager/analytics' },
         { icon: Sparkles, label: 'AI Lab', path: '/manager/ai' },
-        { icon: CreditCard, label: 'Fees', path: '/manager/fees' },
-        { icon: Wallet, label: 'Payroll', path: '/manager/payroll' },
         { icon: Library, label: 'CS Library', path: '/cs-library' },
       ]
     },
