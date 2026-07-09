@@ -13,7 +13,25 @@ interface Section {
   name: string;
   capacity: number;
   studentCount: number;
+  teacherId?: string;
+  subjectTeachers?: Record<string, string>;
 }
+
+const SECTION_SUBJECT_TEACHER_FIELDS = [
+  { key: 'Mathematics', label: 'Math Teacher' },
+  { key: 'Physics', label: 'Physics Teacher' },
+  { key: 'Chemistry', label: 'Chemistry Teacher' },
+  { key: 'Biology', label: 'Biology Teacher' },
+  { key: 'English', label: 'English Teacher' },
+  { key: 'History', label: 'History Teacher' },
+  { key: 'Civics', label: 'Civics Teacher' },
+  { key: 'Geography', label: 'Geography Teacher' },
+  { key: 'Economics', label: 'Economics Teacher' },
+  { key: 'Accounting', label: 'Accounting Teacher' },
+  { key: 'Computer Science', label: 'Computer Science Teacher' },
+  { key: 'Art', label: 'Art Teacher' },
+  { key: 'Physical Education', label: 'PE Teacher' },
+];
 
 interface Subject {
   id: string;
@@ -80,12 +98,12 @@ export default function AdminClassroom() {
   const [sectionName, setSectionName] = useState('');
   const [sectionCapacity, setSectionCapacity] = useState('40');
   const [sectionTeacherId, setSectionTeacherId] = useState('');
+  const [sectionSubjectTeachers, setSectionSubjectTeachers] = useState<Record<string, string>>({});
   const [subjectName, setSubjectName] = useState('');
   const [subjectCode, setSubjectCode] = useState('');
   const [subjectElective, setSubjectElective] = useState(false);
   const [subjectTeacherId, setSubjectTeacherId] = useState('');
   const [subjectSectionId, setSubjectSectionId] = useState('');
-  const [subjectTeachers, setSubjectTeachers] = useState<Record<string, string>>({});
   const [teachers, setTeachers] = useState<any[]>([]);
 
   const PREDEFINED_SUBJECTS = [
@@ -97,6 +115,7 @@ export default function AdminClassroom() {
     { name: 'Computer Science', code: 'CS' },
     { name: 'History', code: 'HIST' },
     { name: 'Geography', code: 'GEO' },
+    { name: 'Civics', code: 'CIV' },
     { name: 'Art', code: 'ART' },
     { name: 'Physical Education', code: 'PE' },
     { name: 'Economics', code: 'ECON' },
@@ -155,14 +174,8 @@ export default function AdminClassroom() {
     setModal(m);
     if (m?.kind === 'add-class') { setClassName(''); setClassGrade(''); setClassTeacherId(''); }
     if (m?.kind === 'edit-class') { setClassName(m.cls.name); setClassGrade(String(m.cls.grade)); setClassTeacherId(m.cls.classTeacherId || ''); }
-    if (m?.kind === 'add-section') {
-      setSectionName(''); setSectionCapacity('40'); setSectionTeacherId('');
-      const cls = classList.find(c => c.id === m.classId);
-      const initial: Record<string, string> = {};
-      cls?.subjects?.forEach(s => { initial[s.name] = s.teacherId || ''; });
-      setSubjectTeachers(initial);
-    }
-    if (m?.kind === 'edit-section') { setSectionName(m.section.name); setSectionCapacity(String(m.section.capacity)); setSectionTeacherId((m.section as any).teacherId || ''); }
+    if (m?.kind === 'add-section') { setSectionName(''); setSectionCapacity('40'); setSectionTeacherId(''); setSectionSubjectTeachers({}); }
+    if (m?.kind === 'edit-section') { setSectionName(m.section.name); setSectionCapacity(String(m.section.capacity)); setSectionTeacherId((m.section as any).teacherId || ''); setSectionSubjectTeachers((m.section as any).subjectTeachers || {}); }
     if (m?.kind === 'add-subject') { setSubjectName(''); setSubjectCode(''); setSubjectElective(false); setSubjectTeacherId(''); setSubjectSectionId(''); }
     if (m?.kind === 'edit-subject') { setSubjectName(m.subject.name); setSubjectCode(m.subject.code); setSubjectElective(m.subject.isElective); setSubjectTeacherId(m.subject.teacherId || ''); setSubjectSectionId(m.subject.sectionId || ''); }
   }
@@ -184,8 +197,8 @@ export default function AdminClassroom() {
         const newSectionId = section.id;
         const cls = classList.find(c => c.id === modal.classId);
         for (const subjDef of PREDEFINED_SUBJECTS) {
-          const raw = subjectTeachers[subjDef.name];
-          if (!raw || raw === 'none') continue;
+          const raw = sectionSubjectTeachers[subjDef.name];
+          if (!raw) continue;
           const existing = cls?.subjects?.find(s => s.name === subjDef.name && (!s.sectionId || s.sectionId === newSectionId));
           if (existing) {
             await localApiFetch(`/subjects/${existing.id}`, { method: 'PATCH', body: JSON.stringify({ teacherId: raw, sectionId: newSectionId }) });
@@ -194,7 +207,8 @@ export default function AdminClassroom() {
           }
         }
       } else if (modal.kind === 'edit-section') {
-        await localApiFetch(`/sections/${modal.section.id}`, { method: 'PATCH', body: JSON.stringify({ name: sectionName.trim(), capacity: Number(sectionCapacity), teacherId: sectionTeacherId || undefined }) });
+        const subjTeachers = Object.fromEntries(Object.entries(sectionSubjectTeachers).filter(([, v]) => v));
+        await localApiFetch(`/sections/${modal.section.id}`, { method: 'PATCH', body: JSON.stringify({ name: sectionName.trim(), capacity: Number(sectionCapacity), teacherId: sectionTeacherId || undefined, subjectTeachers: Object.keys(subjTeachers).length ? subjTeachers : undefined }) });
       } else if (modal.kind === 'add-subject') {
         if (!subjectName.trim() || !subjectCode.trim()) throw new Error('Name and code are required');
         if (!subjectTeacherId) throw new Error('Please select a teacher for this subject');
@@ -346,8 +360,7 @@ export default function AdminClassroom() {
                                       }}
                                       className="w-full text-sm border rounded px-2 py-1.5 bg-background"
                                     >
-                          <option value="">— Not assigned —</option>
-                            <option value="none">— None —</option>
+                                      <option value="">— None —</option>
                                       {teachers.length === 0 && <option disabled>No teachers found</option>}
                                       {teachers.map(t => {
                                         const isAssigned = assignedTeacherIds.has(t.id) && t.id !== (sec as any).teacherId;
@@ -359,6 +372,22 @@ export default function AdminClassroom() {
                                       })}
                                     </select>
                                   </div>
+                                  {(sec as any).subjectTeachers && Object.keys((sec as any).subjectTeachers).length > 0 && (
+                                    <div className="mt-2 pt-2 border-t">
+                                      <label className="block text-[11px] font-medium text-muted-foreground mb-1.5">Subject Teachers</label>
+                                      <div className="space-y-1">
+                                        {Object.entries((sec as any).subjectTeachers).map(([subj, tid]) => {
+                                          const t = teachers.find(tr => tr.id === tid);
+                                          return t ? (
+                                            <div key={subj} className="text-xs flex justify-between">
+                                              <span className="text-muted-foreground">{subj}:</span>
+                                              <span className="font-medium">{t.name}</span>
+                                            </div>
+                                          ) : null;
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
                                 </div>
                               )})}
                             </div>
@@ -521,6 +550,26 @@ export default function AdminClassroom() {
                       })}
                     </select>
                   </div>
+                  <div className="border-t pt-4 mt-2">
+                    <label className="block text-sm font-semibold mb-3">Assign Subject Teachers</label>
+                    <div className="space-y-3">
+                      {SECTION_SUBJECT_TEACHER_FIELDS.map(field => {
+                        const filteredTeachers = teachers.filter(t => t.subjects?.includes(field.key));
+                        return (
+                          <div key={field.key}>
+                            <label className="block text-xs font-medium mb-1">{field.label}</label>
+                            <select value={sectionSubjectTeachers[field.key] || ''} onChange={e => setSectionSubjectTeachers(prev => ({ ...prev, [field.key]: e.target.value }))} className="w-full border rounded-md px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-primary">
+                              <option value="">— None —</option>
+                              {filteredTeachers.length === 0 && <option disabled>No {field.key} teachers found</option>}
+                              {filteredTeachers.map(t => (
+                                <option key={t.id} value={t.id}>{t.name}</option>
+                              ))}
+                            </select>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </>
               )}
 
@@ -554,22 +603,24 @@ export default function AdminClassroom() {
                   <div className="border-t pt-4">
                     <h3 className="text-sm font-semibold mb-3">Assign Subject Teachers</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {PREDEFINED_SUBJECTS.map(subj => (
+                      {PREDEFINED_SUBJECTS.map(subj => {
+                        const filteredTeachers = teachers.filter(t => t.subjects?.includes(subj.name));
+                        return (
                         <div key={subj.name} className="flex items-center gap-2 p-2 rounded-lg border bg-muted/10">
                           <span className="text-sm font-medium min-w-[120px] shrink-0">{subj.name}</span>
                           <select
-                            value={subjectTeachers[subj.name] || ''}
-                            onChange={e => setSubjectTeachers(prev => ({ ...prev, [subj.name]: e.target.value }))}
+                            value={sectionSubjectTeachers[subj.name] || ''}
+                            onChange={e => setSectionSubjectTeachers(prev => ({ ...prev, [subj.name]: e.target.value }))}
                             className="flex-1 text-sm border rounded px-2 py-1.5 bg-background"
                           >
-                            <option value="">— Not assigned —</option>
-                            <option value="none">— None —</option>
-                            {teachers.map(t => (
+                            <option value="">— None —</option>
+                            {filteredTeachers.length === 0 && <option disabled>No teachers found</option>}
+                            {filteredTeachers.map(t => (
                               <option key={t.id} value={t.id}>{t.name}</option>
                             ))}
                           </select>
                         </div>
-                      ))}
+                      )})}
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">Select teachers for subjects that will be taught in this section. Only subjects with a teacher assigned will be created.</p>
                   </div>
