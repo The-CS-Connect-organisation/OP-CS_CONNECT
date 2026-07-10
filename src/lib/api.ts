@@ -1,5 +1,5 @@
 
-const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? '/api' : 'https://op-csconnect-backend-production.up.railway.app/api');
+const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? '/api' : 'https://op-cs-connect-backend-vym7.onrender.com/api');
 
 function authHeaders(): Record<string, string> {
   const token = localStorage.getItem('eduvault-token');
