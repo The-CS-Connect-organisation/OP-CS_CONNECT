@@ -58,6 +58,7 @@ export default function CSLibrary() {
   const [tab, setTab] = useState<'borrowed' | 'reserve'>(initialTab)
   const [borrowed, setBorrowed] = useState<BorrowedBook[]>([])
   const [catalogue, setCatalogue] = useState<CatalogueBook[]>([])
+  const [myHolds, setMyHolds] = useState<Set<string>>(new Set())
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
   const [reserving, setReserving] = useState<string | null>(null)
@@ -66,11 +67,13 @@ export default function CSLibrary() {
     Promise.all([
       api.getBorrowedBooks().catch(() => null),
       api.getLibraryCatalogue().catch(() => null),
-    ]).then(([b, c]) => {
+      api.getHolds().catch(() => []),
+    ]).then(([b, c, h]) => {
       if (b) setBorrowed(toBorrowed(b))
       if (c) setCatalogue(toCatalogue(c))
+      if (Array.isArray(h)) setMyHolds(new Set(h.filter((x: any) => x.studentId === user?.id && x.status === 'active').map((x: any) => x.bookId)))
     }).finally(() => setLoading(false))
-  }, [])
+  }, [user])
 
   const filteredCatalogue = catalogue.filter(b =>
     b.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -92,8 +95,12 @@ export default function CSLibrary() {
         })
       }).catch(() => {})
     } catch (e) {
-      console.error('Reserve failed', e)
-      alert('Reserve failed: ' + ((e as any)?.message || e))
+      const msg = (e as any)?.message || ''
+      if (msg.includes('Already have a hold')) {
+        setMyHolds(prev => new Set(prev).add(book.id))
+      } else {
+        alert('Reserve failed: ' + msg)
+      }
     } finally {
       setReserving(null)
     }
@@ -203,17 +210,23 @@ export default function CSLibrary() {
                         {book.availableCopies}/{book.totalCopies} available
                       </span>
                     </div>
-                    <Button size="sm" variant="outline" className="mt-2 w-full text-xs"
-                      disabled={book.availableCopies < 1 || reserving === book.id}
-                      onClick={() => handleReserve(book)}
-                    >
-                      {reserving === book.id ? (
-                        <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                      ) : (
-                        <Star className="w-3 h-3 mr-1" />
-                      )}
-                      Reserve
-                    </Button>
+                    {myHolds.has(book.id) ? (
+                      <Button size="sm" variant="secondary" className="mt-2 w-full text-xs" disabled>
+                        <CheckCircle2 className="w-3 h-3 mr-1" />Already Reserved
+                      </Button>
+                    ) : (
+                      <Button size="sm" variant="outline" className="mt-2 w-full text-xs"
+                        disabled={book.availableCopies < 1 || reserving === book.id}
+                        onClick={() => handleReserve(book)}
+                      >
+                        {reserving === book.id ? (
+                          <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                        ) : (
+                          <Star className="w-3 h-3 mr-1" />
+                        )}
+                        Reserve
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>

@@ -54,9 +54,23 @@ export default function Signup() {
     try {
       const user = await signupWithCredentials(form)
       if (form.role === 'parent' && form.phone && form.parentType) {
-        api.autoLinkParent(user.id, form.phone, form.parentType).catch(() => {})
+        try {
+          const res = await api.autoLinkParent(user.id, form.phone, form.parentType)
+          if (res?.linked?.length > 0) {
+            // Merge with any existing children so we don't wipe out manually linked ones
+            const existingChildren = user.children || [];
+            const newChildIds = res.linked.map((c: any) => c.id);
+            const merged = [...new Set([...existingChildren, ...newChildIds])];
+            useAuthStore.getState().updateUser({ 
+              children: merged,
+              phone: form.phone
+            })
+          }
+        } catch (err) {
+          console.warn('[Signup] Auto-link had no matching students:', err)
+        }
       }
-      navigate(`/${form.role}/dashboard`)
+      navigate(`/${form.role}`)
     } catch (err: any) {
       setError(err.message || 'Signup failed')
     } finally {
