@@ -388,34 +388,26 @@ export default function ParentMyChildren() {
                               </Badge>
                             ) : slotTaken ? (
                               <Badge className="bg-red-500/10 text-red-500 border-red-500/20">Slot Taken</Badge>
-                            ) : linkingStudent?.id === s.id ? (
-                              <div className="space-y-2">
-                                <div className="relative">
-                                  <Lock className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-                                  <input type={showLinkPass ? 'text' : 'password'} value={linkPass} onChange={e => setLinkPass(e.target.value)}
-                                    placeholder="Student's password"
-                                    className="w-full pl-9 pr-8 py-1.5 rounded-lg bg-accent/50 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/50"
-                                    onKeyDown={async e => { if (e.key === 'Enter') { setLinkLoading(true); setLinkMsg(''); try { const r = await api.linkChild(s.email, linkPass); if (r?.success) { setLinkMsg('Connected!'); setTimeout(() => { setLinkingStudent(null); setLinkPass(''); loadChildren(); setDetectedStudents((prev: any[]) => prev.map(p => p.id === s.id ? { ...p, _alreadyLinked: true } : p)) }, 1000) } } catch (err: any) { setLinkMsg(err?.message || 'Failed') } finally { setLinkLoading(false) } } }}
-                                  />
-                                  <button type="button" onClick={() => setShowLinkPass(!showLinkPass)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                                    {showLinkPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                                  </button>
-                                </div>
-                                {linkMsg && <p className={`text-xs ${linkMsg === 'Connected!' ? 'text-emerald-500' : 'text-red-500'}`}>{linkMsg}</p>}
-                                <div className="flex gap-1">
-                                  <button onClick={async () => { setLinkLoading(true); setLinkMsg(''); try { const r = await api.linkChild(s.email, linkPass); if (r?.success) { setLinkMsg('Connected!'); setTimeout(() => { setLinkingStudent(null); setLinkPass(''); loadChildren(); setDetectedStudents((prev: any[]) => prev.map(p => p.id === s.id ? { ...p, _alreadyLinked: true } : p)) }, 1000) } } catch (err: any) { setLinkMsg(err?.message || 'Failed') } finally { setLinkLoading(false) } }}
-                                    disabled={!linkPass || linkLoading} className="px-3 py-1 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-medium disabled:opacity-50 flex items-center gap-1">
-                                    {linkLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
-                                    Verify & Connect
-                                  </button>
-                                  <button onClick={() => { setLinkingStudent(null); setLinkPass(''); setLinkMsg('') }} className="px-3 py-1 rounded-lg bg-muted text-xs font-medium">Cancel</button>
-                                </div>
-                              </div>
                             ) : (
                               <Button size="sm" className="bg-gradient-to-r from-orange-500 to-amber-500 text-white"
-                                onClick={() => { setLinkingStudent(s); setLinkPass(''); setLinkMsg(''); setShowLinkPass(false) }}
+                                onClick={async () => {
+                                  setLinkLoading(true)
+                                  try {
+                                    const res = await api.autoLinkParent(user!.id, autoPhone, parentType!, s.id)
+                                    if (res?.success) {
+                                      loadChildren()
+                                      setDetectedStudents((prev: any[]) => prev.map(p => p.id === s.id ? { ...p, _alreadyLinked: true } : p))
+                                    }
+                                  } catch (err: any) {
+                                    alert(err?.message || 'Failed to connect')
+                                  } finally {
+                                    setLinkLoading(false)
+                                  }
+                                }}
+                                disabled={linkLoading}
                               >
-                                <UserPlus className="w-3 h-3 mr-1" /> Connect
+                                {linkLoading ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <UserPlus className="w-3 h-3 mr-1" />}
+                                Connect
                               </Button>
                             )}
                           </div>

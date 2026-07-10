@@ -326,7 +326,7 @@ export const api = {
   linkChild: (email: string, password: string) => apiFetch('/parent/link-child', { method: 'POST', body: JSON.stringify({ email, password }) }),
   getAvailableStudents: () => apiFetch('/students/available'),
   updateParentType: (parentType: string) => apiFetch('/parent/parent-type', { method: 'PUT', body: JSON.stringify({ parentType }) }),
-  autoLinkParent: (parentId: string, phone: string, parentType: string) => apiFetch('/parent/auto-link', { method: 'POST', body: JSON.stringify({ parentId, phone, parentType }) }),
+  autoLinkParent: (parentId: string, phone: string, parentType: string, studentId?: string) => apiFetch('/parent/auto-link', { method: 'POST', body: JSON.stringify({ parentId, phone, parentType, studentId }) }),
 
   // Bus
   getBusAssignments: () => apiFetch('/bus/assignments'),
