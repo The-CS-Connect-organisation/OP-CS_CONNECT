@@ -322,6 +322,10 @@ export const api = {
   getChildTimetable: (childId: string) => apiFetch(`/parent/timetable/${childId}`),
   getChildFees: (childId: string) => apiFetch(`/parent/fees/${childId}`),
   getChildBusTracking: (childId: string) => apiFetch(`/parent/bus/${childId}`),
+  getChildren: () => apiFetch('/parent/children'),
+  linkChild: (email: string, password: string) => apiFetch('/parent/link-child', { method: 'POST', body: JSON.stringify({ email, password }) }),
+  getAvailableStudents: () => apiFetch('/students/available'),
+  updateParentType: (parentType: string) => apiFetch('/parent/parent-type', { method: 'PUT', body: JSON.stringify({ parentType }) }),
 
   // Bus
   getBusAssignments: () => apiFetch('/bus/assignments'),

@@ -82,6 +82,7 @@ const ParentCounselling = lazy(() => import('./pages/parent/ParentCounselling'))
 const ParentHealth = lazy(() => import('./pages/parent/ParentHealth'))
 const ParentDigitalFridge = lazy(() => import('./pages/parent/DigitalFridge'))
 const ParentBookHeavyAlerts = lazy(() => import('./pages/parent/BookHeavyAlerts'))
+const ParentMyChildren = lazy(() => import('./pages/parent/MyChildren'))
 const DriverProfile = lazy(() => import('./pages/driver/DriverProfile'))
 const LibrarianDashboard = lazy(() => import('./pages/librarian/LibrarianDashboard'))
 
@@ -335,6 +336,7 @@ function App() {
             <Route path="health" element={<ParentHealth />} />
             <Route path="digital-fridge" element={<ParentDigitalFridge />} />
             <Route path="book-heavy-alerts" element={<ParentBookHeavyAlerts />} />
+            <Route path="my-children" element={<ParentMyChildren />} />
             <Route path="profile" element={<ParentProfile />} />
           </Route>
 

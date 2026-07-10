@@ -200,8 +200,8 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'My Children',
       items: [
+        { icon: Users, label: 'All Children', path: '/parent/my-children' },
         { icon: MessageSquare, label: 'Messages', path: '/parent/messages' },
-        { icon: BookOpen, label: 'Homework', path: '/parent/homework' },
         { icon: UserCheck, label: 'Attendance', path: '/parent/attendance' },
         { icon: BarChart3, label: 'Grades', path: '/parent/grades' },
         { icon: Calendar, label: 'Timetable', path: '/parent/timetable' },
