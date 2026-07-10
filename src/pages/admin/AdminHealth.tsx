@@ -242,14 +242,14 @@ export default function AdminHealth() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Health Services</h1>
         <p className="text-muted-foreground">Health records, immunisations, IEPs, screenings & nurse visits</p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex flex-wrap">
+        <TabsList className="overflow-x-auto flex-nowrap gap-1 scrollbar-thin pb-px">
           <TabsTrigger value="records">Records</TabsTrigger>
           <TabsTrigger value="immunisations">Immunisations</TabsTrigger>
           <TabsTrigger value="ieps">IEP Plans</TabsTrigger>
@@ -263,7 +263,7 @@ export default function AdminHealth() {
         </div>
 
         <TabsContent value="records">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
             <p className="text-muted-foreground">{records.length} record(s)</p>
             <Button onClick={() => { setEditRecord(null); setRecordForm({ studentName: '', condition: '', medication: '', allergies: '', bloodType: '', notes: '' }); setShowRecordForm(true); }}>
               <Plus className="w-4 h-4 mr-2" />New Record
@@ -318,7 +318,7 @@ export default function AdminHealth() {
         </TabsContent>
 
         <TabsContent value="immunisations">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
             <p className="text-muted-foreground">{immunisations.length} immunisation(s)</p>
             <Button onClick={() => setShowImmunisationForm(true)}>
               <Plus className="w-4 h-4 mr-2" />New Immunisation
@@ -355,7 +355,7 @@ export default function AdminHealth() {
                       <div>
                         <h4 className="font-semibold">{i.studentName}</h4>
                         <p className="text-sm"><span className="font-medium">{i.vaccine}</span> — {i.dose}</p>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mt-1">
                           <span>Given: {i.dateGiven}</span>
                           {i.nextDue && <span>Next: {i.nextDue}</span>}
                           <span>By: {i.administeredBy}</span>
@@ -371,7 +371,7 @@ export default function AdminHealth() {
         </TabsContent>
 
         <TabsContent value="ieps">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
             <p className="text-muted-foreground">{ieps.length} IEP(s)</p>
             <Button onClick={() => { setEditIEP(null); setIepForm({ studentName: '', disability: '', accommodations: '', goals: '', reviewDate: '', status: 'active' }); setShowIEPForm(true); }}>
               <Plus className="w-4 h-4 mr-2" />New IEP
@@ -434,7 +434,7 @@ export default function AdminHealth() {
         </TabsContent>
 
         <TabsContent value="screenings">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
             <p className="text-muted-foreground">{screenings.length} screening(s)</p>
             <Button onClick={() => setShowScreeningForm(true)}>
               <Plus className="w-4 h-4 mr-2" />New Screening
@@ -483,7 +483,7 @@ export default function AdminHealth() {
         </TabsContent>
 
         <TabsContent value="visits">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
             <p className="text-muted-foreground">{visits.length} visit(s)</p>
             <Button onClick={() => setShowVisitForm(true)}>
               <Plus className="w-4 h-4 mr-2" />New Visit
