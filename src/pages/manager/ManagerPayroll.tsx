@@ -93,8 +93,8 @@ export default function ManagerPayroll() {
         fetch(`/api/v1/payroll/structures`, { headers: getHeaders() }),
         fetch(`/api/v1/payroll/summary?month=${filterMonth}&year=${filterYear}`, { headers: getHeaders() }),
       ]);
-      if (recRes.ok) setRecords(await recRes.json());
-      if (strRes.ok) setStructures(await strRes.json());
+      if (recRes.ok) { const d = await recRes.json(); setRecords(Array.isArray(d) ? d : []); }
+      if (strRes.ok) { const d = await strRes.json(); setStructures(Array.isArray(d) ? d : []); }
       if (sumRes.ok) setSummary(await sumRes.json());
     } catch {}
     setLoading(false);

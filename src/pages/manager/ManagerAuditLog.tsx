@@ -22,7 +22,7 @@ export default function ManagerAuditLog() {
     async function loadAuditLog() {
       try {
         const data = await apiFetch('/audit-log');
-        setEntries(data);
+        setEntries(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('[ManagerAuditLog] Failed to load:', err);
       }

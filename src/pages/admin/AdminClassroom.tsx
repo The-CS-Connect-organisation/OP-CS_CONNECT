@@ -146,7 +146,7 @@ export default function AdminClassroom() {
     setLoading(true);
     try {
       const data = await localApiFetch('/classes/detailed');
-      setClassList(data);
+      setClassList(Array.isArray(data) ? data : []);
     } catch (e: any) {
       setError(e.message);
     } finally {

@@ -25,7 +25,7 @@ export default function ManagerTimetable() {
     async function loadTimetable() {
       try {
         const data = await api.getTimetable(selectedClass);
-        setEntries(data);
+        setEntries(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error('[ManagerTimetable] Failed to load:', err);
       }

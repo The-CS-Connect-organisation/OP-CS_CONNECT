@@ -98,7 +98,7 @@ export default function TeacherExamResults() {
     try {
       setLoadingAnalytics(true);
       const data = await api.getExamAnalytics(examId);
-      setAnalytics(data);
+      setAnalytics(data && typeof data === 'object' ? data : null);
     } catch { setAnalytics(null); } finally { setLoadingAnalytics(false); }
   };
 

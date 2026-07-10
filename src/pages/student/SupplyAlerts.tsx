@@ -21,7 +21,7 @@ export default function SupplyAlerts() {
         const params: Record<string, string> = {}
         if (user?.class) params.class = user.class
         const data = await api.getSupplyAlerts(params)
-        setAlerts(data)
+        setAlerts(Array.isArray(data) ? data : [])
       } catch (err: any) {
         setError('Failed to fetch supply alerts. Please try again later.')
         setAlerts([])

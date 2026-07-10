@@ -80,7 +80,7 @@ export default function ManagerFinance() {
         api.getPayments().catch(() => []),
         api.getExpenses().catch(() => []),
       ]);
-      if (finData) setStats(finData);
+      if (finData) setStats(prev => ({ ...prev, ...finData }));
 
       const allTxns: Transaction[] = [
         ...(Array.isArray(payData) ? payData.map((p: any) => ({

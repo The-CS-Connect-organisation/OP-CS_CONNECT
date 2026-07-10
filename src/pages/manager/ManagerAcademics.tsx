@@ -85,7 +85,7 @@ export default function ManagerAcademics() {
     try {
       setLoading(true);
       const data = await api.getManagerAcademics();
-      if (data) setStats(data);
+      if (data) setStats({ ...stats, ...data });
     } catch (err) {
       console.error('[ManagerAcademics] Failed to load:', err);
     } finally {

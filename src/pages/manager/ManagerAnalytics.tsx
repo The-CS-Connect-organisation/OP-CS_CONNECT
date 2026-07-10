@@ -33,7 +33,7 @@ export default function ManagerAnalytics() {
     try {
       setLoading(true);
       const data = await api.getManagerAnalytics();
-      if (data) setStats(data);
+      if (data) setStats(prev => ({ ...prev, ...data }));
     } catch (err) {
       console.error('[ManagerAnalytics] Failed to load stats:', err);
     } finally {
