@@ -2,7 +2,7 @@ import React, { useCallback } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuthStore, useSidebarStore } from '@/lib/store'
-import { navSections, roleLabels } from '@/lib/nav-config'
+import { navSections } from '@/lib/nav-config'
 import { cn } from '@/lib/utils'
 import { LogOut, X, ChevronLeft, ChevronRight, GraduationCap, Briefcase } from 'lucide-react'
 import styled from 'styled-components'
@@ -38,10 +38,7 @@ export default function Sidebar() {
         "flex items-center border-b border-orange-900/20 shrink-0",
         collapsed ? "flex-col gap-1 py-3 px-1" : "gap-3 px-4 py-4"
       )}>
-        <div className={cn("min-w-0", collapsed ? "hidden" : "flex-1")}>
-          <p className="text-sm font-bold leading-tight truncate text-white/90">{user.name}</p>
-          <p className="text-[11px] text-orange-300/70 font-medium">{roleLabels[user.role]}</p>
-        </div>
+
         <button
           onClick={toggle}
           className="hidden lg:inline-flex p-1 rounded-md hover:bg-white/10"

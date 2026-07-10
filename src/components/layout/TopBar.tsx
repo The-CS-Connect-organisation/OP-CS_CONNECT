@@ -78,7 +78,7 @@ export default function TopBar() {
           <button onClick={() => setMobileOpen(!isMobileOpen)} className="p-2 rounded-md hover:bg-accent/50 lg:hidden">
             <Menu className="w-5 h-5" />
           </button>
-          <img src={`${import.meta.env.BASE_URL}favicon.png`} alt="CS Connect" className="w-7 h-7" />
+          <img src="https://www.cornerstoneschool.edu.in/wp-content/uploads/2020/02/LOGO-PNG-1.png" alt="CS Connect" className="w-7 h-7 rounded" />
           <div className="hidden lg:block h-4 w-px bg-border/50" />
           <div className="hidden lg:block">
             <h2 className="text-sm font-medium text-foreground">
@@ -138,17 +138,7 @@ export default function TopBar() {
                   {getInitials(user.name)}
                 </AvatarFallback>
               </Avatar>
-              <div className="hidden md:block text-left">
-                <p className="text-xs font-semibold leading-tight">{user.name}</p>
-                <p className="text-[10px] text-muted-foreground leading-tight capitalize">
-                  {user.role === 'teacher' && user.subjects?.length
-                    ? `${user.role} · ${user.subjects.slice(0, 2).join(', ')}${user.subjects.length > 2 ? '...' : ''}`
-                    : user.role === 'student'
-                    ? `${user.class || ''}${user.rollNo ? ` · Roll ${user.rollNo}` : ''}`
-                    : user.role
-                  }
-                </p>
-              </div>
+
             </button>
             <AnimatePresence>
               {showAvatarMenu && (
