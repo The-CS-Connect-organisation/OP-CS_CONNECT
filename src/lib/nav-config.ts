@@ -220,7 +220,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Tools',
       items: [
-        { icon: MessageSquare, label: 'Messages', path: '/parent/messages' },
         { icon: User, label: 'Profile', path: '/parent/profile' },
       ]
     },

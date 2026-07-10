@@ -24,6 +24,7 @@ export default function Signup() {
   const [form, setForm] = useState({
     name: '', email: '', password: '', role: 'student',
     class: '', subjects: [] as string[],
+    parentType: '',
     rollNo: '', admissionNo: '', phone: '', dateOfBirth: '',
     bloodGroup: '', aadharNo: '', religion: '', nationality: 'Indian',
     schoolHouse: '', fatherName: '', fatherPhone: '', motherName: '', motherPhone: '',
@@ -212,8 +213,21 @@ export default function Signup() {
           )}
 
           {form.role === 'parent' && (
-            <div className="border-t pt-4 text-sm text-muted-foreground">
-              <p>Parent accounts can be linked to students after creation by the admin. You'll receive instructions via email.</p>
+            <div className="border-t pt-4">
+              <h3 className="text-sm font-semibold flex items-center gap-2 mb-3"><Users className="w-4 h-4" />Parent Type</h3>
+              <p className="text-xs text-muted-foreground mb-3">Specify whether you are a father or mother.</p>
+              <div className="grid grid-cols-2 gap-4 max-w-xs">
+                <button type="button" onClick={() => update('parentType', 'father')}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${form.parentType === 'father' ? 'border-orange-500 bg-orange-500/5' : 'border-border hover:border-orange-500/30'}`}>
+                  <User className={`w-8 h-8 ${form.parentType === 'father' ? 'text-orange-500' : 'text-muted-foreground'}`} />
+                  <span className={`text-sm font-medium ${form.parentType === 'father' ? 'text-orange-600' : 'text-muted-foreground'}`}>Father</span>
+                </button>
+                <button type="button" onClick={() => update('parentType', 'mother')}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${form.parentType === 'mother' ? 'border-orange-500 bg-orange-500/5' : 'border-border hover:border-orange-500/30'}`}>
+                  <User className={`w-8 h-8 ${form.parentType === 'mother' ? 'text-orange-500' : 'text-muted-foreground'}`} />
+                  <span className={`text-sm font-medium ${form.parentType === 'mother' ? 'text-orange-600' : 'text-muted-foreground'}`}>Mother</span>
+                </button>
+              </div>
             </div>
           )}
 

@@ -41,6 +41,7 @@ const bloodGroupOptions = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const emptyForm = {
   name: '', email: '', password: '', role: 'student',
   class: '', subjects: [] as string[],
+  parentType: '',
   admissionNo: '', phone: '', address: '',
   dateOfBirth: '', bloodGroup: '', aadharNo: '', penNo: '', apaarId: '',
   religion: '', nationality: 'Indian', schoolHouse: '', houseLocation: '',
@@ -122,6 +123,7 @@ export default function AdminUsers() {
       role: user.role,
       class: user.class || '',
       subjects: [],
+      parentType: (user as any).parentType || '',
       admissionNo: '', phone: user.phone || '', address: '',
       dateOfBirth: '', bloodGroup: '', aadharNo: '', penNo: '', apaarId: '',
       religion: '', nationality: 'Indian', schoolHouse: '', houseLocation: '',
@@ -187,6 +189,9 @@ export default function AdminUsers() {
       if (form.role === 'teacher') {
         data.class = form.class;
         if (form.subjects.length > 0) data.subjects = form.subjects;
+      }
+      if (form.role === 'parent') {
+        data.parentType = form.parentType;
       }
 
       if (editingUserId) {
@@ -500,7 +505,28 @@ export default function AdminUsers() {
                   </div>
                 )}
 
-                {form.role !== 'student' && form.role !== 'teacher' && (
+                {form.role === 'parent' && (
+                  <div className="border-t pt-4">
+                    <h3 className="text-sm font-semibold flex items-center gap-2 mb-3">
+                      <Users className="w-4 h-4 text-muted-foreground" />Parent Type
+                    </h3>
+                    <p className="text-xs text-muted-foreground mb-3">Specify whether this is a father or mother account.</p>
+                    <div className="grid grid-cols-2 gap-4 max-w-xs">
+                      <button type="button" onClick={() => updateField('parentType', 'father')}
+                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${form.parentType === 'father' ? 'border-orange-500 bg-orange-500/5' : 'border-border hover:border-orange-500/30'}`}>
+                        <User className={`w-8 h-8 ${form.parentType === 'father' ? 'text-orange-500' : 'text-muted-foreground'}`} />
+                        <span className={`text-sm font-medium ${form.parentType === 'father' ? 'text-orange-600' : 'text-muted-foreground'}`}>Father</span>
+                      </button>
+                      <button type="button" onClick={() => updateField('parentType', 'mother')}
+                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${form.parentType === 'mother' ? 'border-orange-500 bg-orange-500/5' : 'border-border hover:border-orange-500/30'}`}>
+                        <User className={`w-8 h-8 ${form.parentType === 'mother' ? 'text-orange-500' : 'text-muted-foreground'}`} />
+                        <span className={`text-sm font-medium ${form.parentType === 'mother' ? 'text-orange-600' : 'text-muted-foreground'}`}>Mother</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {form.role !== 'student' && form.role !== 'teacher' && form.role !== 'parent' && (
                   <div className="border-t pt-4">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>

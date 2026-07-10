@@ -4,7 +4,7 @@ import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, UserPlus, Check, X, Loader2, Search, ShieldCheck, ShieldAlert, Lock, Mail, GraduationCap, User, Eye, EyeOff } from 'lucide-react';
+import { Users, UserPlus, Check, X, Loader2, Search, ShieldCheck, Lock, Eye, EyeOff } from 'lucide-react';
 
 interface ChildInfo {
   id: string; name: string; class: string; email: string; rollNo?: string;
@@ -30,7 +30,6 @@ export default function ParentMyChildren() {
   const [linking, setLinking] = useState(false);
   const [linkError, setLinkError] = useState('');
   const [linkSuccess, setLinkSuccess] = useState('');
-  const [showTypePicker, setShowTypePicker] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -53,10 +52,6 @@ export default function ParentMyChildren() {
   };
 
   const openAddModal = async () => {
-    if (!parentType) {
-      setShowTypePicker(true);
-      return;
-    }
     setShowAddModal(true);
     setSelectedStudent(null);
     setPassword('');
@@ -74,17 +69,6 @@ export default function ParentMyChildren() {
     }
   };
 
-  const handleSetParentType = async (type: string) => {
-    try {
-      await api.updateParentType(type);
-      setParentType(type);
-      setShowTypePicker(false);
-      openAddModal();
-    } catch (err: any) {
-      setLinkError(err?.message || 'Failed to set parent type');
-    }
-  };
-
   const handleLink = async () => {
     if (!selectedStudent || !password) return;
     setLinking(true);
@@ -93,7 +77,7 @@ export default function ParentMyChildren() {
     try {
       const res = await api.linkChild(selectedStudent.email, password);
       if (res?.success) {
-        setLinkSuccess(`Successfully connected as ${parentType} to ${selectedStudent.name}!`);
+        setLinkSuccess(`Successfully connected to ${selectedStudent.name}!`);
         setPassword('');
         setSelectedStudent(null);
         loadChildren();
@@ -197,29 +181,6 @@ export default function ParentMyChildren() {
           ))}
         </div>
       )}
-
-      {/* Parent Type Picker Modal */}
-      <AnimatePresence>
-        {showTypePicker && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="w-full max-w-md rounded-2xl border bg-card p-6 shadow-2xl">
-              <h2 className="text-lg font-bold mb-2">Who are you?</h2>
-              <p className="text-sm text-muted-foreground mb-6">Select your relationship to your child. This can be set once.</p>
-              <div className="grid grid-cols-2 gap-4">
-                <button onClick={() => handleSetParentType('father')} className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-border hover:border-orange-500/50 hover:bg-orange-500/5 transition-all">
-                  <User className="w-10 h-10 text-orange-500" />
-                  <span className="font-semibold">Father</span>
-                </button>
-                <button onClick={() => handleSetParentType('mother')} className="flex flex-col items-center gap-3 p-6 rounded-xl border-2 border-border hover:border-orange-500/50 hover:bg-orange-500/5 transition-all">
-                  <User className="w-10 h-10 text-orange-500" />
-                  <span className="font-semibold">Mother</span>
-                </button>
-              </div>
-              <button onClick={() => setShowTypePicker(false)} className="mt-4 w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">Cancel</button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       {/* Add Child Modal */}
       <AnimatePresence>

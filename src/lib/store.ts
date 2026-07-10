@@ -64,7 +64,16 @@ export const useAuthStore = create<AuthState>()(
       login: (user, token?: string) => {
         localStorage.setItem('eduvault-user-id', user.id);
         if (token) localStorage.setItem('eduvault-token', token);
-        set({ user, isAuthenticated: true });
+        let mergedUser = user;
+        if (user.role === 'student') {
+          try {
+            const savedProfile = JSON.parse(localStorage.getItem('eduvault-student-profile') || '{}');
+            if (savedProfile.id === user.id) {
+              mergedUser = { ...savedProfile, ...user };
+            }
+          } catch {}
+        }
+        set({ user: mergedUser, isAuthenticated: true });
       },
       logout: () => {
         localStorage.removeItem('eduvault-user-id');
@@ -72,22 +81,42 @@ export const useAuthStore = create<AuthState>()(
         set({ user: null, isAuthenticated: false });
       },
       setLoading: (isLoading) => set({ isLoading }),
-      updateUser: (data) => set((state) => ({ user: state.user ? { ...state.user, ...data } : null })),
+      updateUser: (data) => set((state) => {
+        const updatedUser = state.user ? { ...state.user, ...data } : null;
+        if (updatedUser && updatedUser.role === 'student') {
+          localStorage.setItem('eduvault-student-profile', JSON.stringify(updatedUser));
+        }
+        return { user: updatedUser };
+      }),
       loginWithCredentials: async (email: string, password: string) => {
         const data = await api.login(email, password);
         localStorage.setItem('eduvault-user-id', data.user.id);
         if (data.token) localStorage.setItem('eduvault-token', data.token);
-        set({ user: data.user, isAuthenticated: true });
+        let mergedUser = data.user;
+        if (data.user.role === 'student') {
+          try {
+            const savedProfile = JSON.parse(localStorage.getItem('eduvault-student-profile') || '{}');
+            if (savedProfile.id === data.user.id) {
+              mergedUser = { ...savedProfile, ...data.user };
+            }
+          } catch {}
+        }
+        set({ user: mergedUser, isAuthenticated: true });
         playLoginSound();
-        return data.user;
+        return mergedUser;
       },
       signupWithCredentials: async (data: any) => {
         const result = await api.signup(data);
         localStorage.setItem('eduvault-user-id', result.user.id);
         if (result.token) localStorage.setItem('eduvault-token', result.token);
-        set({ user: result.user, isAuthenticated: true });
+        const { password, ...safeFormData } = data;
+        const mergedUser = { ...result.user, ...safeFormData };
+        if (mergedUser.role === 'student') {
+          localStorage.setItem('eduvault-student-profile', JSON.stringify(mergedUser));
+        }
+        set({ user: mergedUser, isAuthenticated: true });
         playSuccessSound();
-        return result.user;
+        return mergedUser;
       },
     }),
     { name: 'eduvault-auth' }
