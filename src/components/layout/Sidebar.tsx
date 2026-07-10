@@ -1,10 +1,10 @@
-import React, { useCallback } from 'react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import React, { useCallback, useState, useRef } from 'react'
+import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuthStore, useSidebarStore } from '@/lib/store'
 import { navSections } from '@/lib/nav-config'
 import { cn } from '@/lib/utils'
-import { LogOut, X, ChevronLeft, ChevronRight, GraduationCap, Briefcase } from 'lucide-react'
+import { LogOut, X, ChevronLeft, ChevronRight, Briefcase } from 'lucide-react'
 import styled from 'styled-components'
 
 const staffRoles = ['teacher', 'admin', 'manager', 'librarian']
@@ -13,6 +13,9 @@ export default function Sidebar() {
   const { user, logout } = useAuthStore()
   const { isCollapsed, isMobileOpen, toggle, setMobileOpen } = useSidebarStore()
   const navigate = useNavigate()
+  const location = useLocation()
+  const [hoveredSection, setHoveredSection] = useState<string | null>(null)
+  const closeTimer = useRef<ReturnType<typeof setTimeout>>()
 
   if (!user) return null
 
@@ -27,6 +30,20 @@ export default function Sidebar() {
   const handleEducatorDesk = useCallback(() => {
     window.open('/educator-desk', '_blank')
   }, [])
+
+  const handleSectionEnter = (label: string) => {
+    if (closeTimer.current) clearTimeout(closeTimer.current)
+    setHoveredSection(label)
+  }
+
+  const handleSectionLeave = () => {
+    closeTimer.current = setTimeout(() => setHoveredSection(null), 150)
+  }
+
+  const isItemActive = (item: { path: string }) => {
+    if (item.path === `/${user.role}`) return location.pathname === item.path
+    return location.pathname.startsWith(item.path)
+  }
 
   const sidebarContent = (collapsed: boolean) => (
     <div className={cn(
@@ -53,7 +70,64 @@ export default function Sidebar() {
 
       {/* Navigation */}
       <nav className={cn("flex-1 overflow-y-auto py-3 space-y-0.5 sidebar-scroll", collapsed ? "px-1" : "px-3")} style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}>
-        {sections.map((section) => (
+        {collapsed ? sections.map((section) => {
+          const filtered = section.items.filter(item => {
+            if (user.role === 'teacher' && item.path === '/teacher/timetable') return !!(user.sectionId || user.classIds?.length)
+            return true
+          })
+          if (filtered.length === 0) return null
+          const hasActive = filtered.some(i => isItemActive(i))
+          return (
+            <div key={section.label} className="relative flex flex-col items-center mb-2">
+              <button
+                onMouseEnter={() => handleSectionEnter(section.label)}
+                onMouseLeave={handleSectionLeave}
+                className={cn(
+                  "flex items-center justify-center w-10 h-10 mx-auto rounded-lg transition-all duration-150",
+                  hasActive
+                    ? "bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-sm shadow-orange-500/30"
+                    : "text-white/40 hover:bg-white/10 hover:text-white"
+                )}
+              >
+                {React.createElement(filtered[0].icon, { className: "w-4 h-4" })}
+              </button>
+              <AnimatePresence>
+                {hoveredSection === section.label && (
+                  <motion.div
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -8 }}
+                    transition={{ duration: 0.15 }}
+                    onMouseEnter={() => handleSectionEnter(section.label)}
+                    onMouseLeave={handleSectionLeave}
+                    className="absolute left-full top-0 ml-2 z-50 w-56 rounded-xl border border-orange-800/40 bg-gradient-to-b from-orange-950 via-orange-900 to-orange-950 shadow-xl py-2"
+                  >
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-orange-300/40 px-3 pb-1 mb-1 border-b border-orange-800/20">
+                      {section.label}
+                    </p>
+                    {filtered.map(item => (
+                      <NavLink
+                        key={item.path}
+                        to={item.path}
+                        end={item.path === `/${user.role}`}
+                        onClick={() => setMobileOpen(false)}
+                        className={({ isActive }) => cn(
+                          "flex items-center gap-2.5 px-3 py-2 text-sm font-medium transition-colors",
+                          isActive
+                            ? "bg-orange-500/20 text-white border-l-2 border-orange-400"
+                            : "text-white/70 hover:bg-white/5 hover:text-white"
+                        )}
+                      >
+                        <item.icon className="w-4 h-4 shrink-0" />
+                        {item.label}
+                      </NavLink>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )
+        }) : sections.map((section) => (
           <div key={section.label} className={cn("mb-2", collapsed && "flex flex-col items-center")}>
             <p className={cn(
               "text-[10px] font-semibold uppercase tracking-widest text-orange-300/40 px-2 py-1",
