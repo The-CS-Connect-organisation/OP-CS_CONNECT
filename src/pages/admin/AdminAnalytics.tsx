@@ -71,9 +71,14 @@ export default function AdminAnalytics() {
     },
   ];
 
-  const gradeEntries = analytics?.gradeDistribution
-    ? Object.entries(analytics.gradeDistribution).sort(([a], [b]) => a.localeCompare(b))
-    : [];
+  const gradeEntries = (() => {
+    const gd = analytics?.gradeDistribution;
+    if (!gd) return [];
+    const record: Record<string, number> = Array.isArray(gd)
+      ? Object.fromEntries(gd.map((g: any) => [g.grade ?? g.label ?? g.name, Number(g.count ?? g.value ?? 0)]))
+      : gd as Record<string, number>;
+    return Object.entries(record).sort(([a], [b]) => a.localeCompare(b));
+  })();
 
   const maxGradeCount = gradeEntries.reduce((m, [, v]) => Math.max(m, v), 0);
 
