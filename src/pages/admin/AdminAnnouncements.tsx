@@ -75,13 +75,13 @@ export default function AdminAnnouncements() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="min-w-0 p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">Announcements</h1>
           <p className="text-muted-foreground">School-wide announcements</p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
+        <Button onClick={() => setShowForm(true)} className="shrink-0 w-full sm:w-auto">
           <Plus className="w-4 h-4 mr-2" />
           New Announcement
         </Button>
@@ -90,8 +90,8 @@ export default function AdminAnnouncements() {
       {showForm && (
         <Card className="p-4">
           <h3 className="font-semibold mb-4">Create Announcement</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input type="text" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <input type="text" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="px-3 py-2 rounded-lg border bg-background sm:col-span-2" />
             <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as any })} className="px-3 py-2 rounded-lg border bg-background">
               <option value="general">General</option>
               <option value="urgent">Urgent</option>
@@ -111,7 +111,7 @@ export default function AdminAnnouncements() {
               <option value="staff">Staff/Admin Only</option>
             </select>
             <input type="date" value={form.expiresAt} onChange={(e) => setForm({ ...form, expiresAt: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
-            <textarea placeholder="Content" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className="px-3 py-2 rounded-lg border bg-background md:col-span-2" />
+            <textarea placeholder="Content" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className="px-3 py-2 rounded-lg border bg-background sm:col-span-2" rows={4} />
           </div>
           <div className="flex gap-2 mt-4">
             <Button onClick={handleCreate}>Create</Button>
@@ -122,27 +122,34 @@ export default function AdminAnnouncements() {
 
       {loading ? (
         <div className="space-y-4">{[1, 2, 3].map(i => <Skeleton key={i} className="h-28" />)}</div>
+      ) : announcements.length === 0 ? (
+        <Card className="p-8 text-center">
+          <Megaphone className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+          <h3 className="text-lg font-semibold mb-1">No announcements yet</h3>
+          <p className="text-muted-foreground text-sm mb-4">Create your first school-wide announcement.</p>
+          <Button onClick={() => setShowForm(true)}><Plus className="w-4 h-4 mr-2" />New Announcement</Button>
+        </Card>
       ) : (
         <div className="space-y-4">
           {announcements.map(announcement => (
             <Card key={announcement.id} className="p-4">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Megaphone className="w-5 h-5 text-orange-500" />
-                    <h3 className="font-semibold text-lg">{announcement.title}</h3>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <Megaphone className="w-5 h-5 text-orange-500 shrink-0" />
+                    <h3 className="font-semibold text-lg truncate">{announcement.title}</h3>
                     <Badge className={getTypeColor(announcement.type)}>{announcement.type}</Badge>
                     {announcement.priority === 'high' && <Badge variant="outline"><AlertCircle className="w-3 h-3 mr-1" />High Priority</Badge>}
                     <Badge variant="outline" className="bg-purple-100 text-purple-700 capitalize border-purple-200">To: {announcement.audience || 'all'}</Badge>
                   </div>
-                  <p className="text-muted-foreground mb-2">{announcement.content}</p>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                  <p className="text-muted-foreground mb-2 break-words">{announcement.content}</p>
+                  <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                     <span>By: {announcement.author}</span>
-                    <span className="flex items-center gap-1"><Calendar className="w-4 h-4" />{new Date(announcement.createdAt).toLocaleDateString()}</span>
+                    <span className="flex items-center gap-1"><Calendar className="w-4 h-4 shrink-0" />{new Date(announcement.createdAt).toLocaleDateString()}</span>
                     {announcement.expiresAt && <span>Expires: {new Date(announcement.expiresAt).toLocaleDateString()}</span>}
                   </div>
                 </div>
-                <button onClick={() => handleDelete(announcement.id)} className="p-2 hover:bg-red-100 rounded text-red-500"><Trash2 className="w-4 h-4" /></button>
+                <button onClick={() => handleDelete(announcement.id)} className="p-2 hover:bg-red-100 rounded text-red-500 shrink-0"><Trash2 className="w-4 h-4" /></button>
               </div>
             </Card>
           ))}

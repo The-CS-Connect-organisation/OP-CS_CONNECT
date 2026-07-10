@@ -6,9 +6,9 @@ import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { Input } from '../../components/ui/Input';
 import { Textarea } from '../../components/ui/Textarea';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/Tabs';
 import { Modal } from '../../components/ui/Modal';
-import { Building2, Wrench, ClipboardCheck, Zap, Droplets, Shield as ShieldIcon, Plus, Search, Filter, CheckCircle, XCircle, Edit2, Trash2, Eye, MapPin, User, Calendar, Clock, AlertTriangle } from 'lucide-react';
+import { BottomSheet } from '../../components/ui/BottomSheet';
+import { Building2, Wrench, ClipboardCheck, Zap, Droplets, Shield as ShieldIcon, Plus, Search, Filter, CheckCircle, XCircle, Edit2, Trash2, Eye, MapPin, User, Calendar, Clock, AlertTriangle, ChevronDown } from 'lucide-react';
 
 interface Building {
   id: string;
@@ -141,10 +141,35 @@ export default function AdminFacilities() {
   const [safetyIncidents, setSafetyIncidents] = useState<SafetyIncident[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState('buildings');
   const [modalType, setModalType] = useState<'building' | 'room' | 'workOrder' | 'inspection' | 'energy' | 'supply' | 'cleaning' | 'visitor' | 'drill' | 'incident' | null>(null);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<any>({});
+
+  type FacilitySection = 'buildings' | 'workOrders' | 'inspections' | 'energy' | 'supplies' | 'cleaning' | 'visitors' | 'safety';
+
+  const [isMobile, setIsMobile] = useState(false);
+  const [subSection, setSubSection] = useState<FacilitySection>('buildings');
+  const [showSubNavSheet, setShowSubNavSheet] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  const subNavItems: { key: FacilitySection; label: string; icon: React.ReactNode }[] = [
+    { key: 'buildings', label: 'Buildings', icon: <Building2 className="w-4 h-4 shrink-0" /> },
+    { key: 'workOrders', label: 'Work Orders', icon: <Wrench className="w-4 h-4 shrink-0" /> },
+    { key: 'inspections', label: 'Inspections', icon: <ClipboardCheck className="w-4 h-4 shrink-0" /> },
+    { key: 'energy', label: 'Energy', icon: <Zap className="w-4 h-4 shrink-0" /> },
+    { key: 'supplies', label: 'Supplies', icon: <Droplets className="w-4 h-4 shrink-0" /> },
+    { key: 'cleaning', label: 'Cleaning', icon: <Droplets className="w-4 h-4 shrink-0" /> },
+    { key: 'visitors', label: 'Visitors', icon: <User className="w-4 h-4 shrink-0" /> },
+    { key: 'safety', label: 'Safety', icon: <ShieldIcon className="w-4 h-4 shrink-0" /> },
+  ];
+
+  const currentSubNav = subNavItems.find((i) => i.key === subSection);
 
   useEffect(() => {
     loadAll();
@@ -393,25 +418,61 @@ export default function AdminFacilities() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-w-0 p-4 sm:p-6 space-y-4 sm:space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Facilities Management</h1>
         <p className="text-muted-foreground">Buildings, work orders, inspections & more</p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="buildings"><Building2 className="w-4 h-4 mr-1" />Buildings</TabsTrigger>
-          <TabsTrigger value="workOrders"><Wrench className="w-4 h-4 mr-1" />Work Orders</TabsTrigger>
-          <TabsTrigger value="inspections"><ClipboardCheck className="w-4 h-4 mr-1" />Inspections</TabsTrigger>
-          <TabsTrigger value="energy"><Zap className="w-4 h-4 mr-1" />Energy</TabsTrigger>
-          <TabsTrigger value="supplies"><Droplets className="w-4 h-4 mr-1" />Supplies</TabsTrigger>
-          <TabsTrigger value="cleaning"><Droplets className="w-4 h-4 mr-1" />Cleaning</TabsTrigger>
-          <TabsTrigger value="visitors"><User className="w-4 h-4 mr-1" />Visitors</TabsTrigger>
-          <TabsTrigger value="safety"><ShieldIcon className="w-4 h-4 mr-1" />Safety</TabsTrigger>
-        </TabsList>
+      {/* Desktop sub-nav */}
+      <div className="hidden sm:flex flex-wrap gap-1 p-1 rounded-lg bg-muted">
+        {subNavItems.map((item) => (
+          <button
+            key={item.key}
+            onClick={() => setSubSection(item.key)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              subSection === item.key
+                ? 'bg-background text-foreground shadow-sm'
+                : 'text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            {item.icon}
+            {item.label}
+          </button>
+        ))}
+      </div>
 
-        <TabsContent value="buildings" className="space-y-4">
+      {/* Mobile sub-nav */}
+      <div className="sm:hidden">
+        <Button variant="outline" className="w-full justify-between" onClick={() => setShowSubNavSheet(true)}>
+          <span className="flex items-center gap-2">
+            {currentSubNav?.icon}
+            {currentSubNav?.label}
+          </span>
+          <ChevronDown className="w-4 h-4 opacity-50" />
+        </Button>
+        <BottomSheet isOpen={showSubNavSheet} onClose={() => setShowSubNavSheet(false)} title="Select Section">
+          <div className="space-y-1">
+            {subNavItems.map((item) => (
+              <button
+                key={item.key}
+                onClick={() => { setSubSection(item.key); setShowSubNavSheet(false); }}
+                className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-colors ${
+                  subSection === item.key
+                    ? 'bg-orange-500/10 text-orange-600 font-medium'
+                    : 'text-foreground hover:bg-accent'
+                }`}
+              >
+                {item.icon}
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </BottomSheet>
+      </div>
+
+      {subSection === 'buildings' && (
+        <div className="space-y-4">
           <div className="flex gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -419,7 +480,7 @@ export default function AdminFacilities() {
             </div>
             <Button onClick={() => openModal('building')}><Plus className="w-4 h-4 mr-2" />Add Building</Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
             {filteredBuildings.length === 0 && <p className="text-muted-foreground col-span-full">No buildings found.</p>}
             {filteredBuildings.map(b => (
               <Card key={b.id} className="p-4">
@@ -468,9 +529,11 @@ export default function AdminFacilities() {
               ))}
             </div>
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="workOrders" className="space-y-4">
+      {subSection === 'workOrders' && (
+        <div className="space-y-4">
           <div className="flex gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -508,9 +571,11 @@ export default function AdminFacilities() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="inspections" className="space-y-4">
+      {subSection === 'inspections' && (
+        <div className="space-y-4">
           <div className="flex gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -540,13 +605,15 @@ export default function AdminFacilities() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="energy" className="space-y-4">
+      {subSection === 'energy' && (
+        <div className="space-y-4">
           <div className="flex justify-end">
             <Button onClick={() => openModal('energy')}><Plus className="w-4 h-4 mr-2" />Log Reading</Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {energyReadings.length === 0 && <p className="text-muted-foreground col-span-full">No energy readings logged.</p>}
             {energyReadings.map(e => (
               <Card key={e.id} className="p-4">
@@ -559,9 +626,11 @@ export default function AdminFacilities() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="supplies" className="space-y-4">
+      {subSection === 'supplies' && (
+        <div className="space-y-4">
           <div className="flex gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -569,7 +638,7 @@ export default function AdminFacilities() {
             </div>
             <Button onClick={() => openModal('supply')}><Plus className="w-4 h-4 mr-2" />Update Stock</Button>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {filteredSupplies.length === 0 && <p className="text-muted-foreground col-span-full">No supplies tracked.</p>}
             {filteredSupplies.map(s => (
               <Card key={s.id} className="p-4">
@@ -585,9 +654,11 @@ export default function AdminFacilities() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="cleaning" className="space-y-4">
+      {subSection === 'cleaning' && (
+        <div className="space-y-4">
           <div className="flex justify-end">
             <Button onClick={() => openModal('cleaning')}><Plus className="w-4 h-4 mr-2" />Add Schedule</Button>
           </div>
@@ -611,9 +682,11 @@ export default function AdminFacilities() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="visitors" className="space-y-4">
+      {subSection === 'visitors' && (
+        <div className="space-y-4">
           <div className="flex gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -640,9 +713,11 @@ export default function AdminFacilities() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="safety" className="space-y-4">
+      {subSection === 'safety' && (
+        <div className="space-y-4">
           <div className="flex gap-2">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -692,8 +767,8 @@ export default function AdminFacilities() {
               ))}
             </div>
           </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
 
       {renderModal()}
     </div>
