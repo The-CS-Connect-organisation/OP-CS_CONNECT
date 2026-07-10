@@ -170,12 +170,24 @@ export default function ParentMyChildren() {
                 </div>
               </div>
               <div className="flex flex-wrap gap-2 mt-3">
-                <Badge className={child.fatherId ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-gray-500/10 text-gray-500 border-gray-500/20'}>
-                  Father: {child.fatherId ? 'Connected' : 'Open'}
-                </Badge>
-                <Badge className={child.motherId ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-gray-500/10 text-gray-500 border-gray-500/20'}>
-                  Mother: {child.motherId ? 'Connected' : 'Open'}
-                </Badge>
+                {child.fatherId === user?.id ? (
+                  <Badge className="bg-orange-500/10 text-orange-500 border-orange-500/20">
+                    {child.name.split(' ')[0]}'s Father
+                  </Badge>
+                ) : (
+                  <Badge className={child.fatherId ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-gray-500/10 text-gray-500 border-gray-500/20'}>
+                    Father: {child.fatherId ? 'Connected' : 'Open'}
+                  </Badge>
+                )}
+                {child.motherId === user?.id ? (
+                  <Badge className="bg-orange-500/10 text-orange-500 border-orange-500/20">
+                    {child.name.split(' ')[0]}'s Mother
+                  </Badge>
+                ) : (
+                  <Badge className={child.motherId ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-gray-500/10 text-gray-500 border-gray-500/20'}>
+                    Mother: {child.motherId ? 'Connected' : 'Open'}
+                  </Badge>
+                )}
               </div>
             </Card>
           ))}
