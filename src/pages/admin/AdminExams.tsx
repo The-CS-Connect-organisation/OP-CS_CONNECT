@@ -4,7 +4,7 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { FileText, Plus, Edit, Trash2, Calendar, Clock, MapPin } from 'lucide-react';
+import { FileText, Plus, Edit, Trash2, Calendar, Clock, MapPin, Users } from 'lucide-react';
 
 interface Exam {
   id: string;
@@ -17,17 +17,21 @@ interface Exam {
   location: string;
   type: 'midterm' | 'final' | 'quiz' | 'test';
   totalMarks: number;
+  syllabus?: string;
   status: 'scheduled' | 'ongoing' | 'completed';
 }
+
+const emptyForm = { title: '', subject: 'Math', class: '10-A', date: '', time: '', duration: 60, location: '', type: 'test' as Exam['type'], totalMarks: 100, syllabus: '' };
 
 export default function AdminExams() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'scheduled' | 'completed'>('all');
+  const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState({ ...emptyForm });
 
-  useEffect(() => {
-    loadExams();
-  }, []);
+  useEffect(() => { loadExams(); }, []);
 
   const loadExams = async () => {
     try {
@@ -38,6 +42,57 @@ export default function AdminExams() {
       // error
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!form.title.trim()) return;
+    try {
+      const newExam = await api.createExam(form);
+      setExams(prev => [...prev, newExam]);
+      setForm({ ...emptyForm });
+      setShowForm(false);
+    } catch {
+      // error
+    }
+  };
+
+  const handleEdit = (exam: Exam) => {
+    setForm({
+      title: exam.title,
+      subject: exam.subject,
+      class: exam.class,
+      date: exam.date ? exam.date.split('T')[0] : '',
+      time: exam.time,
+      duration: exam.duration,
+      location: exam.location,
+      type: exam.type,
+      totalMarks: exam.totalMarks,
+      syllabus: exam.syllabus || '',
+    });
+    setEditingId(exam.id);
+    setShowForm(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!form.title.trim() || !editingId) return;
+    try {
+      await api.updateExam(editingId, form);
+      setExams(prev => prev.map(e => e.id === editingId ? { ...e, ...form } : e));
+      setForm({ ...emptyForm });
+      setEditingId(null);
+      setShowForm(false);
+    } catch {
+      // error
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      await api.deleteExam(id);
+      setExams(prev => prev.filter(e => e.id !== id));
+    } catch {
+      // error
     }
   };
 
@@ -60,7 +115,9 @@ export default function AdminExams() {
           <h1 className="text-2xl font-bold">Exams</h1>
           <p className="text-muted-foreground">Exam management</p>
         </div>
-        <Button><Plus className="w-4 h-4 mr-2" />Schedule Exam</Button>
+        <Button onClick={() => setShowForm(true)}>
+          <Plus className="w-4 h-4 mr-2" />Schedule Exam
+        </Button>
       </div>
 
       <div className="flex gap-2">
@@ -70,6 +127,39 @@ export default function AdminExams() {
           </button>
         ))}
       </div>
+
+      {showForm && (
+        <Card className="p-4">
+          <h3 className="font-semibold mb-4">{editingId ? 'Edit Exam' : 'Schedule Exam'}</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="text" placeholder="Title" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
+            <select value={form.subject} onChange={(e) => setForm({ ...form, subject: e.target.value })} className="px-3 py-2 rounded-lg border bg-background">
+              {['Math', 'Science', 'English', 'History', 'Geography', 'Art', 'Computer Science'].map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <select value={form.class} onChange={(e) => setForm({ ...form, class: e.target.value })} className="px-3 py-2 rounded-lg border bg-background">
+              {['10-A', '10-B', '11-A', '11-B', '12-A', '12-B'].map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+            <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as any })} className="px-3 py-2 rounded-lg border bg-background">
+              <option value="test">Test</option>
+              <option value="quiz">Quiz</option>
+              <option value="midterm">Midterm</option>
+              <option value="final">Final</option>
+            </select>
+            <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
+            <input type="time" value={form.time} onChange={(e) => setForm({ ...form, time: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
+            <input type="number" placeholder="Duration (min)" value={form.duration} onChange={(e) => setForm({ ...form, duration: parseInt(e.target.value) || 60 })} className="px-3 py-2 rounded-lg border bg-background" />
+            <input type="text" placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
+            <input type="number" placeholder="Total Marks" value={form.totalMarks} onChange={(e) => setForm({ ...form, totalMarks: parseInt(e.target.value) || 100 })} className="px-3 py-2 rounded-lg border bg-background" />
+          </div>
+          <div className="mt-4">
+            <textarea placeholder="Syllabus / Portion (topics covered)" value={form.syllabus} onChange={(e) => setForm({ ...form, syllabus: e.target.value })} className="w-full px-3 py-2 rounded-lg border bg-background" rows={3} />
+          </div>
+          <div className="flex gap-2 mt-4">
+            <Button onClick={editingId ? handleUpdate : handleCreate}>{editingId ? 'Update' : 'Schedule'}</Button>
+            <Button variant="outline" onClick={() => { setShowForm(false); setEditingId(null); }}>Cancel</Button>
+          </div>
+        </Card>
+      )}
 
       {loading ? (
         <div className="space-y-4">{[1, 2, 3].map(i => <Skeleton key={i} className="h-28" />)}</div>
@@ -98,18 +188,28 @@ export default function AdminExams() {
                       <MapPin className="w-4 h-4" />
                       <span>{exam.location}</span>
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Users className="w-4 h-4" />
                       <span>{exam.totalMarks} marks</span>
                     </div>
                   </div>
+                  {exam.syllabus && <p className="text-sm text-muted-foreground mt-2">Syllabus: {exam.syllabus}</p>}
                 </div>
                 <div className="flex gap-2">
-                  <button className="p-2 hover:bg-accent rounded"><Edit className="w-4 h-4" /></button>
-                  <button onClick={() => {}} className="p-2 hover:bg-red-100 rounded text-red-500"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => handleEdit(exam)} className="p-2 hover:bg-accent rounded"><Edit className="w-4 h-4" /></button>
+                  <button onClick={() => handleDelete(exam.id)} className="p-2 hover:bg-red-100 rounded text-red-500"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>
             </Card>
           ))}
+        </div>
+      )}
+
+      {exams.length === 0 && !loading && !showForm && (
+        <div className="text-center py-12">
+          <FileText className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg font-semibold mb-2">No exams scheduled</h3>
+          <p className="text-muted-foreground">Schedule your first exam to get started</p>
         </div>
       )}
     </div>
