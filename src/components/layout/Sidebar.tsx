@@ -103,7 +103,7 @@ export default function Sidebar() {
                 className={cn(
                   "flex items-center justify-center w-10 h-10 mx-auto rounded-lg transition-all duration-150",
                   hasActive
-                    ? "bg-gradient-to-r from-[#EC8037] to-[#D96A2C] text-white shadow-sm shadow-[#EC8037]/30"
+                    ? "bg-gradient-to-r from-[#EC8037]/85 to-[#D96A2C]/85 text-white shadow-md shadow-[#EC8037]/20"
                     : isDark ? "text-[#8C8884] hover:bg-white/10 hover:text-[#F2F0EE]" : "text-[#57534E] hover:bg-[#EC8037]/15 hover:text-[#EC8037]"
                 )}
               >
@@ -134,24 +134,35 @@ export default function Sidebar() {
                   collapsed
                     ? "justify-center w-10 h-10 mx-auto"
                     : "gap-2.5 px-2.5 py-2",
-                  isActive
-                    ? isDark
-                      ? "bg-gradient-to-r from-[#EC8037] to-[#D96A2C] text-white font-semibold shadow-sm shadow-[#EC8037]/30"
-                      : "bg-[#EC8037] text-white font-semibold shadow-sm shadow-[#EC8037]/30"
-                    : isDark
-                      ? "text-[#8C8884] hover:bg-white/10 hover:text-[#F2F0EE]"
-                      : "text-[#57534E] hover:bg-[#EC8037]/15 hover:text-[#EC8037]"
+                  !collapsed && isActive && "mx-2",
+                  !isActive && (isDark
+                    ? "text-[#8C8884] hover:bg-white/10 hover:text-[#F2F0EE]"
+                    : "text-[#57534E] hover:bg-[#EC8037]/15 hover:text-[#EC8037]")
                 )}
               >
                 {({ isActive }) => (
                   <>
                     {isActive && <div className={cn(
                       "absolute top-1/2 -translate-y-1/2 rounded-r-full",
-                      collapsed ? "left-0 w-1 h-6" : "left-0 w-1 h-6",
+                      collapsed ? "left-0 w-1 h-6" : "left-0 w-1 h-6 -ml-2",
                       isDark ? "bg-gradient-to-b from-[#EC8037] to-[#D96A2C]" : "bg-[#EC8037]"
                     )} />}
-                    <item.icon className={cn("w-4 h-4 shrink-0", isActive ? "text-white" : isDark ? "text-[#8C8884] group-hover:text-[#F2F0EE]" : "text-[#57534E] group-hover:text-[#EC8037]")} />
-                    <span className={cn("whitespace-nowrap overflow-hidden text-[13px]", collapsed && "hidden")}>{item.label}</span>
+                    <div className={cn(
+                      "flex items-center w-full transition-all duration-150",
+                      collapsed ? "" : "gap-2.5",
+                      isActive
+                        ? isDark
+                          ? "bg-gradient-to-r from-[#EC8037]/85 to-[#D96A2C]/85 shadow-md shadow-[#EC8037]/20 rounded-lg px-2.5 py-2"
+                          : "bg-[#EC8037]/85 shadow-md shadow-[#EC8037]/20 rounded-lg px-2.5 py-2"
+                        : ""
+                    )}>
+                      <item.icon className={cn("w-4 h-4 shrink-0", isActive ? "text-white" : isDark ? "text-[#8C8884] group-hover:text-[#F2F0EE]" : "text-[#57534E] group-hover:text-[#EC8037]")} />
+                      <span className={cn(
+                        "whitespace-nowrap overflow-hidden text-[13px]",
+                        collapsed && "hidden",
+                        isActive ? "text-[#3A2E28] font-medium" : ""
+                      )}>{item.label}</span>
+                    </div>
                   </>
                 )}
               </NavLink>
@@ -285,14 +296,14 @@ export default function Sidebar() {
                   "flex items-center gap-2.5 px-3 py-2 text-sm font-medium transition-colors",
                   isActive
                     ? isDark
-                      ? "bg-gradient-to-r from-[#EC8037] to-[#D96A2C] text-white"
-                      : "bg-[#EC8037] text-white"
+                      ? "bg-gradient-to-r from-[#EC8037]/85 to-[#D96A2C]/85 text-[#3A2E28] shadow-md shadow-[#EC8037]/20"
+                      : "bg-[#EC8037]/85 text-[#3A2E28] shadow-md shadow-[#EC8037]/20"
                     : isDark
                       ? "text-[#8C8884] hover:bg-white/10 hover:text-[#F2F0EE]"
                       : "text-[#57534E] hover:bg-[#EC8037]/15 hover:text-[#EC8037]"
                 )}
               >
-                <item.icon className="w-4 h-4 shrink-0" />
+                <item.icon className={cn("w-4 h-4 shrink-0", isActive ? "text-white" : "")} />
                 {item.label}
               </NavLink>
             ))}
