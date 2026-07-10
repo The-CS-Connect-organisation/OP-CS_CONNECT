@@ -24,21 +24,25 @@ const isLikelyImageSrc = (value?: string) => {
   return /^(https?:\/\/|\/|\.\/|\.\.\/|data:image\/|blob:)/i.test(trimmed)
 }
 
-const Avatar = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.Root>, AvatarProps>(({ className, src, alt, fallback, size = "md", ...props }, ref) => {
+const Avatar = React.forwardRef<React.ElementRef<typeof AvatarPrimitive.Root>, AvatarProps>(({ className, src, alt, fallback, size = "md", children, ...props }, ref) => {
   const normalizedSrc = src?.trim() || ""
   const shouldRenderImage = isLikelyImageSrc(normalizedSrc)
   const fallbackText = fallback || toInitials(alt)
 
   return (
     <AvatarPrimitive.Root ref={ref} className={cn("relative flex shrink-0 overflow-hidden rounded-full", size === "sm" && "h-8 w-8", size === "md" && "h-10 w-10", size === "lg" && "h-12 w-12", className)} {...props}>
-      {shouldRenderImage && (
-        <AvatarPrimitive.Image
-          src={normalizedSrc}
-          alt={alt || ''}
-          className="aspect-square h-full w-full"
-        />
+      {children || (
+        <>
+          {shouldRenderImage && (
+            <AvatarPrimitive.Image
+              src={normalizedSrc}
+              alt={alt || ''}
+              className="aspect-square h-full w-full object-cover"
+            />
+          )}
+          {fallbackText && <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted">{fallbackText}</AvatarPrimitive.Fallback>}
+        </>
       )}
-      {fallbackText && <AvatarPrimitive.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-muted">{fallbackText}</AvatarPrimitive.Fallback>}
     </AvatarPrimitive.Root>
   )
 })
