@@ -5,7 +5,7 @@ import { io, Socket } from 'socket.io-client';
 // tracking connects to the backend instead of the frontend's own origin.
 const API_BASE =
   import.meta.env.VITE_API_BASE ||
-  'https://op-csconnect-backend-production.up.railway.app/api';
+  'https://eduvault-backend-production-6a1b.up.railway.app/api';
 
 const SOCKET_URL =
   import.meta.env.VITE_SOCKET_URL || API_BASE.replace(/\/api\/?$/, '');

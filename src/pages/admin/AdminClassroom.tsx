@@ -63,7 +63,7 @@ type ModalType =
   | null;
 
 async function localApiFetch(path: string, options: RequestInit = {}) {
-  const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? '/api' : 'https://op-csconnect-backend-production.up.railway.app/api');
+  const API_BASE = import.meta.env.VITE_API_BASE || (import.meta.env.DEV ? '/api' : 'https://eduvault-backend-production-6a1b.up.railway.app/api');
   const token = localStorage.getItem('eduvault-token');
   const userId = localStorage.getItem('eduvault-user-id');
   const res = await fetch(`${API_BASE}/v1${path}`, {
