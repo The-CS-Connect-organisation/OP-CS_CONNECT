@@ -2,17 +2,17 @@ import React, { useCallback, useState, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useAuthStore, useSidebarStore } from '@/lib/store'
+import { useAuthStore, useSidebarStore, useThemeStore } from '@/lib/store'
 import { navSections } from '@/lib/nav-config'
 import { cn } from '@/lib/utils'
 import { LogOut, X, ChevronLeft, ChevronRight, Briefcase } from 'lucide-react'
-import styled from 'styled-components'
 
 const staffRoles = ['teacher', 'admin', 'manager', 'librarian']
 
 export default function Sidebar() {
   const { user, logout } = useAuthStore()
   const { isCollapsed, isMobileOpen, toggle, setMobileOpen } = useSidebarStore()
+  const { isDark } = useThemeStore()
   const navigate = useNavigate()
   const location = useLocation()
   const [hoveredSection, setHoveredSection] = useState<string | null>(null)
@@ -55,29 +55,38 @@ export default function Sidebar() {
 
   const sidebarContent = (collapsed: boolean) => (
     <div className={cn(
-      "flex flex-col h-full bg-gradient-to-b from-orange-950 via-orange-900 to-orange-950 text-white border-r border-orange-800/40",
-      collapsed && "items-center"
+      "flex flex-col h-full border-r transition-colors duration-200",
+      collapsed && "items-center",
+      isDark
+        ? "bg-[#1C1B1A] border-white/10 text-white"
+        : "bg-[#FAF8F6] border-black/10 text-[#57534E]"
     )}>
       {/* Header */}
       <div className={cn(
-        "flex items-center border-b border-orange-900/20 shrink-0",
-        collapsed ? "flex-col gap-1 py-3 px-1" : "gap-3 px-4 py-4"
+        "flex items-center shrink-0 transition-colors duration-200",
+        collapsed ? "flex-col gap-1 py-3 px-1" : "gap-3 px-4 py-4",
+        isDark ? "border-b border-white/10" : "border-b border-black/10"
       )}>
-
         <button
           onClick={toggle}
-          className="hidden lg:inline-flex p-1 rounded-md hover:bg-white/10"
+          className={cn(
+            "hidden lg:inline-flex p-1 rounded-md transition-colors",
+            isDark ? "hover:bg-white/10 text-[#8C8884]" : "hover:bg-black/10 text-[#57534E]"
+          )}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          {collapsed ? <ChevronRight className="w-4 h-4 text-white/70" /> : <ChevronLeft className="w-4 h-4 text-white/70" />}
+          {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
-        <button type="button" onClick={(e) => { e.stopPropagation(); setMobileOpen(false) }} className="p-2 rounded-md hover:bg-white/10 lg:hidden active:scale-95 transition-transform">
-          <X className="w-5 h-5 text-white/80" />
+        <button type="button" onClick={(e) => { e.stopPropagation(); setMobileOpen(false) }} className={cn(
+          "p-2 rounded-md lg:hidden active:scale-95 transition-transform",
+          isDark ? "hover:bg-white/10 text-white/80" : "hover:bg-black/10 text-[#57534E]"
+        )}>
+          <X className="w-5 h-5" />
         </button>
       </div>
 
       {/* Navigation */}
-      <nav className={cn("flex-1 overflow-y-auto py-3 space-y-0.5 sidebar-scroll", collapsed ? "px-1" : "px-3")} style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}>
+      <nav className={cn("flex-1 overflow-y-auto py-3 space-y-0.5 sidebar-scroll", collapsed ? "px-1" : "px-3")} style={{ scrollbarWidth: 'thin', scrollbarColor: isDark ? 'rgba(140,136,132,0.2) transparent' : 'rgba(87,83,78,0.2) transparent' }}>
         {collapsed ? sections.map((section) => {
           const filtered = section.items.filter(item => {
             if (user.role === 'teacher' && item.path === '/teacher/timetable') return !!(user.sectionId || user.classIds?.length)
@@ -94,8 +103,8 @@ export default function Sidebar() {
                 className={cn(
                   "flex items-center justify-center w-10 h-10 mx-auto rounded-lg transition-all duration-150",
                   hasActive
-                    ? "bg-gradient-to-br from-orange-500 to-amber-600 text-white shadow-sm shadow-orange-500/30"
-                    : "text-white/40 hover:bg-white/10 hover:text-white"
+                    ? "bg-gradient-to-r from-[#EC8037] to-[#D96A2C] text-white shadow-sm shadow-[#EC8037]/30"
+                    : isDark ? "text-[#8C8884] hover:bg-white/10 hover:text-[#F2F0EE]" : "text-[#57534E] hover:bg-[#EC8037]/15 hover:text-[#EC8037]"
                 )}
               >
                 {React.createElement(filtered[0].icon, { className: "w-4 h-4" })}
@@ -105,8 +114,9 @@ export default function Sidebar() {
         }) : sections.map((section) => (
           <div key={section.label} className={cn("mb-2", collapsed && "flex flex-col items-center")}>
             <p className={cn(
-              "text-[10px] font-semibold uppercase tracking-widest text-orange-300/40 px-2 py-1",
-              collapsed && "hidden"
+              "text-[10px] font-semibold uppercase tracking-widest px-2 py-1 transition-colors duration-200",
+              collapsed && "hidden",
+              isDark ? "text-[#8C8884]/60" : "text-[#57534E]/60"
             )}>{section.label}</p>
             {section.items.filter(item => {
               if (user.role === 'teacher' && item.path === '/teacher/timetable') {
@@ -125,17 +135,22 @@ export default function Sidebar() {
                     ? "justify-center w-10 h-10 mx-auto"
                     : "gap-2.5 px-2.5 py-2",
                   isActive
-                    ? "bg-gradient-to-br from-orange-500 to-amber-600 text-white font-semibold shadow-sm shadow-orange-500/30"
-                    : "text-white/70 hover:bg-gradient-to-br hover:from-orange-500/20 hover:to-amber-600/20 hover:text-white"
+                    ? isDark
+                      ? "bg-gradient-to-r from-[#EC8037] to-[#D96A2C] text-white font-semibold shadow-sm shadow-[#EC8037]/30"
+                      : "bg-[#EC8037] text-white font-semibold shadow-sm shadow-[#EC8037]/30"
+                    : isDark
+                      ? "text-[#8C8884] hover:bg-white/10 hover:text-[#F2F0EE]"
+                      : "text-[#57534E] hover:bg-[#EC8037]/15 hover:text-[#EC8037]"
                 )}
               >
                 {({ isActive }) => (
                   <>
                     {isActive && <div className={cn(
-                      "absolute top-1/2 -translate-y-1/2 bg-gradient-to-b from-orange-400 to-amber-500 rounded-r-full shadow-lg shadow-orange-500/50",
-                      collapsed ? "left-0 w-1 h-6" : "left-0 w-1 h-6"
+                      "absolute top-1/2 -translate-y-1/2 rounded-r-full",
+                      collapsed ? "left-0 w-1 h-6" : "left-0 w-1 h-6",
+                      isDark ? "bg-gradient-to-b from-[#EC8037] to-[#D96A2C]" : "bg-[#EC8037]"
                     )} />}
-                    <item.icon className={cn("w-4 h-4 shrink-0", isActive ? "text-white" : "text-white/40 group-hover:text-white")} />
+                    <item.icon className={cn("w-4 h-4 shrink-0", isActive ? "text-white" : isDark ? "text-[#8C8884] group-hover:text-[#F2F0EE]" : "text-[#57534E] group-hover:text-[#EC8037]")} />
                     <span className={cn("whitespace-nowrap overflow-hidden text-[13px]", collapsed && "hidden")}>{item.label}</span>
                   </>
                 )}
@@ -149,27 +164,34 @@ export default function Sidebar() {
       {isStaff && (
         <div className={cn("shrink-0", collapsed ? "px-1 py-2" : "px-3 py-2")}>
           {collapsed ? (
-            <button onClick={handleEducatorDesk} className="w-10 h-10 mx-auto flex items-center justify-center rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-400 hover:bg-amber-500/30 transition-all" title="EducatorDesk">
+            <button onClick={handleEducatorDesk} className={cn(
+              "w-10 h-10 mx-auto flex items-center justify-center rounded-lg border transition-all",
+              isDark
+                ? "bg-white/10 border-white/20 text-[#F2F0EE] hover:bg-white/15"
+                : "bg-[#EC8037]/15 border-[#EC8037]/30 text-[#EC8037] hover:bg-[#EC8037]/25"
+            )} title="EducatorDesk">
               <Briefcase className="w-5 h-5" />
             </button>
           ) : (
-            <StyledEducatorBtn onClick={handleEducatorDesk} className="w-full">
-              <div className="box-button">
-                <div className="button">
-                  <Briefcase className="w-4 h-4" />
-                  <span>EducatorDesk</span>
-                </div>
-              </div>
-            </StyledEducatorBtn>
+            <button onClick={handleEducatorDesk} className={cn(
+              "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all",
+              isDark
+                ? "bg-white/10 border border-white/20 text-[#F2F0EE] hover:bg-white/15"
+                : "bg-[#EC8037]/15 border border-[#EC8037]/30 text-[#EC8037] hover:bg-[#EC8037]/25"
+            )}>
+              <Briefcase className="w-4 h-4" />
+              <span>EducatorDesk</span>
+            </button>
           )}
         </div>
       )}
 
       {/* Footer */}
-      <div className={cn("border-t border-orange-900/20 shrink-0", collapsed ? "px-1 py-3" : "px-3 py-3")}>
+      <div className={cn("shrink-0 transition-colors duration-200", collapsed ? "px-1 py-3" : "px-3 py-3", isDark ? "border-t border-white/10" : "border-t border-black/10")}>
         <button onClick={handleLogout} className={cn(
-          "flex items-center rounded-lg text-sm font-medium transition-all w-full text-white/40 hover:text-red-400 hover:bg-red-500/10",
-          collapsed ? "justify-center w-10 h-10 mx-auto" : "gap-2.5 px-2.5 py-2"
+          "flex items-center rounded-lg text-sm font-medium transition-all w-full",
+          collapsed ? "justify-center w-10 h-10 mx-auto" : "gap-2.5 px-2.5 py-2",
+          isDark ? "text-[#8C8884] hover:text-red-400 hover:bg-red-500/10" : "text-[#57534E] hover:text-red-500 hover:bg-red-500/10"
         )}>
           <LogOut className="w-4 h-4 shrink-0" />
           <span className={cn(collapsed && "hidden")}>Logout</span>
@@ -177,57 +199,6 @@ export default function Sidebar() {
       </div>
     </div>
   )
-
-  const StyledEducatorBtn = styled.button`
-    cursor: pointer;
-    border: none;
-    background: none;
-    padding: 0;
-    width: 100%;
-    user-select: none;
-
-    .box-button {
-      cursor: pointer;
-      border: 3px solid #fbbf24;
-      background-color: rgba(251, 191, 36, 0.15);
-      padding-bottom: 8px;
-      transition: 0.1s ease-in-out;
-      user-select: none;
-      border-radius: 8px;
-    }
-
-    .button {
-      background-color: rgba(251, 191, 36, 0.2);
-      border: 3px solid rgba(251, 191, 36, 0.4);
-      padding: 6px 10px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      justify-content: center;
-      border-radius: 5px;
-    }
-
-    .button span {
-      font-size: 0.85rem;
-      font-weight: 700;
-      letter-spacing: 1px;
-      color: #fbbf24;
-    }
-
-    .button svg {
-      color: #fbbf24;
-    }
-
-    .box-button:active {
-      padding: 0;
-      margin-bottom: 8px;
-      transform: translateY(8px);
-    }
-
-    .box-button:hover {
-      background-color: rgba(251, 191, 36, 0.25);
-    }
-  `
 
   return (
     <>
@@ -291,9 +262,17 @@ export default function Sidebar() {
             onMouseEnter={() => handleSectionEnter(section.label)}
             onMouseLeave={handleSectionLeave}
             style={{ position: 'fixed', left: 72, top: popupPos.top, zIndex: 9999 }}
-            className="w-56 rounded-xl border border-orange-800/40 bg-gradient-to-b from-orange-950 via-orange-900 to-orange-950 shadow-xl py-2"
+            className={cn(
+              "w-56 rounded-xl border shadow-xl py-2",
+              isDark
+                ? "border-white/10 bg-[#1C1B1A] text-white"
+                : "border-black/10 bg-[#FAF8F6] text-[#57534E]"
+            )}
           >
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-orange-300/40 px-3 pb-1 mb-1 border-b border-orange-800/20">
+            <p className={cn(
+              "text-[10px] font-semibold uppercase tracking-widest px-3 pb-1 mb-1 border-b",
+              isDark ? "text-[#8C8884]/60 border-white/10" : "text-[#57534E]/60 border-black/10"
+            )}>
               {section.label}
             </p>
             {filtered.map(item => (
@@ -305,8 +284,12 @@ export default function Sidebar() {
                 className={({ isActive }) => cn(
                   "flex items-center gap-2.5 px-3 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-orange-500/20 text-white border-l-2 border-orange-400"
-                    : "text-white/70 hover:bg-white/5 hover:text-white"
+                    ? isDark
+                      ? "bg-gradient-to-r from-[#EC8037] to-[#D96A2C] text-white"
+                      : "bg-[#EC8037] text-white"
+                    : isDark
+                      ? "text-[#8C8884] hover:bg-white/10 hover:text-[#F2F0EE]"
+                      : "text-[#57534E] hover:bg-[#EC8037]/15 hover:text-[#EC8037]"
                 )}
               >
                 <item.icon className="w-4 h-4 shrink-0" />
