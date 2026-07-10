@@ -34,6 +34,7 @@ interface SignInPageProps {
   defaultEmail?: string;
   defaultPassword?: string;
   extraTop?: React.ReactNode;
+  logoSrc?: string;
 }
 
 // --- SUB-COMPONENTS ---
@@ -69,6 +70,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
   defaultEmail = '',
   defaultPassword = '',
   extraTop,
+  logoSrc,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [currentSrc, setCurrentSrc] = useState('');
@@ -98,7 +100,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
         setCurrentSrc(nextSrc);
         setNextSrc('');
         setIsTransitioning(false);
-      }, 1000);
+      }, 1500);
       return () => clearTimeout(timer);
     }
   }, [isTransitioning, nextSrc]);
@@ -109,6 +111,9 @@ export const SignInPage: React.FC<SignInPageProps> = ({
       <section className="flex-1 flex items-center justify-start p-8 pt-24">
         <div className="w-full max-w-md ml-0 mr-auto">
           <div className="flex flex-col gap-6">
+            {logoSrc && (
+              <img src={logoSrc} alt="Cornerstone" className="h-12 w-auto mb-1" />
+            )}
             <h1 className="animate-element animate-delay-100 text-4xl md:text-5xl font-semibold leading-tight">{title}</h1>
             <p className="animate-element animate-delay-200 text-muted-foreground">{description}</p>
 
@@ -170,13 +175,13 @@ export const SignInPage: React.FC<SignInPageProps> = ({
           <div className="absolute inset-4 rounded-3xl overflow-hidden bg-muted">
             {currentSrc && (
               <div
-                className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+                className="absolute inset-0 bg-cover bg-center transition-opacity duration-[1500ms] ease-in-out"
                 style={{ backgroundImage: `url(${currentSrc})`, opacity: isTransitioning ? 0 : 1 }}
               />
             )}
             {nextSrc && (
               <div
-                className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+                className="absolute inset-0 bg-cover bg-center transition-opacity duration-[1500ms] ease-in-out"
                 style={{ backgroundImage: `url(${nextSrc})`, opacity: isTransitioning ? 1 : 0 }}
               />
             )}

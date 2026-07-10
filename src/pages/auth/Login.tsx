@@ -62,13 +62,6 @@ export default function Login() {
 
   return (
     <div className="bg-background text-foreground relative min-h-screen">
-      <div className="absolute top-4 left-4 z-50">
-        <img
-          src="https://www.cornerstoneschool.edu.in/wp-content/uploads/2020/02/LOGO-PNG-1.png"
-          alt="Cornerstone"
-          className="h-12 w-auto"
-        />
-      </div>
       <SignInPage
         heroImageSrc={farewellImages[slideIndex]}
         onSignIn={handleSignIn}
@@ -81,6 +74,7 @@ export default function Login() {
         }
         onResetPassword={() => alert('Reset password flow')}
         onCreateAccount={() => alert('Create account flow')}
+        logoSrc="https://www.cornerstoneschool.edu.in/wp-content/uploads/2020/02/LOGO-PNG-1.png"
       />
     </div>
   )
