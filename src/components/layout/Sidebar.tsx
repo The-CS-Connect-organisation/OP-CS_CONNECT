@@ -79,8 +79,8 @@ export default function Sidebar() {
                     ? "justify-center w-10 h-10 mx-auto"
                     : "gap-2.5 px-2.5 py-2",
                   isActive
-                    ? "bg-gradient-to-r from-orange-500/20 to-amber-500/10 text-orange-300 font-semibold shadow-sm"
-                    : "text-white/50 hover:bg-white/5 hover:text-white/80"
+                    ? "bg-gradient-to-br from-orange-500 to-amber-600 text-white font-semibold shadow-sm shadow-orange-500/30"
+                    : "text-white/70 hover:bg-gradient-to-br hover:from-orange-500/20 hover:to-amber-600/20 hover:text-white"
                 )}
               >
                 {({ isActive }) => (
@@ -89,7 +89,7 @@ export default function Sidebar() {
                       "absolute top-1/2 -translate-y-1/2 bg-gradient-to-b from-orange-400 to-amber-500 rounded-r-full shadow-lg shadow-orange-500/50",
                       collapsed ? "left-0 w-1 h-6" : "left-0 w-1 h-6"
                     )} />}
-                    <item.icon className={cn("w-4 h-4 shrink-0", isActive ? "text-orange-400" : "text-white/40 group-hover:text-white/70")} />
+                    <item.icon className={cn("w-4 h-4 shrink-0", isActive ? "text-white" : "text-white/40 group-hover:text-white")} />
                     <span className={cn("whitespace-nowrap overflow-hidden text-[13px]", collapsed && "hidden")}>{item.label}</span>
                   </>
                 )}

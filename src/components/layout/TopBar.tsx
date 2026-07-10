@@ -69,8 +69,9 @@ export default function TopBar() {
     : []
 
   return (
-    <header className="sticky top-0 z-30 glass-topbar">
-      <div className="flex items-center justify-between h-16 px-4 lg:px-6">
+    <header className="sticky top-0 z-30 glass-topbar overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none shimmer-overlay" />
+      <div className="flex items-center justify-between h-16 px-4 lg:px-6 relative z-10">
         {/* Left section */}
         <div className="flex items-center gap-3">
           <button onClick={() => setMobileOpen(!isMobileOpen)} className="p-2 rounded-md hover:bg-accent/50 lg:hidden">

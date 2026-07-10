@@ -268,6 +268,25 @@ html::-webkit-scrollbar {
     @apply backdrop-blur-lg bg-background/80 border-b border-border/50;
 }
 
+.shimmer-overlay {
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.06) 45%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.06) 55%,
+    transparent 70%
+  );
+  background-size: 300% 100%;
+  animation: shimmer 6s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  50% { background-position: 0 0; }
+  100% { background-position: 100% 0; }
+}
+
 /* Gradient text */
 .gradient-text {
   @apply bg-clip-text text-transparent bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600;
