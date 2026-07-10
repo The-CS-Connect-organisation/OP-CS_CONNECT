@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
 // --- HELPER COMPONENTS (ICONS) ---
@@ -71,6 +71,37 @@ export const SignInPage: React.FC<SignInPageProps> = ({
   extraTop,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [currentSrc, setCurrentSrc] = useState('');
+  const [nextSrc, setNextSrc] = useState('');
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const prevRef = useRef('');
+
+  useEffect(() => {
+    if (!heroImageSrc || heroImageSrc === currentSrc || heroImageSrc === nextSrc) return;
+    const img = new Image();
+    img.onload = () => {
+      setNextSrc(heroImageSrc!);
+      setIsTransitioning(true);
+    };
+    if (prevRef.current === heroImageSrc) {
+      setNextSrc(heroImageSrc!);
+      setIsTransitioning(true);
+    } else {
+      prevRef.current = heroImageSrc;
+      img.src = heroImageSrc;
+    }
+  }, [heroImageSrc, currentSrc, nextSrc]);
+
+  useEffect(() => {
+    if (isTransitioning) {
+      const timer = setTimeout(() => {
+        setCurrentSrc(nextSrc);
+        setNextSrc('');
+        setIsTransitioning(false);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [isTransitioning, nextSrc]);
 
   return (
     <div className="h-[100dvh] flex flex-col md:flex-row font-geist w-[100dvw]">
@@ -133,10 +164,29 @@ export const SignInPage: React.FC<SignInPageProps> = ({
         </div>
       </section>
 
-      {/* Right column: hero image + testimonials */}
-      {heroImageSrc && (
+      {/* Right column: hero image + testimonials with crossfade */}
+      {(currentSrc || nextSrc || heroImageSrc) && (
         <section className="hidden md:block flex-1 relative p-4">
-          <div className="absolute inset-4 rounded-3xl bg-cover bg-center transition-all duration-700" style={{ backgroundImage: `url(${heroImageSrc})` }}></div>
+          <div className="absolute inset-4 rounded-3xl overflow-hidden bg-muted">
+            {currentSrc && (
+              <div
+                className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+                style={{ backgroundImage: `url(${currentSrc})`, opacity: isTransitioning ? 0 : 1 }}
+              />
+            )}
+            {nextSrc && (
+              <div
+                className="absolute inset-0 bg-cover bg-center transition-opacity duration-1000"
+                style={{ backgroundImage: `url(${nextSrc})`, opacity: isTransitioning ? 1 : 0 }}
+              />
+            )}
+            {!currentSrc && !nextSrc && heroImageSrc && (
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: `url(${heroImageSrc})` }}
+              />
+            )}
+          </div>
           <div className="absolute inset-4 rounded-3xl bg-gradient-to-t from-black/40 via-transparent to-black/20" />
           {testimonials.length > 0 && (
             <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-4 px-8 w-full justify-center">
