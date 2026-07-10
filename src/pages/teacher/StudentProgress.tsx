@@ -110,18 +110,18 @@ export default function TeacherStudentProgress() {
                     <p className="text-sm text-muted-foreground">Attendance</p>
                   </div>
                   <div className="p-3 bg-accent rounded-lg text-center">
-                    <p className="text-2xl font-bold text-orange-500">{selected.assignments.completed}/{selected.assignments.total}</p>
+                    <p className="text-2xl font-bold text-orange-500">{selected.assignments?.completed ?? 0}/{selected.assignments?.total ?? 0}</p>
                     <p className="text-sm text-muted-foreground">Assignments</p>
                   </div>
                   <div className="p-3 bg-accent rounded-lg text-center">
-                    <p className="text-2xl font-bold text-orange-500">{selected.exams.passed}/{selected.exams.total}</p>
+                    <p className="text-2xl font-bold text-orange-500">{selected.exams?.passed ?? 0}/{selected.exams?.total ?? 0}</p>
                     <p className="text-sm text-muted-foreground">Exams Passed</p>
                   </div>
                 </div>
 
                 <h3 className="font-semibold mb-3">Subject Performance</h3>
                 <div className="space-y-3">
-                  {selected.subjects.map(subject => (
+                  {(selected.subjects || []).map(subject => (
                     <div key={subject.name} className="flex items-center justify-between">
                       <span className="text-sm">{subject.name}</span>
                       <div className="flex items-center gap-2">

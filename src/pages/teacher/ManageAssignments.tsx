@@ -107,7 +107,8 @@ export default function TeacherManageAssignments() {
       setForm({ title: '', description: '', subject: 'Math', class: teacherClasses[0] || '10-A', dueDate: '', points: 100 });
       setSelectedSections([]);
       setShowForm(false);
-    } catch {
+    } catch (err: any) {
+      alert(err?.message || 'Failed to create assignment');
     }
   };
 
@@ -125,6 +126,19 @@ export default function TeacherManageAssignments() {
       setAssignments(prev => prev.map(a => a.id === id ? { ...a, published: true } : a));
     } catch {
     }
+  };
+
+  const handleEdit = (assignment: any) => {
+    setForm({
+      title: assignment.title || '',
+      description: assignment.description || '',
+      subject: assignment.subject || 'Math',
+      class: assignment.className || '10-A',
+      dueDate: assignment.dueDate ? assignment.dueDate.split('T')[0] : '',
+      points: assignment.points || assignment.maxMarks || 100,
+    });
+    setSelectedSections(assignment.sectionIds || []);
+    setShowForm(true);
   };
 
   const currentSections = classSections[form.class] || [];
@@ -224,7 +238,7 @@ export default function TeacherManageAssignments() {
                   {!assignment.published && (
                     <Button size="sm" onClick={() => handlePublish(assignment.id)}>Publish</Button>
                   )}
-                  <button className="p-2 hover:bg-accent rounded"><Edit className="w-4 h-4" /></button>
+                  <button onClick={() => handleEdit(assignment)} className="p-2 hover:bg-accent rounded"><Edit className="w-4 h-4" /></button>
                   <button onClick={() => handleDelete(assignment.id)} className="p-2 hover:bg-red-100 rounded text-red-500"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>

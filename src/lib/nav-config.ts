@@ -10,7 +10,7 @@ import {
   Search, AlertTriangle, Stethoscope, Headphones,
   MapPin, Shield, Settings, Eye, BookMarked, HelpCircle,
   ThumbsUp, Printer, Gauge, Navigation, CircleUser, Route, ChevronDown,
-  GraduationCap as Cap, Gavel, Inbox, type LucideIcon
+  GraduationCap as Cap, Gavel, type LucideIcon
 } from 'lucide-react'
 
 export interface NavItem {
@@ -77,7 +77,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
       label: 'Opportunities',
       items: [
         { icon: Gavel, label: 'Talent Market', path: '/student/talent-market' },
-        { icon: Inbox, label: 'Inbox', path: '/student/inbox' },
       ]
     },
     {

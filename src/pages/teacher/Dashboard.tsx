@@ -332,15 +332,23 @@ export default function TeacherDashboard() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-muted-foreground">Today's Attendance</span>
                     <span className="font-semibold text-emerald-500">
-                      {weeklyAttendanceData.length > 0
-                        ? `${Math.round((weeklyAttendanceData[weeklyAttendanceData.length - 1].present || 0) / ((weeklyAttendanceData[weeklyAttendanceData.length - 1].present || 0) + (weeklyAttendanceData[weeklyAttendanceData.length - 1].absent || 0)) * 100)}%`
-                        : '—'}
+                      {(() => {
+                        const last = weeklyAttendanceData[weeklyAttendanceData.length - 1]
+                        const p = last?.present || 0
+                        const a = last?.absent || 0
+                        const total = p + a
+                        return total > 0 ? `${Math.round(p / total * 100)}%` : '—'
+                      })()}
                     </span>
                   </div>
                   <Progress
-                    value={weeklyAttendanceData.length > 0
-                      ? Math.round((weeklyAttendanceData[weeklyAttendanceData.length - 1].present || 0) / ((weeklyAttendanceData[weeklyAttendanceData.length - 1].present || 0) + (weeklyAttendanceData[weeklyAttendanceData.length - 1].absent || 0)) * 100)
-                      : 0}
+                    value={(() => {
+                      const last = weeklyAttendanceData[weeklyAttendanceData.length - 1]
+                      const p = last?.present || 0
+                      const a = last?.absent || 0
+                      const total = p + a
+                      return total > 0 ? Math.round(p / total * 100) : 0
+                    })()}
                     color="#10b981"
                   />
                 </div>

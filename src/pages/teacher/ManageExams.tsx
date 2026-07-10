@@ -27,6 +27,7 @@ export default function TeacherManageExams() {
   const [exams, setExams] = useState<Exam[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: '', subject: 'Math', class: '10-A', date: '', time: '', duration: 60, location: '', type: 'test' as Exam['type'], totalMarks: 100, syllabus: '' });
 
   useEffect(() => {
@@ -51,6 +52,36 @@ export default function TeacherManageExams() {
       const newExam = await api.createExam({ ...form, teacherId: user?.id });
       setExams(prev => [...prev, newExam]);
       setForm({ title: '', subject: 'Math', class: '10-A', date: '', time: '', duration: 60, location: '', type: 'test', totalMarks: 100, syllabus: '' });
+      setShowForm(false);
+    } catch {
+      // error
+    }
+  };
+
+  const handleEdit = (exam: Exam) => {
+    setForm({
+      title: exam.title,
+      subject: exam.subject,
+      class: exam.class,
+      date: exam.date ? exam.date.split('T')[0] : '',
+      time: exam.time,
+      duration: exam.duration,
+      location: exam.location,
+      type: exam.type,
+      totalMarks: exam.totalMarks,
+      syllabus: exam.syllabus || '',
+    });
+    setEditingId(exam.id);
+    setShowForm(true);
+  };
+
+  const handleUpdate = async () => {
+    if (!form.title.trim() || !editingId) return;
+    try {
+      await api.updateExam(editingId, { ...form });
+      setExams(prev => prev.map(e => e.id === editingId ? { ...e, ...form } : e));
+      setForm({ title: '', subject: 'Math', class: '10-A', date: '', time: '', duration: 60, location: '', type: 'test', totalMarks: 100, syllabus: '' });
+      setEditingId(null);
       setShowForm(false);
     } catch {
       // error
@@ -116,8 +147,8 @@ export default function TeacherManageExams() {
             <textarea placeholder="Syllabus / Portion (topics covered)" value={form.syllabus} onChange={(e) => setForm({ ...form, syllabus: e.target.value })} className="w-full px-3 py-2 rounded-lg border bg-background" rows={3} />
           </div>
           <div className="flex gap-2 mt-4">
-            <Button onClick={handleCreate}>Schedule</Button>
-            <Button variant="outline" onClick={() => setShowForm(false)}>Cancel</Button>
+            <Button onClick={editingId ? handleUpdate : handleCreate}>{editingId ? 'Update' : 'Schedule'}</Button>
+            <Button variant="outline" onClick={() => { setShowForm(false); setEditingId(null); }}>Cancel</Button>
           </div>
         </Card>
       )}
@@ -157,7 +188,7 @@ export default function TeacherManageExams() {
                   {exam.syllabus && <p className="text-sm text-muted-foreground mt-2">Syllabus: {exam.syllabus}</p>}
                 </div>
                 <div className="flex gap-2">
-                  <button className="p-2 hover:bg-accent rounded"><Edit className="w-4 h-4" /></button>
+                  <button onClick={() => handleEdit(exam)} className="p-2 hover:bg-accent rounded"><Edit className="w-4 h-4" /></button>
                   <button onClick={() => handleDelete(exam.id)} className="p-2 hover:bg-red-100 rounded text-red-500"><Trash2 className="w-4 h-4" /></button>
                 </div>
               </div>

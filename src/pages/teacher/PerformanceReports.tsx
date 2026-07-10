@@ -104,7 +104,7 @@ export default function TeacherPerformanceReports() {
             <Card className="p-4">
               <h3 className="font-semibold mb-4">Subject Comparison</h3>
               <div className="space-y-3">
-                {report.subjectComparison.map(subject => (
+                {(report.subjectComparison || []).map(subject => (
                   <div key={subject.subject} className="p-3 bg-accent rounded-lg">
                     <p className="font-medium mb-2">{subject.subject}</p>
                     <div className="flex items-center gap-4">
@@ -135,7 +135,7 @@ export default function TeacherPerformanceReports() {
             <Card className="p-4">
               <h3 className="font-semibold mb-4">Performance Trend</h3>
               <div className="space-y-3">
-                {report.performanceTrend.map((month, idx) => (
+                {(report.performanceTrend || []).map((month, idx) => (
                   <div key={month.month} className="flex items-center justify-between">
                     <span className="text-sm">{month.month}</span>
                     <div className="flex items-center gap-2">

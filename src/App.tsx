@@ -110,7 +110,7 @@ const StudentCourses = lazy(() => import('./pages/student/Courses'))
 const StudentActivities = lazy(() => import('./pages/student/Activities'))
 const StudentSupplyAlerts = lazy(() => import('./pages/student/SupplyAlerts'))
 const StudentAssignmentDetails = lazy(() => import('./pages/student/AssignmentDetails'))
-const UniversalInbox = lazy(() => import('./pages/shared/UniversalInbox'))
+
 const StudentLostAndFound = lazy(() => import('./pages/student/StudentLostAndFound'))
 const StudentITHelpdesk = lazy(() => import('./pages/student/StudentITHelpdesk'))
 const StudentClinicVisits = lazy(() => import('./pages/student/StudentClinicVisits'))
@@ -214,7 +214,7 @@ function App() {
             <Route path="exam-syllabus" element={<StudentExamSyllabus />} />
             <Route path="bus-tracking" element={<StudentBusTracking />} />
             <Route path="talent-market" element={<StudentTalentMarket />} />
-            <Route path="inbox" element={<UniversalInbox />} />
+
             <Route path="ai" element={<AILab />} />
             <Route path="community" element={<StudentCommunity />} />
             <Route path="comms-hub" element={<CommunicationHub />} />
