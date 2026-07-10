@@ -35,7 +35,6 @@ const QuickMessenger = lazy(() => import('./pages/shared/QuickMessenger'))
 const AILab = lazy(() => import('./pages/shared/AILab'))
 const ReportCards = lazy(() => import('./pages/teacher/ReportCards'))
 const NotificationCenter = lazy(() => import('./pages/shared/NotificationCenter'))
-const ManagerDashboard = lazy(() => import('./pages/manager/ManagerDashboard'))
 const StudentNotes = lazy(() => import('./pages/student/Notes'))
 const SharedNotes = lazy(() => import('./pages/student/SharedNotes'))
 const StudentAnnouncements = lazy(() => import('./pages/student/Announcements'))
@@ -85,33 +84,12 @@ const ParentDigitalFridge = lazy(() => import('./pages/parent/DigitalFridge'))
 const ParentBookHeavyAlerts = lazy(() => import('./pages/parent/BookHeavyAlerts'))
 const DriverProfile = lazy(() => import('./pages/driver/DriverProfile'))
 const LibrarianDashboard = lazy(() => import('./pages/librarian/LibrarianDashboard'))
-const ManagerUsers = lazy(() => import('./pages/manager/ManagerUsers'))
-const ManagerAcademics = lazy(() => import('./pages/manager/ManagerAcademics'))
-const ManagerFinance = lazy(() => import('./pages/manager/ManagerFinance'))
-const ManagerAnalytics = lazy(() => import('./pages/manager/ManagerAnalytics'))
-const ManagerAnnouncements = lazy(() => import('./pages/manager/ManagerAnnouncements'))
-const ManagerEvents = lazy(() => import('./pages/manager/ManagerEvents'))
-const ManagerExams = lazy(() => import('./pages/manager/ManagerExams'))
-const ManagerTimetable = lazy(() => import('./pages/manager/ManagerTimetable'))
-const ManagerPayroll = lazy(() => import('./pages/manager/ManagerPayroll'))
-const ManagerSecurity = lazy(() => import('./pages/manager/ManagerSecurity'))
-const ManagerSettings = lazy(() => import('./pages/manager/ManagerSettings'))
-const ManagerAuditLog = lazy(() => import('./pages/manager/ManagerAuditLog'))
-const ManagerFees = lazy(() => import('./pages/manager/ManagerFees'))
-const ManagerBusAssignment = lazy(() => import('./pages/manager/ManagerBusAssignment'))
+
 const StudentDailyBriefing = lazy(() => import('./pages/student/DailyBriefing'))
 const LibrarianProfile = lazy(() => import('./pages/librarian/LibrarianProfile'))
 const CSLibrary = lazy(() => import('./pages/shared/CSLibrary'))
-// Manager Phase 1+2
-const ManagerScheduling = lazy(() => import('./pages/manager/ManagerScheduling'))
-const ManagerSIS = lazy(() => import('./pages/manager/ManagerSIS'))
-const ManagerHR = lazy(() => import('./pages/manager/ManagerHR'))
-const ManagerInvoicing = lazy(() => import('./pages/manager/ManagerInvoicing'))
-const ManagerLibrary = lazy(() => import('./pages/manager/ManagerLibrary'))
-const ManagerERP = lazy(() => import('./pages/manager/ManagerERP'))
-const ManagerComms = lazy(() => import('./pages/manager/ManagerComms'))
+
 // Admin Phase 1+2
-const ManagerTalentMarket = lazy(() => import('./pages/manager/ManagerTalentMarket'))
 const AdminCirculars = lazy(() => import('./pages/admin/AdminCirculars'))
 const AdminSIS = lazy(() => import('./pages/admin/AdminSIS'))
 const AdminClassroom = lazy(() => import('./pages/admin/AdminClassroom'))
@@ -151,22 +129,10 @@ const AdminAlumni = lazy(() => import('./pages/admin/AdminAlumni'))
 const AdminPlatform = lazy(() => import('./pages/admin/AdminPlatform'))
 const AdminProfile = lazy(() => import('./pages/admin/AdminProfile'))
 const CreateAccount = lazy(() => import('./pages/admin/CreateAccount'))
-// Manager Phase 3
-const ManagerCounselling = lazy(() => import('./pages/manager/ManagerCounselling'))
-const ManagerHealth = lazy(() => import('./pages/manager/ManagerHealth'))
-const ManagerDiscipline = lazy(() => import('./pages/manager/ManagerDiscipline'))
-const ManagerActivities = lazy(() => import('./pages/manager/ManagerActivities'))
-const ManagerPortfolio = lazy(() => import('./pages/manager/ManagerPortfolio'))
-const ManagerEnrolment = lazy(() => import('./pages/manager/ManagerEnrolment'))
-// Manager Phase 4
-const ManagerFacilities = lazy(() => import('./pages/manager/ManagerFacilities'))
-const ManagerAthletics = lazy(() => import('./pages/manager/ManagerAthletics'))
-const ManagerAlumni = lazy(() => import('./pages/manager/ManagerAlumni'))
-const ManagerPlatform = lazy(() => import('./pages/manager/ManagerPlatform'))
+
 const AdminRoomBooking = lazy(() => import('./pages/admin/AdminRoomBooking'))
 const AdminAssetTracking = lazy(() => import('./pages/admin/AdminAssetTracking'))
-const ManagerRoomBooking = lazy(() => import('./pages/manager/ManagerRoomBooking'))
-const ManagerAssetTracking = lazy(() => import('./pages/manager/ManagerAssetTracking'))
+
 const TeacherRoomBooking = lazy(() => import('./pages/teacher/TeacherRoomBooking'))
 const TeacherAssetTracking = lazy(() => import('./pages/teacher/TeacherAssetTracking'))
 const TeacherSalary = lazy(() => import('./pages/teacher/TeacherSalary'))
@@ -279,8 +245,6 @@ function App() {
             <Route path="comms-hub" element={<CommunicationHub />} />
             <Route path="ai" element={<AILab />} />
             <Route path="classroom" element={<TeacherClassroom />} />
-            <Route path="talent-market" element={<ManagerTalentMarket />} />
-
             <Route path="exam-results" element={<TeacherExamResults />} />
             <Route path="room-booking" element={<TeacherRoomBooking />} />
             <Route path="asset-tracking" element={<TeacherAssetTracking />} />
@@ -329,7 +293,6 @@ function App() {
             <Route path="health" element={<AdminHealth />} />
             <Route path="discipline" element={<AdminDiscipline />} />
             <Route path="activities" element={<AdminActivities />} />
-            <Route path="talent-market" element={<ManagerTalentMarket />} />
             <Route path="portfolio" element={<AdminPortfolio />} />
             <Route path="enrolment" element={<AdminEnrolment />} />
             {/* Admin Phase 4 */}
@@ -384,56 +347,7 @@ function App() {
             <Route path="ai" element={<AILab />} />
           </Route>
 
-          {/* MANAGER */}
-          <Route path="/manager" element={roleGuard(['manager'])}>
-            <Route index element={<ManagerDashboard />} />
-            <Route path="users" element={<ManagerUsers />} />
-            <Route path="academics" element={<ManagerAcademics />} />
-            <Route path="finance" element={<ManagerFinance />} />
-            <Route path="analytics" element={<ManagerAnalytics />} />
-                        <Route path="announcements" element={<ManagerAnnouncements />} />
-            <Route path="events" element={<ManagerEvents />} />
-            <Route path="exams" element={<ManagerExams />} />
-            <Route path="timetable" element={<ManagerTimetable />} />
-            <Route path="notifications" element={<NotificationCenter />} />
-            <Route path="comms-hub" element={<CommunicationHub />} />
-            <Route path="ai" element={<AILab />} />
-            <Route path="payroll" element={<ManagerPayroll />} />
-            <Route path="security" element={<ManagerSecurity />} />
-            <Route path="reports" element={<ReportCards />} />
-            <Route path="settings" element={<ManagerSettings />} />
-            <Route path="audit-log" element={<ManagerAuditLog />} />
-            <Route path="messages" element={<QuickMessenger />} />
-            <Route path="attendance" element={<TeacherMarkAttendance />} />
-            <Route path="grading" element={<TeacherGrading />} />
-            <Route path="notes" element={<TeacherUploadNotes />} />
-            <Route path="fees" element={<ManagerFees />} />
-            <Route path="bus-assignment" element={<ManagerBusAssignment />} />
-            {/* Manager Phase 1+2 */}
-            <Route path="scheduling" element={<ManagerScheduling />} />
-            <Route path="sis" element={<ManagerSIS />} />
-            <Route path="hr" element={<ManagerHR />} />
-            <Route path="invoicing" element={<ManagerInvoicing />} />
-            <Route path="library" element={<ManagerLibrary />} />
-            <Route path="erp" element={<ManagerERP />} />
-            <Route path="comms" element={<ManagerComms />} />
-            {/* Manager Phase 3 */}
-            <Route path="counselling" element={<ManagerCounselling />} />
-            <Route path="health" element={<ManagerHealth />} />
-            <Route path="discipline" element={<ManagerDiscipline />} />
-            <Route path="activities" element={<ManagerActivities />} />
-            <Route path="talent-market" element={<ManagerTalentMarket />} />
-            <Route path="portfolio" element={<ManagerPortfolio />} />
-            <Route path="enrolment" element={<ManagerEnrolment />} />
-            {/* Manager Phase 4 */}
-            <Route path="facilities" element={<ManagerFacilities />} />
-            <Route path="transport" element={<GenericPage title="Transport" description="Transport & bus management" icon="Bus" category="Facilities" role="manager" />} />
-                        <Route path="athletics" element={<ManagerAthletics />} />
-            <Route path="alumni" element={<ManagerAlumni />} />
-            <Route path="platform" element={<ManagerPlatform />} />
-            <Route path="room-booking" element={<ManagerRoomBooking />} />
-            <Route path="asset-tracking" element={<ManagerAssetTracking />} />
-          </Route>
+
 
           <Route path="/educator-desk" element={<EducatorDesk />} />
 
