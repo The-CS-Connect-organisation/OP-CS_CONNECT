@@ -1,17 +1,17 @@
 import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
-const REDIRECT_URL = 'https://educerdesk.example.com'
+const REDIRECT_URL = 'https://campusdesk.example.com'
 
 const messages = [
-  'Initializing EducatorDesk...',
+  'Initializing CampusDesk...',
   'Connecting to secure gateway...',
   'Authenticating your session...',
   'Loading your workspace...',
   'Almost there...',
 ]
 
-export default function EducatorDesk() {
+export default function CampusDesk() {
   const [step, setStep] = useState(0)
   const [fade, setFade] = useState(true)
 

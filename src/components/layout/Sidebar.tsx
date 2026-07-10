@@ -5,9 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAuthStore, useSidebarStore, useThemeStore } from '@/lib/store'
 import { navSections } from '@/lib/nav-config'
 import { cn } from '@/lib/utils'
-import { LogOut, X, ChevronLeft, ChevronRight, Briefcase } from 'lucide-react'
+import { LogOut, X, ChevronLeft, ChevronRight, Briefcase, Wallet } from 'lucide-react'
+import { playNavSound } from '@/lib/sound'
 
 const staffRoles = ['teacher', 'admin', 'manager', 'librarian']
+const studentRoles = ['student', 'parent']
 
 export default function Sidebar() {
   const { user, logout } = useAuthStore()
@@ -24,14 +26,19 @@ export default function Sidebar() {
 
   const sections = navSections[user.role] || []
   const isStaff = staffRoles.includes(user.role)
+  const isStudentOrParent = studentRoles.includes(user.role)
 
   const handleLogout = () => {
     logout()
     navigate('/login')
   }
 
-  const handleEducatorDesk = useCallback(() => {
-    window.open('/educator-desk', '_blank')
+  const handleCampusDesk = useCallback(() => {
+    window.open('/campus-desk', '_blank')
+  }, [])
+
+  const handleCampusPay = useCallback(() => {
+    window.open('/campus-pay', '_blank')
   }, [])
 
   const handleSectionEnter = (label: string) => {
@@ -128,7 +135,7 @@ export default function Sidebar() {
                 key={item.path}
                 to={item.path}
                 end={item.path === `/${user.role}`}
-                onClick={() => setMobileOpen(false)}
+                onClick={() => { playNavSound(); setMobileOpen(false) }}
                 className={({ isActive }) => cn(
                   "flex items-center rounded-lg text-sm font-medium transition-all duration-150 group relative",
                   collapsed
@@ -171,27 +178,53 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* EducatorDesk Button - Staff only */}
+      {/* CampusDesk Button - Staff only */}
       {isStaff && (
         <div className={cn("shrink-0", collapsed ? "px-1 py-2" : "px-3 py-2")}>
           {collapsed ? (
-            <button onClick={handleEducatorDesk} className={cn(
+            <button onClick={handleCampusDesk} className={cn(
               "w-10 h-10 mx-auto flex items-center justify-center rounded-lg border transition-all",
               isDark
                 ? "bg-white/10 border-white/20 text-[#F2F0EE] hover:bg-white/15"
                 : "bg-[#EC8037]/15 border-[#EC8037]/30 text-[#EC8037] hover:bg-[#EC8037]/25"
-            )} title="EducatorDesk">
+            )} title="CampusDesk">
               <Briefcase className="w-5 h-5" />
             </button>
           ) : (
-            <button onClick={handleEducatorDesk} className={cn(
+            <button onClick={handleCampusDesk} className={cn(
               "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all",
               isDark
                 ? "bg-white/10 border border-white/20 text-[#F2F0EE] hover:bg-white/15"
                 : "bg-[#EC8037]/15 border border-[#EC8037]/30 text-[#EC8037] hover:bg-[#EC8037]/25"
             )}>
               <Briefcase className="w-4 h-4" />
-              <span>EducatorDesk</span>
+              <span>CampusDesk</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* CampusPay Button - Student/Parent only */}
+      {isStudentOrParent && (
+        <div className={cn("shrink-0", collapsed ? "px-1 py-2" : "px-3 py-2")}>
+          {collapsed ? (
+            <button onClick={handleCampusPay} className={cn(
+              "w-10 h-10 mx-auto flex items-center justify-center rounded-lg border transition-all",
+              isDark
+                ? "bg-white/10 border-white/20 text-[#F2F0EE] hover:bg-white/15"
+                : "bg-[#EC8037]/15 border-[#EC8037]/30 text-[#EC8037] hover:bg-[#EC8037]/25"
+            )} title="CampusPay">
+              <Wallet className="w-5 h-5" />
+            </button>
+          ) : (
+            <button onClick={handleCampusPay} className={cn(
+              "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm font-medium transition-all",
+              isDark
+                ? "bg-white/10 border border-white/20 text-[#F2F0EE] hover:bg-white/15"
+                : "bg-[#EC8037]/15 border border-[#EC8037]/30 text-[#EC8037] hover:bg-[#EC8037]/25"
+            )}>
+              <Wallet className="w-4 h-4" />
+              <span>CampusPay</span>
             </button>
           )}
         </div>
@@ -291,7 +324,7 @@ export default function Sidebar() {
                 key={item.path}
                 to={item.path}
                 end={item.path === `/${user.role}`}
-                onClick={() => setMobileOpen(false)}
+                onClick={() => { playNavSound(); setMobileOpen(false) }}
                 className={({ isActive }) => cn(
                   "flex items-center gap-2.5 px-3 py-2 text-sm font-medium transition-colors",
                   isActive
