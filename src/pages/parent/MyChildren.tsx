@@ -3,8 +3,9 @@ import { useAuthStore } from '../../lib/store';
 import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
+import { Button } from '../../components/ui/Button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Users, UserPlus, Check, X, Loader2, Search, ShieldCheck, Lock, Eye, EyeOff } from 'lucide-react';
+import { Users, UserPlus, Check, X, Loader2, Search, ShieldCheck, Lock, Eye, EyeOff, Sparkles, Phone } from 'lucide-react';
 
 interface ChildInfo {
   id: string; name: string; class: string; email: string; rollNo?: string;
@@ -31,6 +32,9 @@ export default function ParentMyChildren() {
   const [linkError, setLinkError] = useState('');
   const [linkSuccess, setLinkSuccess] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [autoDetecting, setAutoDetecting] = useState(false);
+  const [autoDetectResult, setAutoDetectResult] = useState<{ count: number; linked: { id: string; name: string }[] } | null>(null);
+  const [autoPhone, setAutoPhone] = useState(user?.phone || '');
 
   useEffect(() => {
     loadChildren();
@@ -126,10 +130,37 @@ export default function ParentMyChildren() {
           <h1 className="text-2xl font-bold">My Children</h1>
           <p className="text-muted-foreground text-sm">Manage your connected children</p>
         </div>
-        <button onClick={openAddModal} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg hover:shadow-xl active:scale-95 transition-all">
-          <UserPlus className="w-4 h-4" />
-          Add Child
-        </button>
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <input type="tel" value={autoPhone} onChange={e => setAutoPhone(e.target.value)}
+              placeholder="Your phone number"
+              className="w-44 pl-9 pr-3 py-2 rounded-xl border border-border bg-card text-xs focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
+            />
+          </div>
+          <button onClick={async () => {
+            if (!user?.id || !parentType) { alert('Parent type not detected'); return }
+            const phone = autoPhone?.trim()
+            if (!phone) { alert('Enter your phone number first'); return }
+            setAutoDetecting(true)
+            try {
+              const res = await api.autoLinkParent(user.id, phone, parentType)
+              setAutoDetectResult(res)
+              if (res?.count > 0) loadChildren()
+            } catch (e: any) {
+              alert(e?.message || 'Auto-detect failed')
+            } finally {
+              setAutoDetecting(false)
+            }
+          }} disabled={autoDetecting} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg hover:shadow-xl active:scale-95 transition-all disabled:opacity-50">
+            {autoDetecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+            Auto Detect
+          </button>
+          <button onClick={openAddModal} className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg hover:shadow-xl active:scale-95 transition-all">
+            <UserPlus className="w-4 h-4" />
+            Add Child
+          </button>
+        </div>
       </div>
 
       {parentType && (
@@ -287,6 +318,47 @@ export default function ParentMyChildren() {
                   );
                 })}
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Auto Detect Result Modal */}
+      <AnimatePresence>
+        {autoDetectResult && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="w-full max-w-md rounded-2xl border bg-card shadow-2xl p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold">Auto Detect Results</h2>
+                <button onClick={() => setAutoDetectResult(null)} className="p-1 rounded-lg hover:bg-accent"><X className="w-5 h-5" /></button>
+              </div>
+              {autoDetectResult.count === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                  <p className="text-sm font-medium">No children found</p>
+                  <p className="text-xs mt-1">No students matched your phone number</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-sm text-emerald-600 font-medium flex items-center gap-2">
+                    <Check className="w-4 h-4" />
+                    Found {autoDetectResult.count} child{autoDetectResult.count > 1 ? 'ren' : ''}
+                  </p>
+                  {autoDetectResult.linked.map(c => (
+                    <div key={c.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
+                      <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center text-white text-xs font-bold">
+                        {c.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">{c.name}</p>
+                        <p className="text-xs text-emerald-600">Auto-linked via phone number</p>
+                      </div>
+                      <Check className="w-4 h-4 text-emerald-500 ml-auto" />
+                    </div>
+                  ))}
+                </div>
+              )}
+              <Button className="mt-4 w-full" onClick={() => setAutoDetectResult(null)}>Done</Button>
             </motion.div>
           </motion.div>
         )}
