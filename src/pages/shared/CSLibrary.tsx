@@ -81,14 +81,16 @@ export default function CSLibrary() {
   const handleReserve = async (book: CatalogueBook) => {
     setReserving(book.id)
     try {
-      await api.createHold({ bookId: book.id, studentId: user?.id, studentName: user?.name, bookTitle: book.title })
+      const { bookId, studentId, studentName } = { bookId: book.id, studentId: user?.id, studentName: user?.name }
+      if (!studentId || !studentName) { alert('Please log in first'); return }
+      await api.createHold({ bookId, studentId, studentName })
       const c = await api.getLibraryCatalogue()
       setCatalogue(toCatalogue(c))
-      const all = await api.getUsers()
-      const librarians = (Array.isArray(all) ? all : []).filter((u: any) => u.role === 'librarian')
-      for (const lib of librarians) {
-        api.createNotification({ userId: lib.id, title: 'Book Reserved', message: `${user?.name} reserved "${book.title}"`, type: 'library' }).catch(() => {})
-      }
+      api.getUsers().then(all => {
+        ;(Array.isArray(all) ? all : []).filter((u: any) => u.role === 'librarian').forEach((lib: any) => {
+          api.createNotification({ userId: lib.id, title: 'Book Reserved', message: `${user?.name} reserved "${book.title}"`, type: 'library' }).catch(() => {})
+        })
+      }).catch(() => {})
     } catch (e) {
       console.error('Reserve failed', e)
       alert('Reserve failed: ' + ((e as any)?.message || e))
