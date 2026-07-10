@@ -285,7 +285,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
       ]
     },
   ],
-
+  manager: [],
 }
 
 export const roleGradients: Record<UserRole, string> = {

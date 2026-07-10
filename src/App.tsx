@@ -347,7 +347,10 @@ function App() {
             <Route path="ai" element={<AILab />} />
           </Route>
 
-
+          {/* MANAGER (portal removed) */}
+          <Route path="/manager" element={roleGuard(['manager'])}>
+            <Route index element={<Navigate to="/404page" replace />} />
+          </Route>
 
           <Route path="/educator-desk" element={<EducatorDesk />} />
 
