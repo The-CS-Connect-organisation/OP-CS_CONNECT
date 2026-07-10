@@ -18,12 +18,11 @@ const statusConfig: Record<string, { icon: React.ElementType; color: string; act
   absent: { icon: X, color: "text-slate-400", activeColor: "bg-rose-600 text-white shadow-rose-600/20", label: "Absent" },
 };
 
-const CLASSES = ["10-A", "10-B", "11-A", "11-B"];
-
 export default function MarkAttendance() {
   const { user } = useAuthStore();
+  const [classList, setClassList] = useState<string[]>([]);
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split("T")[0]);
-  const [selectedClass, setSelectedClass] = useState("10-A");
+  const [selectedClass, setSelectedClass] = useState("");
   const [visibleMonth, setVisibleMonth] = useState(() => new Date());
   const [marks, setMarks] = useState<Record<string, string>>({});
   const [students, setStudents] = useState<any[]>([]);
@@ -33,6 +32,16 @@ export default function MarkAttendance() {
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
+    if (!user?.id) return;
+    api.getTeacherAssignedClasses(user.id).then((data: any) => {
+      const names = (Array.isArray(data) ? data : []).map((c: any) => c.name || c.className).filter(Boolean);
+      setClassList(names);
+      if (names.length > 0 && !selectedClass) setSelectedClass(names[0]);
+    }).catch(() => {});
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!selectedClass) return;
     let alive = true;
     (async () => {
       try {
@@ -148,7 +157,7 @@ export default function MarkAttendance() {
             onChange={(e) => setSelectedClass(e.target.value)}
             className="w-full bg-background border border-border rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-orange-500 transition-all min-w-[140px]"
           >
-            {CLASSES.map((c) => <option key={c} value={c}>{c}</option>)}
+            {classList.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
         <div className="space-y-1 flex-1">
