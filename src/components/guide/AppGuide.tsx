@@ -341,8 +341,8 @@ export default function AppGuide() {
               </p>
               <p className="text-gray-700 text-base md:text-lg font-medium">
                 Built by{' '}
-                <span className="font-semibold text-gray-900">Rishith Manchala</span> and{' '}
-                <span className="font-semibold text-gray-900">Navaneeth Nalabothu</span>
+                <span className="font-semibold text-gray-900">Navaneeth Nalabothu</span> and{' '}
+                <span className="font-semibold text-gray-900">Rishith Manchala</span>
               </p>
             </div>
           </div>
