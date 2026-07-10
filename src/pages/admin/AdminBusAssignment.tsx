@@ -72,7 +72,7 @@ export default function AdminBusAssignment() {
     try {
       const newBus = await api.createBusAssignment({ ...form, stops: form.stops.split(',').map(s => s.trim()).filter(Boolean) });
       setBuses(prev => [...prev, newBus]);
-      setForm({ busNumber: '', routeName: '', driverName: '', driverPhone: '', capacity: 40, stops: '' });
+      setForm({ busNumber: '', routeName: '', driverId: '', driverName: '', driverPhone: '', capacity: 40, stops: '' });
       setShowForm(false);
     } catch {
       // error

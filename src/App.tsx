@@ -104,7 +104,8 @@ const TeacherClassroom = lazy(() => import('./pages/teacher/TeacherClassroom'))
 const TeacherExamResults = lazy(() => import('./pages/teacher/TeacherExamResults'))
 const TeacherMySection = lazy(() => import('./pages/teacher/MySection'))
 const TeacherTimetable = lazy(() => import('./pages/teacher/Timetable'))
-const LibrarianManagement = lazy(() => import('./pages/librarian/LibrarianManagement'))
+const LibrarianReserveBooks = lazy(() => import('./pages/librarian/LibrarianReserveBooks'))
+const LibrarianBooksIssued = lazy(() => import('./pages/librarian/LibrarianBooksIssued'))
 const StudentExercises = lazy(() => import('./pages/student/Exercises'))
 const StudentTalentMarket = lazy(() => import('./pages/student/TalentMarket'))
 const StudentCourses = lazy(() => import('./pages/student/Courses'))
@@ -350,8 +351,8 @@ function App() {
           <Route path="/librarian" element={roleGuard(['librarian'])}>
             <Route index element={<LibrarianDashboard />} />
             <Route path="profile" element={<LibrarianProfile />} />
-            <Route path="management" element={<LibrarianManagement />} />
-            <Route path="issue-books" element={<LibrarianBookIssue />} />
+            <Route path="reserve-books" element={<LibrarianReserveBooks />} />
+            <Route path="books-issued" element={<LibrarianBooksIssued />} />
           </Route>
 
           {/* COORDINATOR */}
