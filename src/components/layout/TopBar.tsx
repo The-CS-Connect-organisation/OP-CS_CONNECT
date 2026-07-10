@@ -1,25 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useAuthStore, useThemeStore, useNotificationStore, useSidebarStore } from '@/lib/store'
+import { useAuthStore, useThemeStore, useSidebarStore } from '@/lib/store'
 import { cn, getGreeting } from '@/lib/utils'
 import { useNavigate } from 'react-router-dom'
 import { navSections } from '@/lib/nav-config'
 import {
-  Bell, Search, Sparkles, Menu,
-  Inbox,
-  X, Check, AlertCircle, Info, CheckCircle2, GraduationCap, ArrowRight,
+  Search, Sparkles, Menu,
+  X, ArrowRight,
   User, Settings, LogOut
 } from 'lucide-react'
 import { Avatar } from '@/components/ui/Avatar'
 import StarWarsToggle from '@/components/ui/star-wars-toggle-switch'
-import styled from 'styled-components'
 
 export default function TopBar() {
   const { user, logout } = useAuthStore()
   const { isDark, toggleTheme } = useThemeStore()
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotificationStore()
   const { isMobileOpen, setMobileOpen } = useSidebarStore()
-  const [showNotifications, setShowNotifications] = useState(false)
   const [showAvatarMenu, setShowAvatarMenu] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [showSearch, setShowSearch] = useState(false)
@@ -27,8 +23,6 @@ export default function TopBar() {
   const searchRef = useRef<HTMLInputElement>(null)
   const searchModalRef = useRef<HTMLDivElement>(null)
   const avatarMenuRef = useRef<HTMLDivElement>(null)
-  const [genFocused, setGenFocused] = useState(false)
-
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.code === 'Space') {
@@ -73,117 +67,6 @@ export default function TopBar() {
         l.path.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : []
-
-  const StyledGenBtn = styled.button`
-    --border-radius: 24px;
-    --padding: 4px;
-    --transition: 0.4s;
-    --button-color: #101010;
-    --highlight-color-hue: 210deg;
-
-    user-select: none;
-    display: flex;
-    align-items: center;
-    padding: 0.3em 0.5em 0.3em 0.8em;
-    font-family: "Poppins", "Inter", "Segoe UI", sans-serif;
-    font-size: 0.85em;
-    font-weight: 400;
-    background-color: var(--button-color);
-    box-shadow:
-      inset 0px 1px 1px rgba(255,255,255,0.2),
-      inset 0px 2px 2px rgba(255,255,255,0.15),
-      inset 0px 4px 4px rgba(255,255,255,0.1),
-      inset 0px 8px 8px rgba(255,255,255,0.05),
-      inset 0px 16px 16px rgba(255,255,255,0.05),
-      0px -1px 1px rgba(0,0,0,0.02),
-      0px -2px 2px rgba(0,0,0,0.03),
-      0px -4px 4px rgba(0,0,0,0.05),
-      0px -8px 8px rgba(0,0,0,0.06),
-      0px -16px 16px rgba(0,0,0,0.08);
-    border: solid 1px #fff2;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    transition: box-shadow var(--transition), border var(--transition), background-color var(--transition);
-    position: relative;
-
-    .btn-svg {
-      height: 20px;
-      fill: #e8e8e8;
-      animation: flicker 2s linear infinite;
-      animation-delay: 0.5s;
-      filter: drop-shadow(0 0 2px #fff9);
-      transition: fill var(--transition), filter var(--transition);
-    }
-    @keyframes flicker {
-      50% { opacity: 0.3; }
-    }
-
-    .txt-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-      min-width: 5em;
-    }
-    .txt-1, .txt-2 {
-      position: absolute;
-      word-spacing: -1em;
-    }
-    .txt-2 { opacity: 0; }
-
-    .btn-letter {
-      display: inline-block;
-      color: #fff5;
-      animation: letter-anim 2s ease-in-out infinite;
-      transition: color var(--transition), text-shadow var(--transition);
-    }
-    @keyframes letter-anim {
-      50% { text-shadow: 0 0 3px #fff8; color: #fff; }
-    }
-
-    &[data-focused="true"] .txt-1 {
-      animation: opacity-anim 0.3s ease-in-out forwards;
-      animation-delay: 1s;
-    }
-    &[data-focused="true"] .txt-2 {
-      animation: opacity-anim 0.3s ease-in-out reverse forwards;
-      animation-delay: 1s;
-    }
-    @keyframes opacity-anim {
-      0% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-
-    &[data-focused="true"] .btn-letter {
-      animation: focused-letter-anim 1s ease-in-out forwards, letter-anim 1.2s ease-in-out infinite;
-      animation-delay: 0s, 1s;
-    }
-    @keyframes focused-letter-anim {
-      0%,100% { filter: blur(0px); }
-      50% { transform: scale(2); filter: blur(10px) brightness(150%) drop-shadow(-36px 12px 12px hsl(var(--highlight-color-hue),100%,70%)); }
-    }
-    &[data-focused="true"] .btn-svg {
-      animation-duration: 1.2s;
-      animation-delay: 0.2s;
-    }
-
-    &:hover {
-      border: solid 1px hsla(var(--highlight-color-hue),100%,80%,40%);
-      .btn-svg { fill: #fff; filter: drop-shadow(0 0 3px hsl(var(--highlight-color-hue),100%,70%)) drop-shadow(0 -4px 6px #0009); animation: none; }
-    }
-
-    &:active {
-      border: solid 1px hsla(var(--highlight-color-hue),100%,80%,70%);
-      background-color: hsla(var(--highlight-color-hue),50%,20%,0.5);
-      .btn-letter { text-shadow: 0 0 1px hsla(var(--highlight-color-hue),100%,90%,90%); animation: none; }
-    }
-  `
-
-  const notifIcon = {
-    info: <Info className="w-4 h-4 text-orange-500" />,
-    success: <CheckCircle2 className="w-4 h-4 text-emerald-500" />,
-    warning: <AlertCircle className="w-4 h-4 text-amber-500" />,
-    error: <AlertCircle className="w-4 h-4 text-red-500" />,
-  }
 
   return (
     <header className="sticky top-0 z-30 glass-topbar">
@@ -243,34 +126,23 @@ export default function TopBar() {
           </div>
 
           <div className="relative" ref={avatarMenuRef}>
-            <StyledGenBtn
+            <button
               onClick={() => setShowAvatarMenu(!showAvatarMenu)}
-              className="btn"
-              data-focused={genFocused}
+              className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-card border border-border/50 shadow-sm hover:bg-accent/50 transition-all"
             >
-              <svg className="btn-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
-              </svg>
-              <div className="txt-wrapper">
-                <div className="txt-1">
-                  {'Generate'.split('').map((ch, i) => (
-                    <span key={i} className="btn-letter" style={{ animationDelay: `${i * 0.08}s` }}>{ch}</span>
-                  ))}
-                </div>
-                <div className="txt-2">
-                  {'Generating'.split('').map((ch, i) => (
-                    <span key={i} className="btn-letter" style={{ animationDelay: `${i * 0.08}s` }}>{ch}</span>
-                  ))}
-                </div>
+              <Avatar src={user.avatar} alt={user.name} fallback={user.name.split(' ').map((n: string) => n[0]).join('')} size="sm" />
+              <div className="hidden md:block text-left">
+                <p className="text-xs font-semibold leading-tight">{user.name}</p>
+                <p className="text-[10px] text-muted-foreground leading-tight capitalize">
+                  {user.role === 'teacher' && user.subjects?.length
+                    ? `${user.role} · ${user.subjects.slice(0, 2).join(', ')}${user.subjects.length > 2 ? '...' : ''}`
+                    : user.role === 'student'
+                    ? `${user.class || ''}${user.rollNo ? ` · Roll ${user.rollNo}` : ''}`
+                    : user.role
+                  }
+                </p>
               </div>
-              <div className="flex items-center gap-2 ml-2 pl-2 border-l border-white/20">
-                <Avatar src={user.avatar} alt={user.name} fallback={user.name.split(' ').map((n: string) => n[0]).join('')} size="sm" />
-                <div className="hidden md:block text-left">
-                  <p className="text-xs font-medium text-white leading-tight">{user.name.split(' ')[0]}</p>
-                  <p className="text-[10px] text-white/60 capitalize leading-tight">{user.role}</p>
-                </div>
-              </div>
-            </StyledGenBtn>
+            </button>
             <AnimatePresence>
               {showAvatarMenu && (
                 <motion.div

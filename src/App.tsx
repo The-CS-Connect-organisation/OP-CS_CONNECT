@@ -146,7 +146,6 @@ const AdminPortfolio = lazy(() => import('./pages/admin/AdminPortfolio'))
 const AdminEnrolment = lazy(() => import('./pages/admin/AdminEnrolment'))
 // Admin Phase 4
 const AdminFacilities = lazy(() => import('./pages/admin/AdminFacilities'))
-const AdminFoodService = lazy(() => import('./pages/admin/AdminFoodService'))
 const AdminAthletics = lazy(() => import('./pages/admin/AdminAthletics'))
 const AdminAlumni = lazy(() => import('./pages/admin/AdminAlumni'))
 const AdminPlatform = lazy(() => import('./pages/admin/AdminPlatform'))
@@ -161,7 +160,6 @@ const ManagerPortfolio = lazy(() => import('./pages/manager/ManagerPortfolio'))
 const ManagerEnrolment = lazy(() => import('./pages/manager/ManagerEnrolment'))
 // Manager Phase 4
 const ManagerFacilities = lazy(() => import('./pages/manager/ManagerFacilities'))
-const ManagerFoodService = lazy(() => import('./pages/manager/ManagerFoodService'))
 const ManagerAthletics = lazy(() => import('./pages/manager/ManagerAthletics'))
 const ManagerAlumni = lazy(() => import('./pages/manager/ManagerAlumni'))
 const ManagerPlatform = lazy(() => import('./pages/manager/ManagerPlatform'))
@@ -337,8 +335,7 @@ function App() {
             {/* Admin Phase 4 */}
             <Route path="facilities" element={<AdminFacilities />} />
             <Route path="transport" element={<GenericPage title="Transport" description="Transport & bus management" icon="Bus" category="Facilities" role="admin" />} />
-                        <Route path="food-service" element={<AdminFoodService />} />
-            <Route path="athletics" element={<AdminAthletics />} />
+                        <Route path="athletics" element={<AdminAthletics />} />
             <Route path="alumni" element={<AdminAlumni />} />
             <Route path="platform" element={<AdminPlatform />} />
             <Route path="profile" element={<AdminProfile />} />
@@ -431,8 +428,7 @@ function App() {
             {/* Manager Phase 4 */}
             <Route path="facilities" element={<ManagerFacilities />} />
             <Route path="transport" element={<GenericPage title="Transport" description="Transport & bus management" icon="Bus" category="Facilities" role="manager" />} />
-                        <Route path="food-service" element={<ManagerFoodService />} />
-            <Route path="athletics" element={<ManagerAthletics />} />
+                        <Route path="athletics" element={<ManagerAthletics />} />
             <Route path="alumni" element={<ManagerAlumni />} />
             <Route path="platform" element={<ManagerPlatform />} />
             <Route path="room-booking" element={<ManagerRoomBooking />} />

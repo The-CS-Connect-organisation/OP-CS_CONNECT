@@ -67,10 +67,9 @@ export const navSections: Record<UserRole, NavSection[]> = {
       label: 'Student Services',
       items: [
         { icon: MessageSquare, label: 'Counselling', path: '/student/counselling' },
-        { icon: HeartPulse, label: 'Health', path: '/student/health' },
+        { icon: HeartPulse, label: 'Health Services', path: '/student/health' },
         { icon: Search, label: 'Lost & Found', path: '/student/lost-found' },
         { icon: Headphones, label: 'IT Helpdesk', path: '/student/it-helpdesk' },
-        { icon: Stethoscope, label: 'Clinic', path: '/student/clinic' },
         { icon: AlertTriangle, label: 'Anonymous Report', path: '/student/anonymous-report' },
       ]
     },
@@ -187,16 +186,16 @@ export const navSections: Record<UserRole, NavSection[]> = {
       items: [
         { icon: Building2, label: 'Facilities', path: '/admin/facilities' },
         { icon: Truck, label: 'Transport', path: '/admin/transport' },
-        { icon: UtensilsCrossed, label: 'Food Service', path: '/admin/food-service' },
         { icon: Dumbbell, label: 'Athletics', path: '/admin/athletics' },
         { icon: Handshake, label: 'Alumni', path: '/admin/alumni' },
       ]
     },
     {
-      label: 'Services',
+      label: 'Student Services',
       items: [
         { icon: Search, label: 'Lost & Found', path: '/admin/lost-found' },
         { icon: AlertTriangle, label: 'Anonymous Report', path: '/admin/anonymous-report' },
+        { icon: HeartPulse, label: 'Health Services', path: '/admin/health' },
         { icon: Stethoscope, label: 'School Clinic', path: '/admin/clinic' },
         { icon: Headphones, label: 'IT Helpdesk', path: '/admin/it-helpdesk' },
         { icon: Users, label: 'Manage Clubs', path: '/admin/clubs' },
@@ -357,7 +356,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
       items: [
         { icon: Building2, label: 'Facilities', path: '/manager/facilities' },
         { icon: Truck, label: 'Transport', path: '/manager/transport' },
-        { icon: UtensilsCrossed, label: 'Food Service', path: '/manager/food-service' },
         { icon: Dumbbell, label: 'Athletics', path: '/manager/athletics' },
         { icon: Handshake, label: 'Alumni', path: '/manager/alumni' },
       ]

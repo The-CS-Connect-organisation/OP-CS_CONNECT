@@ -24,8 +24,15 @@ export default function TeacherClassAnalytics() {
   const loadStats = async () => {
     try {
       setLoading(true);
-      const data = await api.getClassAnalytics(selectedClass);
-      if (data) setStats(data);
+      let data = await api.getClassAnalytics(selectedClass);
+      if (data) {
+        data = {
+          ...data,
+          gradeDistribution: Array.isArray(data.gradeDistribution) ? data.gradeDistribution : (data.gradeDistribution ? [data.gradeDistribution] : []),
+          subjects: Array.isArray(data.subjects) ? data.subjects : [],
+        }
+        setStats(data);
+      }
     } catch {
       // error
     } finally {

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/Dialog'
 import { Label } from '@/components/ui/Label'
-import { Check, X, Clock, Users, Search, Loader2, RefreshCw, Camera } from 'lucide-react'
+import { Check, X, Clock, Users, Search, Loader2, RefreshCw, Camera, Trash2, UserMinus } from 'lucide-react'
 import { Input } from '@/components/ui/Input'
 import { ScrollArea } from '@/components/ui/ScrollArea'
 import { cn } from '@/lib/utils'
@@ -35,6 +35,21 @@ export default function AdminClubs() {
   const [editAvatarClub, setEditAvatarClub] = useState<Club | null>(null)
   const [avatarUrl, setAvatarUrl] = useState('')
   const [savingAvatar, setSavingAvatar] = useState(false)
+  const [memberClub, setMemberClub] = useState<Club | null>(null)
+  const [userCache, setUserCache] = useState<Record<string, string>>({})
+  const [removingMember, setRemovingMember] = useState<string | null>(null)
+
+  const loadUsers = async (ids: string[]) => {
+    const missing = ids.filter(id => id && !userCache[id])
+    if (!missing.length) return
+    const results = await Promise.allSettled(missing.map(id => api.getUser(id).catch(() => null)))
+    const updates: Record<string, string> = {}
+    results.forEach((r, i) => {
+      if (r.status === 'fulfilled' && r.value) updates[missing[i]] = r.value.name || missing[i]
+      else updates[missing[i]] = missing[i]
+    })
+    setUserCache(prev => ({ ...prev, ...updates }))
+  }
 
   const loadData = async () => {
     setLoading(true)
@@ -43,6 +58,9 @@ export default function AdminClubs() {
         api.getClubs({ pending: 'true' }).catch(() => []),
         api.getClubs().catch(() => []),
       ])
+      const all = [...(Array.isArray(pending) ? pending : []), ...(Array.isArray(approved) ? approved : [])]
+      const allMemberIds = [...new Set(all.flatMap(c => c.members || []).filter(Boolean))]
+      loadUsers(allMemberIds)
       setPendingClubs(Array.isArray(pending) ? pending : [])
       setApprovedClubs(Array.isArray(approved) ? approved : [])
     } catch { } finally { setLoading(false) }
@@ -73,6 +91,17 @@ export default function AdminClubs() {
       setAvatarUrl('')
       loadData()
     } catch { } finally { setSavingAvatar(false) }
+  }
+
+  const handleRemoveMember = async (clubId: string, memberId: string) => {
+    setRemovingMember(memberId)
+    try {
+      const club = [...pendingClubs, ...approvedClubs].find(c => c.id === clubId)
+      if (!club) return
+      const updatedMembers = (club.members || []).filter(id => id !== memberId)
+      await api.updateClub(clubId, { members: updatedMembers })
+      loadData()
+    } catch { } finally { setRemovingMember(null) }
   }
 
   const list = tab === 'pending' ? pendingClubs : approvedClubs
@@ -141,7 +170,7 @@ export default function AdminClubs() {
                     <p className="text-sm text-gray-500 mb-2 line-clamp-2">{club.description || 'No description'}</p>
                     <div className="flex items-center gap-4 text-xs text-muted-foreground">
                       <span>Lead: {club.leadName}</span>
-                      <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {club.members?.length || 0} members</span>
+                      <button onClick={() => { setMemberClub(club); loadUsers(club.members || []) }} className="flex items-center gap-1 hover:text-foreground transition-colors"><Users className="w-3 h-3" /> {club.members?.length || 0} members</button>
                       {club.meetingDay && <span>{club.meetingDay} {club.meetingTime}</span>}
                       <span>Created: {club.createdAt ? new Date(club.createdAt).toLocaleDateString() : 'N/A'}</span>
                     </div>
@@ -189,6 +218,44 @@ export default function AdminClubs() {
               {savingAvatar && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
               Save Avatar
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!memberClub} onOpenChange={(o) => { if (!o) setMemberClub(null) }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-orange-500" />
+              Members – {memberClub?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-80">
+            <div className="space-y-1 py-2">
+              {memberClub?.members?.length ? memberClub.members.map(mid => (
+                <div key={mid} className="flex items-center justify-between px-2 py-2 rounded-lg hover:bg-accent/50 group">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="w-7 h-7">
+                      <AvatarFallback className="text-[10px] bg-gradient-to-br from-orange-500 to-amber-600 text-white">{(userCache[mid] || mid).slice(0, 2).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm">{userCache[mid] || mid}</span>
+                  </div>
+                  <button
+                    onClick={() => handleRemoveMember(memberClub.id, mid)}
+                    disabled={removingMember === mid}
+                    className="p-1.5 rounded-md text-red-400 opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
+                    title="Remove member"
+                  >
+                    {removingMember === mid ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserMinus className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+              )) : (
+                <p className="text-sm text-muted-foreground text-center py-8">No members</p>
+              )}
+            </div>
+          </ScrollArea>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMemberClub(null)} className="h-9 text-sm">Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
