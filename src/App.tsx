@@ -4,7 +4,7 @@ import ErrorBoundary from './components/ui/ErrorBoundary'
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuthStore, useThemeStore } from './lib/store'
-import Login from './pages/auth/LoginAnimated'
+import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
 import EducatorDesk from './pages/EducatorDesk'
 const Landing = lazy(() => import('./pages/Landing'))

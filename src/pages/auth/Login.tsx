@@ -26,18 +26,18 @@ const roles: Array<{
 ]
 
 const farewellImages = [
-  "/farewell/IMG_3890.JPG",
-  "/farewell/IMG_3900.JPG",
-  "/farewell/IMG_3910.JPG",
-  "/farewell/IMG_3920.JPG",
-  "/farewell/IMG_3930.JPG",
-  "/farewell/IMG_3940.JPG",
-  "/farewell/IMG_3950.JPG",
-  "/farewell/IMG_3960.JPG",
-  "/farewell/IMG_3970.JPG",
-  "/farewell/IMG_3980.JPG",
-  "/farewell/IMG_4010.JPG",
-  "/farewell/G-10-at-ICRISAT.png",
+  `${import.meta.env.BASE_URL}farewell/IMG_3890.JPG`,
+  `${import.meta.env.BASE_URL}farewell/IMG_3900.JPG`,
+  `${import.meta.env.BASE_URL}farewell/IMG_3910.JPG`,
+  `${import.meta.env.BASE_URL}farewell/IMG_3920.JPG`,
+  `${import.meta.env.BASE_URL}farewell/IMG_3930.JPG`,
+  `${import.meta.env.BASE_URL}farewell/IMG_3940.JPG`,
+  `${import.meta.env.BASE_URL}farewell/IMG_3950.JPG`,
+  `${import.meta.env.BASE_URL}farewell/IMG_3960.JPG`,
+  `${import.meta.env.BASE_URL}farewell/IMG_3970.JPG`,
+  `${import.meta.env.BASE_URL}farewell/IMG_3980.JPG`,
+  `${import.meta.env.BASE_URL}farewell/IMG_4010.JPG`,
+  `${import.meta.env.BASE_URL}farewell/G-10-at-ICRISAT.png`,
 ]
 
 export default function Login() {
@@ -76,7 +76,13 @@ export default function Login() {
   }, [selectedRole, loginWithCredentials])
 
   return (
-    <div className="bg-background text-foreground">
+    <div className="bg-background text-foreground relative min-h-screen">
+      <div className="absolute top-4 left-4 z-50 flex items-center gap-2.5">
+        <img src={`${import.meta.env.BASE_URL}favicon.png`} alt="CS Connect" className="w-8 h-8" />
+        <span className="text-sm font-bold bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent hidden sm:inline">
+          Cornerstone
+        </span>
+      </div>
       <SignInPage
         key={selectedRole}
         heroImageSrc={farewellImages[slideIndex % farewellImages.length]}

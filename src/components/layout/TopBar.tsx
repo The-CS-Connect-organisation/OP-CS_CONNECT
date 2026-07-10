@@ -78,7 +78,7 @@ export default function TopBar() {
           <button onClick={() => setMobileOpen(!isMobileOpen)} className="p-2 rounded-md hover:bg-accent/50 lg:hidden">
             <Menu className="w-5 h-5" />
           </button>
-          <img src="/favicon.png" alt="CS Connect" className="w-7 h-7" />
+          <img src={`${import.meta.env.BASE_URL}favicon.png`} alt="CS Connect" className="w-7 h-7" />
           <div className="hidden lg:block h-4 w-px bg-border/50" />
           <div className="hidden lg:block">
             <h2 className="text-sm font-medium text-foreground">
@@ -127,7 +127,7 @@ export default function TopBar() {
             <StarWarsToggle checked={isDark} onChange={toggleTheme} scale={0.35} />
           </div>
 
-          <div className="relative" ref={avatarMenuRef}>
+          <div className="relative z-50" ref={avatarMenuRef}>
             <button
               onClick={() => setShowAvatarMenu(!showAvatarMenu)}
               className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-card border border-border/50 shadow-sm hover:bg-accent/50 transition-all"
