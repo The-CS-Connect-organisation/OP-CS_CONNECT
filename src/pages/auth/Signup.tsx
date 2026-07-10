@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/lib/store'
+import { api } from '@/lib/api'
 import {
   UserPlus, Loader2,
   User, Mail, Lock, Shield, GraduationCap, BookOpen,
@@ -51,7 +52,10 @@ export default function Signup() {
     setLoading(true)
     setError('')
     try {
-      await signupWithCredentials(form)
+      const user = await signupWithCredentials(form)
+      if (form.role === 'parent' && form.phone && form.parentType) {
+        api.autoLinkParent(user.id, form.phone, form.parentType).catch(() => {})
+      }
       navigate(`/${form.role}/dashboard`)
     } catch (err: any) {
       setError(err.message || 'Signup failed')
@@ -215,7 +219,7 @@ export default function Signup() {
           {form.role === 'parent' && (
             <div className="border-t pt-4">
               <h3 className="text-sm font-semibold flex items-center gap-2 mb-3"><Users className="w-4 h-4" />Parent Type</h3>
-              <p className="text-xs text-muted-foreground mb-3">Specify whether you are a father or mother.</p>
+              <p className="text-xs text-muted-foreground mb-3">Select your relationship to the child.</p>
               <div className="grid grid-cols-2 gap-4 max-w-xs">
                 <button type="button" onClick={() => update('parentType', 'father')}
                   className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${form.parentType === 'father' ? 'border-orange-500 bg-orange-500/5' : 'border-border hover:border-orange-500/30'}`}>
@@ -227,6 +231,10 @@ export default function Signup() {
                   <User className={`w-8 h-8 ${form.parentType === 'mother' ? 'text-orange-500' : 'text-muted-foreground'}`} />
                   <span className={`text-sm font-medium ${form.parentType === 'mother' ? 'text-orange-600' : 'text-muted-foreground'}`}>Mother</span>
                 </button>
+              </div>
+              <div className="mt-4">
+                <label className="block text-sm font-medium mb-1"><User className="w-3.5 h-3.5 inline mr-1" />Phone Number</label>
+                <input type="tel" value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="Enter phone number" className="input-field max-w-xs" />
               </div>
             </div>
           )}
