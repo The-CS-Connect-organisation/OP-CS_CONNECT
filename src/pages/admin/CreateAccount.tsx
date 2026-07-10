@@ -104,6 +104,7 @@ export default function CreateAccount() {
       }
       if (form.role === 'parent') {
         data.parentType = form.parentType
+        data.phone = form.phone
       }
       await api.createUser(data)
       setSuccess(true)
@@ -346,6 +347,10 @@ export default function CreateAccount() {
                   <User className={`w-8 h-8 ${form.parentType === 'mother' ? 'text-orange-500' : 'text-muted-foreground'}`} />
                   <span className={`text-sm font-medium ${form.parentType === 'mother' ? 'text-orange-600' : 'text-muted-foreground'}`}>Mother</span>
                 </button>
+              </div>
+              <div className="mt-4">
+                <label className="block text-sm font-medium mb-1.5"><User className="w-3.5 h-3.5 inline mr-1" />Phone Number</label>
+                <input type="tel" value={form.phone} onChange={e => updateField('phone', e.target.value)} placeholder="Enter phone number" className="input-field max-w-xs" />
               </div>
             </motion.div>
           )}
