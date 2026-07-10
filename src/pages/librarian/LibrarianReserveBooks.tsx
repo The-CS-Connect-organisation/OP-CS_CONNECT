@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
-import { useAuthStore } from '../../lib/store';
 import { Card, CardContent } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import {
-  BookOpen, Search, Users, Calendar, Bookmark, CheckCircle2,
-  XCircle, Loader2, Clock, Hash, Star, User, Plus
+  BookOpen, Search, User, Calendar, CheckCircle2,
+  Loader2, Clock, Star, BookMarked, AlertTriangle, Users
 } from 'lucide-react';
 
 interface CatalogueBook {
@@ -21,15 +20,15 @@ interface CatalogueBook {
   shelf?: string;
 }
 
-interface HoldRecord {
+interface BorrowRecord {
   id: string;
   bookId: string;
   bookTitle: string;
   studentId: string;
   studentName: string;
+  borrowedDate: string;
+  dueDate: string;
   status: string;
-  placedAt: string;
-  position?: number;
 }
 
 interface Student {
@@ -40,39 +39,30 @@ interface Student {
 }
 
 export default function LibrarianReserveBooks() {
-  const { user } = useAuthStore();
-  const [tab, setTab] = useState<'catalogue' | 'holds'>('catalogue');
+  const [subTab, setSubTab] = useState<'catalogue' | 'reserved'>('catalogue');
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Catalogue
   const [catalogue, setCatalogue] = useState<CatalogueBook[]>([]);
   const [search, setSearch] = useState('');
+  const [borrowedBooks, setBorrowedBooks] = useState<BorrowRecord[]>([]);
 
-  // Holds
-  const [holds, setHolds] = useState<HoldRecord[]>([]);
-
-  // Reservation form
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedBook, setSelectedBook] = useState<CatalogueBook | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [studentSearch, setStudentSearch] = useState('');
   const [showReserveForm, setShowReserveForm] = useState(false);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     setLoading(true);
     try {
-      const [cat, h, stu] = await Promise.all([
+      const [cat, br, stu] = await Promise.all([
         api.getLibraryCatalogue().catch(() => []),
-        api.getHolds().catch(() => []),
+        api.getBorrowedBooks().catch(() => []),
         api.getStudents().catch(() => []),
       ]);
       setCatalogue(Array.isArray(cat) ? cat : []);
-      setHolds(Array.isArray(h) ? h : []);
+      setBorrowedBooks(Array.isArray(br) ? br : []);
       setStudents(Array.isArray(stu) ? stu : []);
     } catch (err) {
       console.error('[ReserveBooks] Failed to load:', err);
@@ -81,12 +71,7 @@ export default function LibrarianReserveBooks() {
     }
   };
 
-  const refreshHolds = async () => {
-    try {
-      const h = await api.getHolds();
-      setHolds(Array.isArray(h) ? h : []);
-    } catch { /* ignore */ }
-  };
+  useEffect(() => { loadData(); }, []);
 
   const filteredCatalogue = catalogue.filter(b =>
     b.title.toLowerCase().includes(search.toLowerCase()) ||
@@ -99,98 +84,69 @@ export default function LibrarianReserveBooks() {
     (s.admissionNo || '').toLowerCase().includes(studentSearch.toLowerCase())
   );
 
-  const activeHolds = holds.filter(h => h.status === 'active' || h.status === 'pending');
-  const fulfilledHolds = holds.filter(h => h.status === 'fulfilled');
+  const activeBorrowed = borrowedBooks.filter(b => b.status === 'borrowed' || b.status === 'overdue');
+  const returnedBorrowed = borrowedBooks.filter(b => b.status === 'returned');
 
   const handleReserve = async () => {
     if (!selectedBook || !selectedStudent) return;
     setSubmitting(true);
     try {
-      await api.createHold({
-        bookId: selectedBook.id,
-        studentId: selectedStudent.id,
-        studentName: selectedStudent.name,
-        bookTitle: selectedBook.title,
-      });
+      await api.createHold({ bookId: selectedBook.id, studentId: selectedStudent.id, studentName: selectedStudent.name });
       setShowReserveForm(false);
       setSelectedBook(null);
       setSelectedStudent(null);
       setStudentSearch('');
-      await Promise.all([loadData(), refreshHolds()]);
+      await loadData();
     } catch (err: any) {
-      alert(err?.message || 'Failed to place hold');
+      alert(err?.message || 'Failed to reserve book');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleFulfill = async (hold: HoldRecord) => {
+  const handleReturn = async (id: string) => {
     try {
-      // Use the fulfill hold endpoint to convert hold to borrow
-      await api.fulfillHold(hold.id);
-      await refreshHolds();
+      await api.returnBook(id);
+      await loadData();
     } catch (err: any) {
-      alert(err?.message || 'Failed to fulfill hold');
+      alert(err?.message || 'Failed to return book');
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'borrowed': return <Badge className="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"><Clock className="w-3 h-3 mr-1" />Borrowed</Badge>;
+      case 'overdue': return <Badge className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"><AlertTriangle className="w-3 h-3 mr-1" />Overdue</Badge>;
+      case 'returned': return <Badge className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"><CheckCircle2 className="w-3 h-3 mr-1" />Returned</Badge>;
+      default: return null;
     }
   };
 
   return (
     <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Reserve Books</h1>
-          <p className="text-muted-foreground">Browse catalogue and place holds for students</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold">Reserve Books</h1>
+        <p className="text-muted-foreground">Browse catalogue and issue books to students</p>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <BookOpen className="w-8 h-8 text-orange-500" />
-            <div>
-              <p className="text-2xl font-bold">{catalogue.length}</p>
-              <p className="text-sm text-muted-foreground">Total Books</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <Bookmark className="w-8 h-8 text-blue-500" />
-            <div>
-              <p className="text-2xl font-bold">{activeHolds.length}</p>
-              <p className="text-sm text-muted-foreground">Active Holds</p>
-            </div>
-          </div>
-        </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-8 h-8 text-green-500" />
-            <div>
-              <p className="text-2xl font-bold">{fulfilledHolds.length}</p>
-              <p className="text-sm text-muted-foreground">Fulfilled</p>
-            </div>
-          </div>
-        </Card>
-      </div>
-
-      {/* Tabs */}
       <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1 w-fit">
-        {(['catalogue', 'holds'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-all capitalize ${
-              tab === t ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            {t === 'catalogue' && <BookOpen className="w-4 h-4 inline mr-1.5" />}
-            {t === 'holds' && <Bookmark className="w-4 h-4 inline mr-1.5" />}
-            {t}
-          </button>
-        ))}
+        <button onClick={() => setSubTab('catalogue')}
+          className={`px-4 py-2 text-sm font-medium rounded-md transition-all capitalize ${
+            subTab === 'catalogue' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <BookOpen className="w-4 h-4 inline mr-1.5" />Catalogue
+        </button>
+        <button onClick={() => setSubTab('reserved')}
+          className={`px-4 py-2 text-sm font-medium rounded-md transition-all capitalize ${
+            subTab === 'reserved' ? 'bg-card shadow-sm text-foreground' : 'text-muted-foreground hover:text-foreground'
+          }`}
+        >
+          <BookMarked className="w-4 h-4 inline mr-1.5" />Reserved Books ({activeBorrowed.length})
+        </button>
       </div>
 
-      {/* Catalogue Tab */}
-      {tab === 'catalogue' && (
+      {subTab === 'catalogue' && (
         <div className="space-y-4">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -227,11 +183,6 @@ export default function LibrarianReserveBooks() {
                           <span className={`text-xs font-medium ${book.availableCopies > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                             {book.availableCopies}/{book.totalCopies} avail.
                           </span>
-                          {book.shelf && (
-                            <span className="text-xs text-muted-foreground flex items-center gap-1">
-                              <Hash className="w-3 h-3" />{book.shelf}
-                            </span>
-                          )}
                         </div>
                         <Button
                           size="sm"
@@ -239,8 +190,8 @@ export default function LibrarianReserveBooks() {
                           onClick={() => { setSelectedBook(book); setShowReserveForm(true); }}
                           disabled={book.availableCopies <= 0}
                         >
-                          <Bookmark className="w-3 h-3 mr-1" />
-                          {book.availableCopies > 0 ? 'Reserve for Student' : 'Unavailable'}
+                          <Star className="w-3 h-3 mr-1" />
+                          {book.availableCopies > 0 ? 'Issue to Student' : 'Unavailable'}
                         </Button>
                       </div>
                     </div>
@@ -252,46 +203,43 @@ export default function LibrarianReserveBooks() {
         </div>
       )}
 
-      {/* Holds Tab */}
-      {tab === 'holds' && (
+      {subTab === 'reserved' && (
         <div className="space-y-4">
           {loading ? (
             <div className="space-y-3">{[1, 2, 3].map(i => <div key={i} className="h-20 bg-muted rounded animate-pulse" />)}</div>
-          ) : holds.length === 0 ? (
+          ) : borrowedBooks.length === 0 ? (
             <Card><CardContent className="py-12 text-center text-muted-foreground">
-              <Bookmark className="w-12 h-12 mx-auto mb-4 opacity-50" />
-              <p>No hold requests</p>
+              <BookMarked className="w-12 h-12 mx-auto mb-4 opacity-50" />
+              <p>No reserved books</p>
             </CardContent></Card>
           ) : (
             <div className="space-y-3">
-              {/* Active Holds */}
-              {activeHolds.length > 0 && (
+              {activeBorrowed.length > 0 && (
                 <>
                   <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                     <Clock className="w-4 h-4 text-blue-500" />
-                    Active Holds ({activeHolds.length})
+                    Currently Issued ({activeBorrowed.length})
                   </h3>
-                  {activeHolds.map(hold => (
-                    <Card key={hold.id} className="p-4 border-blue-200 dark:border-blue-800">
+                  {activeBorrowed.map(book => (
+                    <Card key={book.id} className="p-4 border-blue-200 dark:border-blue-800">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
-                            <Bookmark className="w-5 h-5 text-blue-500" />
+                            <BookMarked className="w-5 h-5 text-blue-500" />
                           </div>
                           <div className="min-w-0">
-                            <h4 className="font-semibold truncate">{hold.bookTitle}</h4>
+                            <h4 className="font-semibold truncate">{book.bookTitle}</h4>
                             <div className="flex items-center gap-3 text-xs text-muted-foreground mt-1">
-                              <span className="flex items-center gap-1"><User className="w-3 h-3" />{hold.studentName}</span>
-                              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{hold.placedAt ? new Date(hold.placedAt).toLocaleDateString() : 'N/A'}</span>
+                              <span className="flex items-center gap-1"><User className="w-3 h-3" />{book.studentName}</span>
+                              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Issued: {new Date(book.borrowedDate).toLocaleDateString()}</span>
+                              <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />Due: {new Date(book.dueDate).toLocaleDateString()}</span>
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
-                          <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                            Position #{hold.position || '-'}
-                          </Badge>
-                          <Button size="sm" onClick={() => handleFulfill(hold)}>
-                            <CheckCircle2 className="w-4 h-4 mr-1" />Fulfill
+                          {getStatusBadge(book.status)}
+                          <Button size="sm" onClick={() => handleReturn(book.id)}>
+                            <CheckCircle2 className="w-4 h-4 mr-1" />Mark Returned
                           </Button>
                         </div>
                       </div>
@@ -299,25 +247,23 @@ export default function LibrarianReserveBooks() {
                   ))}
                 </>
               )}
-
-              {/* Fulfilled Holds */}
-              {fulfilledHolds.length > 0 && (
+              {returnedBorrowed.length > 0 && (
                 <>
                   <div className="pt-4">
                     <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2">
                       <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      Fulfilled ({fulfilledHolds.length})
+                      Returned ({returnedBorrowed.length})
                     </h3>
                   </div>
-                  {fulfilledHolds.map(hold => (
-                    <Card key={hold.id} className="p-4 opacity-75">
+                  {returnedBorrowed.map(book => (
+                    <Card key={book.id} className="p-4 opacity-75">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
                           <CheckCircle2 className="w-5 h-5 text-green-500" />
                         </div>
                         <div className="min-w-0">
-                          <h4 className="font-semibold truncate">{hold.bookTitle}</h4>
-                          <p className="text-xs text-muted-foreground">{hold.studentName} — Fulfilled</p>
+                          <h4 className="font-semibold truncate">{book.bookTitle}</h4>
+                          <p className="text-xs text-muted-foreground">{book.studentName} — Returned</p>
                         </div>
                       </div>
                     </Card>
@@ -329,14 +275,13 @@ export default function LibrarianReserveBooks() {
         </div>
       )}
 
-      {/* Reserve Modal */}
       {showReserveForm && selectedBook && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-background rounded-xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">Reserve Book</h2>
+              <h2 className="text-lg font-bold">Issue Book</h2>
               <button onClick={() => { setShowReserveForm(false); setSelectedStudent(null); setStudentSearch(''); }}
-                className="p-1 rounded-lg hover:bg-accent"><XCircle className="w-5 h-5" /></button>
+                className="p-1 rounded-lg hover:bg-accent"><CheckCircle2 className="w-5 h-5" /></button>
             </div>
 
             <div className="mb-4 p-3 rounded-lg bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800">
@@ -388,8 +333,8 @@ export default function LibrarianReserveBooks() {
                 Cancel
               </Button>
               <Button onClick={handleReserve} disabled={!selectedStudent || submitting}>
-                {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Bookmark className="w-4 h-4 mr-1" />}
-                Place Hold
+                {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Star className="w-4 h-4 mr-1" />}
+                Issue Book
               </Button>
             </div>
           </div>

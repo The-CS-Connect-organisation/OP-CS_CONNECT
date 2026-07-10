@@ -169,8 +169,12 @@ export default function AdminTimetable() {
         subjects: Array.isArray(subjects) ? subjects : [],
         teachers: teacherList,
       });
-      setCsaiMsgs(prev => [...prev, { role: 'assistant', content: res.response || 'Done.' }]);
-      setTimeout(() => window.location.reload(), 1000);
+      setCsaiMsgs(prev => [...prev, { role: 'assistant', content: res.response + ' Refreshing timetable...' || 'Done. Refreshing timetable...' }]);
+      // Reload entries instead of full page refresh
+      if (selectedClassName) {
+        await loadEntries(selectedClassName);
+        await loadSectionTeachers(selectedClassName);
+      }
     } catch (err: any) {
       setCsaiMsgs(prev => [...prev, { role: 'assistant', content: 'Error: ' + (err.message || 'Something went wrong') }]);
     } finally {
