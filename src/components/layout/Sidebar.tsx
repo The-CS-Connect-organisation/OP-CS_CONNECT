@@ -38,9 +38,6 @@ export default function Sidebar() {
         "flex items-center border-b border-orange-900/20 shrink-0",
         collapsed ? "flex-col gap-1 py-3 px-1" : "gap-3 px-4 py-4"
       )}>
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center shadow-lg shadow-orange-900/30 shrink-0">
-          <GraduationCap className="w-4 h-4 text-white" />
-        </div>
         <div className={cn("min-w-0", collapsed ? "hidden" : "flex-1")}>
           <p className="text-sm font-bold leading-tight truncate text-white/90">{user.name}</p>
           <p className="text-[11px] text-orange-300/70 font-medium">{roleLabels[user.role]}</p>
@@ -105,14 +102,20 @@ export default function Sidebar() {
       {/* EducatorDesk Button - Staff only */}
       {isStaff && (
         <div className={cn("shrink-0", collapsed ? "px-1 py-2" : "px-3 py-2")}>
-          <StyledEducatorBtn onClick={handleEducatorDesk} className="w-full">
-            <div className="box-button">
-              <div className="button">
-                <Briefcase className="w-4 h-4" />
-                <span>EducatorDesk</span>
+          {collapsed ? (
+            <button onClick={handleEducatorDesk} className="w-10 h-10 mx-auto flex items-center justify-center rounded-lg bg-amber-500/20 border border-amber-500/30 text-amber-400 hover:bg-amber-500/30 transition-all" title="EducatorDesk">
+              <Briefcase className="w-5 h-5" />
+            </button>
+          ) : (
+            <StyledEducatorBtn onClick={handleEducatorDesk} className="w-full">
+              <div className="box-button">
+                <div className="button">
+                  <Briefcase className="w-4 h-4" />
+                  <span>EducatorDesk</span>
+                </div>
               </div>
-            </div>
-          </StyledEducatorBtn>
+            </StyledEducatorBtn>
+          )}
         </div>
       )}
 
