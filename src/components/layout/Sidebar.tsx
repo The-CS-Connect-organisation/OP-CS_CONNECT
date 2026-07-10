@@ -1,4 +1,5 @@
-import React, { useCallback, useState, useRef, useEffect } from 'react'
+import React, { useCallback, useState, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuthStore, useSidebarStore } from '@/lib/store'
@@ -271,52 +272,51 @@ export default function Sidebar() {
         </div>
       </aside>
 
-      {/* Collapsed hover popup (rendered at root to avoid stacking issues) */}
-      <AnimatePresence>
-        {isCollapsed && hoveredSection && (() => {
-          const section = sections.find(s => s.label === hoveredSection)
-          if (!section) return null
-          const filtered = section.items.filter(item => {
-            if (user.role === 'teacher' && item.path === '/teacher/timetable') return !!(user.sectionId || user.classIds?.length)
-            return true
-          })
-          if (filtered.length === 0) return null
-          return (
-            <motion.div
-              key={section.label}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -8 }}
-              transition={{ duration: 0.15 }}
-              onMouseEnter={() => handleSectionEnter(section.label)}
-              onMouseLeave={handleSectionLeave}
-              style={{ position: 'fixed', left: 72, top: popupPos.top, zIndex: 9999 }}
-              className="w-56 rounded-xl border border-orange-800/40 bg-gradient-to-b from-orange-950 via-orange-900 to-orange-950 shadow-xl py-2"
-            >
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-orange-300/40 px-3 pb-1 mb-1 border-b border-orange-800/20">
-                {section.label}
-              </p>
-              {filtered.map(item => (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  end={item.path === `/${user.role}`}
-                  onClick={() => setMobileOpen(false)}
-                  className={({ isActive }) => cn(
-                    "flex items-center gap-2.5 px-3 py-2 text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-orange-500/20 text-white border-l-2 border-orange-400"
-                      : "text-white/70 hover:bg-white/5 hover:text-white"
-                  )}
-                >
-                  <item.icon className="w-4 h-4 shrink-0" />
-                  {item.label}
-                </NavLink>
-              ))}
-            </motion.div>
-          )
-        })()}
-      </AnimatePresence>
+      {/* Collapsed hover popup — portal to body for proper z-index */}
+      {isCollapsed && hoveredSection && (() => {
+        const section = sections.find(s => s.label === hoveredSection)
+        if (!section) return null
+        const filtered = section.items.filter(item => {
+          if (user.role === 'teacher' && item.path === '/teacher/timetable') return !!(user.sectionId || user.classIds?.length)
+          return true
+        })
+        if (filtered.length === 0) return null
+        return createPortal(
+          <motion.div
+            key={section.label}
+            initial={{ opacity: 0, x: -8 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -8 }}
+            transition={{ duration: 0.15 }}
+            onMouseEnter={() => handleSectionEnter(section.label)}
+            onMouseLeave={handleSectionLeave}
+            style={{ position: 'fixed', left: 72, top: popupPos.top, zIndex: 9999 }}
+            className="w-56 rounded-xl border border-orange-800/40 bg-gradient-to-b from-orange-950 via-orange-900 to-orange-950 shadow-xl py-2"
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-orange-300/40 px-3 pb-1 mb-1 border-b border-orange-800/20">
+              {section.label}
+            </p>
+            {filtered.map(item => (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.path === `/${user.role}`}
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) => cn(
+                  "flex items-center gap-2.5 px-3 py-2 text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-orange-500/20 text-white border-l-2 border-orange-400"
+                    : "text-white/70 hover:bg-white/5 hover:text-white"
+                )}
+              >
+                <item.icon className="w-4 h-4 shrink-0" />
+                {item.label}
+              </NavLink>
+            ))}
+          </motion.div>,
+          document.body
+        )
+      })()}
     </>
   )
 }
