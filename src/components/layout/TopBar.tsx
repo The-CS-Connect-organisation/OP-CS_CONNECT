@@ -9,7 +9,8 @@ import {
   X, ArrowRight,
   User, Settings, LogOut
 } from 'lucide-react'
-import { Avatar } from '@/components/ui/Avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar'
+import { getInitials } from '@/lib/avatar'
 import StarWarsToggle from '@/components/ui/star-wars-toggle-switch'
 
 export default function TopBar() {
@@ -131,7 +132,12 @@ export default function TopBar() {
               onClick={() => setShowAvatarMenu(!showAvatarMenu)}
               className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-card border border-border/50 shadow-sm hover:bg-accent/50 transition-all"
             >
-              <Avatar src={user.avatar} alt={user.name} fallback={user.name.split(' ').map((n: string) => n[0]).join('')} size="sm" />
+              <Avatar src={user.avatar} alt={user.name} size="sm">
+                <AvatarImage src={user.avatar || ''} />
+                <AvatarFallback className="bg-gradient-to-br from-orange-500 to-amber-600 text-white text-[10px] font-semibold">
+                  {getInitials(user.name)}
+                </AvatarFallback>
+              </Avatar>
               <div className="hidden md:block text-left">
                 <p className="text-xs font-semibold leading-tight">{user.name}</p>
                 <p className="text-[10px] text-muted-foreground leading-tight capitalize">
