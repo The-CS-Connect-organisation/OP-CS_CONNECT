@@ -61,17 +61,7 @@ export default function NotificationCenter() {
         const data = Array.isArray(res.data) ? res.data : [];
         setNotifications(data.map((n: any) => ({ ...n, type: n.type || "info", priority: n.priority || "medium", read: n.read || false, category: n.category || "general" })));
       } catch {
-        // Demo notifications
-        setNotifications([
-          { id: "n1", title: "Assignment Graded", message: "Your Mathematics assignment has been graded. You scored 92/100.", type: "academic", timestamp: new Date(Date.now() - 1800000).toISOString(), read: false, priority: "medium", sender: "Dr. Rajesh Gupta" },
-          { id: "n2", title: "Fee Payment Due", message: "Term 2 fee payment of Rs. 25,000 is due by June 15, 2026.", type: "fee", timestamp: new Date(Date.now() - 7200000).toISOString(), read: false, priority: "high", sender: "Accounts Department" },
-          { id: "n3", title: "Annual Sports Day", message: "Inter-house athletics competition on June 15. Register before June 10.", type: "event", timestamp: new Date(Date.now() - 86400000).toISOString(), read: false, priority: "medium", sender: "Sports Department" },
-          { id: "n4", title: "New Announcement", message: "School will remain closed on May 30 for Parent-Teacher Meeting.", type: "announcement", timestamp: new Date(Date.now() - 172800000).toISOString(), read: true, priority: "high", sender: "Principal Meera" },
-          { id: "n5", title: "Bus Route Change", message: "Route A pickup time changed to 7:00 AM starting Monday.", type: "info", timestamp: new Date(Date.now() - 259200000).toISOString(), read: true, priority: "low", sender: "Transport Department" },
-          { id: "n6", title: "Science Fair Registration", message: "Last date for Science Fair registration is June 22. Teams of 2-3.", type: "event", timestamp: new Date(Date.now() - 345600000).toISOString(), read: true, priority: "medium", sender: "Academic Coordinator" },
-          { id: "n7", title: "Library Book Return", message: "You have 2 overdue books. Please return before semester end.", type: "warning", timestamp: new Date(Date.now() - 432000000).toISOString(), read: false, priority: "high", sender: "Library" },
-          { id: "n8", title: "Message from Dr. Gupta", message: "Please meet me during office hours to discuss your project.", type: "message", timestamp: new Date(Date.now() - 518400000).toISOString(), read: true, priority: "medium", sender: "Dr. Rajesh Gupta" },
-        ]);
+        setNotifications([]);
       } finally {
         setLoading(false);
       }

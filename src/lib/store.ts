@@ -175,33 +175,8 @@ interface NotificationState {
 }
 
 export const useNotificationStore = create<NotificationState>()((set) => ({
-  notifications: [
-    {
-      id: '1',
-      title: 'AI Study Plan Generated',
-      message: 'Your personalized study plan for Mathematics is ready!',
-      type: 'success',
-      timestamp: new Date(),
-      read: false,
-    },
-    {
-      id: '2',
-      title: 'Assignment Due Tomorrow',
-      message: 'Physics Lab Report submission deadline is approaching',
-      type: 'warning',
-      timestamp: new Date(Date.now() - 3600000),
-      read: false,
-    },
-    {
-      id: '3',
-      title: 'New Grade Posted',
-      message: 'Chemistry Mid-term results have been published',
-      type: 'info',
-      timestamp: new Date(Date.now() - 7200000),
-      read: true,
-    },
-  ],
-  unreadCount: 2, // Computed from mock data: notifications.filter(n => !n.read).length = 2
+  notifications: [],
+  unreadCount: 0,
   addNotification: (notification) =>
     set((state) => ({
       notifications: [
