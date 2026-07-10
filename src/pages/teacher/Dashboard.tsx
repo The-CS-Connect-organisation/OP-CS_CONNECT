@@ -135,7 +135,7 @@ export default function TeacherDashboard() {
         setAssignments(Array.isArray(assignmentResults) ? assignmentResults : [])
 
         if (attendanceResults) {
-          if (Array.isArray(attendanceResults) && attendanceResults.length > 0) {
+          if (Array.isArray(attendanceResults) && attendanceResults.length > 0 && 'day' in attendanceResults[0]) {
             setWeeklyAttendanceData(attendanceResults)
           } else if (attendanceResults?.weekly) {
             setWeeklyAttendanceData(attendanceResults.weekly)
