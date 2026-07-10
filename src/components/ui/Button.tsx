@@ -61,18 +61,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, va
   } : undefined
 
   const Comp = asChild ? Slot : "button"
-
-  const commonProps = {
-    className: cn(buttonVariants({ variant, size, className })),
-    ref: ref as any,
-    ...(asChild ? {} : { onClick: handleClick }),
-    ...props,
-  }
+  const classes = cn(buttonVariants({ variant, size, className }))
 
   if (magnetic) {
     return (
       <motion.button
-        {...commonProps}
+        className={classes}
+        ref={ref as any}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         onClick={handleClick}
@@ -81,11 +76,19 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, va
             `translate(${mx}px, ${my}px)`
           ),
         } as any}
+        {...(props as any)}
       />
     )
   }
 
-  return <Comp {...commonProps} />
+  return (
+    <Comp
+      className={classes}
+      ref={ref as any}
+      {...(asChild ? {} : { onClick: handleClick })}
+      {...props}
+    />
+  )
 })
 Button.displayName = "Button"
 
