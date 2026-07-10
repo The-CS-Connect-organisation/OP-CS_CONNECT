@@ -133,18 +133,21 @@ export default function DriverDashboard() {
 
   useEffect(() => {
     Promise.allSettled([
-      api.getRoutes().then((d: any) => setRoutes(Array.isArray(d) ? d : [])).catch(() => {}),
+      api.getRoutes().then((d: any) => {
+        const list = Array.isArray(d) ? d : [];
+        setRoutes(list);
+        const myRoute = list.find((r: any) => r.driverId === user?.id);
+        if (myRoute) busIdRef.current = myRoute.id;
+      }).catch(() => {}),
       api.getStudents().then((d: any) => setStudents(Array.isArray(d) ? d : [])).catch(() => {}),
     ]).then(() => setLoading(false))
 
-    if (user?.routeId) busIdRef.current = user.routeId
-    // Load the driver's current leave status so tracking stays disabled on leave days.
     if (user?.id) {
       api.getUser(user.id)
         .then((u: any) => { onLeaveRef.current = !!u?.onLeave; setOnLeave(!!u?.onLeave) })
         .catch(() => {})
     }
-  }, [user?.routeId, user?.id])
+  }, [user?.id])
 
   const toggleBoarded = (id: string) => {
     setBoardedStudents(prev => {

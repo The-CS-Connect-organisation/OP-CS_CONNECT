@@ -24,9 +24,10 @@ export default function AdminBusAssignment() {
   const [buses, setBuses] = useState<BusAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState<any[]>([]);
+  const [drivers, setDrivers] = useState<any[]>([]);
   const [assigningBusId, setAssigningBusId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ busNumber: '', routeName: '', driverName: '', driverPhone: '', capacity: 40, stops: '' });
+  const [form, setForm] = useState({ busNumber: '', routeName: '', driverId: '', driverName: '', driverPhone: '', capacity: 40, stops: '' });
 
   useEffect(() => {
     loadBuses();
@@ -39,6 +40,8 @@ export default function AdminBusAssignment() {
       const list = Array.isArray(data) ? data : [];
       const stds = await api.getUsers({ role: 'student' }).catch(() => []);
       setStudents(Array.isArray(stds) ? stds : []);
+      const all = await api.getUsers().catch(() => []);
+      setDrivers(Array.isArray(all) ? all.filter((u: any) => u.role === 'driver') : []);
       // The backend serves bus assignments from the `routes` collection, which
       // uses fields like `bus`, `name`, `driver`. Normalize them to the shape
       // this page renders so the driver, bus number and route name show up.
@@ -147,8 +150,14 @@ export default function AdminBusAssignment() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input type="text" placeholder="Bus Number" value={form.busNumber} onChange={(e) => setForm({ ...form, busNumber: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
             <input type="text" placeholder="Route Name" value={form.routeName} onChange={(e) => setForm({ ...form, routeName: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
-            <input type="text" placeholder="Driver Name" value={form.driverName} onChange={(e) => setForm({ ...form, driverName: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
-            <input type="text" placeholder="Driver Phone" value={form.driverPhone} onChange={(e) => setForm({ ...form, driverPhone: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
+            <select value={form.driverId} onChange={(e) => {
+              const d = drivers.find(d => d.id === e.target.value);
+              setForm({ ...form, driverId: e.target.value, driverName: d?.name || '', driverPhone: d?.phone || '' });
+            }} className="px-3 py-2 rounded-lg border bg-background">
+              <option value="">Select a driver...</option>
+              {drivers.map(d => <option key={d.id} value={d.id}>{d.name} ({d.phone || 'no phone'})</option>)}
+            </select>
+            {form.driverId && <input type="text" placeholder="Driver Phone" value={form.driverPhone} disabled className="px-3 py-2 rounded-lg border bg-background opacity-60" />}
             <input type="number" placeholder="Capacity" value={form.capacity} onChange={(e) => setForm({ ...form, capacity: parseInt(e.target.value) || 40 })} className="px-3 py-2 rounded-lg border bg-background" />
             <input type="text" placeholder="Stops (comma separated)" value={form.stops} onChange={(e) => setForm({ ...form, stops: e.target.value })} className="px-3 py-2 rounded-lg border bg-background" />
           </div>

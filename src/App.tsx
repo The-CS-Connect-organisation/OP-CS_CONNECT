@@ -85,6 +85,7 @@ const ParentBookHeavyAlerts = lazy(() => import('./pages/parent/BookHeavyAlerts'
 const ParentMyChildren = lazy(() => import('./pages/parent/MyChildren'))
 const DriverProfile = lazy(() => import('./pages/driver/DriverProfile'))
 const LibrarianDashboard = lazy(() => import('./pages/librarian/LibrarianDashboard'))
+const LibrarianBookIssue = lazy(() => import('./pages/librarian/LibrarianBookIssue'))
 
 const StudentDailyBriefing = lazy(() => import('./pages/student/DailyBriefing'))
 const LibrarianProfile = lazy(() => import('./pages/librarian/LibrarianProfile'))
@@ -351,6 +352,7 @@ function App() {
             <Route index element={<LibrarianDashboard />} />
             <Route path="profile" element={<LibrarianProfile />} />
             <Route path="management" element={<LibrarianManagement />} />
+            <Route path="issue-books" element={<LibrarianBookIssue />} />
           </Route>
 
           {/* COORDINATOR */}

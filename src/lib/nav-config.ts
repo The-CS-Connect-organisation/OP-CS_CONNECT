@@ -240,6 +240,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
       items: [
         { icon: Library, label: 'Dashboard', path: '/librarian' },
         { icon: BookCopy, label: 'Management', path: '/librarian/management' },
+        { icon: BookOpen, label: 'Issue Books', path: '/librarian/issue-books' },
         { icon: User, label: 'Profile', path: '/librarian/profile' },
       ]
     },

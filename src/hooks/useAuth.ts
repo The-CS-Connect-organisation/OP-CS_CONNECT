@@ -25,7 +25,7 @@ export const useAuth = (): UseAuthReturn => {
       api.getMe()
         .then((data) => {
           if (data?.user) {
-            storeLogin(data.user);
+            storeLogin(data.user, data.token);
           }
         })
         .catch(() => {
@@ -47,7 +47,7 @@ export const useAuth = (): UseAuthReturn => {
       setLoading(true);
       const data = await api.login(email, password);
       if (data?.user) {
-        storeLogin(data.user);
+        storeLogin(data.user, data.token);
         navigate(`/${data.user.role}/dashboard`);
         return { success: true, user: data.user };
       }
@@ -67,7 +67,7 @@ export const useAuth = (): UseAuthReturn => {
       setLoading(true);
       const result = await api.signup(data);
       if (result?.user) {
-        storeLogin(result.user);
+        storeLogin(result.user, result.token);
         navigate(`/${result.user.role}/dashboard`);
         return { success: true, user: result.user };
       }
