@@ -36,7 +36,7 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   magnetic?: boolean
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, asChild = false, magnetic = false, onClick, ...props }, ref) => {
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, asChild = false, magnetic = false, ...props }, ref) => {
   const magnetX = useMotionValue(0)
   const magnetY = useMotionValue(0)
   const springMagnetX = useSpring(magnetX, { stiffness: 200, damping: 20 })
@@ -44,7 +44,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, va
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     if (!asChild) playButtonSound()
-    onClick?.(e)
+    ;(props as any).onClick?.(e)
   }
 
   const handleMouseMove = magnetic ? (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -81,14 +81,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, va
     )
   }
 
-  return (
-    <Comp
-      className={classes}
-      ref={ref as any}
-      {...(asChild ? {} : { onClick: handleClick })}
-      {...props}
-    />
-  )
+  const btnProps: Record<string, any> = { className: classes, ref: ref as any, ...props }
+  if (!asChild) btnProps.onClick = handleClick
+  return <Comp {...btnProps} />
 })
 Button.displayName = "Button"
 
