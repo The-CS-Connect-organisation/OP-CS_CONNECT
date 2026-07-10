@@ -170,18 +170,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
       ]
     },
     {
-      label: 'Student Services',
-      items: [
-        { icon: Gavel, label: 'Talent Market', path: '/admin/talent-market' },
-        { icon: MessageSquare, label: 'Counselling', path: '/admin/counselling' },
-        { icon: HeartPulse, label: 'Health Services', path: '/admin/health' },
-        { icon: Scale, label: 'Discipline', path: '/admin/discipline' },
-        { icon: Trophy, label: 'Activities', path: '/admin/activities' },
-        { icon: FolderOpen, label: 'Portfolio', path: '/admin/portfolio' },
-        { icon: GraduationCap, label: 'Enrolment', path: '/admin/enrolment' },
-      ]
-    },
-    {
       label: 'Facilities',
       items: [
         { icon: Building2, label: 'Facilities', path: '/admin/facilities' },

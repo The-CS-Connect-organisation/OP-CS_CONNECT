@@ -1,8 +1,8 @@
 import Loader from "./components/ui/loader"
 import ErrorBoundary from './components/ui/ErrorBoundary'
 
-import { lazy, Suspense } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { lazy, Suspense, useEffect } from 'react'
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore, useThemeStore } from './lib/store'
 import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
@@ -145,6 +145,16 @@ function RouteMissRedirect() {
 
 function App() {
   const { isAuthenticated, user } = useAuthStore()
+  const location = useLocation()
+
+  useEffect(() => {
+    const segments = location.pathname.split('/').filter(Boolean)
+    const last = segments[segments.length - 1]
+    const pane = last
+      ? last.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+      : 'Dashboard'
+    document.title = `SchoolSync | ${pane}`
+  }, [location])
 
   const getDashboardRoute = () => {
     if (!user) return '/login'

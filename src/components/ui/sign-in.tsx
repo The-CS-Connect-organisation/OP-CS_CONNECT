@@ -112,7 +112,7 @@ export const SignInPage: React.FC<SignInPageProps> = ({
         <div className="w-full max-w-md ml-0 mr-auto">
           <div className="flex flex-col gap-6">
             {logoSrc && (
-              <img src={logoSrc} alt="Cornerstone" className="h-12 w-auto mb-1" />
+              <img src={logoSrc} alt="Cornerstone" className="w-auto max-w-[220px] max-h-12 object-contain" />
             )}
             <h1 className="animate-element animate-delay-100 text-4xl md:text-5xl font-semibold leading-tight">{title}</h1>
             <p className="animate-element animate-delay-200 text-muted-foreground">{description}</p>
