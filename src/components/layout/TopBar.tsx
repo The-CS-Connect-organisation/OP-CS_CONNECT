@@ -78,7 +78,7 @@ export default function TopBar() {
           <button onClick={() => setMobileOpen(!isMobileOpen)} className="p-2 rounded-md hover:bg-accent/50 lg:hidden">
             <Menu className="w-5 h-5" />
           </button>
-          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTTwLEt4d9-ghujM9bh6rv9la08AsTbpCZwxCTA6G26DmT1Hfrf4_3WqVe&s=10" alt="CS Connect" className="w-7 h-7 rounded" />
+          <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTTwLEt4d9-ghujM9bh6rv9la08AsTbpCZwxCTA6G26DmT1Hfrf4_3WqVe&s=10" alt="CS Connect" className="w-9 h-9 rounded" />
           <div className="hidden lg:block h-4 w-px bg-border/50" />
           <div className="hidden lg:block">
             <h2 className="text-sm font-medium text-foreground">

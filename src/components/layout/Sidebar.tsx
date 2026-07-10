@@ -288,7 +288,7 @@ export default function Sidebar() {
       {/* Desktop sidebar - icon-only when collapsed */}
       <aside
         className={cn(
-          "hidden lg:block flex-shrink-0 h-full sticky top-0 overflow-hidden transition-all duration-200 ease-out",
+          "hidden lg:block flex-shrink-0 h-full sticky top-0 transition-all duration-200 ease-out",
           isCollapsed ? "w-16" : "w-64"
         )}
       >
