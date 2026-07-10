@@ -21,6 +21,7 @@ interface Contact {
   online?: boolean;
   lastMessage?: string;
   lastMessageTime?: string;
+  lastMessageTs?: string;
   unread?: number;
 }
 
@@ -70,6 +71,10 @@ export default function QuickMessenger() {
         const data = Array.isArray(res) ? res : Array.isArray(res?.data) ? res.data : [];
         const filtered = data.filter((m: any) => m.from === selectedContact || m.to === selectedContact);
         setMessages(filtered);
+        const last = filtered.reduce((a: any, b: any) =>
+          new Date(a.timestamp || 0) > new Date(b.timestamp || 0) ? a : b
+        , { timestamp: '' });
+        if (last.timestamp) updateContactActivity(selectedContact, last.content, last.timestamp);
       } catch (err) {
         console.error('[QuickMessenger] Failed to load messages:', err);
       }
@@ -82,6 +87,7 @@ export default function QuickMessenger() {
 
   const handleSend = async () => {
     if (!newMessage.trim() || !selectedContact) return;
+    const ts = new Date().toISOString();
     try {
       setSendingMsg(true);
       await api.sendMessage(user!.id, selectedContact, newMessage);
@@ -90,9 +96,10 @@ export default function QuickMessenger() {
         from: user?.id,
         to: selectedContact,
         content: newMessage,
-        timestamp: new Date().toISOString(),
+        timestamp: ts,
         read: false,
       }]);
+      updateContactActivity(selectedContact, newMessage, ts);
       setNewMessage("");
     } catch {
       setMessages((prev) => [...prev, {
@@ -100,19 +107,36 @@ export default function QuickMessenger() {
         from: user?.id,
         to: selectedContact,
         content: newMessage,
-        timestamp: new Date().toISOString(),
+        timestamp: ts,
         read: false,
       }]);
+      updateContactActivity(selectedContact, newMessage, ts);
       setNewMessage("");
     } finally {
       setSendingMsg(false);
     }
   };
 
+  const updateContactActivity = (contactId: string, content: string, ts: string) => {
+    setContacts(prev =>
+      prev.map(c =>
+        c.id === contactId
+          ? { ...c, lastMessage: content, lastMessageTs: ts, lastMessageTime: formatTime(ts) }
+          : c
+      )
+    );
+  };
+
   const currentContact = contacts.find((c) => c.id === selectedContact);
-  const filteredContacts = contacts.filter((c) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredContacts = contacts
+    .filter((c) =>
+      c.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+    .sort((a, b) => {
+      const aT = a.lastMessageTs ? new Date(a.lastMessageTs).getTime() : 0;
+      const bT = b.lastMessageTs ? new Date(b.lastMessageTs).getTime() : 0;
+      return bT - aT;
+    });
 
   const formatTime = (ts: string) => {
     const d = new Date(ts);
