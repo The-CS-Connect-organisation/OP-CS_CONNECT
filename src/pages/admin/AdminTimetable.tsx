@@ -28,7 +28,7 @@ async function localApiFetch(path: string, options: RequestInit = {}) {
   return res.json();
 }
 
-interface SectionOption { id: string; label: string; }
+interface SectionOption { id: string; label: string; className: string; }
 
 interface ChatMsg { role: 'user' | 'assistant'; content: string; }
 
@@ -36,6 +36,7 @@ export default function AdminTimetable() {
   const [entries, setEntries] = useState<TimetableEntry[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedSection, setSelectedSection] = useState('');
+  const [selectedClassName, setSelectedClassName] = useState('');
   const [sectionOptions, setSectionOptions] = useState<SectionOption[]>([]);
   const [subjectTeacherMap, setSubjectTeacherMap] = useState<SubjectTeacherMap>({});
   const [showCreate, setShowCreate] = useState(false);
@@ -58,14 +59,14 @@ export default function AdminTimetable() {
       const opts: SectionOption[] = [];
       (Array.isArray(detailed) ? detailed : []).forEach((cls: any) => {
         (cls.sections || []).forEach((sec: any) => {
-          opts.push({ id: sec.id, label: `${cls.name} — Section ${sec.name}` });
+          opts.push({ id: sec.id, label: `${cls.name} — Section ${sec.name}`, className: cls.name });
         });
       });
       setSectionOptions(opts);
     } catch { setSectionOptions([]); }
   };
 
-  const loadSectionTeachers = async (sectionLabel: string) => {
+  const loadSectionTeachers = async (className: string) => {
     try {
       const detailed = await localApiFetch('/classes/detailed');
       const usersData = await api.getUsers().catch(() => []);
@@ -74,17 +75,14 @@ export default function AdminTimetable() {
       teachers.forEach((u: any) => { teacherIdToName[u.id] = u.name; });
 
       const map: SubjectTeacherMap = {};
-      (Array.isArray(detailed) ? detailed : []).forEach((cls: any) => {
-        (cls.subjects || []).forEach((subj: any) => {
+      const classObj = (Array.isArray(detailed) ? detailed : []).find((c: any) => c.name === className);
+      if (classObj) {
+        (classObj.subjects || []).forEach((subj: any) => {
           if (subj.teacherId && subj.name) {
-            const sectionMatch = !subj.sectionId ||
-              cls.sections?.some((s: any) => s.id === subj.sectionId && `${cls.name} — Section ${s.name}` === sectionLabel);
-            if (sectionMatch) {
-              map[subj.name] = teacherIdToName[subj.teacherId] || subj.teacherId;
-            }
+            map[subj.name] = teacherIdToName[subj.teacherId] || subj.teacherId;
           }
         });
-      });
+      }
       setSubjectTeacherMap(map);
     } catch { setSubjectTeacherMap({}); }
   };
@@ -95,16 +93,17 @@ export default function AdminTimetable() {
     if (!sec) return;
     setTimetableName(createName.trim());
     setSelectedSection(sec.label);
+    setSelectedClassName(sec.className);
     setShowCreate(false);
     setCreateName('');
     setCreateSection('');
     setEntries([]);
-    await loadSectionTeachers(sec.label);
+    await loadSectionTeachers(sec.className);
   };
 
   const handleAssignSlot = async (day: string, time: string, data: { teacher: string; subject: string; room: string }) => {
     try {
-      const newEntry = await api.createTimetableEntry({ ...data, day, time, class: selectedSection });
+      const newEntry = await api.createTimetableEntry({ ...data, day, time, class: selectedClassName });
       setEntries(prev => [...prev, newEntry]);
     } catch (err) { console.error('[AdminTimetable] Failed to assign slot:', err); }
   };
@@ -142,7 +141,7 @@ export default function AdminTimetable() {
       const subjects = await localApiFetch('/subjects').catch(() => []);
       const res = await api.csAITimetable({
         message: msg,
-        className: selectedSection,
+        className: selectedClassName,
         allClassesTimetables: allTt,
         subjects: Array.isArray(subjects) ? subjects : [],
         teachers: teacherList,

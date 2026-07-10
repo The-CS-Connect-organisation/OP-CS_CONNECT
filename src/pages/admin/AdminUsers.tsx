@@ -198,14 +198,25 @@ export default function AdminUsers() {
         data.phone = form.phone;
       }
 
+      let savedUser: any;
       if (editingUserId) {
-        await api.updateUser(editingUserId, data);
+        savedUser = await api.updateUser(editingUserId, data);
+        savedUser = savedUser?.user ?? savedUser;
       } else {
-        await api.createUser(data);
+        savedUser = await api.createUser(data);
       }
 
       setSuccess(true);
       playSuccessSound();
+      if (savedUser?.id) {
+        setUsers(prev => {
+          if (editingUserId) {
+            return prev.map(u => u.id === savedUser.id ? { ...u, ...savedUser } : u);
+          } else {
+            return [...prev, savedUser];
+          }
+        });
+      }
       setTimeout(() => {
         setShowCreateModal(false);
         setEditingUserId(null);

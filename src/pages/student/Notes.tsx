@@ -39,8 +39,8 @@ export default function StudentNotes() {
   const loadNotes = async () => {
     try {
       setLoading(true);
-      const data = await api.getNotes();
-      setNotes(Array.isArray(data) ? data.filter((n: any) => n.studentId === user?.id || !n.studentId) : []);
+      const data = await api.getNotes({ class: user?.class || '' });
+      setNotes(Array.isArray(data) ? data.filter((n: any) => n.studentId === user?.id || n.class === user?.class) : []);
     } catch {
       // error
     } finally {

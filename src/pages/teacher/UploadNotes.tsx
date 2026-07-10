@@ -40,7 +40,7 @@ export default function UploadNotes() {
     (async () => {
       try {
         setLoading(true);
-        const res = await api.getNotes();
+        const res = await api.getNotes({ teacherId: user?.id || '' });
         setNotes(Array.isArray(res.data) ? res.data : []);
       } catch {
         setNotes([]);
@@ -48,7 +48,7 @@ export default function UploadNotes() {
         setLoading(false);
       }
     })();
-  }, []);
+  }, [user?.id]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
