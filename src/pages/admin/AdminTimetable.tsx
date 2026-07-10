@@ -87,6 +87,17 @@ export default function AdminTimetable() {
     } catch { setSubjectTeacherMap({}); }
   };
 
+  const loadEntries = async (className: string) => {
+    try {
+      const data = await api.getTimetable(className);
+      setEntries(Array.isArray(data) ? data : []);
+    } catch { setEntries([]); }
+  };
+
+  const saveEntries = async (className: string, updated: TimetableEntry[]) => {
+    await api.updateTimetable(className, updated);
+  };
+
   const handleCreate = async () => {
     if (!createName.trim() || !createSection) return;
     const sec = sectionOptions.find(s => s.id === createSection);
@@ -99,19 +110,31 @@ export default function AdminTimetable() {
     setCreateSection('');
     setEntries([]);
     await loadSectionTeachers(sec.className);
+    await loadEntries(sec.className);
   };
 
   const handleAssignSlot = async (day: string, time: string, data: { teacher: string; subject: string; room: string }) => {
     try {
-      const newEntry = await api.createTimetableEntry({ ...data, day, time, class: selectedClassName });
-      setEntries(prev => [...prev, newEntry]);
+      const newEntry: TimetableEntry = {
+        id: `${selectedClassName}-${day}-${time}`,
+        class: selectedClassName,
+        day,
+        time,
+        subject: data.subject,
+        teacher: data.teacher,
+        room: data.room,
+      };
+      const updated = [...entries, newEntry];
+      setEntries(updated);
+      await saveEntries(selectedClassName, updated);
     } catch (err) { console.error('[AdminTimetable] Failed to assign slot:', err); }
   };
 
   const handleDeleteEntry = async (id: string) => {
     try {
-      await api.deleteTimetableEntry(id);
-      setEntries(prev => prev.filter(e => e.id !== id));
+      const updated = entries.filter(e => e.id !== id);
+      setEntries(updated);
+      await saveEntries(selectedClassName, updated);
     } catch (err) { console.error('[AdminTimetable] Failed to delete entry:', err); }
   };
 
