@@ -50,7 +50,7 @@ export default function ParentDashboard() {
     try {
       setLoading(true);
       const data = await api.getParentDashboard();
-      if (data) setDashboard(data);
+      if (data) setDashboard(prev => ({ ...prev, ...data }));
     } catch (err) {
       console.error('[ParentDashboard] Failed to load:', err);
     } finally {
