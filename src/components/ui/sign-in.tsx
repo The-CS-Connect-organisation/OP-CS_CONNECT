@@ -106,8 +106,8 @@ export const SignInPage: React.FC<SignInPageProps> = ({
   return (
     <div className="h-[100dvh] flex flex-col md:flex-row font-geist w-[100dvw]">
       {/* Left column: sign-in form */}
-      <section className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
+      <section className="flex-1 flex items-center justify-start p-8">
+        <div className="w-full max-w-md ml-0 mr-auto">
           <div className="flex flex-col gap-6">
             <h1 className="animate-element animate-delay-100 text-4xl md:text-5xl font-semibold leading-tight">{title}</h1>
             <p className="animate-element animate-delay-200 text-muted-foreground">{description}</p>
