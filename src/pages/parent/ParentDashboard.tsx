@@ -122,7 +122,7 @@ export default function ParentDashboard() {
                     </div>
                     <div className="flex items-center gap-4 text-sm">
                       <span>Academic %: {child.gpa !== undefined ? formatPercentage(normalizeAcademicPercentage(child.gpa)) : 'N/A'}</span>
-                      <span>Attendance: {child.attendance}%</span>
+                      <span>Attendance: {Array.isArray(child.attendance) ? Math.round(child.attendance.filter((a: any) => a.status === 'present').length / child.attendance.length * 100) : child.attendance}%</span>
                     </div>
                   </div>
                 ))}
