@@ -91,6 +91,7 @@ export default function CSLibrary() {
       }
     } catch (e) {
       console.error('Reserve failed', e)
+      alert('Reserve failed: ' + ((e as any)?.message || e))
     } finally {
       setReserving(null)
     }
