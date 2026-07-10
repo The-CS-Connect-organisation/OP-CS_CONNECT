@@ -301,11 +301,13 @@ const NotFoundPage = () => {
             </button>
           </div>
         </div>
-        <img
-          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTTwLEt4d9-ghujM9bh6rv9la08AsTbpCZwxCTA6G26DmT1Hfrf4_3WqVe&s=10"
-          alt="CS Connect"
-          className="not_found_logo"
-        />
+        <div className="not_found_logo_wrap">
+          <img
+            src="https://www.cornerstoneschool.edu.in/wp-content/uploads/2020/02/LOGO-PNG-1.png"
+            alt="Cornerstone"
+            className="not_found_logo"
+          />
+        </div>
       </div>
     </StyledWrapper>
   );
@@ -339,14 +341,23 @@ const StyledWrapper = styled.div`
     display: block;
   }
 
-  .not_found_logo {
+  .not_found_logo_wrap {
     position: fixed;
     top: 24px;
-    right: 24px;
-    width: 42px;
-    height: 42px;
-    border-radius: 8px;
+    left: 24px;
     z-index: 50;
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+  }
+
+  .not_found_logo {
+    height: 36px;
+    width: auto;
+    display: block;
   }
 
   .not_found_back {
@@ -492,11 +503,13 @@ const StyledWrapper = styled.div`
   }
 
   @media (max-width: 600px) {
-    .not_found_logo {
-      width: 32px;
-      height: 32px;
+    .not_found_logo_wrap {
       top: 16px;
-      right: 16px;
+      left: 16px;
+      padding: 6px 12px;
+    }
+    .not_found_logo {
+      height: 28px;
     }
     .not_found_container {
       padding: 10px;
