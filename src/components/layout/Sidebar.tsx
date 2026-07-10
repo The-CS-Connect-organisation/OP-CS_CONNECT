@@ -303,7 +303,7 @@ export default function Sidebar() {
                       : "text-[#57534E] hover:bg-[#EC8037]/15 hover:text-[#EC8037]"
                 )}
               >
-                <item.icon className={cn("w-4 h-4 shrink-0", isActive ? "text-white" : "")} />
+                <item.icon className="w-4 h-4 shrink-0" />
                 {item.label}
               </NavLink>
             ))}
