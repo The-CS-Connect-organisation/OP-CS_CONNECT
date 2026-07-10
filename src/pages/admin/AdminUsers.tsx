@@ -114,20 +114,23 @@ export default function AdminUsers() {
     setShowCreateModal(true);
   };
 
-  const openEditModal = (user: UserRecord) => {
+  const openEditModal = (user: any) => {
     setEditingUserId(user.id);
     setForm({
-      name: user.name,
-      email: user.email,
+      name: user.name || '',
+      email: user.email || '',
       password: '',
-      role: user.role,
+      role: user.role || 'student',
       class: user.class || '',
-      subjects: [],
-      parentType: (user as any).parentType || '',
-      admissionNo: '', phone: user.phone || '', address: '',
-      dateOfBirth: '', bloodGroup: '', aadharNo: '', penNo: '', apaarId: '',
-      religion: '', nationality: 'Indian', schoolHouse: '', houseLocation: '',
-      fatherName: '', fatherPhone: '', motherName: '', motherPhone: '',
+      subjects: Array.isArray(user.subjects) ? user.subjects : [],
+      parentType: user.parentType || '',
+      admissionNo: user.admissionNo || '', phone: user.phone || '', address: user.address || '',
+      dateOfBirth: user.dateOfBirth || '', bloodGroup: user.bloodGroup || '',
+      aadharNo: user.aadharNo || '', penNo: user.penNo || '', apaarId: user.apaarId || '',
+      religion: user.religion || '', nationality: user.nationality || 'Indian',
+      schoolHouse: user.schoolHouse || '', houseLocation: user.houseLocation || '',
+      fatherName: user.fatherName || '', fatherPhone: user.fatherPhone || '',
+      motherName: user.motherName || '', motherPhone: user.motherPhone || '',
     });
     setSuccess(false);
     setError('');
