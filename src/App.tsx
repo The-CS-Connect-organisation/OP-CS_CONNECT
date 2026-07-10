@@ -6,7 +6,6 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore, useThemeStore } from './lib/store'
 import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
-import CampusDesk from './pages/CampusDesk'
 const Landing = lazy(() => import('./pages/Landing'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
 const Photos = lazy(() => import('./pages/Photos'))
@@ -368,8 +367,6 @@ function App() {
           <Route path="/manager" element={roleGuard(['manager'])}>
             <Route index element={<Navigate to="/404page" replace />} />
           </Route>
-
-          <Route path="/campus-desk" element={<CampusDesk />} />
 
           <Route path="/cs-library" element={
             isAuthenticated ? <DashboardLayout><CSLibrary /></DashboardLayout> : <Navigate to="/login" replace />
