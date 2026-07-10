@@ -43,7 +43,7 @@ export default function Login() {
   useEffect(() => {
     const interval = setInterval(() => {
       setSlideIndex(i => (i + 1) % farewellImages.length)
-    }, 4000)
+    }, 2500)
     return () => clearInterval(interval)
   }, [])
 
