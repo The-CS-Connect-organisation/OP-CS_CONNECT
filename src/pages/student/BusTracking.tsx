@@ -117,15 +117,14 @@ export default function StudentBusTracking() {
           ? r.stops.map((s: any) => typeof s === 'string' ? { name: s, time: '--:--', reached: false } : s)
           : [],
       })) : [];
-      // Only show the route(s) assigned to this student
-      const studentRouteId = user?.routeId;
-      const filtered = studentRouteId
-        ? mapped.filter(r => r.id === studentRouteId)
-        : mapped;
-      setRoutes(filtered);
-      // Auto-select the student's assigned route
-      if (filtered.length === 1) {
-        setSelectedRoute(filtered[0].id);
+      // Show route(s) where this student is in the students array, or fall back to user.routeId
+      const myRoutes = mapped.filter(r =>
+        (Array.isArray(r.students) && r.students.includes(user?.id)) ||
+        r.id === user?.routeId
+      );
+      setRoutes(myRoutes);
+      if (myRoutes.length === 1) {
+        setSelectedRoute(myRoutes[0].id);
       }
     } catch {
       // error
