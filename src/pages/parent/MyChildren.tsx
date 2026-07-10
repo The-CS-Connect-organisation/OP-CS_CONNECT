@@ -33,8 +33,15 @@ export default function ParentMyChildren() {
   const [linkSuccess, setLinkSuccess] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [autoDetecting, setAutoDetecting] = useState(false);
-  const [autoDetectResult, setAutoDetectResult] = useState<{ count: number; linked: { id: string; name: string }[] } | null>(null);
+  const [detectedStudents, setDetectedStudents] = useState<any[]>([]);
+  const [showDetectModal, setShowDetectModal] = useState(false);
   const [autoPhone, setAutoPhone] = useState(user?.phone || '');
+  const [detectError, setDetectError] = useState('');
+  const [linkingStudent, setLinkingStudent] = useState<any | null>(null);
+  const [linkPass, setLinkPass] = useState('');
+  const [showLinkPass, setShowLinkPass] = useState(false);
+  const [linkLoading, setLinkLoading] = useState(false);
+  const [linkMsg, setLinkMsg] = useState('');
 
   useEffect(() => {
     loadChildren();
@@ -139,16 +146,26 @@ export default function ParentMyChildren() {
             />
           </div>
           <button onClick={async () => {
-            if (!user?.id || !parentType) { alert('Parent type not detected'); return }
             const phone = autoPhone?.trim()
             if (!phone) { alert('Enter your phone number first'); return }
             setAutoDetecting(true)
+            setDetectError('')
             try {
-              const res = await api.autoLinkParent(user.id, phone, parentType)
-              setAutoDetectResult(res)
-              if (res?.count > 0) loadChildren()
+              const all = await api.getUsers({ role: 'student' })
+              const students = Array.isArray(all) ? all : []
+              const parentPhoneField = parentType === 'father' ? 'fatherPhone' : 'motherPhone'
+              const myChildrenIds = new Set(children.map(c => c.id))
+              const matched = students.filter((s: any) =>
+                s[parentPhoneField] && s[parentPhoneField].trim().toLowerCase() === phone.toLowerCase()
+              ).map((s: any) => ({
+                ...s,
+                _alreadyLinked: myChildrenIds.has(s.id),
+                _slotTaken: parentType === 'father' ? !!s.fatherId : !!s.motherId,
+              }))
+              setDetectedStudents(matched)
+              setShowDetectModal(true)
             } catch (e: any) {
-              alert(e?.message || 'Auto-detect failed')
+              setDetectError(e?.message || 'Auto-detect failed')
             } finally {
               setAutoDetecting(false)
             }
@@ -325,40 +342,94 @@ export default function ParentMyChildren() {
 
       {/* Auto Detect Result Modal */}
       <AnimatePresence>
-        {autoDetectResult && (
+        {showDetectModal && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="w-full max-w-md rounded-2xl border bg-card shadow-2xl p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold">Auto Detect Results</h2>
-                <button onClick={() => setAutoDetectResult(null)} className="p-1 rounded-lg hover:bg-accent"><X className="w-5 h-5" /></button>
-              </div>
-              {autoDetectResult.count === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
-                  <p className="text-sm font-medium">No children found</p>
-                  <p className="text-xs mt-1">No students matched your phone number</p>
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="w-full max-w-lg max-h-[85vh] rounded-2xl border bg-card shadow-2xl flex flex-col">
+              <div className="flex items-center justify-between p-4 border-b">
+                <div>
+                  <h2 className="text-lg font-bold">Matching Profiles</h2>
+                  <p className="text-xs text-muted-foreground">Students with the same phone number on record</p>
                 </div>
-              ) : (
-                <div className="space-y-3">
-                  <p className="text-sm text-emerald-600 font-medium flex items-center gap-2">
-                    <Check className="w-4 h-4" />
-                    Found {autoDetectResult.count} child{autoDetectResult.count > 1 ? 'ren' : ''}
-                  </p>
-                  {autoDetectResult.linked.map(c => (
-                    <div key={c.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
-                      <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-green-500 flex items-center justify-center text-white text-xs font-bold">
-                        {c.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                <button onClick={() => { setShowDetectModal(false); setDetectError('') }} className="p-1 rounded-lg hover:bg-accent"><X className="w-5 h-5" /></button>
+              </div>
+              <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                {detectError && (
+                  <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/20 text-red-600 text-sm">{detectError}</div>
+                )}
+                {detectedStudents.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
+                    <p className="text-sm font-medium">No matching profiles</p>
+                    <p className="text-xs mt-1">No students have this {parentType === 'father' ? "father's" : "mother's"} phone number on record</p>
+                  </div>
+                ) : (
+                  detectedStudents.map(s => {
+                    const alreadyLinked = s._alreadyLinked
+                    const slotTaken = s._slotTaken && !alreadyLinked
+                    return (
+                      <div key={s.id} className="p-4 rounded-xl border border-border/50 bg-card">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                              {s.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="font-semibold text-sm truncate">{s.name}</h3>
+                              <p className="text-xs text-muted-foreground">Class {s.class || 'N/A'} • {s.email}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {parentType === 'father' ? 'Father' : 'Mother'}: {s.fatherName || s.motherName || 'N/A'} ({s.fatherPhone || s.motherPhone || autoPhone})
+                              </p>
+                            </div>
+                          </div>
+                          <div className="shrink-0">
+                            {alreadyLinked ? (
+                              <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">
+                                <Check className="w-3 h-3 mr-1" /> Connected
+                              </Badge>
+                            ) : slotTaken ? (
+                              <Badge className="bg-red-500/10 text-red-500 border-red-500/20">Slot Taken</Badge>
+                            ) : linkingStudent?.id === s.id ? (
+                              <div className="space-y-2">
+                                <div className="relative">
+                                  <Lock className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+                                  <input type={showLinkPass ? 'text' : 'password'} value={linkPass} onChange={e => setLinkPass(e.target.value)}
+                                    placeholder="Student's password"
+                                    className="w-full pl-9 pr-8 py-1.5 rounded-lg bg-accent/50 text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/50"
+                                    onKeyDown={async e => { if (e.key === 'Enter') { setLinkLoading(true); setLinkMsg(''); try { const r = await api.linkChild(s.email, linkPass); if (r?.success) { setLinkMsg('Connected!'); setTimeout(() => { setLinkingStudent(null); setLinkPass(''); loadChildren(); setDetectedStudents((prev: any[]) => prev.map(p => p.id === s.id ? { ...p, _alreadyLinked: true } : p)) }, 1000) } } catch (err: any) { setLinkMsg(err?.message || 'Failed') } finally { setLinkLoading(false) } } }}
+                                  />
+                                  <button type="button" onClick={() => setShowLinkPass(!showLinkPass)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                                    {showLinkPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                                  </button>
+                                </div>
+                                {linkMsg && <p className={`text-xs ${linkMsg === 'Connected!' ? 'text-emerald-500' : 'text-red-500'}`}>{linkMsg}</p>}
+                                <div className="flex gap-1">
+                                  <button onClick={async () => { setLinkLoading(true); setLinkMsg(''); try { const r = await api.linkChild(s.email, linkPass); if (r?.success) { setLinkMsg('Connected!'); setTimeout(() => { setLinkingStudent(null); setLinkPass(''); loadChildren(); setDetectedStudents((prev: any[]) => prev.map(p => p.id === s.id ? { ...p, _alreadyLinked: true } : p)) }, 1000) } } catch (err: any) { setLinkMsg(err?.message || 'Failed') } finally { setLinkLoading(false) } }}
+                                    disabled={!linkPass || linkLoading} className="px-3 py-1 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 text-white text-xs font-medium disabled:opacity-50 flex items-center gap-1">
+                                    {linkLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <ShieldCheck className="w-3 h-3" />}
+                                    Verify & Connect
+                                  </button>
+                                  <button onClick={() => { setLinkingStudent(null); setLinkPass(''); setLinkMsg('') }} className="px-3 py-1 rounded-lg bg-muted text-xs font-medium">Cancel</button>
+                                </div>
+                              </div>
+                            ) : (
+                              <Button size="sm" className="bg-gradient-to-r from-orange-500 to-amber-500 text-white"
+                                onClick={() => { setLinkingStudent(s); setLinkPass(''); setLinkMsg(''); setShowLinkPass(false) }}
+                              >
+                                <UserPlus className="w-3 h-3 mr-1" /> Connect
+                              </Button>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium">{c.name}</p>
-                        <p className="text-xs text-emerald-600">Auto-linked via phone number</p>
-                      </div>
-                      <Check className="w-4 h-4 text-emerald-500 ml-auto" />
-                    </div>
-                  ))}
+                    )
+                  })
+                )}
+              </div>
+              {detectedStudents.length > 0 && (
+                <div className="p-4 border-t text-center">
+                  <Button variant="outline" onClick={() => { setShowDetectModal(false); setDetectError('') }}>Close</Button>
                 </div>
               )}
-              <Button className="mt-4 w-full" onClick={() => setAutoDetectResult(null)}>Done</Button>
             </motion.div>
           </motion.div>
         )}
