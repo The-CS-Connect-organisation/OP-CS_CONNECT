@@ -365,7 +365,7 @@ function App() {
           <Route path="/campus-desk" element={<CampusDesk />} />
 
           <Route path="/cs-library" element={
-            isAuthenticated ? <CSLibrary /> : <Navigate to="/login" replace />
+            isAuthenticated ? <DashboardLayout><CSLibrary /></DashboardLayout> : <Navigate to="/login" replace />
           } />
 
           <Route path="/404page" element={<NotFoundPage />} />
