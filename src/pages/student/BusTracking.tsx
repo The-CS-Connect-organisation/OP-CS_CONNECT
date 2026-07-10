@@ -69,6 +69,7 @@ interface BusData {
   status: 'on-time' | 'delayed' | 'arrived';
   stops: { name: string; time: string; reached: boolean }[];
   onLeave?: boolean;
+  students?: string[];
 }
 
 interface Location {
@@ -113,6 +114,7 @@ export default function StudentBusTracking() {
         estimatedArrival: r.estimatedArrival || '--:--',
         status: r.status || 'on-time',
         onLeave: !!r.onLeave,
+        students: Array.isArray(r.students) ? r.students : [],
         stops: Array.isArray(r.stops)
           ? r.stops.map((s: any) => typeof s === 'string' ? { name: s, time: '--:--', reached: false } : s)
           : [],
