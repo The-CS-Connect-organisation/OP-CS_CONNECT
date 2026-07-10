@@ -25,9 +25,11 @@ const NavBar = () => {
     const el = navRef.current;
     if (!el) return;
 
+    const isTouch = 'ontouchstart' in window;
+
     const pastHero = currentScrollY > window.innerHeight;
 
-    if (!pastHero) {
+    if (!pastHero || isTouch) {
       gsap.set(el, { y: 0, opacity: 1 });
       return;
     }
