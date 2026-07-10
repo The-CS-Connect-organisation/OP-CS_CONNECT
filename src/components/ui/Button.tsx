@@ -3,6 +3,7 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { playButtonSound } from "@/lib/sound"
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
@@ -35,11 +36,16 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   magnetic?: boolean
 }
 
-const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, asChild = false, magnetic = false, ...props }, ref) => {
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, variant, size, asChild = false, magnetic = false, onClick, ...props }, ref) => {
   const magnetX = useMotionValue(0)
   const magnetY = useMotionValue(0)
   const springMagnetX = useSpring(magnetX, { stiffness: 200, damping: 20 })
   const springMagnetY = useSpring(magnetY, { stiffness: 200, damping: 20 })
+
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!asChild) playButtonSound()
+    onClick?.(e)
+  }
 
   const handleMouseMove = magnetic ? (e: React.MouseEvent<HTMLButtonElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -56,24 +62,30 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ className, va
 
   const Comp = asChild ? Slot : "button"
 
+  const commonProps = {
+    className: cn(buttonVariants({ variant, size, className })),
+    ref: ref as any,
+    ...(asChild ? {} : { onClick: handleClick }),
+    ...props,
+  }
+
   if (magnetic) {
     return (
       <motion.button
-        ref={ref as any}
-        className={cn(buttonVariants({ variant, size, className }))}
+        {...commonProps}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
+        onClick={handleClick}
         style={{
           transform: useTransform([springMagnetX, springMagnetY], ([mx, my]: number[]) =>
             `translate(${mx}px, ${my}px)`
           ),
         } as any}
-        {...(props as any)}
       />
     )
   }
 
-  return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref as any} {...props} />
+  return <Comp {...commonProps} />
 })
 Button.displayName = "Button"
 

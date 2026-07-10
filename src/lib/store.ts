@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { api } from './api';
+import { playLoginSound, playSuccessSound } from './sound';
 import { normalizeAcademicPercentage } from './utils';
 
 export type UserRole = 'student' | 'teacher' | 'admin' | 'coordinator' | 'driver' | 'parent' | 'librarian' | 'manager';
@@ -77,6 +78,7 @@ export const useAuthStore = create<AuthState>()(
         localStorage.setItem('eduvault-user-id', data.user.id);
         if (data.token) localStorage.setItem('eduvault-token', data.token);
         set({ user: data.user, isAuthenticated: true });
+        playLoginSound();
         return data.user;
       },
       signupWithCredentials: async (data: any) => {
@@ -84,6 +86,7 @@ export const useAuthStore = create<AuthState>()(
         localStorage.setItem('eduvault-user-id', result.user.id);
         if (result.token) localStorage.setItem('eduvault-token', result.token);
         set({ user: result.user, isAuthenticated: true });
+        playSuccessSound();
         return result.user;
       },
     }),

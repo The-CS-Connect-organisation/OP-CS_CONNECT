@@ -74,6 +74,7 @@ export default function AdminCirculars() {
 
   const showMsg = (text: string, type: 'success' | 'error') => {
     setMessage({ text, type });
+    if (type === 'success') import('@/lib/sound').then(m => m.playSuccessSound());
     setTimeout(() => setMessage(null), 4000);
   };
 

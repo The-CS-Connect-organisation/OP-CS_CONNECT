@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../../lib/api';
+import { playSuccessSound } from '../../lib/sound';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
@@ -107,6 +108,7 @@ export default function TeacherExamResults() {
     try {
       const entries = Object.entries(marksEntries).map(([studentId, marks]) => ({ studentId, marks }));
       await api.enterExamResult(selectedExam, { entries });
+      playSuccessSound();
       alert('Results saved successfully');
     } catch (err) { console.error('[TeacherExamResults] Failed to submit results:', err); }
   };

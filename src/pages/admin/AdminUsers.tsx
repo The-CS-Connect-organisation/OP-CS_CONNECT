@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { api } from '../../lib/api';
+import { playSuccessSound } from '../../lib/sound';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -195,6 +196,7 @@ export default function AdminUsers() {
       }
 
       setSuccess(true);
+      playSuccessSound();
       setTimeout(() => {
         setShowCreateModal(false);
         setEditingUserId(null);
