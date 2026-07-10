@@ -132,6 +132,7 @@ const CreateAccount = lazy(() => import('./pages/admin/CreateAccount'))
 
 const AdminRoomBooking = lazy(() => import('./pages/admin/AdminRoomBooking'))
 const AdminAssetTracking = lazy(() => import('./pages/admin/AdminAssetTracking'))
+const AdminTalentMarket = lazy(() => import('./pages/admin/AdminTalentMarket'))
 
 const TeacherRoomBooking = lazy(() => import('./pages/teacher/TeacherRoomBooking'))
 const TeacherAssetTracking = lazy(() => import('./pages/teacher/TeacherAssetTracking'))
@@ -262,6 +263,7 @@ function App() {
             <Route path="my-section" element={<TeacherMySection />} />
             <Route path="my-schedule" element={<TeacherTimetable />} />
             <Route path="timetable" element={<TeacherTimetable />} />
+            <Route path="talent-market" element={<AdminTalentMarket />} />
           </Route>
 
           {/* ADMIN */}
@@ -314,6 +316,7 @@ function App() {
             <Route path="profile" element={<AdminProfile />} />
             <Route path="room-booking" element={<AdminRoomBooking />} />
             <Route path="asset-tracking" element={<AdminAssetTracking />} />
+            <Route path="talent-market" element={<AdminTalentMarket />} />
             <Route path="create-account" element={<CreateAccount />} />
           </Route>
 

@@ -16,7 +16,8 @@ import {
   TrendingUp, Brain, FileText, Clock, CheckCircle2,
   AlertCircle, GraduationCap, MessageSquare, Calendar,
   BookOpen, Target, Zap, Settings, Bell, UserPlus,
-  Activity, PieChart as PieIcon, ChevronLeft, ChevronRight
+  Activity, PieChart as PieIcon, ChevronLeft, ChevronRight,
+  Gavel
 } from 'lucide-react'
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -357,6 +358,7 @@ export default function AdminDashboard() {
                     { label: 'Add User', icon: UserPlus, color: 'from-orange-500 to-amber-600', href: '/admin/create-account' },
                     { label: 'Send Notice', icon: Bell, color: 'from-orange-600 to-amber-600', href: '/admin/announcements' },
                     { label: 'View Reports', icon: FileText, color: 'from-emerald-600 to-teal-600', href: '/admin/analytics' },
+                    { label: 'Talent Market', icon: Gavel, color: 'from-orange-500 to-amber-500', href: '/admin/talent-market' },
                     { label: 'System Settings', icon: Settings, color: 'from-amber-600 to-orange-600', href: '/admin/platform' },
                   ].map(action => (
                     <motion.button

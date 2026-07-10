@@ -187,6 +187,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: Stethoscope, label: 'School Clinic', path: '/admin/clinic' },
         { icon: Headphones, label: 'IT Helpdesk', path: '/admin/it-helpdesk' },
         { icon: Users, label: 'Manage Clubs', path: '/admin/clubs' },
+        { icon: Gavel, label: 'Talent Market', path: '/admin/talent-market' },
       ]
     },
   ],
