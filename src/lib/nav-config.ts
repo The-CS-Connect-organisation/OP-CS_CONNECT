@@ -124,10 +124,16 @@ export const navSections: Record<UserRole, NavSection[]> = {
     },
     
     {
+      label: 'Library',
+      items: [
+        { icon: BookMarked, label: 'Reserve Books', path: '/teacher/reserve-books' },
+        { icon: BookOpen, label: 'Borrowed Books', path: '/teacher/borrowed-books' },
+      ]
+    },
+    {
       label: 'Tools',
       items: [
         { icon: Sparkles, label: 'AI Lab', path: '/teacher/ai' },
-        { icon: Library, label: 'CS Library', path: '/cs-library' },
       ]
     },
   ],
@@ -236,9 +242,8 @@ export const navSections: Record<UserRole, NavSection[]> = {
   ],
   librarian: [
     {
-      label: 'Main',
+      label: 'Library',
       items: [
-        { icon: Library, label: 'Dashboard', path: '/librarian' },
         { icon: BookMarked, label: 'Reserve Books', path: '/librarian/reserve-books' },
         { icon: BookOpen, label: 'Books Issued', path: '/librarian/books-issued' },
         { icon: User, label: 'Profile', path: '/librarian/profile' },

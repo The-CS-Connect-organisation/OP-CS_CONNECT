@@ -84,9 +84,6 @@ const ParentDigitalFridge = retryLazy(() => import('./pages/parent/DigitalFridge
 const ParentBookHeavyAlerts = retryLazy(() => import('./pages/parent/BookHeavyAlerts'))
 const ParentMyChildren = retryLazy(() => import('./pages/parent/MyChildren'))
 const DriverProfile = retryLazy(() => import('./pages/driver/DriverProfile'))
-const LibrarianDashboard = retryLazy(() => import('./pages/librarian/LibrarianDashboard'))
-const LibrarianBookIssue = retryLazy(() => import('./pages/librarian/LibrarianBookIssue'))
-
 const StudentDailyBriefing = retryLazy(() => import('./pages/student/DailyBriefing'))
 const LibrarianProfile = retryLazy(() => import('./pages/librarian/LibrarianProfile'))
 const CSLibrary = retryLazy(() => import('./pages/shared/CSLibrary'))
@@ -267,6 +264,8 @@ function App() {
             <Route path="my-schedule" element={<TeacherTimetable />} />
             <Route path="timetable" element={<TeacherTimetable />} />
             <Route path="talent-market" element={<AdminTalentMarket />} />
+            <Route path="borrowed-books" element={<Navigate to="/cs-library?tab=borrowed" replace />} />
+            <Route path="reserve-books" element={<Navigate to="/cs-library?tab=reserve" replace />} />
           </Route>
 
           {/* ADMIN */}
@@ -350,7 +349,7 @@ function App() {
 
           {/* LIBRARIAN */}
           <Route path="/librarian" element={roleGuard(['librarian'])}>
-            <Route index element={<LibrarianDashboard />} />
+            <Route index element={<Navigate to="reserve-books" replace />} />
             <Route path="profile" element={<LibrarianProfile />} />
             <Route path="reserve-books" element={<LibrarianReserveBooks />} />
             <Route path="books-issued" element={<LibrarianBooksIssued />} />
