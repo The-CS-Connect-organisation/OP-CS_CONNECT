@@ -1,8 +1,9 @@
-import { useState } from 'react'
-import { useAuthStore } from '../../lib/store'
-import { BookOpen, Book, Search, Clock, CheckCircle2, AlertCircle, ChevronRight, Star, Filter, X, Loader2, RefreshCw, Library } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { api } from '../../lib/api'
+import { BookOpen, Book, Search, Clock, CheckCircle2, AlertCircle, ChevronRight, Star, X, RefreshCw, Library, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
+import { Skeleton } from '@/components/ui/Skeleton'
 
 interface BookItem {
   id: string
@@ -32,38 +33,66 @@ interface Activity {
   date: string
 }
 
-const MOCK_BOOKS: BookItem[] = [
-  { id: '1', title: 'Introduction to Algorithms', author: 'CLRS', isbn: '9780262033848', category: 'Computer Science', available: 3, total: 5 },
-  { id: '2', title: 'Clean Code', author: 'Robert C. Martin', isbn: '9780132350884', category: 'Computer Science', available: 2, total: 4 },
-  { id: '3', title: 'The Pragmatic Programmer', author: 'David Thomas', isbn: '9780135957059', category: 'Computer Science', available: 4, total: 4 },
-  { id: '4', title: 'Design Patterns', author: 'Gang of Four', isbn: '9780201633610', category: 'Computer Science', available: 1, total: 3 },
-  { id: '5', title: 'Physics for Scientists and Engineers', author: 'Serway', isbn: '9781337553298', category: 'Physics', available: 2, total: 6 },
-  { id: '6', title: 'Organic Chemistry', author: 'Morrison & Boyd', isbn: '9780134042282', category: 'Chemistry', available: 0, total: 3 },
-  { id: '7', title: 'Principles of Economics', author: 'N. Gregory Mankiw', isbn: '9780357133804', category: 'Economics', available: 3, total: 5 },
-  { id: '8', title: 'Calculus: Early Transcendentals', author: 'James Stewart', isbn: '9781337613927', category: 'Mathematics', available: 5, total: 8 },
-]
+function toBooks(data: any): BookItem[] {
+  const arr = Array.isArray(data) ? data : data?.books ?? data?.catalogue ?? [];
+  return arr.map((b: any) => ({
+    id: b.id ?? b.isbn ?? '',
+    title: b.title ?? b.name ?? '',
+    author: b.author ?? '',
+    isbn: b.isbn ?? '',
+    category: b.category ?? b.genre ?? '',
+    available: Number(b.available ?? b.copies ?? 0),
+    total: Number(b.total ?? b.copies ?? b.available ?? 0),
+  }));
+}
 
-const MOCK_BORROWED: BorrowedBook[] = [
-  { id: '1', title: 'Introduction to Algorithms', author: 'CLRS', borrowedDate: '2026-06-15', dueDate: '2026-07-15', status: 'active' },
-  { id: '2', title: 'Clean Code', author: 'Robert C. Martin', borrowedDate: '2026-05-20', dueDate: '2026-06-20', status: 'overdue' },
-  { id: '3', title: 'Design Patterns', author: 'Gang of Four', borrowedDate: '2026-07-01', dueDate: '2026-08-01', status: 'active' },
-]
+function toBorrowed(data: any): BorrowedBook[] {
+  const arr = Array.isArray(data) ? data : data?.borrowed ?? [];
+  return arr.map((b: any) => ({
+    id: b.id ?? '',
+    title: b.title ?? b.bookTitle ?? b.book?.title ?? '',
+    author: b.author ?? b.book?.author ?? '',
+    borrowedDate: b.borrowedDate ?? b.issuedDate ?? b.date ?? '',
+    dueDate: b.dueDate ?? b.due ?? '',
+    status: b.status ?? 'active',
+  }));
+}
 
-const MOCK_ACTIVITIES: Activity[] = [
-  { id: '1', type: 'borrowed', book: 'Introduction to Algorithms', user: 'Aarav S.', date: '2026-07-10' },
-  { id: '2', type: 'returned', book: 'Physics for Scientists', user: 'Priya P.', date: '2026-07-09' },
-  { id: '3', type: 'reserved', book: 'Clean Code', user: 'Rohan K.', date: '2026-07-08' },
-  { id: '4', type: 'borrowed', book: 'Design Patterns', user: 'Ananya S.', date: '2026-07-07' },
-  { id: '5', type: 'returned', book: 'Organic Chemistry', user: 'Vikram J.', date: '2026-07-06' },
-]
+function toActivities(data: any): Activity[] {
+  const arr = Array.isArray(data) ? data : data?.activities ?? data?.logs ?? [];
+  return arr.map((a: any) => ({
+    id: a.id ?? '',
+    type: a.type ?? a.action ?? 'borrowed',
+    book: a.book ?? a.bookTitle ?? a.title ?? '',
+    user: a.user ?? a.userName ?? a.studentName ?? '',
+    date: a.date ?? a.createdAt ?? '',
+  }));
+}
 
 export default function CSLibrary() {
-  const { user } = useAuthStore()
   const [tab, setTab] = useState<'catalogue' | 'borrowed' | 'activities'>('catalogue')
   const [search, setSearch] = useState('')
   const [selectedBook, setSelectedBook] = useState<BookItem | null>(null)
 
-  const filteredBooks = MOCK_BOOKS.filter(b =>
+  const [books, setBooks] = useState<BookItem[]>([])
+  const [borrowed, setBorrowed] = useState<BorrowedBook[]>([])
+  const [activities, setActivities] = useState<Activity[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    Promise.all([
+      api.getBooks().catch(() => null),
+      api.getBorrowedBooks().catch(() => null),
+    ]).then(([b, br]) => {
+      if (b) setBooks(toBooks(b))
+      if (br) {
+        setBorrowed(toBorrowed(br))
+        setActivities(toActivities(br))
+      }
+    }).finally(() => setLoading(false))
+  }, [])
+
+  const filteredBooks = books.filter(b =>
     b.title.toLowerCase().includes(search.toLowerCase()) ||
     b.author.toLowerCase().includes(search.toLowerCase()) ||
     b.category.toLowerCase().includes(search.toLowerCase())
@@ -71,7 +100,6 @@ export default function CSLibrary() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2.5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 shadow-lg shadow-orange-500/20">
@@ -84,7 +112,6 @@ export default function CSLibrary() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="flex items-center gap-1 bg-muted/50 rounded-lg p-1 w-fit">
         {(['catalogue', 'borrowed', 'activities'] as const).map(t => (
           <button key={t} onClick={() => setTab(t)}
@@ -100,8 +127,11 @@ export default function CSLibrary() {
         ))}
       </div>
 
-      {/* Catalogue Tab */}
-      {tab === 'catalogue' && (
+      {loading && (
+        <div className="space-y-4">{[1,2,3].map(i => <Skeleton key={i} className="h-20" />)}</div>
+      )}
+
+      {!loading && tab === 'catalogue' && (
         <div className="space-y-4">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -142,16 +172,15 @@ export default function CSLibrary() {
         </div>
       )}
 
-      {/* Borrowed Tab */}
-      {tab === 'borrowed' && (
+      {!loading && tab === 'borrowed' && (
         <div className="space-y-3">
-          {MOCK_BORROWED.length === 0 ? (
+          {borrowed.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
               <Clock className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p className="text-sm">No borrowed books</p>
             </div>
           ) : (
-            MOCK_BORROWED.map(book => (
+            borrowed.map(book => (
               <div key={book.id} className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-card">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-14 rounded-lg bg-gradient-to-br from-orange-100 to-amber-100 dark:from-orange-900/30 dark:to-amber-900/30 flex items-center justify-center shrink-0">
@@ -183,16 +212,15 @@ export default function CSLibrary() {
         </div>
       )}
 
-      {/* Activities Tab */}
-      {tab === 'activities' && (
+      {!loading && tab === 'activities' && (
         <div className="space-y-2">
-          {MOCK_ACTIVITIES.length === 0 ? (
+          {activities.length === 0 ? (
             <div className="text-center py-16 text-muted-foreground">
               <RefreshCw className="w-12 h-12 mx-auto mb-3 opacity-30" />
               <p className="text-sm">No recent activity</p>
             </div>
           ) : (
-            MOCK_ACTIVITIES.map(act => (
+            activities.map(act => (
               <div key={act.id} className="flex items-center gap-3 p-3 rounded-xl border border-border/50 bg-card">
                 <div className={cn(
                   'p-2 rounded-lg',
@@ -218,7 +246,6 @@ export default function CSLibrary() {
         </div>
       )}
 
-      {/* Book Detail Dialog */}
       {selectedBook && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedBook(null)}>
           <div className="w-full max-w-md rounded-2xl border border-border bg-card shadow-2xl p-6" onClick={e => e.stopPropagation()}>
