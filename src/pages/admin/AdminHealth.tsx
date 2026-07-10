@@ -8,12 +8,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { Input } from '../../components/ui/Input';
 import { Textarea } from '../../components/ui/Textarea';
 import { Modal } from '../../components/ui/Modal';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from '../../components/ui/DropdownMenu';
+import { BottomSheet, PickerSheet } from '../../components/ui/BottomSheet';
 import {
   Stethoscope,
   Syringe,
@@ -25,7 +20,6 @@ import {
   Calendar,
   Clock,
   Filter,
-  X,
 } from 'lucide-react';
 
 interface Student {
@@ -84,6 +78,7 @@ const STATUS_OPTIONS = ['Resolved', 'Under Observation', 'Referred', 'Follow-up 
 
 export default function AdminHealth() {
   const user = useAuthStore((s) => s.user);
+  const [isMobile, setIsMobile] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [subSection, setSubSection] = useState<SubSection>('incidents');
@@ -110,6 +105,21 @@ export default function AdminHealth() {
   const [statusFilter, setStatusFilter] = useState('');
   const [reasonFilter, setReasonFilter] = useState('');
   const [dateFilter, setDateFilter] = useState('');
+
+  // mobile picker sheets
+  const [showSubNavSheet, setShowSubNavSheet] = useState(false);
+  const [showStatusPicker, setShowStatusPicker] = useState(false);
+  const [showReasonPicker, setShowReasonPicker] = useState(false);
+  const [showFormStudentPicker, setShowFormStudentPicker] = useState(false);
+  const [showFormReasonPicker, setShowFormReasonPicker] = useState(false);
+  const [showFormStatusPicker, setShowFormStatusPicker] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   useEffect(() => {
     loadAll();
@@ -230,6 +240,164 @@ export default function AdminHealth() {
     { key: 'screenings', label: 'Screenings', icon: <Activity className="w-4 h-4 shrink-0" /> },
   ];
 
+  const currentSubNav = subNavItems.find((i) => i.key === subSection);
+  const selectedStudent = students.find((s) => s.id === form.studentId);
+
+  // --- shared form content (used by both Modal and BottomSheet) ---
+  const formContent = (
+    <div className="space-y-4">
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Student *</label>
+        {isMobile ? (
+          <>
+            <button
+              onClick={() => setShowFormStudentPicker(true)}
+              className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm flex items-center justify-between"
+            >
+              <span className={selectedStudent ? '' : 'text-muted-foreground'}>
+                {selectedStudent ? `${selectedStudent.name}${selectedStudent.class ? ` (${selectedStudent.class})` : ''}` : 'Select student...'}
+              </span>
+              <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+            </button>
+            <PickerSheet
+              isOpen={showFormStudentPicker}
+              onClose={() => setShowFormStudentPicker(false)}
+              title="Select Student"
+              options={students.map((s) => ({ label: `${s.name}${s.class ? ` (${s.class})` : ''}`, value: s.id }))}
+              value={form.studentId}
+              onChange={(v) => setForm({ ...form, studentId: v })}
+            />
+          </>
+        ) : (
+          <select
+            value={form.studentId}
+            onChange={(e) => setForm({ ...form, studentId: e.target.value })}
+            className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+          >
+            <option value="">Select student...</option>
+            {students.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}{s.class ? ` (${s.class})` : ''}</option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Reason / Complaint *</label>
+        {isMobile ? (
+          <>
+            <button
+              onClick={() => setShowFormReasonPicker(true)}
+              className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm flex items-center justify-between"
+            >
+              <span>{form.reason}</span>
+              <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+            </button>
+            <PickerSheet
+              isOpen={showFormReasonPicker}
+              onClose={() => setShowFormReasonPicker(false)}
+              title="Select Reason"
+              options={[...REASONS]}
+              value={form.reason}
+              onChange={(v) => setForm({ ...form, reason: v })}
+            />
+          </>
+        ) : (
+          <select
+            value={form.reason}
+            onChange={(e) => setForm({ ...form, reason: e.target.value })}
+            className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+          >
+            {REASONS.map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Additional note (optional)</label>
+        <Input
+          placeholder="e.g. mild fever since morning"
+          value={form.reasonNote}
+          onChange={(e) => setForm({ ...form, reasonNote: e.target.value })}
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Assistance Given</label>
+        <Textarea
+          placeholder="e.g. first aid, medication given, rest, sent home..."
+          value={form.assistanceGiven}
+          onChange={(e) => setForm({ ...form, assistanceGiven: e.target.value })}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-xs font-medium text-muted-foreground">Hospital Referral (optional)</label>
+        <Input
+          placeholder="Hospital name"
+          value={form.hospitalName}
+          onChange={(e) => setForm({ ...form, hospitalName: e.target.value })}
+        />
+        {form.hospitalName && (
+          <Input
+            placeholder="Doctor / Contact"
+            value={form.hospitalContact}
+            onChange={(e) => setForm({ ...form, hospitalContact: e.target.value })}
+          />
+        )}
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-xs font-medium text-muted-foreground">Status *</label>
+        {isMobile ? (
+          <>
+            <button
+              onClick={() => setShowFormStatusPicker(true)}
+              className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm flex items-center justify-between"
+            >
+              <span>{form.status}</span>
+              <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />
+            </button>
+            <PickerSheet
+              isOpen={showFormStatusPicker}
+              onClose={() => setShowFormStatusPicker(false)}
+              title="Select Status"
+              options={[...STATUS_OPTIONS]}
+              value={form.status}
+              onChange={(v) => setForm({ ...form, status: v })}
+            />
+          </>
+        ) : (
+          <select
+            value={form.status}
+            onChange={(e) => setForm({ ...form, status: e.target.value })}
+            className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+          >
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t border-border/50">
+        <span>Staff: <strong>{user?.name || 'Unknown'}</strong></span>
+        <span>Date: <strong>{new Date().toLocaleDateString('en-IN')}</strong></span>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-2 pt-2">
+        <Button onClick={handleCreateIncident} disabled={!form.studentId} className="w-full sm:w-auto">
+          Log Incident
+        </Button>
+        <Button variant="outline" onClick={() => setShowForm(false)} className="w-full sm:w-auto">
+          Cancel
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-w-0 p-4 sm:p-6 space-y-4 sm:space-y-6">
       {/* header */}
@@ -238,7 +406,7 @@ export default function AdminHealth() {
         <p className="text-sm text-muted-foreground">Health incident log & records</p>
       </div>
 
-      {/* secondary navigation */}
+      {/* secondary navigation buttons (desktop) */}
       <div className="hidden sm:flex items-center gap-1 overflow-x-auto flex-nowrap scrollbar-thin pb-px">
         {subNavItems.map((item) => (
           <button
@@ -256,33 +424,41 @@ export default function AdminHealth() {
         ))}
       </div>
 
-      {/* mobile secondary nav */}
+      {/* mobile secondary nav as bottom sheet trigger */}
       <div className="sm:hidden">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="w-full justify-between">
-              <span className="flex items-center gap-2">
-                {subNavItems.find((i) => i.key === subSection)?.icon}
-                {subNavItems.find((i) => i.key === subSection)?.label}
-              </span>
-              <ChevronDown className="w-4 h-4 opacity-50" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-[calc(100vw-2rem)] min-w-0">
+        <Button
+          variant="outline"
+          className="w-full justify-between"
+          onClick={() => setShowSubNavSheet(true)}
+        >
+          <span className="flex items-center gap-2">
+            {currentSubNav?.icon}
+            {currentSubNav?.label}
+          </span>
+          <ChevronDown className="w-4 h-4 opacity-50" />
+        </Button>
+        <BottomSheet
+          isOpen={showSubNavSheet}
+          onClose={() => setShowSubNavSheet(false)}
+          title="Select Section"
+        >
+          <div className="space-y-1">
             {subNavItems.map((item) => (
-              <DropdownMenuItem
+              <button
                 key={item.key}
-                onClick={() => setSubSection(item.key)}
-                className={subSection === item.key ? 'text-orange-600 font-medium' : ''}
+                onClick={() => { setSubSection(item.key); setShowSubNavSheet(false); }}
+                className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-colors ${
+                  subSection === item.key
+                    ? 'bg-orange-500/10 text-orange-600 font-medium'
+                    : 'text-foreground hover:bg-accent'
+                }`}
               >
-                <span className="flex items-center gap-2">
-                  {item.icon}
-                  {item.label}
-                </span>
-              </DropdownMenuItem>
+                {item.icon}
+                {item.label}
+              </button>
             ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </div>
+        </BottomSheet>
       </div>
 
       {subSection === 'incidents' && (
@@ -306,26 +482,68 @@ export default function AdminHealth() {
             </div>
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <Filter className="w-4 h-4 text-muted-foreground shrink-0" />
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="h-8 rounded-md border border-input bg-background px-2 text-xs min-w-0 max-w-[130px]"
-              >
-                <option value="">All Status</option>
-                {STATUS_OPTIONS.map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-              <select
-                value={reasonFilter}
-                onChange={(e) => setReasonFilter(e.target.value)}
-                className="h-8 rounded-md border border-input bg-background px-2 text-xs min-w-0 max-w-[120px]"
-              >
-                <option value="">All Reasons</option>
-                {REASONS.map((r) => (
-                  <option key={r} value={r}>{r}</option>
-                ))}
-              </select>
+              {/* status filter */}
+              {isMobile ? (
+                <>
+                  <button
+                    onClick={() => setShowStatusPicker(true)}
+                    className="h-8 rounded-md border border-input bg-background px-2 text-xs min-w-0 max-w-[130px] flex items-center gap-1"
+                  >
+                    <span className="truncate">{statusFilter || 'All Status'}</span>
+                    <ChevronDown className="w-3 h-3 shrink-0 text-muted-foreground" />
+                  </button>
+                  <PickerSheet
+                    isOpen={showStatusPicker}
+                    onClose={() => setShowStatusPicker(false)}
+                    title="Filter by Status"
+                    options={['', ...STATUS_OPTIONS]}
+                    value={statusFilter}
+                    onChange={(v) => setStatusFilter(v)}
+                  />
+                </>
+              ) : (
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="h-8 rounded-md border border-input bg-background px-2 text-xs min-w-0 max-w-[130px]"
+                >
+                  <option value="">All Status</option>
+                  {STATUS_OPTIONS.map((s) => (
+                    <option key={s} value={s}>{s}</option>
+                  ))}
+                </select>
+              )}
+              {/* reason filter */}
+              {isMobile ? (
+                <>
+                  <button
+                    onClick={() => setShowReasonPicker(true)}
+                    className="h-8 rounded-md border border-input bg-background px-2 text-xs min-w-0 max-w-[120px] flex items-center gap-1"
+                  >
+                    <span className="truncate">{reasonFilter || 'All Reasons'}</span>
+                    <ChevronDown className="w-3 h-3 shrink-0 text-muted-foreground" />
+                  </button>
+                  <PickerSheet
+                    isOpen={showReasonPicker}
+                    onClose={() => setShowReasonPicker(false)}
+                    title="Filter by Reason"
+                    options={['', ...REASONS]}
+                    value={reasonFilter}
+                    onChange={(v) => setReasonFilter(v)}
+                  />
+                </>
+              ) : (
+                <select
+                  value={reasonFilter}
+                  onChange={(e) => setReasonFilter(e.target.value)}
+                  className="h-8 rounded-md border border-input bg-background px-2 text-xs min-w-0 max-w-[120px]"
+                >
+                  <option value="">All Reasons</option>
+                  {REASONS.map((r) => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+              )}
               <div className="relative min-w-0 max-w-[150px]">
                 <Calendar className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" />
                 <Input
@@ -355,12 +573,10 @@ export default function AdminHealth() {
               {filteredIncidents.map((inc) => (
                 <Card key={inc.id} className="p-4 sm:p-5">
                   <div className="flex flex-col gap-2 min-w-0">
-                    {/* top row: name + status */}
                     <div className="flex items-start justify-between gap-2 flex-wrap">
                       <h4 className="font-semibold text-sm sm:text-base truncate min-w-0">{inc.studentName}</h4>
                       {statusBadge(inc.status)}
                     </div>
-                    {/* reason */}
                     <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs sm:text-sm">
                       <span className="font-medium text-muted-foreground shrink-0">Reason:</span>
                       <span>{inc.reason}</span>
@@ -368,14 +584,12 @@ export default function AdminHealth() {
                         <span className="text-muted-foreground truncate min-w-0">&mdash; {inc.reasonNote}</span>
                       )}
                     </div>
-                    {/* assistance */}
                     {inc.assistanceGiven && (
                       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs sm:text-sm">
                         <span className="font-medium text-muted-foreground shrink-0">Assistance:</span>
                         <span className="text-muted-foreground truncate min-w-0">{inc.assistanceGiven}</span>
                       </div>
                     )}
-                    {/* hospital referral */}
                     {inc.hospitalName && (
                       <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs sm:text-sm">
                         <span className="font-medium text-muted-foreground shrink-0">Referred to:</span>
@@ -383,7 +597,6 @@ export default function AdminHealth() {
                         {inc.hospitalContact && <span className="text-muted-foreground">({inc.hospitalContact})</span>}
                       </div>
                     )}
-                    {/* footer: timestamp + staff */}
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground pt-1 border-t border-border/50 mt-1">
                       <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3 shrink-0" />
@@ -401,106 +614,20 @@ export default function AdminHealth() {
             </div>
           )}
 
-          {/* new incident modal */}
-          <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="New Health Incident" size="md">
-            <div className="space-y-4">
-              {/* student select */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Student *</label>
-                <select
-                  value={form.studentId}
-                  onChange={(e) => setForm({ ...form, studentId: e.target.value })}
-                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-                >
-                  <option value="">Select student...</option>
-                  {students.map((s) => (
-                    <option key={s.id} value={s.id}>{s.name}{s.class ? ` (${s.class})` : ''}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* reason */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Reason / Complaint *</label>
-                <select
-                  value={form.reason}
-                  onChange={(e) => setForm({ ...form, reason: e.target.value })}
-                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-                >
-                  {REASONS.map((r) => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* reason note */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Additional note (optional)</label>
-                <Input
-                  placeholder="e.g. mild fever since morning"
-                  value={form.reasonNote}
-                  onChange={(e) => setForm({ ...form, reasonNote: e.target.value })}
-                />
-              </div>
-
-              {/* assistance given */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Assistance Given</label>
-                <Textarea
-                  placeholder="e.g. first aid, medication given, rest, sent home..."
-                  value={form.assistanceGiven}
-                  onChange={(e) => setForm({ ...form, assistanceGiven: e.target.value })}
-                />
-              </div>
-
-              {/* hospital referral */}
-              <div className="space-y-2">
-                <label className="text-xs font-medium text-muted-foreground">Hospital Referral (optional)</label>
-                <Input
-                  placeholder="Hospital name"
-                  value={form.hospitalName}
-                  onChange={(e) => setForm({ ...form, hospitalName: e.target.value })}
-                />
-                {form.hospitalName && (
-                  <Input
-                    placeholder="Doctor / Contact"
-                    value={form.hospitalContact}
-                    onChange={(e) => setForm({ ...form, hospitalContact: e.target.value })}
-                  />
-                )}
-              </div>
-
-              {/* status */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground">Status *</label>
-                <select
-                  value={form.status}
-                  onChange={(e) => setForm({ ...form, status: e.target.value })}
-                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
-                >
-                  {STATUS_OPTIONS.map((s) => (
-                    <option key={s} value={s}>{s}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* auto fields */}
-              <div className="flex flex-wrap gap-4 text-xs text-muted-foreground pt-2 border-t border-border/50">
-                <span>Staff: <strong>{user?.name || 'Unknown'}</strong></span>
-                <span>Date: <strong>{new Date().toLocaleDateString('en-IN')}</strong></span>
-              </div>
-
-              {/* actions */}
-              <div className="flex flex-col sm:flex-row gap-2 pt-2">
-                <Button onClick={handleCreateIncident} disabled={!form.studentId} className="w-full sm:w-auto">
-                  Log Incident
-                </Button>
-                <Button variant="outline" onClick={() => setShowForm(false)} className="w-full sm:w-auto">
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </Modal>
+          {/* new incident - bottom sheet on mobile, modal on desktop */}
+          {isMobile ? (
+            <BottomSheet
+              isOpen={showForm}
+              onClose={() => setShowForm(false)}
+              title="New Health Incident"
+            >
+              {formContent}
+            </BottomSheet>
+          ) : (
+            <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="New Health Incident" size="md">
+              {formContent}
+            </Modal>
+          )}
         </>
       )}
 
