@@ -36,14 +36,12 @@ const Hero = () => {
       </div>
 
       <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
-        <div className="px-8 py-4 md:px-16 md:py-6 backdrop-blur-sm">
-          <h1
-            className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-pacifico italic [transform:skewX(-6deg)] bg-clip-text text-transparent bg-gradient-to-b from-white/90 via-white/60 to-white/30 drop-shadow-[0_4px_20px_rgba(255,255,255,0.4)]"
-            style={{ WebkitTextStroke: "1px rgba(255,255,255,0.25)" }}
-          >
-            CS Connect
-          </h1>
-        </div>
+        <h1
+          className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-pacifico italic [transform:skewX(-6deg)] bg-clip-text text-transparent bg-gradient-to-b from-white/90 via-white/60 to-white/30 drop-shadow-[0_4px_20px_rgba(255,255,255,0.4)]"
+          style={{ WebkitTextStroke: "1px rgba(255,255,255,0.25)" }}
+        >
+          CS Connect
+        </h1>
       </div>
     </div>
   )
