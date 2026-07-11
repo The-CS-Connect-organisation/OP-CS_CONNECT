@@ -1,20 +1,29 @@
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import NavigationMenu4 from "@/components/ui/navigation-menu-4"
 
 const Hero = () => {
   const [videoReady, setVideoReady] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (!document.hidden && videoRef.current && videoReady) {
+        videoRef.current.play().catch(() => {})
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibility)
+    return () => document.removeEventListener("visibilitychange", handleVisibility)
+  }, [videoReady])
 
   return (
     <div className="relative h-dvh w-full bg-[#FFFDF5] overflow-hidden">
-      <NavigationMenu4 />
+      <div className="relative z-20 isolate">
+        <NavigationMenu4 />
+      </div>
 
-      <div className="absolute inset-0 z-[2]">
-        <img
-          src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`}
-          alt=""
-          className="absolute inset-0 h-full w-full object-contain p-12 opacity-10"
-        />
+      <div className="absolute inset-0 z-[2] will-change-transform">
         <video
+          ref={videoRef}
           src={`${import.meta.env.BASE_URL}videos/hero-2.mp4`}
           autoPlay
           muted
@@ -27,11 +36,11 @@ const Hero = () => {
       </div>
 
       <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
-        <h1 className="text-6xl sm:text-7xl md:text-9xl font-boogie tracking-wide">
-          <span className="bg-clip-text text-transparent bg-gradient-to-b from-orange-600/90 via-orange-500/80 to-orange-400/70 drop-shadow-[0_2px_12px_rgba(249,115,22,0.3)]">
+        <div className="rounded-2xl border border-white/30 bg-white/10 px-8 py-4 md:px-16 md:py-6 backdrop-blur-md shadow-xl">
+          <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-pacifico text-white drop-shadow-lg">
             CS Connect
-          </span>
-        </h1>
+          </h1>
+        </div>
       </div>
     </div>
   )
