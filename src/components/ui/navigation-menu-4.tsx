@@ -65,12 +65,14 @@ const NavigationMenu4 = () => {
   return (
     <header className="fixed inset-x-0 top-0 z-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mt-3 flex items-center justify-between rounded-2xl border border-orange-200/60 bg-white/70 px-4 py-2 shadow-sm backdrop-blur-xl md:px-6">
+        <div className="mt-3 flex items-center justify-between rounded-2xl border border-white/20 bg-white/60 px-4 py-2 shadow-lg backdrop-blur-2xl md:px-6">
           <Link to="/" className="flex items-center gap-2.5 shrink-0">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 text-white text-sm font-bold shadow-sm">
-              CS
-            </div>
-            <span className="text-base md:text-lg font-bold tracking-tight text-gray-900">
+            <img
+              src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`}
+              alt="Cornerstone"
+              className="w-8 h-8 md:w-9 md:h-9 object-contain"
+            />
+            <span className="text-lg md:text-xl font-pacifico text-gray-900">
               CS Connect
             </span>
           </Link>
