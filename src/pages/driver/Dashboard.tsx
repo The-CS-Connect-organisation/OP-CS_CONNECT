@@ -49,6 +49,7 @@ export default function DriverDashboard() {
   const [routes, setRoutes] = useState<any[]>([])
   const [students, setStudents] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [routeOpt, setRouteOpt] = useState<any>(null)
   const [gpsActive, setGpsActive] = useState(false)
   const [gpsStatus, setGpsStatus] = useState('Waiting for schedule...')
   const [scheduleActive, setScheduleActive] = useState(isWithinSchedule())
@@ -137,7 +138,12 @@ export default function DriverDashboard() {
         const list = Array.isArray(d) ? d : [];
         setRoutes(list);
         const myRoute = list.find((r: any) => r.driverId === user?.id);
-        if (myRoute) busIdRef.current = myRoute.id;
+        if (myRoute) {
+          busIdRef.current = myRoute.id;
+          api.getRouteOptimization(myRoute.id)
+            .then((opt: any) => { if (opt?.success) setRouteOpt(opt); })
+            .catch(() => {});
+        }
       }).catch(() => {}),
       api.getStudents().then((d: any) => setStudents(Array.isArray(d) ? d : [])).catch(() => {}),
     ]).then(() => setLoading(false))
@@ -328,14 +334,29 @@ export default function DriverDashboard() {
                     <Navigation className="w-5 h-5 text-orange-500" />
                     Route Timeline
                   </CardTitle>
-                  <Badge variant="info">Live</Badge>
+                  <div className="flex items-center gap-2">
+                    {routeOpt?.googleMapsUrl && (
+                      <a
+                        href={routeOpt.googleMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition-all"
+                      >
+                        <Map className="w-3.5 h-3.5" />
+                        Navigate
+                      </a>
+                    )}
+                    <Badge variant="info">
+                      {routeOpt?.optimizedStops?.length ? `${routeOpt.totalDistanceKm?.toFixed(1)} km` : 'Live'}
+                    </Badge>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-1">
-                  {routeStops.map((stop: any, i: number) => (
+                  {(routeOpt?.optimizedStops?.length > 0 ? routeOpt.optimizedStops : routeStops).map((stop: any, i: number) => (
                     <motion.div
-                      key={stop.id}
+                      key={stop.id || `stop-${i}`}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.05 }}
@@ -353,18 +374,29 @@ export default function DriverDashboard() {
                           stop.status === 'current' && "bg-orange-500 border-orange-500 animate-pulse",
                           stop.status === 'upcoming' && "bg-muted border-muted-foreground/30",
                           (stop.status === 'start' || stop.status === 'end') && "bg-orange-500 border-orange-500",
+                          (!stop.status) && "bg-orange-500 border-orange-500",
                         )} />
-                        {i < routeStops.length - 1 && <div className="w-0.5 h-6 bg-border" />}
+                        {i < (routeOpt?.optimizedStops?.length || routeStops.length) - 1 && <div className="w-0.5 h-6 bg-border" />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className={cn("text-sm font-medium", stop.status === 'current' && "text-orange-500")}>{stop.name}</p>
-                        <p className="text-xs text-muted-foreground">{stop.time}{stop.students > 0 && ` • ${stop.students} students`}</p>
+                        <p className={cn("text-sm font-medium", stop.status === 'current' && "text-orange-500")}>
+                          {stop.name || stop.address || `Stop ${i + 1}`}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {stop.address ? stop.address : stop.time || `Student #${i + 1}`}
+                          {stop.students > 0 && ` • ${stop.students} students`}
+                        </p>
                       </div>
                       {stop.status === 'completed' && <CheckCircle2 className="w-4 h-4 text-emerald-500" />}
                       {stop.status === 'current' && <div className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />}
                     </motion.div>
                   ))}
                 </div>
+                {routeOpt && !routeOpt.optimizedStops?.length && (
+                  <div className="mt-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 text-xs text-amber-600">
+                    No optimized route yet. Assign students with addresses to generate one.
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>

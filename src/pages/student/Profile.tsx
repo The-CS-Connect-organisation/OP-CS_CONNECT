@@ -95,7 +95,13 @@ export default function StudentProfile() {
   const handleSave = async () => {
     updateUser(form)
     if (user?.id) {
-      try { await api.updateUserProfile(user.id, form) } catch { console.error('[Profile] Failed to save profile') }
+      try {
+        await api.updateUserProfile(user.id, form)
+        // If address changed, geocode it and store lat/lng for route optimization
+        if (form.address && form.address !== user?.address) {
+          api.geocodeUserAddress(user.id, form.address).catch(() => {})
+        }
+      } catch { console.error('[Profile] Failed to save profile') }
     }
     setEditing(false)
   }
@@ -150,6 +156,18 @@ export default function StudentProfile() {
           </div>
         )}
       </div>
+
+      {!user?.address && (
+        <Card className="p-4 border-amber-300 bg-amber-50/50">
+          <div className="flex items-center gap-3">
+            <MapPin className="w-5 h-5 text-amber-600 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-amber-800">Add your address for bus route optimization</p>
+              <p className="text-xs text-amber-700">Your home address will be used to plan the shortest bus pickup route.</p>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Profile Card */}
       <Card>
