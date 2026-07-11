@@ -1,11 +1,11 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAuthStore, useSidebarStore, useThemeStore } from '@/lib/store'
 import { navSections } from '@/lib/nav-config'
 import { cn } from '@/lib/utils'
-import { LogOut, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { LogOut, X, ChevronLeft, ChevronRight, Briefcase, Wallet } from 'lucide-react'
 import { playNavSound } from '@/lib/sound'
 
 
@@ -24,6 +24,23 @@ export default function Sidebar() {
   if (!user) return null
 
   const sections = navSections[user.role] || []
+
+  const staffRoles = ['superadmin', 'admin', 'director', 'principal', 'viceprincipal', 'coordinator', 'teacher', 'librarian']
+  const studentRoles = ['student', 'parent']
+  const isStaff = staffRoles.includes(user.role)
+  const isStudentOrParent = studentRoles.includes(user.role)
+
+  const handleCampusDesk = useCallback(() => {
+    playNavSound()
+    navigate('/campus-desk')
+    setMobileOpen(false)
+  }, [navigate, setMobileOpen])
+
+  const handleCampusPay = useCallback(() => {
+    playNavSound()
+    navigate('/campus-pay')
+    setMobileOpen(false)
+  }, [navigate, setMobileOpen])
 
   const handleLogout = () => {
     logout()
@@ -169,6 +186,28 @@ export default function Sidebar() {
 
       {/* Footer */}
       <div className={cn("shrink-0 transition-colors duration-200", collapsed ? "px-1 py-3" : "px-3 py-3", isDark ? "border-t border-white/10" : "border-t border-black/10")}>
+        {isStaff && (
+          <button onClick={handleCampusDesk} className={cn(
+            "flex items-center rounded-lg text-sm font-medium transition-all w-full mb-1",
+            collapsed ? "justify-center w-10 h-10 mx-auto" : "gap-2.5 px-2.5 py-2",
+            isDark ? "text-[#8C8884] hover:text-[#F2F0EE] hover:bg-white/10" : "text-[#57534E] hover:text-[#EC8037] hover:bg-[#EC8037]/15",
+            location.pathname === '/campus-desk' && (isDark ? "bg-white/10 text-[#F2F0EE]" : "bg-[#EC8037]/15 text-[#EC8037]")
+          )}>
+            <Briefcase className="w-4 h-4 shrink-0" />
+            <span className={cn(collapsed && "hidden")}>CampusDesk</span>
+          </button>
+        )}
+        {isStudentOrParent && (
+          <button onClick={handleCampusPay} className={cn(
+            "flex items-center rounded-lg text-sm font-medium transition-all w-full mb-1",
+            collapsed ? "justify-center w-10 h-10 mx-auto" : "gap-2.5 px-2.5 py-2",
+            isDark ? "text-[#8C8884] hover:text-[#F2F0EE] hover:bg-white/10" : "text-[#57534E] hover:text-[#EC8037] hover:bg-[#EC8037]/15",
+            location.pathname === '/campus-pay' && (isDark ? "bg-white/10 text-[#F2F0EE]" : "bg-[#EC8037]/15 text-[#EC8037]")
+          )}>
+            <Wallet className="w-4 h-4 shrink-0" />
+            <span className={cn(collapsed && "hidden")}>CampusPay</span>
+          </button>
+        )}
         <button onClick={handleLogout} className={cn(
           "flex items-center rounded-lg text-sm font-medium transition-all w-full",
           collapsed ? "justify-center w-10 h-10 mx-auto" : "gap-2.5 px-2.5 py-2",
