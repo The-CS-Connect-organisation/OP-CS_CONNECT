@@ -43,11 +43,9 @@ export default function StudentDailyBriefing() {
   const greetingIcon = hour < 12 ? <Sun className="w-6 h-6 text-amber-500" /> : hour < 17 ? <Sun className="w-6 h-6 text-orange-500" /> : <Moon className="w-6 h-6 text-blue-500" />
 
   const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' })
-  const todaySchedule = timetable.find((t: any) => t.time && t[todayName.toLowerCase()]) || {}
   const todayPeriods = timetable
-    .filter((t: any) => t[todayName.toLowerCase()])
-    .map((t: any) => ({ time: t.time, ...t[todayName.toLowerCase()] }))
-    .filter(p => p.subject)
+    .filter((t: any) => t.day === todayName && t.subject)
+    .map((t: any) => ({ time: t.time, subject: t.subject, teacher: t.teacher, room: t.room, color: t.color }))
 
   const pendingAssignments = assignments.filter((a: any) => a.status === 'active' || a.studentStatus === 'pending')
   const overdueBooks = borrowedBooks.filter((b: any) => b.status === 'overdue')

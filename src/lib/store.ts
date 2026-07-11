@@ -363,26 +363,17 @@ export const useDataStore = create<DataState>()((set, get) => ({
         maxMarks: 50,
       }));
 
-      const dayMap: Record<string, string> = { 'Monday': 'monday', 'Tuesday': 'tuesday', 'Wednesday': 'wednesday', 'Thursday': 'thursday', 'Friday': 'friday' };
-      const periodTimes = ['8:00 - 8:45', '8:50 - 9:35', '9:45 - 10:30', '10:30 - 11:15', '11:30 - 12:15'];
-      const timetable: any[] = periodTimes.map(time => {
-        const slot: any = { time };
-        Object.values(dayMap).forEach(d => { slot[d] = null; });
-        return slot;
-      });
-      toArray(rawTimetable).forEach((dayEntry: any) => {
-        const dayKey = dayMap[dayEntry.day];
-        if (!dayKey) return;
-        dayEntry.periods?.forEach((p: any, i: number) => {
-          if (timetable[i]) {
-            timetable[i][dayKey] = {
-              subject: p.subject,
-              room: p.subject === 'Math' ? '101' : p.subject === 'Physics' ? 'Lab 1' : p.subject === 'Chemistry' ? 'Lab 2' : p.subject === 'English' ? '201' : p.subject === 'CS' || p.subject === 'Computer Science' ? 'IT Lab' : p.subject === 'Biology' ? 'Lab 3' : 'Room 1',
-              color: subjectColors[p.subject] || '#6366f1',
-            };
-          }
-        });
-      });
+      const rawTt = toArray(rawTimetable);
+      const timetable: any[] = rawTt.map((e: any) => ({
+        id: e.id || `${e.class}-${e.day}-${e.time}`,
+        class: e.class,
+        day: e.day,
+        time: e.time,
+        subject: e.subject || '',
+        teacher: e.teacher || '',
+        room: e.room || '',
+        color: subjectColors[e.subject] || '#6366f1',
+      }));
 
       const clubIcons = ['💻', '🔬', '🎤', '🎨', '⚽', '📚', '🎭', '🎵'];
       const clubColors = ['#6366f1', '#10b981', '#8b5cf6', '#f59e0b', '#3b82f6', '#ec4899', '#64748b', '#f97316'];
