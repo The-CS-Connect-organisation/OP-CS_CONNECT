@@ -24,7 +24,7 @@ const Hero = () => {
       <div className="absolute inset-0 z-[2] will-change-transform">
         <video
           ref={videoRef}
-          src={`${import.meta.env.BASE_URL}videos/hero-2.mp4`}
+          src="https://res.cloudinary.com/iextksqn/video/upload/v1783787771/hero-2_npn9ku.mp4"
           autoPlay
           muted
           loop
