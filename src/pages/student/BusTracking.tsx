@@ -103,8 +103,9 @@ export default function StudentBusTracking() {
   }, []);
 
   const loadRoutes = async () => {
+    if (!user?.id) { setLoading(false); return; }
     try {
-      const data = await api.getRoutes();
+      const data = await api.getRoutes(user.id);
       const mapped = Array.isArray(data) ? data.map((r: any) => ({
         id: r.id,
         routeName: r.name || r.routeName || 'Unnamed Route',
@@ -114,19 +115,13 @@ export default function StudentBusTracking() {
         estimatedArrival: r.estimatedArrival || '--:--',
         status: r.status || 'on-time',
         onLeave: !!r.onLeave,
-        students: Array.isArray(r.students) ? r.students : [],
         stops: Array.isArray(r.stops)
           ? r.stops.map((s: any) => typeof s === 'string' ? { name: s, time: '--:--', reached: false } : s)
           : [],
       })) : [];
-      // Show route(s) where this student is in the students array, or fall back to user.routeId
-      const myRoutes = mapped.filter(r =>
-        (Array.isArray(r.students) && r.students.includes(user?.id)) ||
-        r.id === user?.routeId
-      );
-      setRoutes(myRoutes);
-      if (myRoutes.length === 1) {
-        setSelectedRoute(myRoutes[0].id);
+      setRoutes(mapped);
+      if (mapped.length === 1) {
+        setSelectedRoute(mapped[0].id);
       }
     } catch {
       // error
@@ -204,12 +199,31 @@ export default function StudentBusTracking() {
         <p className="text-muted-foreground">Real-time GPS bus location & distance</p>
       </div>
 
+      {routes.length > 0 && !user?.address && (
+        <Card className="p-4 border-amber-300 bg-amber-50/50">
+          <div className="flex items-center gap-3">
+            <MapPin className="w-5 h-5 text-amber-600 shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-amber-800">Update your address for route optimization</p>
+              <p className="text-xs text-amber-700">Go to your profile and add your home address so the bus route can be optimized.</p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {loading ? (
         <div className="space-y-4">{[1, 2, 3].map(i => <Skeleton key={i} className="h-24" />)}</div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Route list */}
           <div className="md:col-span-1 space-y-4">
+            {routes.length === 0 && (
+              <Card className="p-6 text-center">
+                <Bus className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+                <p className="font-medium text-muted-foreground">No bus assignment</p>
+                <p className="text-sm text-muted-foreground">Own Transport</p>
+              </Card>
+            )}
             {routes.map(route => (
                   <Card
                     key={route.id}
@@ -375,8 +389,8 @@ export default function StudentBusTracking() {
             ) : (
               <Card className="p-8 text-center">
                 <Bus className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Select a bus route</h3>
-                <p className="text-muted-foreground">Click on a route from the list to see live tracking on the map</p>
+                <h3 className="text-lg font-semibold mb-2">No bus assigned</h3>
+                <p className="text-muted-foreground">You are classified as Own Transport. No bus tracking available.</p>
               </Card>
             )}
           </div>

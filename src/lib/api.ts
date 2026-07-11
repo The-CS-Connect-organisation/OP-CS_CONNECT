@@ -129,7 +129,10 @@ export const api = {
   getSchools: () => apiFetch('/schools'),
 
   // Routes
-  getRoutes: () => apiFetch('/routes'),
+  getRoutes: (studentId?: string) => {
+    const query = studentId ? `?studentId=${studentId}` : '';
+    return apiFetch(`/routes${query}`);
+  },
   getRoute: (id: string) => apiFetch(`/routes/${id}`),
   createRoute: (data: any) => apiFetch('/routes', { method: 'POST', body: JSON.stringify(data) }),
   updateRoute: (id: string, data: any) => apiFetch(`/routes/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
@@ -558,6 +561,12 @@ export const api = {
   getRouteChanges: () => apiFetch('/transport/route-changes'),
   requestRouteChange: (data: any) => apiFetch('/transport/route-changes', { method: 'POST', body: JSON.stringify(data) }),
   processRouteChange: (id: string, action: string) => apiFetch(`/transport/route-changes/${id}/${action}`, { method: 'PUT' }),
+
+  // --- Route Optimization ---
+  getRouteOptimization: (routeId: string) => apiFetch(`/route-optimize/${routeId}`),
+  triggerRouteOptimization: (routeId: string) => apiFetch(`/route-optimize/${routeId}`, { method: 'POST' }),
+  geocodeAddress: (address: string) => apiFetch('/geocode', { method: 'POST', body: JSON.stringify({ address }) }),
+  geocodeUserAddress: (userId: string, address: string) => apiFetch(`/users/${userId}/geocode`, { method: 'PUT', body: JSON.stringify({ address }) }),
 
   // --- Food Service ---
   getMenus: () => apiFetch('/food-service/menus'),
