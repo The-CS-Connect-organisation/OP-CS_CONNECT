@@ -1,116 +1,88 @@
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
-import { ScrollTrigger } from "gsap/all";
-import { TiLocationArrow } from "react-icons/ti";
-import { useEffect, useState } from "react";
-
-gsap.registerPlugin(ScrollTrigger);
+import { useMemo, useCallback, useState, useEffect } from "react"
+import InfiniteGallery from "@/components/ui/3d-gallery-photography"
+import { ChevronDown } from "lucide-react"
 
 const Hero = () => {
-  const [loading, setLoading] = useState<boolean>(true);
-  const [loadedVideos, setLoadedVideos] = useState<number>(0);
-
-  const handleVideoLoad = (): void => {
-    setLoadedVideos((prev: number) => prev + 1);
-  };
+  const [ready, setReady] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
   useEffect(() => {
-    if (loadedVideos >= 1) {
-      setLoading(false);
-    }
-  }, [loadedVideos]);
+    const t = setTimeout(() => setReady(true), 800)
+    return () => clearTimeout(t)
+  }, [])
 
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 5000);
-    return () => clearTimeout(timer);
-  }, []);
+  const handleScrollDown = useCallback(() => {
+    setScrolled(true)
+    window.scrollTo({ top: window.innerHeight, behavior: "smooth" })
+  }, [])
 
-  useGSAP(() => {
-    gsap.set("#video-frame", {
-      clipPath: "polygon(18% 0, 76% 0, 88% 90%, 5% 95%)",
-      borderRadius: "0% 0% 40% 10%",
-    });
-    gsap.from("#video-frame", {
-      clipPath: "polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%)",
-      borderRadius: "0% 0% 0% 0%",
-      ease: "power1.inOut",
-      scrollTrigger: {
-        trigger: "#video-frame",
-        start: "center center",
-        end: "bottom center",
-        scrub: true,
-      },
-    });
-  });
-
-  const getVideoSrc = (): string => `videos/hero-1.mp4`;
+  const sampleImages = useMemo(() => [
+    { src: `${import.meta.env.BASE_URL}img/gallery-1.webp`, alt: 'Gallery 1' },
+    { src: `${import.meta.env.BASE_URL}img/gallery-2.webp`, alt: 'Gallery 2' },
+    { src: `${import.meta.env.BASE_URL}img/gallery-3.webp`, alt: 'Gallery 3' },
+    { src: `${import.meta.env.BASE_URL}img/gallery-4.webp`, alt: 'Gallery 4' },
+    { src: `${import.meta.env.BASE_URL}img/gallery-5.webp`, alt: 'Gallery 5' },
+    { src: `${import.meta.env.BASE_URL}farewell/DSC05820.jpg.jpeg`, alt: 'Farewell 1' },
+    { src: `${import.meta.env.BASE_URL}farewell/DSC06091.jpg.jpeg`, alt: 'Farewell 2' },
+    { src: `${import.meta.env.BASE_URL}farewell/DSC06271.jpg.jpeg`, alt: 'Farewell 3' },
+    { src: `${import.meta.env.BASE_URL}farewell/DSC06844.jpg.jpeg`, alt: 'Farewell 4' },
+    { src: `${import.meta.env.BASE_URL}farewell/RPB02324-1024x683.jpg.jpeg`, alt: 'Farewell 5' },
+    { src: `${import.meta.env.BASE_URL}farewell/RPB02687.jpg.jpeg`, alt: 'Farewell 6' },
+    { src: `${import.meta.env.BASE_URL}farewell/RPB03257.jpg.jpeg`, alt: 'Farewell 7' },
+  ], [])
 
   return (
-    <div className="relative h-dvh w-screen overflow-x-hidden bg-white">
-      {loading && (
-        <div className="flex-center absolute z-[100] h-dvh w-screen overflow-hidden bg-white">
-          <div className="three-body">
-            <div className="three-body__dot"></div>
-            <div className="three-body__dot"></div>
-            <div className="three-body__dot"></div>
-          </div>
-        </div>
-      )}
+    <div className="relative h-dvh w-full bg-black overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <InfiniteGallery
+          images={sampleImages}
+          speed={1.2}
+          visibleCount={12}
+          className="h-full w-full"
+          fadeSettings={{
+            fadeIn: { start: 0.05, end: 0.25 },
+            fadeOut: { start: 0.4, end: 0.43 },
+          }}
+          blurSettings={{
+            blurIn: { start: 0.0, end: 0.1 },
+            blurOut: { start: 0.4, end: 0.43 },
+            maxBlur: 8.0,
+          }}
+        />
+      </div>
 
-      <div
-        id="video-frame"
-        className="relative z-10 h-dvh w-screen overflow-hidden rounded-lg bg-blue-75"
-      >
-        <div className="relative h-full w-full bg-blue-75">
-          <video
-            src={getVideoSrc()}
-            autoPlay
-            loop
-            muted
-            className="absolute left-0 top-0 size-full object-cover object-center"
-            onLoadedData={handleVideoLoad}
+      <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4 md:px-8 h-16">
+        <div className="flex items-center gap-3">
+          <img
+            src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`}
+            alt="Cornerstone"
+            className="w-7 h-7 md:w-8 md:h-8 object-contain"
           />
-
-          <h1 className="special-font hero-heading absolute bottom-5 right-5 z-40 text-blue-75">
-            CS C<b>O</b>NNECT
-          </h1>
-
-          <div className="absolute left-0 top-0 z-40 size-full">
-            <div className="mt-24 px-5 sm:px-10">
-              <h1 className="special-font hero-heading text-blue-100">
-                emp<b>o</b>wer
-              </h1>
-
-              <p className="mb-5 max-w-64 font-robert-regular text-blue-100">
-                AI-Powered School Management <br /> For the Next Generation
-              </p>
-
-              <a
-                href="https://www.youtube.com/watch?v=WxKBhquOGzw"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group relative z-10 w-fit cursor-pointer overflow-hidden rounded-full bg-yellow-300 px-7 py-3 text-black flex-center gap-1"
-              >
-                <TiLocationArrow />
-                <span className="relative inline-flex overflow-hidden font-general text-xs uppercase">
-                  <div className="translate-y-0 skew-y-0 transition duration-500 group-hover:translate-y-[-160%] group-hover:skew-y-12">
-                    Watch trailer
-                  </div>
-                  <div className="absolute translate-y-[164%] skew-y-12 transition duration-500 group-hover:translate-y-0 group-hover:skew-y-0">
-                    Watch trailer
-                  </div>
-                </span>
-              </a>
-            </div>
-          </div>
+          <span className="font-zentry text-base md:text-lg font-black uppercase tracking-wider text-white/90">
+            CS Connect
+          </span>
         </div>
       </div>
 
-      <h1 className="special-font hero-heading absolute bottom-5 right-5 text-black">
-        CS C<b>O</b>NNECT
-      </h1>
-    </div>
-  );
-};
+      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
+        <h1
+          className={`text-5xl md:text-8xl font-bold text-white font-mono tracking-tight transition-all duration-1000 ${
+            ready && !scrolled ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
+          }`}
+        >
+          SchoolSync
+        </h1>
+      </div>
 
-export default Hero;
+      <button
+        onClick={handleScrollDown}
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/50 hover:text-white/90 transition-all duration-300 group"
+      >
+        <span className="text-xs font-medium tracking-widest uppercase">Enter</span>
+        <ChevronDown className="w-5 h-5 animate-bounce group-hover:scale-110 transition-transform" />
+      </button>
+    </div>
+  )
+}
+
+export default Hero
