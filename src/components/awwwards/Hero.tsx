@@ -1,5 +1,6 @@
 import { useMemo, useCallback, useState, useEffect } from "react"
 import InfiniteGallery from "@/components/ui/3d-gallery-photography"
+import NavigationMenu4 from "@/components/ui/navigation-menu-4"
 import { ChevronDown } from "lucide-react"
 
 const Hero = () => {
@@ -17,11 +18,6 @@ const Hero = () => {
   }, [])
 
   const sampleImages = useMemo(() => [
-    { src: `${import.meta.env.BASE_URL}img/gallery-1.webp`, alt: 'Gallery 1' },
-    { src: `${import.meta.env.BASE_URL}img/gallery-2.webp`, alt: 'Gallery 2' },
-    { src: `${import.meta.env.BASE_URL}img/gallery-3.webp`, alt: 'Gallery 3' },
-    { src: `${import.meta.env.BASE_URL}img/gallery-4.webp`, alt: 'Gallery 4' },
-    { src: `${import.meta.env.BASE_URL}img/gallery-5.webp`, alt: 'Gallery 5' },
     { src: `${import.meta.env.BASE_URL}farewell/DSC05820.jpg.jpeg`, alt: 'Farewell 1' },
     { src: `${import.meta.env.BASE_URL}farewell/DSC06091.jpg.jpeg`, alt: 'Farewell 2' },
     { src: `${import.meta.env.BASE_URL}farewell/DSC06271.jpg.jpeg`, alt: 'Farewell 3' },
@@ -32,7 +28,9 @@ const Hero = () => {
   ], [])
 
   return (
-    <div className="relative h-dvh w-full bg-black overflow-hidden">
+    <div className="relative h-dvh w-full bg-white animated-pattern-bg overflow-hidden">
+      <NavigationMenu4 />
+
       <div className="absolute inset-0 z-0">
         <InfiniteGallery
           images={sampleImages}
@@ -49,19 +47,6 @@ const Hero = () => {
             maxBlur: 8.0,
           }}
         />
-      </div>
-
-      <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between px-4 md:px-8 h-16">
-        <div className="flex items-center gap-3">
-          <img
-            src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`}
-            alt="Cornerstone"
-            className="w-7 h-7 md:w-8 md:h-8 object-contain"
-          />
-          <span className="font-zentry text-base md:text-lg font-black uppercase tracking-wider text-white/90">
-            CS Connect
-          </span>
-        </div>
       </div>
 
       <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
