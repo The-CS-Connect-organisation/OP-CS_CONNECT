@@ -16,6 +16,7 @@ export default {
         'robert-medium': ['robert-medium', 'sans-serif'],
         'robert-regular': ['robert-regular', 'sans-serif'],
         zentry: ['zentry', 'sans-serif'],
+        boogie: ['Bungee', 'cursive'],
       },
       colors: {
         border: "hsl(var(--border))",

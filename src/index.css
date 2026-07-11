@@ -1,6 +1,6 @@
 
 @import url("https://fonts.cdnfonts.com/css/general-sans");
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Bungee&display=swap');
 
 @property --a {
   syntax: '<angle>';
@@ -44,29 +44,29 @@
   0%,15% {
     --a: 135deg;
     --p: 20%;
-    --c1: #3B8183;
-    --c2: #FAD089;
+    --c1: #FED7AA;
+    --c2: #FFF7ED;
     background-position: 0 0,var(--s) var(--s);
   }
   45%,50% {
     --a: 90deg;
     --p: 25%;
-    --c1: #3B8183;
-    --c2: #FAD089;
+    --c1: #FED7AA;
+    --c2: #FFF7ED;
     background-position: 0 0,var(--s) var(--s);
   }
   50.01%,55% {
     --a: 90deg;
     --p: 25%;
-    --c2: #3B8183;
-    --c1: #FAD089;
+    --c2: #FED7AA;
+    --c1: #FFF7ED;
     background-position: var(--s) 0,0 var(--s);
   }
   85%,100% {
     --a: 135deg;
     --p: 20%;
-    --c2: #3B8183;
-    --c1: #FAD089;
+    --c2: #FED7AA;
+    --c1: #FFF7ED;
     background-position: var(--s) 0,0 var(--s);
   }
 }

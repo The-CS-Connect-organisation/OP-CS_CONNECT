@@ -1,6 +1,7 @@
 import { useMemo, useCallback, useState, useEffect } from "react"
 import InfiniteGallery from "@/components/ui/3d-gallery-photography"
 import NavigationMenu4 from "@/components/ui/navigation-menu-4"
+import { GradientDots } from "@/components/ui/gradient-dots"
 import { ChevronDown } from "lucide-react"
 
 const Hero = () => {
@@ -28,10 +29,17 @@ const Hero = () => {
   ], [])
 
   return (
-    <div className="relative h-dvh w-full bg-white animated-pattern-bg overflow-hidden">
+    <div className="relative h-dvh w-full bg-[#FFFDF5] animated-pattern-bg overflow-hidden">
       <NavigationMenu4 />
 
-      <div className="absolute inset-0 z-0">
+      <GradientDots
+        duration={25}
+        dotSize={6}
+        spacing={14}
+        className="z-[1]"
+      />
+
+      <div className="absolute inset-0 z-[2]">
         <InfiniteGallery
           images={sampleImages}
           speed={1.2}
@@ -51,17 +59,19 @@ const Hero = () => {
 
       <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
         <h1
-          className={`text-5xl md:text-8xl font-bold text-white font-mono tracking-tight transition-all duration-1000 ${
+          className={`text-6xl sm:text-7xl md:text-9xl font-boogie tracking-wide transition-all duration-1000 ${
             ready && !scrolled ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"
           }`}
         >
-          SchoolSync
+          <span className="bg-clip-text text-transparent bg-gradient-to-b from-orange-600/90 via-orange-500/80 to-orange-400/70 drop-shadow-[0_2px_8px_rgba(249,115,22,0.25)]">
+            SchoolSync
+          </span>
         </h1>
       </div>
 
       <button
         onClick={handleScrollDown}
-        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-white/50 hover:text-white/90 transition-all duration-300 group"
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 text-orange-400/50 hover:text-orange-500/90 transition-all duration-300 group"
       >
         <span className="text-xs font-medium tracking-widest uppercase">Enter</span>
         <ChevronDown className="w-5 h-5 animate-bounce group-hover:scale-110 transition-transform" />
