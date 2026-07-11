@@ -72,7 +72,7 @@ const NavigationMenu4 = () => {
               alt="Cornerstone"
               className="w-8 h-8 md:w-9 md:h-9 object-contain"
             />
-            <span className="text-lg md:text-xl font-pacifico text-gray-900">
+            <span className="font-zentry text-base md:text-lg font-black uppercase tracking-wider text-gray-900">
               CS Connect
             </span>
           </Link>
