@@ -64,7 +64,7 @@ const NavigationMenu4 = () => {
   return (
     <header className="fixed inset-x-0 top-0 z-50">
       <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
-        <div className="mt-3 flex items-center justify-between rounded-2xl border border-white/20 bg-white/60 px-3 py-2 shadow-lg backdrop-blur-2xl md:px-6">
+        <div className="mt-3 flex items-center justify-between rounded-2xl border border-white/30 bg-white/40 px-3 py-2 shadow-xl backdrop-blur-2xl md:px-6">
           <Link to="/" className="flex items-center gap-1.5 shrink-0 min-w-0">
             <img
               src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`}
