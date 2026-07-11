@@ -51,7 +51,38 @@ export default function AdminTimetable() {
 
   useEffect(() => { csaiEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [csaiMsgs]);
 
-  useEffect(() => { loadSections(); }, []);
+  useEffect(() => { loadSections(); loadExistingTimetables(); }, []);
+
+  const [existingTimetables, setExistingTimetables] = useState<string[]>([]);
+  const [loadingExisting, setLoadingExisting] = useState(false);
+
+  const loadExistingTimetables = async () => {
+    setLoadingExisting(true);
+    try {
+      const token = localStorage.getItem('eduvault-token');
+      const userId = localStorage.getItem('eduvault-user-id');
+      const res = await fetch(`${API_BASE}/timetable`, {
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(userId ? { 'x-user-id': userId } : {}),
+        },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setExistingTimetables(Array.isArray(data) ? data : []);
+      }
+    } catch {} finally {
+      setLoadingExisting(false);
+    }
+  };
+
+  const openExistingTimetable = async (className: string) => {
+    setTimetableName(`${className} Timetable`);
+    setSelectedClassName(className);
+    setSelectedSection(className);
+    await loadSectionTeachers(className);
+    await loadEntries(className);
+  };
 
   const loadSections = async () => {
     try {
@@ -229,10 +260,30 @@ export default function AdminTimetable() {
 
       {!timetableName && !loading && (
         <Card>
-          <div className="py-16 text-center">
-            <p className="text-muted-foreground text-lg font-medium">No timetable created yet</p>
-            <p className="text-muted-foreground/60 text-sm mt-1">Click "Create Timetable" to get started</p>
-          </div>
+          {loadingExisting ? (
+            <div className="py-16 text-center">
+              <Loader2 className="w-6 h-6 animate-spin mx-auto text-muted-foreground" />
+            </div>
+          ) : existingTimetables.length > 0 ? (
+            <div className="p-6">
+              <h3 className="text-lg font-semibold mb-4">Existing Timetables in Firebase</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {existingTimetables.map(cls => (
+                  <button key={cls} onClick={() => openExistingTimetable(cls)}
+                    className="p-4 rounded-xl border border-border hover:border-orange-500/50 hover:bg-orange-50 dark:hover:bg-orange-950/10 text-left transition-all"
+                  >
+                    <p className="font-semibold">{cls}</p>
+                    <p className="text-xs text-muted-foreground">Click to view timetable</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="py-16 text-center">
+              <p className="text-muted-foreground text-lg font-medium">No timetable created yet</p>
+              <p className="text-muted-foreground/60 text-sm mt-1">Click "Create Timetable" to get started</p>
+            </div>
+          )}
         </Card>
       )}
 
