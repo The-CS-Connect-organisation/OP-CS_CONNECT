@@ -185,28 +185,36 @@ export default function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className={cn("shrink-0 transition-colors duration-200", collapsed ? "px-1 py-3" : "px-3 py-3", isDark ? "border-t border-white/10" : "border-t border-black/10")}>
-        {isStaff && (
-          <button onClick={handleCampusDesk} className={cn(
-            "flex items-center rounded-lg text-sm font-medium transition-all w-full mb-1",
-            collapsed ? "justify-center w-10 h-10 mx-auto" : "gap-2.5 px-2.5 py-2",
-            isDark ? "text-[#8C8884] hover:text-[#F2F0EE] hover:bg-white/10" : "text-[#57534E] hover:text-[#EC8037] hover:bg-[#EC8037]/15",
-            location.pathname === '/campus-desk' && (isDark ? "bg-white/10 text-[#F2F0EE]" : "bg-[#EC8037]/15 text-[#EC8037]")
-          )}>
-            <Briefcase className="w-4 h-4 shrink-0" />
-            <span className={cn(collapsed && "hidden")}>CampusDesk</span>
-          </button>
+      <div className={cn("shrink-0 transition-colors duration-200 space-y-2", collapsed ? "px-1 py-3" : "px-3 py-3", isDark ? "border-t border-white/10" : "border-t border-black/10")}>
+        {isStaff && !collapsed && (
+          <div className="box-button cursor-pointer border-4 border-black bg-gray-400 pb-2.5 select-none active:pb-0 active:mb-2.5 active:translate-y-2.5 transition-all duration-75">
+            <button onClick={handleCampusDesk} className="button w-full bg-[#ddd] border-4 border-white px-2 py-1 flex items-center gap-2.5 text-sm font-medium text-black">
+              <Briefcase className="w-4 h-4 shrink-0" />
+              <span>CampusDesk</span>
+            </button>
+          </div>
         )}
-        {isStudentOrParent && (
-          <button onClick={handleCampusPay} className={cn(
-            "flex items-center rounded-lg text-sm font-medium transition-all w-full mb-1",
-            collapsed ? "justify-center w-10 h-10 mx-auto" : "gap-2.5 px-2.5 py-2",
-            isDark ? "text-[#8C8884] hover:text-[#F2F0EE] hover:bg-white/10" : "text-[#57534E] hover:text-[#EC8037] hover:bg-[#EC8037]/15",
-            location.pathname === '/campus-pay' && (isDark ? "bg-white/10 text-[#F2F0EE]" : "bg-[#EC8037]/15 text-[#EC8037]")
-          )}>
-            <Wallet className="w-4 h-4 shrink-0" />
-            <span className={cn(collapsed && "hidden")}>CampusPay</span>
-          </button>
+        {isStaff && collapsed && (
+          <div className="box-button cursor-pointer border-4 border-black bg-gray-400 pb-2.5 select-none active:pb-0 active:mb-2.5 active:translate-y-2.5 transition-all duration-75 flex justify-center">
+            <button onClick={handleCampusDesk} className="button bg-[#ddd] border-4 border-white px-1 py-1 flex items-center justify-center text-black">
+              <Briefcase className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+        {isStudentOrParent && !collapsed && (
+          <div className="box-button cursor-pointer border-4 border-black bg-gray-400 pb-2.5 select-none active:pb-0 active:mb-2.5 active:translate-y-2.5 transition-all duration-75">
+            <button onClick={handleCampusPay} className="button w-full bg-[#ddd] border-4 border-white px-2 py-1 flex items-center gap-2.5 text-sm font-medium text-black">
+              <Wallet className="w-4 h-4 shrink-0" />
+              <span>CampusPay</span>
+            </button>
+          </div>
+        )}
+        {isStudentOrParent && collapsed && (
+          <div className="box-button cursor-pointer border-4 border-black bg-gray-400 pb-2.5 select-none active:pb-0 active:mb-2.5 active:translate-y-2.5 transition-all duration-75 flex justify-center">
+            <button onClick={handleCampusPay} className="button bg-[#ddd] border-4 border-white px-1 py-1 flex items-center justify-center text-black">
+              <Wallet className="w-5 h-5" />
+            </button>
+          </div>
         )}
         <button onClick={handleLogout} className={cn(
           "flex items-center rounded-lg text-sm font-medium transition-all w-full",
