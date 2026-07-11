@@ -15,7 +15,7 @@ export default function LandingPage() {
 
   const handleAccept = () => {
     if (!audioRef.current) {
-      audioRef.current = new Audio('YOUR_AUDIO_URL_HERE');
+      audioRef.current = new Audio('https://res.cloudinary.com/iextksqn/video/upload/v1783788795/01-cornfield-chase-theme-from-interstellar-piano-version_XPZdb46h_d4zjzn.mp3');
       audioRef.current.loop = true;
       audioRef.current.volume = 0.3;
     }
