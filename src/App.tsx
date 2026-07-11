@@ -7,6 +7,7 @@ import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useAuthStore, useThemeStore } from './lib/store'
 import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
+<<<<<<< HEAD
 const Landing = retryLazy(() => import('./pages/Landing'))
 const AboutPage = retryLazy(() => import('./pages/AboutPage'))
 const Photos = retryLazy(() => import('./pages/Photos'))
@@ -23,6 +24,26 @@ const TeacherDashboard = retryLazy(() => import('./pages/teacher/Dashboard'))
 const AdminDashboard = retryLazy(() => import('./pages/admin/Dashboard'))
 const CoordinatorDashboard = retryLazy(() => import('./pages/coordinator/Dashboard'))
 const DriverDashboard = retryLazy(() => import('./pages/driver/Dashboard'))
+=======
+import CampusDesk from './pages/CampusDesk'
+import CampusPay from './pages/CampusPay'
+const Landing = lazy(() => import('./pages/Landing'))
+const AboutPage = lazy(() => import('./pages/AboutPage'))
+const Photos = lazy(() => import('./pages/Photos'))
+const Homework = lazy(() => import('./pages/shared/Homework'))
+const StudentDashboard = lazy(() => import('./pages/student/Dashboard'))
+const StudentAssignments = lazy(() => import('./pages/student/Assignments'))
+const StudentTimetable = lazy(() => import('./pages/student/Timetable'))
+const StudentGrades = lazy(() => import('./pages/student/Grades'))
+const StudentAttendance = lazy(() => import('./pages/student/Attendance'))
+const StudentFees = lazy(() => import('./pages/student/Fees'))
+const StudentCommunity = lazy(() => import('./pages/student/Community'))
+const StudentAI = lazy(() => import('./pages/student/AI'))
+const TeacherDashboard = lazy(() => import('./pages/teacher/Dashboard'))
+const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'))
+const CoordinatorDashboard = lazy(() => import('./pages/coordinator/Dashboard'))
+const DriverDashboard = lazy(() => import('./pages/driver/Dashboard'))
+>>>>>>> 909a7a9 (add CampusPay page + route for sidebar button)
 import DashboardLayout from './components/layout/DashboardLayout'
 import { NotFoundPage } from './components/ui/404-page-not-found'
 
@@ -369,6 +390,8 @@ function App() {
             <Route index element={<Navigate to="/404page" replace />} />
           </Route>
 
+          <Route path="/campus-desk" element={<CampusDesk />} />
+          <Route path="/campus-pay" element={<CampusPay />} />
           <Route path="/cs-library" element={
             isAuthenticated ? <DashboardLayout><CSLibrary /></DashboardLayout> : <Navigate to="/login" replace />
           } />
