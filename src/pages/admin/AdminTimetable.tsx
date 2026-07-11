@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Plus, Bot, Send, Loader2, X, Sparkles, User } from 'lucide-react';
+import { Plus, Bot, Send, Loader2, X, Sparkles, User, Trash2 } from 'lucide-react';
 import { api } from '../../lib/api';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
@@ -140,6 +140,34 @@ export default function AdminTimetable() {
 
   const courseOpts = Object.keys(subjectTeacherMap).map(name => ({ id: name, name }));
 
+  const [clearing, setClearing] = useState(false);
+
+  const handleClearAll = async () => {
+    if (!confirm('Delete ALL timetables from Firebase? This cannot be undone.')) return;
+    setClearing(true);
+    try {
+      const token = localStorage.getItem('eduvault-token');
+      const userId = localStorage.getItem('eduvault-user-id');
+      const res = await fetch(`${API_BASE}/timetable`, {
+        method: 'DELETE',
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(userId ? { 'x-user-id': userId } : {}),
+        },
+      });
+      if (!res.ok) throw new Error('Failed to clear');
+      setEntries([]);
+      setTimetableName('');
+      setSelectedSection('');
+      setSelectedClassName('');
+      alert('All timetables cleared!');
+    } catch (e: any) {
+      alert('Error: ' + e.message);
+    } finally {
+      setClearing(false);
+    }
+  };
+
   const handleCSAISend = async () => {
     if (!csaiInput.trim() || csaiLoading) return;
     const msg = csaiInput.trim();
@@ -189,9 +217,14 @@ export default function AdminTimetable() {
           <h1 className="text-2xl font-bold">Timetable Manager</h1>
           <p className="text-muted-foreground text-sm mt-1">Create and manage class timetables</p>
         </div>
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus className="w-4 h-4 mr-2" /> Create Timetable
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleClearAll} disabled={clearing} variant="outline" className="border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20">
+            <Trash2 className="w-4 h-4 mr-1" /> {clearing ? 'Clearing...' : 'Clear All'}
+          </Button>
+          <Button onClick={() => setShowCreate(true)}>
+            <Plus className="w-4 h-4 mr-2" /> Create Timetable
+          </Button>
+        </div>
       </div>
 
       {!timetableName && !loading && (
