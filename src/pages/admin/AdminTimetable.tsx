@@ -114,6 +114,22 @@ export default function AdminTimetable() {
           }
         });
       }
+      // Fallback: load subjects from /api/subjects if class not in detailed
+      if (Object.keys(map).length === 0) {
+        const allSubjects = await api.getSubjects().catch(() => []);
+        const classSubjects = Array.isArray(allSubjects) ? allSubjects.filter((s: any) =>
+          (s.class || s.classes || []).includes?.(className) || s.classes?.includes?.(className)
+        ) : [];
+        classSubjects.forEach((s: any) => {
+          const teacherName = s.teacherId ? (teacherIdToName[s.teacherId] || s.teacherId) : '';
+          map[s.name] = teacherName;
+        });
+      }
+      // Last resort: extract subject names from existing timetable entries
+      if (Object.keys(map).length === 0 && entries.length > 0) {
+        const subjectsFromEntries = [...new Set(entries.map(e => e.subject).filter(Boolean))];
+        subjectsFromEntries.forEach(subj => { map[subj] = ''; });
+      }
       setSubjectTeacherMap(map);
     } catch { setSubjectTeacherMap({}); }
   };
