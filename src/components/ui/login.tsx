@@ -4,7 +4,7 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import {
   Form,
@@ -32,8 +32,9 @@ interface AuthFormSplitScreenProps {
   logo: React.ReactNode;
   title: string;
   description: React.ReactNode;
-  imageSrc: string;
-  imageAlt: string;
+  imageSrc?: string;
+  imageAlt?: string;
+  images?: string[];
   onSubmit: (data: FormValues) => Promise<void>;
   forgotPasswordHref: string;
   createAccountHref: string;
@@ -45,11 +46,24 @@ export function AuthFormSplitScreen({
   description,
   imageSrc,
   imageAlt,
+  images,
   onSubmit,
   forgotPasswordHref,
   createAccountHref,
 }: AuthFormSplitScreenProps) {
   const [isLoading, setIsLoading] = React.useState(false);
+  const [slideIndex, setSlideIndex] = React.useState(0);
+
+  const slideImages = images || (imageSrc ? [imageSrc] : []);
+  const slideAlt = imageAlt || "Background";
+
+  React.useEffect(() => {
+    if (slideImages.length <= 1) return;
+    const interval = setInterval(() => {
+      setSlideIndex((i) => (i + 1) % slideImages.length);
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [slideImages.length]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -210,13 +224,22 @@ export function AuthFormSplitScreen({
         </div>
       </div>
 
-      <div className="relative hidden w-1/2 md:block">
-        <img
-          src={imageSrc}
-          alt={imageAlt}
-          className="h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+      <div className="relative hidden w-1/2 md:block overflow-hidden">
+        {slideImages.length > 0 && (
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={slideIndex}
+              src={slideImages[slideIndex]}
+              alt={slideAlt}
+              initial={{ opacity: 0, scale: 1.05 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.8, ease: "easeInOut" }}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          </AnimatePresence>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent" />
       </div>
     </div>
   );
