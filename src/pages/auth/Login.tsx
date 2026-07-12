@@ -4,11 +4,6 @@ import { AuthFormSplitScreen } from '@/components/ui/login'
 import { AlertCircle } from 'lucide-react'
 
 const placeholderImages = [
-  'https://res.cloudinary.com/iextksqn/image/upload/v1783831180/G-10-at-ICRISAT_qc6aru.png',
-  'https://res.cloudinary.com/iextksqn/image/upload/v1783831180/IMG_3911_ga9rvf.jpg',
-  'https://res.cloudinary.com/iextksqn/image/upload/v1783831176/G-10-at-ICRISAT-1024x683_xkiyci.png',
-  'https://res.cloudinary.com/iextksqn/image/upload/v1783831174/WhatsApp-Image-2023-12-08-at-4.39.33-PM-1_wp6lwz.jpg',
-  'https://res.cloudinary.com/iextksqn/image/upload/v1783831173/WhatsApp-Image-2023-12-08-at-4.33.00-PM_ccaiku.jpg',
   'https://res.cloudinary.com/iextksqn/image/upload/v1783831170/WhatsApp-Image-2023-08-07-at-00.47.33-1_iutox2.jpg',
   'https://res.cloudinary.com/iextksqn/image/upload/v1783831170/visual-arts-1536x953.jpg_rn1uxx.jpg',
   'https://res.cloudinary.com/iextksqn/image/upload/v1783831167/Screenshot-13-1_e78kzk.png',
@@ -27,6 +22,11 @@ const placeholderImages = [
   'https://res.cloudinary.com/iextksqn/image/upload/v1783831154/WhatsApp-Image-2023-12-08-at-7.08.47-PM_nnusrz.jpg',
   'https://res.cloudinary.com/iextksqn/image/upload/v1783831154/WhatsApp-Image-2023-12-11-at-9.34.26-PM_ulhwgl.jpg',
   'https://res.cloudinary.com/iextksqn/image/upload/v1783831153/WhatsApp-Image-2023-12-08-at-7.22.54-PM_j3od9r.jpg',
+  'https://res.cloudinary.com/iextksqn/image/upload/v1783831180/G-10-at-ICRISAT_qc6aru.png',
+  'https://res.cloudinary.com/iextksqn/image/upload/v1783831180/IMG_3911_ga9rvf.jpg',
+  'https://res.cloudinary.com/iextksqn/image/upload/v1783831176/G-10-at-ICRISAT-1024x683_xkiyci.png',
+  'https://res.cloudinary.com/iextksqn/image/upload/v1783831174/WhatsApp-Image-2023-12-08-at-4.39.33-PM-1_wp6lwz.jpg',
+  'https://res.cloudinary.com/iextksqn/image/upload/v1783831173/WhatsApp-Image-2023-12-08-at-4.33.00-PM_ccaiku.jpg',
 ]
 
 export default function Login() {
