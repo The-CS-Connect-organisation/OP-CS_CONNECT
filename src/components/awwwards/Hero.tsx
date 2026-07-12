@@ -36,7 +36,18 @@ const Hero = () => {
       </div>
 
       <div className="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none">
-        <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-zentry font-black uppercase tracking-wider text-white/90 drop-shadow-[0_4px_30px_rgba(255,255,255,0.5)]">
+        <h1
+          className="relative text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-zentry font-black uppercase tracking-wider"
+          style={{
+            background: "linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.6) 100%)",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            color: "transparent",
+            WebkitTextStroke: "0.5px rgba(255,255,255,0.15)",
+            textShadow: "2px 2px 3px rgba(255,255,255,0.55), -2px -2px 3px rgba(255,255,255,0.35), 0 0 1px rgba(255,255,255,0.1)",
+            filter: "drop-shadow(0 8px 12px rgba(0,0,0,0.08))",
+          }}
+        >
           SchoolSync
         </h1>
       </div>
