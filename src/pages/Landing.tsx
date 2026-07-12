@@ -21,6 +21,16 @@ export default function LandingPage() {
     }
   }, [navigate]);
 
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
   const handleAccept = () => {
     setShowToc(false);
     if (!audioRef.current) {
