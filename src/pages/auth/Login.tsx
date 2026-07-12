@@ -49,15 +49,15 @@ export default function Login() {
       <AuthFormSplitScreen
         logo={
           <div className="flex flex-col items-start gap-1">
-            <div className="inline-flex items-center rounded-2xl border border-white/20 bg-white/40 px-5 py-3 shadow-lg backdrop-blur-2xl">
+            <div className="inline-flex items-center rounded-2xl border border-white/30 bg-white/80 px-5 py-3 shadow-lg backdrop-blur-2xl">
               <img
                 src="https://res.cloudinary.com/iextksqn/image/upload/v1783831100/LOGO-PNG-1_zftbqk.png"
                 alt="Cornerstone"
                 className="h-10 w-auto"
               />
             </div>
-            <div className="ml-1 text-[12px] font-light tracking-wide text-gray-400">
-              in association with <span className="italic font-medium text-gray-500">SchoolSync</span>
+            <div className="ml-1 text-[12px] font-light tracking-wide text-gray-600">
+              in association with <span className="italic font-medium text-gray-700">SchoolSync</span>
             </div>
           </div>
         }
