@@ -13,13 +13,12 @@ export default function LandingPage() {
   useEffect(() => {
     document.documentElement.classList.remove('dark');
     document.documentElement.style.backgroundColor = '';
-  }, []);
-
-  useEffect(() => {
     if (window.innerWidth < 768) {
       navigate('/login', { replace: true });
     }
   }, [navigate]);
+
+  if (typeof window !== 'undefined' && window.innerWidth < 768) return null;
 
   useEffect(() => {
     return () => {
