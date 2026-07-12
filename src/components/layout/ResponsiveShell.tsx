@@ -2,7 +2,7 @@ import React, { Suspense } from 'react'
 import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import TopBar from './TopBar'
-import BottomNavBar from './BottomNavBar'
+import MobileNav from '@/components/ui/MobileNav'
 import Loader from '../ui/loader'
 
 interface ResponsiveShellProps {
@@ -21,7 +21,7 @@ export default function ResponsiveShell({ children }: ResponsiveShellProps) {
           </Suspense>
         </main>
       </div>
-      <BottomNavBar />
+      <MobileNav />
     </div>
   )
 }
