@@ -3,7 +3,6 @@ import { Link, useNavigate } from "react-router-dom"
 import { Menu, X, LogIn, LayoutDashboard, LogOut } from "lucide-react"
 
 import { useAuthStore } from "@/lib/store"
-import { Button } from "@/components/ui/Button"
 import { cn } from "@/lib/utils"
 import {
   NavigationMenu,
@@ -193,21 +192,20 @@ const NavigationMenu4 = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
+                <div className="flex items-center rounded-lg bg-white/40 backdrop-blur-md border border-white/20 shadow-sm">
+                  <button
                     onClick={() => navigate("/login")}
-                    className="rounded-lg bg-white/40 backdrop-blur-md border border-white/20 shadow-sm text-sm font-medium text-gray-700 hover:text-orange-600 hover:bg-white/60 transition-all"
+                    className="text-sm font-medium text-gray-700 hover:text-orange-600 transition-colors px-3 py-1.5"
                   >
                     Sign In
-                  </Button>
-                  <Button
-                    size="sm"
+                  </button>
+                  <span className="h-5 w-px bg-white/30 shrink-0" />
+                  <button
                     onClick={() => navigate("/signup")}
-                    className="rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm hover:from-orange-600 hover:to-orange-700"
+                    className="text-sm font-medium text-gray-700 hover:text-orange-600 transition-colors px-3 py-1.5"
                   >
                     Get Started
-                  </Button>
+                  </button>
                 </div>
               )}
             </div>

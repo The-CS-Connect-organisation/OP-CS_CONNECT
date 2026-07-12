@@ -187,31 +187,31 @@ export default function Sidebar() {
       {/* Footer */}
       <div className={cn("shrink-0 transition-colors duration-200 space-y-2", collapsed ? "px-1 py-3" : "px-3 py-3", isDark ? "border-t border-white/10" : "border-t border-black/10")}>
         {isStaff && !collapsed && (
-          <div className="box-button cursor-pointer border-4 border-black bg-gray-400 pb-2.5 select-none active:pb-0 active:mb-2.5 active:translate-y-2.5 transition-all duration-75">
-            <button onClick={handleCampusDesk} className="button w-full bg-[#ddd] border-4 border-white px-2 py-1 flex items-center gap-2.5 text-sm font-medium text-black">
+          <div className="box-button cursor-pointer border-4 border-orange-600 bg-orange-400 pb-2.5 select-none active:pb-0 active:mb-2.5 active:translate-y-2.5 transition-all duration-75">
+            <button onClick={handleCampusDesk} className="button w-full bg-orange-100 border-4 border-orange-200 px-2 py-1 flex items-center gap-2.5 text-sm font-medium text-orange-800">
               <Briefcase className="w-4 h-4 shrink-0" />
               <span>CampusDesk</span>
             </button>
           </div>
         )}
         {isStaff && collapsed && (
-          <div className="box-button cursor-pointer border-4 border-black bg-gray-400 pb-2.5 select-none active:pb-0 active:mb-2.5 active:translate-y-2.5 transition-all duration-75 flex justify-center">
-            <button onClick={handleCampusDesk} className="button bg-[#ddd] border-4 border-white px-1 py-1 flex items-center justify-center text-black">
+          <div className="box-button cursor-pointer border-4 border-orange-600 bg-orange-400 pb-2.5 select-none active:pb-0 active:mb-2.5 active:translate-y-2.5 transition-all duration-75 flex justify-center">
+            <button onClick={handleCampusDesk} className="button bg-orange-100 border-4 border-orange-200 px-1 py-1 flex items-center justify-center text-orange-800">
               <Briefcase className="w-5 h-5" />
             </button>
           </div>
         )}
         {isStudentOrParent && !collapsed && (
-          <div className="box-button cursor-pointer border-4 border-black bg-gray-400 pb-2.5 select-none active:pb-0 active:mb-2.5 active:translate-y-2.5 transition-all duration-75">
-            <button onClick={handleCampusPay} className="button w-full bg-[#ddd] border-4 border-white px-2 py-1 flex items-center gap-2.5 text-sm font-medium text-black">
+          <div className="box-button cursor-pointer border-4 border-orange-600 bg-orange-400 pb-2.5 select-none active:pb-0 active:mb-2.5 active:translate-y-2.5 transition-all duration-75">
+            <button onClick={handleCampusPay} className="button w-full bg-orange-100 border-4 border-orange-200 px-2 py-1 flex items-center gap-2.5 text-sm font-medium text-orange-800">
               <Wallet className="w-4 h-4 shrink-0" />
               <span>CampusPay</span>
             </button>
           </div>
         )}
         {isStudentOrParent && collapsed && (
-          <div className="box-button cursor-pointer border-4 border-black bg-gray-400 pb-2.5 select-none active:pb-0 active:mb-2.5 active:translate-y-2.5 transition-all duration-75 flex justify-center">
-            <button onClick={handleCampusPay} className="button bg-[#ddd] border-4 border-white px-1 py-1 flex items-center justify-center text-black">
+          <div className="box-button cursor-pointer border-4 border-orange-600 bg-orange-400 pb-2.5 select-none active:pb-0 active:mb-2.5 active:translate-y-2.5 transition-all duration-75 flex justify-center">
+            <button onClick={handleCampusPay} className="button bg-orange-100 border-4 border-orange-200 px-1 py-1 flex items-center justify-center text-orange-800">
               <Wallet className="w-5 h-5" />
             </button>
           </div>

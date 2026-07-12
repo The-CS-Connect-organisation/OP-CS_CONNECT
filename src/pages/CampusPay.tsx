@@ -61,7 +61,7 @@ export default function CampusPay() {
 
 function WalletIcon() {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
       <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
       <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
@@ -75,7 +75,7 @@ const StyledWrapper = styled.div`
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: #0f0f1a;
+  background: #FFFDF5;
   gap: 2rem;
   overflow: hidden;
   position: relative;
@@ -99,7 +99,7 @@ const StyledWrapper = styled.div`
   .ring-1 {
     width: 200px;
     height: 200px;
-    border-top-color: #fbbf24;
+    border-top-color: #f97316;
     border-right-color: transparent;
     border-bottom-color: transparent;
     border-left-color: #f97316;
@@ -110,7 +110,7 @@ const StyledWrapper = styled.div`
     width: 160px;
     height: 160px;
     border-top-color: transparent;
-    border-right-color: #f59e0b;
+    border-right-color: #fb923c;
     border-bottom-color: transparent;
     border-left-color: transparent;
     animation-duration: 2.5s;
@@ -122,15 +122,15 @@ const StyledWrapper = styled.div`
     height: 120px;
     border-top-color: transparent;
     border-right-color: transparent;
-    border-bottom-color: #fbbf24;
-    border-left-color: #d97706;
+    border-bottom-color: #f97316;
+    border-left-color: #ea580c;
     animation-duration: 3s;
   }
 
   .ring-4 {
     width: 80px;
     height: 80px;
-    border: 2px dashed rgba(251, 191, 36, 0.3);
+    border: 2px dashed rgba(249, 115, 22, 0.3);
     animation-duration: 4s;
     animation-direction: reverse;
   }
@@ -150,10 +150,10 @@ const StyledWrapper = styled.div`
 
   @keyframes pulse-glow {
     0%, 100% {
-      filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.4));
+      filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.4));
     }
     50% {
-      filter: drop-shadow(0 0 20px rgba(251, 191, 36, 0.8));
+      filter: drop-shadow(0 0 20px rgba(249, 115, 22, 0.8));
     }
   }
 
@@ -165,9 +165,9 @@ const StyledWrapper = styled.div`
   }
 
   .status-text span {
-    font-family: 'Courier New', monospace;
+    font-family: 'Inter', sans-serif;
     font-size: 1rem;
-    color: #fbbf24;
+    color: #f97316;
     letter-spacing: 2px;
     transition: opacity 0.3s ease;
   }
@@ -183,16 +183,16 @@ const StyledWrapper = styled.div`
   .loader-bar {
     width: 300px;
     height: 4px;
-    background: rgba(251, 191, 36, 0.15);
+    background: rgba(249, 115, 22, 0.15);
     border-radius: 4px;
     overflow: hidden;
   }
 
   .loader-fill {
     height: 100%;
-    background: linear-gradient(90deg, #f97316, #fbbf24);
+    background: linear-gradient(90deg, #f97316, #fb923c);
     border-radius: 4px;
     transition: width 0.5s ease;
-    box-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 12px rgba(249, 115, 22, 0.5);
   }
 `
