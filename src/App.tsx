@@ -134,6 +134,7 @@ const CreateAccount = retryLazy(() => import('./pages/admin/CreateAccount'))
 const AdminRoomBooking = retryLazy(() => import('./pages/admin/AdminRoomBooking'))
 const AdminAssetTracking = retryLazy(() => import('./pages/admin/AdminAssetTracking'))
 const AdminTalentMarket = retryLazy(() => import('./pages/admin/AdminTalentMarket'))
+const AdminAchievements = retryLazy(() => import('./pages/admin/AdminAchievements'))
 
 const TeacherRoomBooking = retryLazy(() => import('./pages/teacher/TeacherRoomBooking'))
 const TeacherAssetTracking = retryLazy(() => import('./pages/teacher/TeacherAssetTracking'))
@@ -320,6 +321,7 @@ function App() {
             <Route path="room-booking" element={<AdminRoomBooking />} />
             <Route path="asset-tracking" element={<AdminAssetTracking />} />
             <Route path="talent-market" element={<AdminTalentMarket />} />
+            <Route path="achievements" element={<AdminAchievements />} />
             <Route path="create-account" element={<CreateAccount />} />
           </Route>
 

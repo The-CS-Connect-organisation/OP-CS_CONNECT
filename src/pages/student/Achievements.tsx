@@ -26,6 +26,7 @@ interface Achievement {
   targetStudentName: string
   category: string
   timestamp: string
+  status?: string
   likes: string[]
   comments: { authorId: string; authorName: string; content: string; timestamp: string }[]
 }
@@ -52,7 +53,11 @@ export default function Achievements() {
     } catch { /* error */ } finally { setLoading(false) }
   }
 
-  const filtered = achievements.filter(a => filter === 'all' || a.category === filter)
+  const filtered = achievements.filter(a => {
+    const matchesCategory = filter === 'all' || a.category === filter
+    const isVisible = (a.status || 'approved') === 'approved' || a.authorId === user?.id
+    return matchesCategory && isVisible
+  })
 
   const handleLike = async (id: string) => {
     if (!user) return
@@ -90,7 +95,8 @@ export default function Achievements() {
         authorName: user.name,
         role: user.role,
         avatar: user.avatar || '',
-        ...createForm
+        ...createForm,
+        status: 'pending',
       })
       setCreateForm({ title: '', description: '', targetStudentName: '', category: 'academic' })
       setShowCreateDialog(false)
@@ -162,6 +168,12 @@ export default function Achievements() {
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-semibold text-sm">{achievement.authorName}</span>
                         <Badge variant="secondary" className="text-[10px]">{achievement.role}</Badge>
+                        {achievement.status && achievement.status !== 'approved' && (
+                          <Badge className={cn(
+                            'text-[10px]',
+                            achievement.status === 'pending' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
+                          )}>{achievement.status}</Badge>
+                        )}
                         <span className="text-xs text-muted-foreground ml-auto">{new Date(achievement.timestamp).toLocaleDateString()}</span>
                       </div>
                       <h3 className="font-semibold">{achievement.title}</h3>

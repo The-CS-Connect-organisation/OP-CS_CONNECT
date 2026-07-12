@@ -379,6 +379,8 @@ export const api = {
 
   // Achievements (extended)
   createAchievement: (data: any) => apiFetch('/achievements', { method: 'POST', body: JSON.stringify(data) }),
+  updateAchievement: (id: string, data: any) => apiFetch(`/achievements/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  deleteAchievement: (id: string) => apiFetch(`/achievements/${id}`, { method: 'DELETE' }),
   toggleAchievementLike: (id: string, userId: string) => apiFetch(`/achievements/${id}/like`, { method: 'POST', body: JSON.stringify({ userId }) }),
   addAchievementComment: (id: string, authorId: string, authorName: string, content: string) =>
     apiFetch(`/achievements/${id}/comment`, { method: 'POST', body: JSON.stringify({ authorId, authorName, content }) }),
