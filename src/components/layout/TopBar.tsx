@@ -11,6 +11,7 @@ import {
 } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar'
 import { getInitials } from '@/lib/avatar'
+import { playNavSound } from '@/lib/sound'
 import StarWarsToggle from '@/components/ui/star-wars-toggle-switch'
 
 export default function TopBar() {
@@ -75,7 +76,7 @@ export default function TopBar() {
       <div className="flex items-center justify-between h-16 px-4 lg:px-6 relative z-10">
         {/* Left section */}
         <div className="flex items-center gap-3">
-          <button onClick={() => setMobileOpen(!isMobileOpen)} className="p-2 rounded-md hover:bg-accent/50 lg:hidden">
+          <button onClick={() => { playNavSound(); setMobileOpen(!isMobileOpen) }} className="p-2 rounded-md hover:bg-accent/50 lg:hidden">
             <Menu className="w-5 h-5" />
           </button>
           <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTTwLEt4d9-ghujM9bh6rv9la08AsTbpCZwxCTA6G26DmT1Hfrf4_3WqVe&s=10" alt="CS Connect" className="w-9 h-9 rounded" />
@@ -123,7 +124,7 @@ export default function TopBar() {
             <span className="text-xs font-medium hidden sm:inline">AI</span>
           </motion.button>
 
-          <div className="flex items-center -mr-2">
+          <div className="hidden lg:flex items-center -mr-2">
             <StarWarsToggle checked={isDark} onChange={toggleTheme} scale={0.35} />
           </div>
 

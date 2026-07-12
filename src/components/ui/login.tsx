@@ -130,7 +130,7 @@ export function AuthFormSplitScreen({
             </motion.div>
             <motion.div variants={itemVariants} className="text-left">
               <h1 className="text-xl font-semibold tracking-tight md:text-2xl">{title}</h1>
-              <p className="text-sm text-gray-600">{description}{' '}</p>
+              <p className="text-sm text-gray-900">{description}{' '}</p>
             </motion.div>
 
             <Form {...form}>
@@ -224,7 +224,7 @@ export function AuthFormSplitScreen({
 
             <motion.p
               variants={itemVariants}
-              className="text-center text-sm text-gray-600"
+              className="text-center text-sm text-gray-900"
             >
               Don&apos;t have an account?{" "}
               <a
@@ -238,7 +238,7 @@ export function AuthFormSplitScreen({
 
             <motion.p
               variants={itemVariants}
-              className="text-center text-[11px] text-gray-500"
+              className="text-center text-[11px] text-gray-700"
             >
               SchoolSync — Campus Management Platform
             </motion.p>

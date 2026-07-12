@@ -3,7 +3,8 @@ import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { AlertTriangle, Send, Calendar, User } from 'lucide-react';
+import { BottomSheet } from '../../components/ui/BottomSheet';
+import { AlertTriangle, Send, Calendar, User, Plus } from 'lucide-react';
 import { useAuthStore } from '../../lib/store';
 
 export default function StudentAnonymousReports() {
@@ -60,72 +61,74 @@ export default function StudentAnonymousReports() {
 
   if (loading) return <div className="p-6"><Card className="p-8 animate-pulse h-48" /></div>;
 
+  const formContent = (
+    <div className="space-y-4">
+      <div>
+        <label className="block text-sm font-medium mb-1 text-gray-900">Title</label>
+        <input
+          type="text"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          placeholder="Brief title of the issue"
+          className="w-full px-3 py-2 rounded-lg border bg-background text-gray-900"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1 text-gray-900">Description</label>
+        <textarea
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          placeholder="Describe the issue in detail..."
+          rows={4}
+          className="w-full px-3 py-2 rounded-lg border bg-background text-gray-900 resize-none"
+        />
+      </div>
+      <div>
+        <label className="block text-sm font-medium mb-1 text-gray-900">Category</label>
+        <select
+          value={category}
+          onChange={e => setCategory(e.target.value as any)}
+          className="w-full px-3 py-2 rounded-lg border bg-background text-gray-900"
+        >
+          <option value="bullying">Bullying / Harassment</option>
+          <option value="safety">Safety Concern</option>
+          <option value="maintenance">Maintenance Issue</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id="anonymous"
+          checked={anonymous}
+          onChange={e => setAnonymous(e.target.checked)}
+          className="rounded"
+        />
+        <label htmlFor="anonymous" className="text-sm text-gray-900">Keep my identity anonymous</label>
+      </div>
+      <Button onClick={handleSubmit} disabled={submitting || !title.trim() || !description.trim()}>
+        <Send className="w-4 h-4 mr-2" />
+        {submitting ? 'Submitting...' : 'Submit Report'}
+      </Button>
+    </div>
+  );
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Anonymous Reports</h1>
-          <p className="text-muted-foreground">Report issues confidentially</p>
+          <p className="text-gray-900">Report issues confidentially</p>
         </div>
-        <Button onClick={() => setShowForm(!showForm)}>
-          <AlertTriangle className="w-4 h-4 mr-2" />
-          {showForm ? 'Cancel' : 'New Report'}
+        <Button onClick={() => setShowForm(true)}>
+          <Plus className="w-4 h-4 mr-2" />
+          New Report
         </Button>
       </div>
 
-      {showForm && (
-        <Card className="p-6 space-y-4 border-orange-200">
-          <h3 className="font-semibold text-lg">Submit an Anonymous Report</h3>
-          <p className="text-sm text-muted-foreground">Your identity will be kept confidential. Use this to report bullying, safety concerns, or other issues.</p>
-          <div>
-            <label className="block text-sm font-medium mb-1">Title</label>
-            <input
-              type="text"
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              placeholder="Brief title of the issue"
-              className="w-full px-3 py-2 rounded-lg border bg-background"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Description</label>
-            <textarea
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder="Describe the issue in detail..."
-              rows={4}
-              className="w-full px-3 py-2 rounded-lg border bg-background resize-none"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium mb-1">Category</label>
-            <select
-              value={category}
-              onChange={e => setCategory(e.target.value as any)}
-              className="w-full px-3 py-2 rounded-lg border bg-background"
-            >
-              <option value="bullying">Bullying / Harassment</option>
-              <option value="safety">Safety Concern</option>
-              <option value="maintenance">Maintenance Issue</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="anonymous"
-              checked={anonymous}
-              onChange={e => setAnonymous(e.target.checked)}
-              className="rounded"
-            />
-            <label htmlFor="anonymous" className="text-sm">Keep my identity anonymous</label>
-          </div>
-          <Button onClick={handleSubmit} disabled={submitting || !title.trim() || !description.trim()}>
-            <Send className="w-4 h-4 mr-2" />
-            {submitting ? 'Submitting...' : 'Submit Report'}
-          </Button>
-        </Card>
-      )}
+      <BottomSheet isOpen={showForm} onClose={() => setShowForm(false)} title="New Report">
+        {formContent}
+      </BottomSheet>
 
       <div className="space-y-4">
         {reports.length === 0 ? (

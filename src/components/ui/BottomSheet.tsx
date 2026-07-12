@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import React from 'react';
 
@@ -9,34 +9,27 @@ interface BottomSheetProps {
   children: React.ReactNode;
 }
 
-const sheet = {
-  initial: { y: '100%' },
-  animate: { y: 0 },
-  exit: { y: '100%' },
-};
-
-const overlay = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 },
-};
-
 export const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title, children }) => {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      requestAnimationFrame(() => setVisible(true));
+    } else {
+      setVisible(false);
+    }
+  }, [isOpen]);
+
   return (
-    <AnimatePresence>
+    <>
       {isOpen && (
-        <motion.div
-          className="fixed inset-0 z-50 flex items-end sm:hidden"
-          {...overlay}
-          transition={{ duration: 0.25, ease: 'easeInOut' }}
-          style={{ background: 'rgba(0,0,0,0.4)' }}
+        <div
+          className={`fixed inset-0 z-50 transition-colors duration-250 sm:hidden ${visible ? 'bg-black/40 pointer-events-auto' : 'bg-transparent pointer-events-none'}`}
           onClick={onClose}
         >
-          <motion.div
-            className="w-full bg-background rounded-t-xl shadow-xl"
-            style={{ maxHeight: '90vh' }}
-            {...sheet}
-            transition={{ type: 'spring', damping: 35, stiffness: 400 }}
+          <div
+            className={`absolute left-0 right-0 bottom-[88px] bg-background rounded-t-xl shadow-xl transition-transform duration-250 ease-out will-change-transform ${visible ? 'translate-y-0' : 'translate-y-full'}`}
+            style={{ maxHeight: '80vh' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-border/50">
@@ -51,13 +44,13 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title
                 <X size={18} className="text-muted-foreground" />
               </button>
             </div>
-            <div className="overflow-y-auto px-4 py-3" style={{ maxHeight: 'calc(90vh - 52px)' }}>
+            <div className="overflow-y-auto px-4 py-3" style={{ maxHeight: 'calc(80vh - 52px)' }}>
               {children}
             </div>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       )}
-    </AnimatePresence>
+    </>
   );
 };
 

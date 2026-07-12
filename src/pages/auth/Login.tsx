@@ -56,8 +56,8 @@ export default function Login() {
                 className="h-10 w-auto"
               />
             </div>
-            <div className="ml-1 text-[12px] font-light tracking-wide text-gray-600">
-              in association with <span className="italic font-medium text-gray-700">SchoolSync</span>
+            <div className="ml-1 text-[12px] font-light tracking-wide text-gray-900">
+              in association with <span className="italic font-medium text-gray-900">SchoolSync</span>
             </div>
           </div>
         }
