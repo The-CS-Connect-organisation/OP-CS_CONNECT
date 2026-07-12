@@ -102,7 +102,9 @@ export function AuthFormSplitScreen({
 
   return (
     <div className="relative flex min-h-screen w-full flex-col md:flex-row">
-      <div className="flex w-full flex-col items-center justify-center bg-background p-8 md:w-1/2">
+      <div className="relative flex w-full flex-col items-center justify-center p-8 md:w-1/2 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#FDF8F3] to-[#F5EBE0] -z-10" />
+        <div className="absolute -top-32 -right-32 w-80 h-80 rounded-full bg-[#EC8037] opacity-[0.08] blur-3xl pointer-events-none -z-10" />
         <div className="w-full max-w-md">
           <motion.div
             variants={containerVariants}
@@ -225,7 +227,13 @@ export function AuthFormSplitScreen({
       </div>
 
       <div className="relative hidden w-1/2 md:block overflow-hidden bg-gray-900">
-        <div className="absolute inset-0">
+        <div
+          className="absolute inset-0"
+          style={{
+            maskImage: 'linear-gradient(to right, transparent 0%, black 25%)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 25%)',
+          }}
+        >
           {slideImages.map((src, i) => (
             <img
               key={i}
@@ -238,7 +246,6 @@ export function AuthFormSplitScreen({
           ))}
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent" />
-        <div className="absolute left-0 top-0 bottom-0 w-48 bg-gradient-to-r from-background via-background/80 to-transparent pointer-events-none z-10" />
       </div>
     </div>
   );
