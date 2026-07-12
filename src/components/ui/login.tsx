@@ -110,7 +110,7 @@ export function AuthFormSplitScreen({
         }
       }
     `}</style>
-    <div className="relative flex min-h-svh w-full flex-col md:min-h-screen md:flex-row">
+    <div className="relative flex min-h-svh w-full flex-col justify-center md:min-h-screen md:flex-row">
       <div className="relative flex w-full flex-col items-center justify-center px-5 py-6 md:p-8 md:w-1/2 overflow-hidden bg-white">
         <img
           src="https://res.cloudinary.com/iextksqn/image/upload/v1783842250/vintage_copy_of_school-campus-picture-01-copy_ghh9l6.jpg"

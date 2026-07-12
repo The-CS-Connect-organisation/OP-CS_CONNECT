@@ -1,5 +1,6 @@
 import Loader from "./components/ui/loader"
 import ErrorBoundary from './components/ui/ErrorBoundary'
+import MobileNav from '@/components/ui/MobileNav'
 
 import { Suspense, useEffect } from 'react'
 import { retryLazy } from './lib/retry-lazy'
@@ -183,6 +184,7 @@ function App() {
   return (
     <div className="aurora-bg">
       <ErrorBoundary>
+        <MobileNav />
         <Suspense fallback={<div className="flex h-screen w-full items-center justify-center bg-gray-50 dark:bg-gray-900"><Loader variant="dots" size="lg" /></div>}>
         <Routes>
         <Route path="/" element={<Landing />} />

@@ -2,7 +2,6 @@ import { Link, useNavigate } from "react-router-dom"
 import { LogIn, LayoutDashboard, LogOut } from "lucide-react"
 
 import { useAuthStore } from "@/lib/store"
-import MobileNav from "@/components/ui/MobileNav"
 import { cn } from "@/lib/utils"
 import {
   NavigationMenu,
@@ -212,8 +211,6 @@ const NavigationMenu4 = () => {
 
         </div>
       </div>
-
-      <MobileNav />
     </header>
   )
 }
