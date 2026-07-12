@@ -61,7 +61,7 @@ export default function StudentDashboard() {
   const [activeTab, setActiveTab] = useState<'overview' | 'academics' | 'schedule'>('overview')
   const navigate = useNavigate()
 
-  // Fetch today's attendance status
+  // Fetch today's attendance status and recent announcements
   useEffect(() => {
     if (user?.id) {
       fetchStudentData(user.id)
@@ -70,6 +70,10 @@ export default function StudentDashboard() {
         const today = new Date().toISOString().split('T')[0]
         const todayRecord = records.find((r: any) => r.date === today)
         setTodaysStatus(todayRecord?.status || null)
+      }).catch(() => {})
+      api.getAnnouncements().then((data: any) => {
+        const arr = Array.isArray(data) ? data : []
+        setRecentAnns(arr.filter((a: any) => !a.audience || a.audience === 'all' || a.audience === 'students'))
       }).catch(() => {})
     }
   }, [user?.id, fetchStudentData])

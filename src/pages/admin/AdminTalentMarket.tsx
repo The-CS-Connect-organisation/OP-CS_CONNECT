@@ -38,6 +38,8 @@ export default function AdminTalentMarket() {
   const [selectedListing, setSelectedListing] = useState<any | null>(null)
   const [showSubmissions, setShowSubmissions] = useState(false)
   const [processingSubmission, setProcessingSubmission] = useState<string | null>(null)
+  const [feedbackMap, setFeedbackMap] = useState<Record<string, string>>({})
+  const [confirmingAccept, setConfirmingAccept] = useState<string | null>(null)
 
   const [form, setForm] = useState({
     title: '', eventName: '', description: '', deadline: '', talentsNeeded: [] as string[], status: 'open',
@@ -273,18 +275,41 @@ export default function AdminTalentMarket() {
                           </a>
                         )}
                         {sub.status === 'pending' && (
-                          <div className="flex gap-2 mt-3">
-                            <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600"
-                              onClick={() => handleSubmissionStatus(selectedListing.id, sub.id, 'accepted')}
-                              disabled={processingSubmission === sub.id}>
-                              {processingSubmission === sub.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4 mr-1" />}
-                              Accept
-                            </Button>
-                            <Button size="sm" variant="outline" className="text-red-500 border-red-200 hover:bg-red-50"
-                              onClick={() => handleSubmissionStatus(selectedListing.id, sub.id, 'rejected')}
-                              disabled={processingSubmission === sub.id}>
-                              <XCircle className="w-4 h-4 mr-1" /> Reject
-                            </Button>
+                          <div className="mt-3 space-y-2">
+                            <textarea
+                              placeholder="Approval message / next steps (sent to the student)..."
+                              value={feedbackMap[sub.id] || ''}
+                              onChange={e => setFeedbackMap(prev => ({ ...prev, [sub.id]: e.target.value }))}
+                              rows={2}
+                              className="w-full text-sm rounded-lg border border-border bg-background p-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            />
+                            <div className="flex gap-2">
+                              {confirmingAccept === sub.id ? (
+                                <>
+                                  <Button size="sm" variant="outline" onClick={() => setConfirmingAccept(null)}>Cancel</Button>
+                                  <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600"
+                                    onClick={() => handleSubmissionStatus(selectedListing.id, sub.id, 'accepted', feedbackMap[sub.id] || '')}
+                                    disabled={processingSubmission === sub.id}>
+                                    {processingSubmission === sub.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4 mr-1" />}
+                                    Send Approval
+                                  </Button>
+                                </>
+                              ) : (
+                                <>
+                                  <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600"
+                                    onClick={() => setConfirmingAccept(sub.id)}
+                                    disabled={processingSubmission === sub.id}>
+                                    <CheckCircle2 className="w-4 h-4 mr-1" />
+                                    Accept
+                                  </Button>
+                                  <Button size="sm" variant="outline" className="text-red-500 border-red-200 hover:bg-red-50"
+                                    onClick={() => handleSubmissionStatus(selectedListing.id, sub.id, 'rejected', feedbackMap[sub.id] || '')}
+                                    disabled={processingSubmission === sub.id}>
+                                    <XCircle className="w-4 h-4 mr-1" /> Reject
+                                  </Button>
+                                </>
+                              )}
+                            </div>
                           </div>
                         )}
                       </CardContent>
