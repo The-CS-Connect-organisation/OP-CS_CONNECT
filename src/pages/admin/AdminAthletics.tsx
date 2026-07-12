@@ -7,6 +7,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { Input } from '../../components/ui/Input';
 import { Textarea } from '../../components/ui/Textarea';
 import { Modal } from '../../components/ui/Modal';
+import { NavSheet, NavSheetItem } from '../../components/ui/NavSheet';
 import { BottomSheet, PickerSheet } from '../../components/ui/BottomSheet';
 import {
   Trophy, Medal, Users, Shirt, Stethoscope, GraduationCap,
@@ -108,24 +109,18 @@ export default function AdminAthletics() {
           </span>
           <ChevronDown className="w-4 h-4 opacity-50" />
         </Button>
-        <BottomSheet isOpen={showSubNavSheet} onClose={() => setShowSubNavSheet(false)} title="Select Section">
-          <div className="space-y-1">
-            {subNavItems.map((item) => (
-              <button
-                key={item.key}
-                onClick={() => { setSubSection(item.key); setShowSubNavSheet(false); }}
-                className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-colors ${
-                  subSection === item.key
-                    ? 'bg-orange-500/10 text-orange-600 font-medium'
-                    : 'text-foreground hover:bg-accent'
-                }`}
-              >
-                {item.icon}
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </BottomSheet>
+        <NavSheet isOpen={showSubNavSheet} onClose={() => setShowSubNavSheet(false)} title="Select Section">
+          {subNavItems.map((item, i) => (
+            <NavSheetItem
+              key={item.key}
+              icon={item.icon}
+              label={item.label}
+              active={subSection === item.key}
+              index={i}
+              onClick={() => { setSubSection(item.key); setShowSubNavSheet(false); }}
+            />
+          ))}
+        </NavSheet>
       </div>
 
       {subSection === 'athletes' && <AthletesSection />}
@@ -142,15 +137,26 @@ export default function AdminAthletics() {
 function AthletesSection() {
   const [students, setStudents] = useState<Student[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
+  const [programmes, setProgrammes] = useState<SportProgramme[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [assignTarget, setAssignTarget] = useState<Student | null>(null);
+  const [selectedTeamId, setSelectedTeamId] = useState('');
+  const [assignPosition, setAssignPosition] = useState('');
+  const [showCreateTeam, setShowCreateTeam] = useState(false);
+  const [newTeam, setNewTeam] = useState({ name: '', sport: '', programmeId: '', ageGroup: '' });
+  const [assignError, setAssignError] = useState('');
 
   useEffect(() => { load(); }, []);
 
   const load = async () => {
     try {
       setLoading(true);
-      const [s, t] = await Promise.all([api.getStudents().catch(() => []), api.getTeams().catch(() => [])]);
+      const [s, t, p] = await Promise.all([
+        api.getStudents().catch(() => []),
+        api.getTeams().catch(() => []),
+        api.getSportProgrammes().catch(() => []),
+      ]);
       const mapped = (Array.isArray(s) ? s : []).map((stu: any) => ({
         id: stu.id,
         name: stu.name || `${stu.firstName || ''} ${stu.lastName || ''}`.trim(),
@@ -161,6 +167,7 @@ function AthletesSection() {
       }));
       setStudents(mapped);
       setTeams(Array.isArray(t) ? t : []);
+      setProgrammes(Array.isArray(p) ? p : []);
     } catch {
       //
     } finally { setLoading(false); }
@@ -183,6 +190,167 @@ function AthletesSection() {
     s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     getStudentSports(s.id).some(sp => sp.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+
+  const handleAssignToTeam = async () => {
+    if (!assignTarget || !selectedTeamId) return;
+    setAssignError('');
+    try {
+      const studentName = assignTarget.name;
+      await api.addPlayerToRoster(selectedTeamId, { studentId: assignTarget.id, name: studentName, position: assignPosition });
+      setAssignTarget(null);
+      setSelectedTeamId('');
+      setAssignPosition('');
+      load();
+    } catch (e: any) { setAssignError(e.message); }
+  };
+
+  const handleCreateAndAssign = async () => {
+    if (!assignTarget || !newTeam.name.trim() || !newTeam.sport.trim()) return;
+    setAssignError('');
+    try {
+      const created = await api.createTeam(newTeam);
+      const teamId = created?.id || '';
+      if (teamId) {
+        await api.addPlayerToRoster(teamId, { studentId: assignTarget.id, name: assignTarget.name, position: assignPosition });
+      }
+      setAssignTarget(null);
+      setShowCreateTeam(false);
+      setNewTeam({ name: '', sport: '', programmeId: '', ageGroup: '' });
+      setAssignPosition('');
+      load();
+    } catch (e: any) { setAssignError(e.message); }
+  };
+
+  const assignContent = assignTarget && !showCreateTeam ? (
+    <div className="space-y-3">
+      {assignError && <div className="p-2 bg-red-50 border border-red-200 rounded text-red-700 text-xs">{assignError}</div>}
+      <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-xl">
+        <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+          <Users className="w-4 h-4 text-orange-500" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-gray-900">{assignTarget.name}</p>
+          <p className="text-xs text-gray-500">Select a team below</p>
+        </div>
+      </div>
+      <div className="space-y-1 max-h-40 overflow-y-auto">
+        {teams.length === 0 ? (
+          <p className="text-sm text-gray-500 text-center py-4">No teams yet. Create one below.</p>
+        ) : teams.map(t => {
+          const alreadyIn = t.roster?.some(r => r.id === assignTarget.id);
+          return (
+            <button
+              key={t.id}
+              disabled={alreadyIn}
+              onClick={() => setSelectedTeamId(t.id)}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
+                selectedTeamId === t.id
+                  ? 'bg-orange-500/10 text-orange-600 font-medium'
+                  : alreadyIn
+                    ? 'text-gray-300 cursor-not-allowed'
+                    : 'text-gray-700 hover:bg-black/5'
+              }`}
+            >
+              <Trophy className="w-4 h-4 shrink-0" />
+              <span className="truncate">{t.name}</span>
+              <Badge variant="outline" className="text-[10px] ml-auto shrink-0">{t.sport}</Badge>
+              {alreadyIn && <span className="text-[10px] text-gray-400">Already in</span>}
+            </button>
+          );
+        })}
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-gray-500 mb-1">Position (optional)</label>
+        <input
+          type="text"
+          value={assignPosition}
+          onChange={e => setAssignPosition(e.target.value)}
+          placeholder="e.g. Forward, Goalkeeper..."
+          className="w-full px-3 py-2 rounded-lg border bg-background text-sm text-gray-900"
+        />
+      </div>
+      <div className="flex gap-2">
+        <Button onClick={handleAssignToTeam} disabled={!selectedTeamId} className="flex-1">
+          <UserPlus className="w-4 h-4 mr-1.5" />Assign
+        </Button>
+        <Button variant="outline" onClick={() => setShowCreateTeam(true)} className="flex-1">
+          <Plus className="w-4 h-4 mr-1.5" />New Team
+        </Button>
+      </div>
+    </div>
+  ) : assignTarget && showCreateTeam ? (
+    <div className="space-y-3">
+      {assignError && <div className="p-2 bg-red-50 border border-red-200 rounded text-red-700 text-xs">{assignError}</div>}
+      <div className="flex items-center gap-3 p-3 bg-orange-50 rounded-xl">
+        <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+          <Users className="w-4 h-4 text-orange-500" />
+        </div>
+        <div>
+          <p className="text-sm font-semibold text-gray-900">New Team for {assignTarget.name}</p>
+          <p className="text-xs text-gray-500">Fill in team details</p>
+        </div>
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-gray-500 mb-1">Team Name *</label>
+        <input
+          type="text"
+          value={newTeam.name}
+          onChange={e => setNewTeam(f => ({ ...f, name: e.target.value }))}
+          placeholder="e.g. U-14 Football A"
+          className="w-full px-3 py-2 rounded-lg border bg-background text-sm text-gray-900"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-gray-500 mb-1">Sport *</label>
+        <input
+          type="text"
+          value={newTeam.sport}
+          onChange={e => setNewTeam(f => ({ ...f, sport: e.target.value }))}
+          placeholder="e.g. Football, Basketball..."
+          className="w-full px-3 py-2 rounded-lg border bg-background text-sm text-gray-900"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-gray-500 mb-1">Programme</label>
+        <select
+          value={newTeam.programmeId}
+          onChange={e => setNewTeam(f => ({ ...f, programmeId: e.target.value }))}
+          className="w-full px-3 py-2 rounded-lg border bg-background text-sm text-gray-900"
+        >
+          <option value="">No programme</option>
+          {programmes.map(p => (
+            <option key={p.id} value={p.id}>{p.name} ({p.sport})</option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-gray-500 mb-1">Age Group</label>
+        <input
+          type="text"
+          value={newTeam.ageGroup}
+          onChange={e => setNewTeam(f => ({ ...f, ageGroup: e.target.value }))}
+          placeholder="e.g. U-14, U-16..."
+          className="w-full px-3 py-2 rounded-lg border bg-background text-sm text-gray-900"
+        />
+      </div>
+      <div>
+        <label className="block text-xs font-medium text-gray-500 mb-1">Position (optional)</label>
+        <input
+          type="text"
+          value={assignPosition}
+          onChange={e => setAssignPosition(e.target.value)}
+          placeholder="e.g. Forward"
+          className="w-full px-3 py-2 rounded-lg border bg-background text-sm text-gray-900"
+        />
+      </div>
+      <div className="flex gap-2">
+        <Button onClick={handleCreateAndAssign} disabled={!newTeam.name.trim() || !newTeam.sport.trim()}>
+          <Plus className="w-4 h-4 mr-1.5" />Create & Assign
+        </Button>
+        <Button variant="ghost" onClick={() => setShowCreateTeam(false)}>Back</Button>
+      </div>
+    </div>
+  ) : null;
 
   if (loading) return <div className="space-y-4">{[1, 2, 3].map(i => <Skeleton key={i} className="h-16" />)}</div>;
 
@@ -226,12 +394,31 @@ function AthletesSection() {
                     )}
                   </div>
                 </div>
+                <Button size="sm" variant="outline" onClick={() => { setAssignTarget(s); setSelectedTeamId(''); setAssignPosition(''); setShowCreateTeam(false); }}>
+                  <UserPlus className="w-4 h-4 mr-1" />Assign
+                </Button>
               </div>
             </Card>
           );
         })}
         {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">No students found</p>}
       </div>
+
+      {/* Assign to team - NavSheet on mobile, Modal on desktop */}
+      {assignTarget && (
+        <>
+          <div className="hidden sm:block">
+            <Modal isOpen={!!assignTarget} onClose={() => setAssignTarget(null)} title={showCreateTeam ? 'Create Team' : 'Assign to Team'} size="sm">
+              {assignContent}
+            </Modal>
+          </div>
+          <div className="sm:hidden">
+            <NavSheet isOpen={!!assignTarget} onClose={() => setAssignTarget(null)} title={showCreateTeam ? 'Create Team' : 'Assign to Team'}>
+              {assignContent}
+            </NavSheet>
+          </div>
+        </>
+      )}
     </div>
   );
 }

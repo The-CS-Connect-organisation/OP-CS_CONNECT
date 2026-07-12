@@ -68,7 +68,7 @@ const AdminFees = retryLazy(() => import('./pages/admin/AdminFees'))
 const AdminBusAssignment = retryLazy(() => import('./pages/admin/AdminBusAssignment'))
 const AdminLostFound = retryLazy(() => import('./pages/admin/AdminLostFound'))
 const AdminAnonymousReports = retryLazy(() => import('./pages/admin/AdminAnonymousReports'))
-const AdminClinic = retryLazy(() => import('./pages/admin/AdminClinic'))
+
 const AdminITHelpdesk = retryLazy(() => import('./pages/admin/AdminITHelpdesk'))
 const AdminClubs = retryLazy(() => import('./pages/admin/AdminClubs'))
 const ParentDashboard = retryLazy(() => import('./pages/parent/ParentDashboard'))
@@ -114,7 +114,7 @@ const StudentAssignmentDetails = retryLazy(() => import('./pages/student/Assignm
 
 const StudentLostAndFound = retryLazy(() => import('./pages/student/StudentLostAndFound'))
 const StudentITHelpdesk = retryLazy(() => import('./pages/student/StudentITHelpdesk'))
-const StudentClinicVisits = retryLazy(() => import('./pages/student/StudentClinicVisits'))
+
 const StudentAnonymousReports = retryLazy(() => import('./pages/student/StudentAnonymousReports'))
 // Admin Phase 3
 const AdminCounselling = retryLazy(() => import('./pages/admin/AdminCounselling'))
@@ -232,7 +232,7 @@ function App() {
             <Route path="health" element={<StudentHealth />} />
             <Route path="lost-found" element={<StudentLostAndFound />} />
             <Route path="it-helpdesk" element={<StudentITHelpdesk />} />
-            <Route path="clinic" element={<StudentClinicVisits />} />
+            <Route path="clinic" element={<Navigate to="/student/health" replace />} />
             <Route path="anonymous-report" element={<StudentAnonymousReports />} />
           </Route>
 
@@ -289,7 +289,7 @@ function App() {
             <Route path="lost-found" element={<AdminLostFound />} />
             <Route path="anonymous-report" element={<AdminAnonymousReports />} />
             <Route path="clubs" element={<AdminClubs />} />
-            <Route path="clinic" element={<AdminClinic />} />
+            <Route path="clinic" element={<Navigate to="/admin" replace />} />
             <Route path="e-portfolio" element={<AdminPortfolio />} />
             <Route path="it-helpdesk" element={<AdminITHelpdesk />} />
             <Route path="fee-installments" element={<Navigate to="/admin/fees" replace />} />
