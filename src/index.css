@@ -339,9 +339,14 @@ html::-webkit-scrollbar {
 }
 
 .glass-topbar {
-    @apply backdrop-blur-lg bg-background/80 border-b border-border/50;
+    @apply backdrop-blur-[40px] backdrop-saturate-[1.8] bg-white/[0.07] border-b border-white/25;
 }
 
+.glass-topbar-dark {
+    @apply backdrop-blur-[40px] backdrop-saturate-[1.8] bg-black/20 border-b border-white/5;
+}
+
+/* ---- Liquid Glass (Apple-style) ---- */
 .shimmer-overlay {
   background: linear-gradient(
     105deg,
@@ -359,6 +364,19 @@ html::-webkit-scrollbar {
   0% { background-position: 100% 0; }
   50% { background-position: 0 0; }
   100% { background-position: 100% 0; }
+}
+
+.glass-mesh-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(251,146,60,0.08) 0%, transparent 40%),
+    radial-gradient(circle at 10% 90%, rgba(249,115,22,0.14) 0%, transparent 50%),
+    radial-gradient(circle at 90% 85%, rgba(251,146,60,0.12) 0%, transparent 45%),
+    radial-gradient(circle at 50% 95%, rgba(234,88,12,0.10) 0%, transparent 40%),
+    radial-gradient(circle at 30% 88%, rgba(249,115,22,0.08) 0%, transparent 35%);
 }
 
 @keyframes fadeSlideIn {
@@ -810,7 +828,7 @@ body::after {
   100% { background-position: 0% 50%; }
 }
 
-@keyframes shimmer {
+@keyframes shimmer-slide {
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }

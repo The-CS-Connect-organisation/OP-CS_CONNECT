@@ -34,8 +34,9 @@ export const NavSheet: React.FC<NavSheetProps> = ({ isOpen, onClose, title, chil
               className={`w-[280px] transition-all duration-300 ease-out origin-bottom ${visible ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-0'}`}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="rounded-[1.75rem] rounded-b-[1.25rem] border border-white/20 bg-white/10 shadow-2xl shadow-black/10 backdrop-blur-3xl overflow-hidden relative">
-                <div className="absolute inset-0 bg-gradient-to-b from-white/15 to-transparent pointer-events-none rounded-[1.75rem] rounded-b-[1.25rem]" />
+              <div className="rounded-[1.75rem] rounded-b-[1.25rem] border border-white/25 bg-white/[0.07] shadow-2xl shadow-black/8 backdrop-blur-[40px] backdrop-saturate-[1.8] overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-b from-white/20 via-white/5 to-transparent pointer-events-none rounded-[1.75rem] rounded-b-[1.25rem]" />
+                <div className="absolute inset-0 rounded-[1.75rem] rounded-b-[1.25rem] shimmer-overlay pointer-events-none" />
                 <div className="relative flex items-center justify-between px-5 pt-4 pb-2">
                   <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
                   <button

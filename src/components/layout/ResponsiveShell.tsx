@@ -11,17 +11,20 @@ interface ResponsiveShellProps {
 
 export default function ResponsiveShell({ children }: ResponsiveShellProps) {
   return (
-    <div className="h-screen bg-background text-foreground overflow-hidden">
-      <TopBar />
-      <div className="flex h-[calc(100vh-4rem)]">
-        <Sidebar />
-        <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 pb-24 pt-4 lg:p-6 lg:pb-4">
-          <Suspense fallback={<div className="flex h-full w-full items-center justify-center"><Loader variant="dots" size="lg" /></div>}>
-            {children || <Outlet />}
-          </Suspense>
-        </main>
+    <div className="h-screen bg-background text-foreground overflow-hidden relative">
+      <div className="glass-mesh-bg" />
+      <div className="relative z-10">
+        <TopBar />
+        <div className="flex h-[calc(100vh-4rem)]">
+          <Sidebar />
+          <main className="flex-1 overflow-x-hidden overflow-y-auto px-4 pb-24 pt-4 lg:p-6 lg:pb-4">
+            <Suspense fallback={<div className="flex h-full w-full items-center justify-center"><Loader variant="dots" size="lg" /></div>}>
+              {children || <Outlet />}
+            </Suspense>
+          </main>
+        </div>
+        <MobileNav />
       </div>
-      <MobileNav />
     </div>
   )
 }

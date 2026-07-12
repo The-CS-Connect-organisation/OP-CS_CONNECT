@@ -81,8 +81,9 @@ export default function MobileNav() {
     <div
       className={`fixed bottom-6 left-0 right-0 z-50 flex justify-center transition-all duration-300 ease-out lg:hidden will-change-transform ${isMobileOpen ? 'translate-y-20 opacity-20' : 'translate-y-0 opacity-100'}`}
     >
-      <nav className="relative flex items-center justify-center space-x-4 w-[280px] rounded-full border border-white/20 bg-white/10 p-2 shadow-2xl shadow-black/10 backdrop-blur-3xl overflow-hidden">
-            <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/15 to-transparent pointer-events-none" />
+      <nav className="relative flex items-center justify-center space-x-4 w-[280px] rounded-full border border-white/25 bg-white/[0.07] p-2 shadow-2xl shadow-black/8 backdrop-blur-[40px] backdrop-saturate-[1.8] overflow-hidden">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-b from-white/20 via-white/5 to-transparent pointer-events-none" />
+            <div className="absolute inset-0 rounded-full shimmer-overlay pointer-events-none" />
         {visible.slice(0, 2).map((item) => (
           <Button
             key={item.path}
