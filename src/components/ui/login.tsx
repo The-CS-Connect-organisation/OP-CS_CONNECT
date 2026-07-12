@@ -4,7 +4,7 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import {
   Form,
@@ -61,7 +61,7 @@ export function AuthFormSplitScreen({
     if (slideImages.length <= 1) return;
     const interval = setInterval(() => {
       setSlideIndex((i) => (i + 1) % slideImages.length);
-    }, 2500);
+    }, 3000);
     return () => clearInterval(interval);
   }, [slideImages.length]);
 
@@ -224,21 +224,19 @@ export function AuthFormSplitScreen({
         </div>
       </div>
 
-      <div className="relative hidden w-1/2 md:block overflow-hidden">
-        {slideImages.length > 0 && (
-          <AnimatePresence mode="wait">
-            <motion.img
-              key={slideIndex}
-              src={slideImages[slideIndex]}
+      <div className="relative hidden w-1/2 md:block overflow-hidden bg-gray-900">
+        <div className="absolute inset-0">
+          {slideImages.map((src, i) => (
+            <img
+              key={i}
+              src={src}
               alt={slideAlt}
-              initial={{ opacity: 0, scale: 1.05 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.8, ease: "easeInOut" }}
-              className="absolute inset-0 h-full w-full object-cover"
+              loading={i === 0 ? "eager" : "lazy"}
+              className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ease-in-out"
+              style={{ opacity: i === slideIndex ? 1 : 0 }}
             />
-          </AnimatePresence>
-        )}
+          ))}
+        </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent" />
       </div>
     </div>
