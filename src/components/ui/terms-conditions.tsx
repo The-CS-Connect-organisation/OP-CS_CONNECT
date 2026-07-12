@@ -1,9 +1,6 @@
 import { useState } from "react"
 import { Checkbox } from "@/components/ui/Checkbox"
-import { Label } from "@/components/ui/Label"
 import { Button } from "@/components/ui/Button"
-
-const TERMS_KEY = "cs-connect-tc-accepted"
 
 const terms = [
   {
@@ -41,13 +38,8 @@ export default function TermsConditions({ onAccept }: TocDialogProps) {
   }
 
   const handleAccept = () => {
-    localStorage.setItem(TERMS_KEY, "true")
     onAccept()
   }
-
-  const isAlreadyAccepted = localStorage.getItem(TERMS_KEY) === "true"
-
-  if (isAlreadyAccepted) return null
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -56,7 +48,7 @@ export default function TermsConditions({ onAccept }: TocDialogProps) {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-400 to-orange-600 text-white text-lg font-bold">
             CS
           </div>
-          <h2 className="text-xl font-bold text-gray-900">Welcome to CS Connect</h2>
+            <h2 className="text-xl font-bold text-gray-900">Welcome to SchoolSync</h2>
           <p className="mt-1 text-sm text-gray-500">
             Please review and accept before continuing
           </p>
