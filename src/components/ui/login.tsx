@@ -101,24 +101,9 @@ export function AuthFormSplitScreen({
   };
 
   return (
-    <>
-    <style>{`
-      @media (min-width: 768px) {
-        .vintage-mask {
-          -webkit-mask-image: linear-gradient(to left, transparent 0%, black 120px);
-          mask-image: linear-gradient(to left, transparent 0%, black 120px);
-        }
-      }
-    `}</style>
     <div className="relative flex min-h-svh w-full flex-col justify-center md:min-h-screen md:flex-row">
       <div className="relative flex w-full flex-col items-center justify-center px-5 py-6 md:p-8 md:w-1/2 overflow-hidden bg-white">
-        <img
-          src="https://res.cloudinary.com/iextksqn/image/upload/v1783842250/vintage_copy_of_school-campus-picture-01-copy_ghh9l6.jpg"
-          alt=""
-          className="vintage-mask absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
-          style={{ opacity: 0.2 }}
-        />
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-md text-gray-900">
           <motion.div
             variants={containerVariants}
             initial="hidden"
@@ -238,7 +223,7 @@ export function AuthFormSplitScreen({
 
             <motion.p
               variants={itemVariants}
-              className="text-center text-[11px] text-gray-700"
+              className="text-center text-[11px] text-gray-900"
             >
               SchoolSync — Campus Management Platform
             </motion.p>
@@ -268,6 +253,5 @@ export function AuthFormSplitScreen({
         </div>
       </div>
     </div>
-    </>
   );
 }
