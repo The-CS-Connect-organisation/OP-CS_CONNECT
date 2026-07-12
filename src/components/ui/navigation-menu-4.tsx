@@ -1,8 +1,8 @@
-import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { Menu, X, LogIn, LayoutDashboard, LogOut } from "lucide-react"
+import { LogIn, LayoutDashboard, LogOut } from "lucide-react"
 
 import { useAuthStore } from "@/lib/store"
+import MobileNav from "@/components/ui/MobileNav"
 import { cn } from "@/lib/utils"
 import {
   NavigationMenu,
@@ -41,7 +41,6 @@ const resources = [
 ]
 
 const NavigationMenu4 = () => {
-  const [mobileOpen, setMobileOpen] = useState(false)
   const navigate = useNavigate()
   const { isAuthenticated, user } = useAuthStore()
 
@@ -211,109 +210,10 @@ const NavigationMenu4 = () => {
             </div>
           </div>
 
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden flex h-8 w-8 items-center justify-center rounded-lg text-gray-600 hover:bg-orange-50 hover:text-orange-600 transition-colors shrink-0"
-            aria-label="Toggle menu"
-          >
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
         </div>
       </div>
 
-      {mobileOpen && (
-        <div className="mx-auto mt-2 max-w-7xl px-3 sm:px-6 lg:px-8 md:hidden">
-          <nav className="rounded-2xl border border-orange-200/60 bg-white/90 px-4 py-3 backdrop-blur-xl shadow-sm">
-            <div className="space-y-1">
-              <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-gray-400">Products</p>
-              {products.map((item) => (
-                <Link
-                  key={item.title}
-                  to={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex flex-col rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-orange-50 hover:text-orange-600"
-                >
-                  <span className="font-medium">{item.title}</span>
-                  <span className="text-xs text-gray-400">{item.description}</span>
-                </Link>
-              ))}
-            </div>
-            <hr className="my-2 border-orange-100" />
-            <div className="space-y-1">
-              <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-gray-400">About</p>
-              {aboutItems.map((item) => (
-                <Link
-                  key={item.title}
-                  to={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex flex-col rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-orange-50 hover:text-orange-600"
-                >
-                  <span className="font-medium">{item.title}</span>
-                  <span className="text-xs text-gray-400">{item.description}</span>
-                </Link>
-              ))}
-              <Link
-                to="/blog"
-                onClick={() => setMobileOpen(false)}
-                className="flex flex-col rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-orange-50 hover:text-orange-600"
-              >
-                <span className="font-medium">Blog</span>
-                <span className="text-xs text-gray-400">Latest updates from Cornerstone Schools.</span>
-              </Link>
-            </div>
-            <hr className="my-2 border-orange-100" />
-            <div className="space-y-1">
-              <p className="px-3 py-1 text-xs font-semibold uppercase tracking-wider text-gray-400">Resources</p>
-              {resources.map((item) => (
-                <Link
-                  key={item.title}
-                  to={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="flex flex-col rounded-lg px-3 py-2 text-sm text-gray-600 transition-colors hover:bg-orange-50 hover:text-orange-600"
-                >
-                  <span className="font-medium">{item.title}</span>
-                  <span className="text-xs text-gray-400">{item.description}</span>
-                </Link>
-              ))}
-            </div>
-            <hr className="my-2 border-orange-100" />
-            {isAuthenticated && user ? (
-              <>
-                <button
-                  onClick={() => { setMobileOpen(false); navigate(getDashboardRoute()) }}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-orange-50 hover:text-orange-600"
-                >
-                  <LayoutDashboard className="w-4 h-4" />
-                  Dashboard
-                </button>
-                <button
-                  onClick={() => { useAuthStore.getState().logout(); navigate("/"); setMobileOpen(false) }}
-                  className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-600 transition-colors hover:bg-orange-50 hover:text-orange-600"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Logout
-                </button>
-              </>
-            ) : (
-              <div className="flex flex-col gap-2 pt-1">
-                <button
-                  onClick={() => { setMobileOpen(false); navigate("/login") }}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg border border-orange-200 px-3 py-2 text-sm font-medium text-orange-600 transition-colors hover:bg-orange-50"
-                >
-                  <LogIn className="w-3.5 h-3.5" />
-                  Sign In
-                </button>
-                <button
-                  onClick={() => { setMobileOpen(false); navigate("/signup") }}
-                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-3 py-2 text-sm font-medium text-white shadow-sm hover:from-orange-600 hover:to-orange-700"
-                >
-                  Get Started
-                </button>
-              </div>
-            )}
-          </nav>
-        </div>
-      )}
+      <MobileNav />
     </header>
   )
 }
