@@ -4,22 +4,22 @@ import Navbar from '@/components/ui/Navbar'
 import { X, ChevronLeft, ChevronRight, Grid3X3, Image as ImageIcon } from 'lucide-react'
 
 const galleryImages = [
-  { src: '/img/gallery-1.webp', category: 'Events', title: 'School Event' },
-  { src: '/img/gallery-2.webp', category: 'Events', title: 'School Event' },
-  { src: '/img/gallery-3.webp', category: 'Events', title: 'School Event' },
-  { src: '/img/gallery-4.webp', category: 'Events', title: 'School Event' },
-  { src: '/img/gallery-5.webp', category: 'Events', title: 'School Event' },
-  { src: '/farewell/DSC05820.jpg.jpeg', category: 'Farewell', title: 'Farewell 2023' },
-  { src: '/farewell/DSC06091.jpg.jpeg', category: 'Farewell', title: 'Farewell 2023' },
-  { src: '/farewell/DSC06271.jpg.jpeg', category: 'Farewell', title: 'Farewell 2023' },
-  { src: '/farewell/DSC06844.jpg.jpeg', category: 'Farewell', title: 'Farewell 2023' },
-  { src: '/farewell/DSC07473.jpg.jpeg', category: 'Farewell', title: 'Farewell 2023' },
-  { src: '/farewell/G-10-at-ICRISAT.png', category: 'Farewell', title: 'G10 at ICRISAT' },
-  { src: '/farewell/slider-1.jpg.jpeg', category: 'Events', title: 'School Event' },
-  { src: '/farewell/visual-arts.jpg.jpeg', category: 'Arts', title: 'Visual Arts' },
-  { src: '/farewell/RPB03257.jpg.jpeg', category: 'Events', title: 'School Event' },
-  { src: '/farewell/RPB02687.jpg.jpeg', category: 'Events', title: 'School Event' },
-  { src: '/farewell/RPB02324-1024x683.jpg.jpeg', category: 'Events', title: 'School Event' },
+  { src: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?q=80&w=800&auto=format&fit=crop', category: 'Events', title: 'School Event' },
+  { src: 'https://images.unsplash.com/photo-1562774053-701939374585?q=80&w=800&auto=format&fit=crop', category: 'Events', title: 'School Event' },
+  { src: 'https://images.unsplash.com/photo-1523050854058-8df90110c7f1?q=80&w=800&auto=format&fit=crop', category: 'Events', title: 'School Event' },
+  { src: 'https://images.unsplash.com/photo-1588072432836-e10032774350?q=80&w=800&auto=format&fit=crop', category: 'Events', title: 'School Event' },
+  { src: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=800&auto=format&fit=crop', category: 'Events', title: 'School Event' },
+  { src: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=800&auto=format&fit=crop', category: 'Events', title: 'School Event' },
+  { src: 'https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=800&auto=format&fit=crop', category: 'Events', title: 'School Event' },
+  { src: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f8e1c1?q=80&w=800&auto=format&fit=crop', category: 'Events', title: 'School Event' },
+  { src: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=800&auto=format&fit=crop', category: 'Events', title: 'School Event' },
+  { src: 'https://images.unsplash.com/photo-1577896851231-70ac1887ce3e?q=80&w=800&auto=format&fit=crop', category: 'Events', title: 'School Event' },
+  { src: 'https://images.unsplash.com/photo-1529390079861-591de354faf5?q=80&w=800&auto=format&fit=crop', category: 'Farewell', title: 'Farewell 2023' },
+  { src: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?q=80&w=800&auto=format&fit=crop', category: 'Farewell', title: 'Farewell 2023' },
+  { src: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=800&auto=format&fit=crop', category: 'Farewell', title: 'Farewell 2023' },
+  { src: 'https://images.unsplash.com/photo-1606761568499-6d2451b23c66?q=80&w=800&auto=format&fit=crop', category: 'Arts', title: 'Visual Arts' },
+  { src: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=800&auto=format&fit=crop', category: 'Arts', title: 'Visual Arts' },
+  { src: 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?q=80&w=800&auto=format&fit=crop', category: 'Arts', title: 'Visual Arts' },
 ]
 
 const categories = ['All', 'Events', 'Farewell', 'Arts']

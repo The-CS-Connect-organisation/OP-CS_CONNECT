@@ -54,7 +54,7 @@ export default function MobileLanding({ showPrompt }: Props) {
       {/* Navbar */}
       <nav className={`fixed inset-x-0 z-50 h-14 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 ${showPrompt ? "top-[68px]" : "top-0"}`}>
         <button onClick={() => navigate("/")} className="flex items-center gap-2">
-          <img src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`} alt="CS Connect" className="w-6 h-6 object-contain" />
+          <img src="https://res.cloudinary.com/iextksqn/image/upload/v1783831062/csfeviconbgfreeedition_rtfr8x.png" alt="CS Connect" className="w-6 h-6 object-contain" />
           <span className="font-zentry text-sm font-black uppercase tracking-wider text-gray-900">CS Connect</span>
         </button>
 
@@ -215,7 +215,7 @@ export default function MobileLanding({ showPrompt }: Props) {
         <div className="flex flex-col items-center text-center">
           <div className="flex items-center gap-2 mb-3">
             <img
-              src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`}
+              src="https://res.cloudinary.com/iextksqn/image/upload/v1783831062/csfeviconbgfreeedition_rtfr8x.png"
               alt="Cornerstone School"
               className="h-8 w-8 object-contain brightness-0 invert"
             />

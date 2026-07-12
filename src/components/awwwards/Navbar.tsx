@@ -72,7 +72,7 @@ const NavBar = () => {
         <nav className="flex size-full items-center justify-between px-4 md:px-8">
           <div className="flex items-center gap-3">
             <button onClick={() => navigate("/")} className="flex items-center gap-3">
-              <img src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`} alt="CS Connect" className="w-7 h-7 md:w-8 md:h-8 object-contain" />
+              <img src="https://res.cloudinary.com/iextksqn/image/upload/v1783831062/csfeviconbgfreeedition_rtfr8x.png" alt="CS Connect" className="w-7 h-7 md:w-8 md:h-8 object-contain" />
               <span className="font-zentry text-base md:text-lg font-black uppercase tracking-wider text-white">
                 CS Connect
               </span>

@@ -66,7 +66,7 @@ const NavigationMenu4 = () => {
         <div className="mt-3 flex items-center justify-between rounded-2xl border border-white/30 bg-white/40 px-3 py-2 shadow-xl backdrop-blur-2xl md:px-6">
           <Link to="/" className="flex items-center gap-1.5 shrink-0 min-w-0">
             <img
-              src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`}
+              src="https://res.cloudinary.com/iextksqn/image/upload/v1783831062/csfeviconbgfreeedition_rtfr8x.png"
               alt="Cornerstone"
               className="w-7 h-7 md:w-9 md:h-9 object-contain shrink-0"
             />

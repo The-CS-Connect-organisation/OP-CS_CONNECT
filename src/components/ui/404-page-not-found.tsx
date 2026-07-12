@@ -303,7 +303,7 @@ const NotFoundPage = () => {
         </div>
         <div className="not_found_logo_wrap">
           <img
-            src="https://www.cornerstoneschool.edu.in/wp-content/uploads/2020/02/LOGO-PNG-1.png"
+            src="https://res.cloudinary.com/iextksqn/image/upload/v1783831100/LOGO-PNG-1_zftbqk.png"
             alt="Cornerstone"
             className="not_found_logo"
           />
