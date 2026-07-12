@@ -3,7 +3,7 @@ import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { BottomSheet } from '../../components/ui/BottomSheet';
+import { NavSheet } from '../../components/ui/NavSheet';
 import { AlertTriangle, Send, Calendar, User, Plus } from 'lucide-react';
 import { useAuthStore } from '../../lib/store';
 
@@ -126,9 +126,9 @@ export default function StudentAnonymousReports() {
         </Button>
       </div>
 
-      <BottomSheet isOpen={showForm} onClose={() => setShowForm(false)} title="New Report">
+      <NavSheet isOpen={showForm} onClose={() => setShowForm(false)} title="New Report">
         {formContent}
-      </BottomSheet>
+      </NavSheet>
 
       <div className="space-y-4">
         {reports.length === 0 ? (

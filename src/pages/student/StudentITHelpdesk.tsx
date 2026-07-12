@@ -3,7 +3,7 @@ import { api } from '../../lib/api';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { BottomSheet } from '../../components/ui/BottomSheet';
+import { NavSheet } from '../../components/ui/NavSheet';
 import { Headphones, Plus, Calendar, User } from 'lucide-react';
 import { useAuthStore } from '../../lib/store';
 
@@ -143,9 +143,9 @@ export default function StudentITHelpdesk() {
         </Button>
       </div>
 
-      <BottomSheet isOpen={showForm} onClose={() => setShowForm(false)} title="New Ticket">
+      <NavSheet isOpen={showForm} onClose={() => setShowForm(false)} title="New Ticket">
         {formContent}
-      </BottomSheet>
+      </NavSheet>
 
       <div className="flex gap-2 overflow-x-auto scrollbar-thin pb-1">
         {['all', 'open', 'in-progress', 'resolved'].map(f => (

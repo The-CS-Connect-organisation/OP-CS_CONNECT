@@ -8,6 +8,7 @@ import { Skeleton } from '../../components/ui/Skeleton';
 import { Input } from '../../components/ui/Input';
 import { Textarea } from '../../components/ui/Textarea';
 import { Modal } from '../../components/ui/Modal';
+import { NavSheet, NavSheetItem } from '../../components/ui/NavSheet';
 import { BottomSheet, PickerSheet } from '../../components/ui/BottomSheet';
 import {
   Stethoscope,
@@ -424,7 +425,7 @@ export default function AdminHealth() {
         ))}
       </div>
 
-      {/* mobile secondary nav as bottom sheet trigger */}
+      {/* mobile secondary nav — fans out from bottom nav bar */}
       <div className="sm:hidden">
         <Button
           variant="outline"
@@ -437,28 +438,22 @@ export default function AdminHealth() {
           </span>
           <ChevronDown className="w-4 h-4 opacity-50" />
         </Button>
-        <BottomSheet
+        <NavSheet
           isOpen={showSubNavSheet}
           onClose={() => setShowSubNavSheet(false)}
           title="Select Section"
         >
-          <div className="space-y-1">
-            {subNavItems.map((item) => (
-              <button
-                key={item.key}
-                onClick={() => { setSubSection(item.key); setShowSubNavSheet(false); }}
-                className={`w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm transition-colors ${
-                  subSection === item.key
-                    ? 'bg-orange-500/10 text-orange-600 font-medium'
-                    : 'text-foreground hover:bg-accent'
-                }`}
-              >
-                {item.icon}
-                {item.label}
-              </button>
-            ))}
-          </div>
-        </BottomSheet>
+          {subNavItems.map((item, i) => (
+            <NavSheetItem
+              key={item.key}
+              icon={item.icon}
+              label={item.label}
+              active={subSection === item.key}
+              index={i}
+              onClick={() => { setSubSection(item.key); setShowSubNavSheet(false); }}
+            />
+          ))}
+        </NavSheet>
       </div>
 
       {subSection === 'incidents' && (
