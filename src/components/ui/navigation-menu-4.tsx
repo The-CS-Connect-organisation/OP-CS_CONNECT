@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
-import { Menu, X, LogIn, LayoutDashboard, LogOut, CircleUserRound } from "lucide-react"
+import { Menu, X, LogIn, LayoutDashboard, LogOut } from "lucide-react"
 
 import { useAuthStore } from "@/lib/store"
 import { Button } from "@/components/ui/Button"
@@ -64,7 +64,7 @@ const NavigationMenu4 = () => {
   return (
     <header className="fixed inset-x-0 top-0 z-50">
       <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
-        <div className="mt-3 flex items-center justify-between rounded-2xl border border-white/30 bg-white/40 px-3 py-2 shadow-xl backdrop-blur-2xl md:px-6">
+        <div className="mt-3 flex items-center justify-between rounded-2xl border border-white/30 bg-white/70 px-3 py-2 shadow-xl backdrop-blur-2xl md:px-6">
           <Link to="/" className="flex items-center gap-1.5 shrink-0 min-w-0">
             <img
               src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`}
@@ -80,7 +80,7 @@ const NavigationMenu4 = () => {
             <NavigationMenu className="hidden md:flex">
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="rounded-lg text-sm font-medium text-gray-600 hover:bg-orange-50 hover:text-orange-600 data-[state=open]:bg-orange-50 data-[state=open]:text-orange-600">
+                  <NavigationMenuTrigger className="rounded-lg text-sm font-medium text-gray-700 bg-white/40 backdrop-blur-md border border-white/20 shadow-sm hover:bg-white/60 hover:text-orange-600 data-[state=open]:bg-white/60 data-[state=open]:text-orange-600">
                     Products
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -99,7 +99,7 @@ const NavigationMenu4 = () => {
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="rounded-lg text-sm font-medium text-gray-600 hover:bg-orange-50 hover:text-orange-600 data-[state=open]:bg-orange-50 data-[state=open]:text-orange-600">
+                  <NavigationMenuTrigger className="rounded-lg text-sm font-medium text-gray-700 bg-white/40 backdrop-blur-md border border-white/20 shadow-sm hover:bg-white/60 hover:text-orange-600 data-[state=open]:bg-white/60 data-[state=open]:text-orange-600">
                     About
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -125,7 +125,7 @@ const NavigationMenu4 = () => {
                 </NavigationMenuItem>
 
                 <NavigationMenuItem>
-                  <NavigationMenuTrigger className="rounded-lg text-sm font-medium text-gray-600 hover:bg-orange-50 hover:text-orange-600 data-[state=open]:bg-orange-50 data-[state=open]:text-orange-600">
+                  <NavigationMenuTrigger className="rounded-lg text-sm font-medium text-gray-700 bg-white/40 backdrop-blur-md border border-white/20 shadow-sm hover:bg-white/60 hover:text-orange-600 data-[state=open]:bg-white/60 data-[state=open]:text-orange-600">
                     Resources
                   </NavigationMenuTrigger>
                   <NavigationMenuContent>
@@ -149,8 +149,8 @@ const NavigationMenu4 = () => {
               {isAuthenticated && user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="rounded-full text-gray-600 hover:text-orange-600 hover:bg-orange-50 transition-colors p-1.5">
-                      <CircleUserRound className="w-5 h-5" />
+                    <button className="rounded-lg bg-white/40 backdrop-blur-md border border-white/20 shadow-sm text-sm font-medium text-gray-700 hover:text-orange-600 hover:bg-white/60 transition-all px-4 py-1.5">
+                      {user.name}
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="min-w-56">
@@ -181,10 +181,9 @@ const NavigationMenu4 = () => {
               ) : (
                 <div className="flex items-center gap-2">
                   <Button
-                    variant="ghost"
                     size="sm"
                     onClick={() => navigate("/login")}
-                    className="text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg"
+                    className="rounded-lg bg-white/40 backdrop-blur-md border border-white/20 shadow-sm text-sm font-medium text-gray-700 hover:text-orange-600 hover:bg-white/60 transition-all"
                   >
                     Sign In
                   </Button>
