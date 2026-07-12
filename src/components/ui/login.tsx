@@ -102,12 +102,16 @@ export function AuthFormSplitScreen({
 
   return (
     <div className="relative flex min-h-screen w-full flex-col md:flex-row">
-      <div className="relative flex w-full flex-col items-center justify-center p-8 md:w-1/2 overflow-hidden">
+      <div className="relative flex w-full flex-col items-center justify-center p-8 md:w-1/2 overflow-hidden bg-white">
         <img
           src="https://res.cloudinary.com/iextksqn/image/upload/v1783842250/vintage_copy_of_school-campus-picture-01-copy_ghh9l6.jpg"
           alt=""
           className="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
-          style={{ opacity: 0.2 }}
+          style={{
+            opacity: 0.2,
+            maskImage: 'linear-gradient(to left, transparent 0%, black 120px)',
+            WebkitMaskImage: 'linear-gradient(to left, transparent 0%, black 120px)',
+          }}
         />
         <div className="w-full max-w-md">
           <motion.div
@@ -230,12 +234,12 @@ export function AuthFormSplitScreen({
         </div>
       </div>
 
-      <div className="relative hidden w-1/2 md:block overflow-hidden bg-gray-900">
+      <div className="relative hidden w-1/2 md:block overflow-hidden bg-white">
         <div
           className="absolute inset-0"
           style={{
-            maskImage: 'linear-gradient(to right, transparent 0%, black 25%)',
-            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 25%)',
+            maskImage: 'linear-gradient(to right, transparent 0%, black 120px)',
+            WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 120px)',
           }}
         >
           {slideImages.map((src, i) => (
@@ -248,8 +252,8 @@ export function AuthFormSplitScreen({
               style={{ opacity: i === slideIndex ? 1 : 0 }}
             />
           ))}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent pointer-events-none" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent" />
       </div>
     </div>
   );

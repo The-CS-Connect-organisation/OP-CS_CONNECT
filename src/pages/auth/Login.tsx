@@ -48,7 +48,7 @@ export default function Login() {
     <div className="bg-background text-foreground relative min-h-screen">
       <AuthFormSplitScreen
         logo={
-          <div className="flex flex-col items-start gap-3">
+          <div className="flex flex-col items-start gap-1">
             <div className="inline-flex items-center rounded-2xl border border-white/20 bg-white/40 px-5 py-3 shadow-lg backdrop-blur-2xl">
               <img
                 src="https://res.cloudinary.com/iextksqn/image/upload/v1783831100/LOGO-PNG-1_zftbqk.png"
@@ -56,9 +56,9 @@ export default function Login() {
                 className="h-10 w-auto"
               />
             </div>
-            <span className="inline-flex items-center rounded-full border border-white/20 bg-white/30 px-3 py-1 text-[11px] font-light tracking-wide text-gray-400 backdrop-blur-md">
-              in partnership with SchoolSync
-            </span>
+            <div className="ml-1 text-[12px] font-light tracking-wide text-gray-400">
+              in association with <span className="italic font-medium text-gray-500">SchoolSync</span>
+            </div>
           </div>
         }
         title="Welcome Back"

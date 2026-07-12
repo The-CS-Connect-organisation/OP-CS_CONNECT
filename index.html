@@ -4,12 +4,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function(){var c=localStorage.getItem('ssv');fetch('version.txt?t='+Date.now()).then(function(r){return r.text()}).then(function(v){v=v.trim();if(c&&c!==v){localStorage.clear();location.reload()}else if(!c){localStorage.setItem('ssv',v)}}).catch(function(){})})();
+    </script>
     
-    <!-- Cache busting — force fresh index.html on every visit -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-
     <!-- Primary Meta Tags -->
     <title>SchoolSync</title>
     <meta name="title" content="SchoolSync">
