@@ -28,11 +28,12 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title
           onClick={onClose}
         >
           <div
-            className={`absolute left-2 right-2 bottom-16 bg-white/95 backdrop-blur-2xl rounded-2xl rounded-b-none shadow-2xl transition-transform duration-250 ease-out will-change-transform origin-bottom ${visible ? 'translate-y-0 scale-y-100' : 'translate-y-full scale-y-95'}`}
+            className={`relative overflow-hidden absolute left-2 right-2 bottom-16 bg-white/10 backdrop-blur-3xl rounded-2xl rounded-b-none shadow-2xl shadow-black/10 border border-white/20 transition-transform duration-250 ease-out will-change-transform origin-bottom ${visible ? 'translate-y-0 scale-y-100' : 'translate-y-full scale-y-95'}`}
             style={{ maxHeight: '70vh' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-orange-100">
+            <div className="absolute inset-0 bg-gradient-to-b from-white/15 to-transparent pointer-events-none rounded-2xl rounded-b-none" />
+            <div className="relative flex items-center justify-between px-4 pt-3 pb-2 border-b border-white/10">
               <h3 className="text-base font-semibold text-gray-900">{title}</h3>
               <button
                 onClick={onClose}
