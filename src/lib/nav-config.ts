@@ -7,7 +7,7 @@ import {
   Radio, Users, Clock, Building2,
   RadioTower, BookCopy, HeartPulse, Scale, Trophy, FolderOpen,
   GraduationCap, Truck, UtensilsCrossed,   Dumbbell, Handshake, Cog, Monitor,
-  Search, AlertTriangle, Stethoscope, Headphones,
+  Search, AlertTriangle, Headphones,
   MapPin, Shield, Settings, Eye, BookMarked, HelpCircle,
   ThumbsUp, Printer, Gauge, Navigation, CircleUser, Route, ChevronDown,
   GraduationCap as Cap, Gavel, type LucideIcon
@@ -189,7 +189,6 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: Search, label: 'Lost & Found', path: '/admin/lost-found' },
         { icon: AlertTriangle, label: 'Anonymous Report', path: '/admin/anonymous-report' },
         { icon: HeartPulse, label: 'Health Services', path: '/admin/health' },
-        { icon: Stethoscope, label: 'School Clinic', path: '/admin/clinic' },
         { icon: Headphones, label: 'IT Helpdesk', path: '/admin/it-helpdesk' },
         { icon: Users, label: 'Manage Clubs', path: '/admin/clubs' },
         { icon: Gavel, label: 'Talent Market', path: '/admin/talent-market' },

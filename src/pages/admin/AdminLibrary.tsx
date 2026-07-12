@@ -4,8 +4,8 @@ import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../../components/ui/Tabs';
-import { BookOpen, Search, Plus, Edit, Trash2, CheckCircle, XCircle, DollarSign, Users, Calendar, Star, Library, FileText } from 'lucide-react';
+import { NavSheet, NavSheetItem } from '../../components/ui/NavSheet';
+import { BookOpen, Search, Plus, Edit, Trash2, CheckCircle, DollarSign, Users, Calendar, Star, Library, FileText, ChevronDown } from 'lucide-react';
 
 interface CatalogueBook {
   id: string;
@@ -72,6 +72,8 @@ interface InterlibraryLoan {
   status: string;
 }
 
+type SubSection = 'catalogue' | 'holds' | 'fines' | 'class-sets' | 'reading-logs' | 'programmes' | 'reviews' | 'ill';
+
 export default function AdminLibrary() {
   const [catalogue, setCatalogue] = useState<CatalogueBook[]>([]);
   const [holds, setHolds] = useState<HoldRequest[]>([]);
@@ -83,7 +85,8 @@ export default function AdminLibrary() {
   const [ills, setIlls] = useState<InterlibraryLoan[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [activeTab, setActiveTab] = useState('catalogue');
+  const [subSection, setSubSection] = useState<SubSection>('catalogue');
+  const [showSubNavSheet, setShowSubNavSheet] = useState(false);
 
   useEffect(() => {
     loadAll();
@@ -132,26 +135,78 @@ export default function AdminLibrary() {
     );
   }
 
+  const subNavItems: { key: SubSection; label: string; icon: React.ReactNode }[] = [
+    { key: 'catalogue', label: 'Catalogue', icon: <BookOpen className="w-4 h-4 shrink-0" /> },
+    { key: 'holds', label: 'Holds', icon: <Library className="w-4 h-4 shrink-0" /> },
+    { key: 'fines', label: 'Fines', icon: <DollarSign className="w-4 h-4 shrink-0" /> },
+    { key: 'class-sets', label: 'Class Sets', icon: <Users className="w-4 h-4 shrink-0" /> },
+    { key: 'reading-logs', label: 'Reading Logs', icon: <FileText className="w-4 h-4 shrink-0" /> },
+    { key: 'programmes', label: 'Programmes', icon: <Calendar className="w-4 h-4 shrink-0" /> },
+    { key: 'reviews', label: 'Reviews', icon: <Star className="w-4 h-4 shrink-0" /> },
+    { key: 'ill', label: 'ILL', icon: <Library className="w-4 h-4 shrink-0" /> },
+  ];
+
+  const currentSubNav = subNavItems.find((i) => i.key === subSection);
+
   return (
-    <div className="p-6 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Library Management</h1>
-        <p className="text-muted-foreground">Manage catalogue, holds, fines & more</p>
+    <div className="min-w-0 p-4 sm:p-6 space-y-4 sm:space-y-6">
+      {/* header */}
+      <div className="flex flex-col gap-1">
+        <h1 className="text-xl sm:text-2xl font-bold">Library Management</h1>
+        <p className="text-sm text-muted-foreground">Manage catalogue, holds, fines & more</p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="flex-wrap">
-          <TabsTrigger value="catalogue"><BookOpen className="w-4 h-4 mr-1" />Catalogue</TabsTrigger>
-          <TabsTrigger value="holds"><Library className="w-4 h-4 mr-1" />Holds</TabsTrigger>
-          <TabsTrigger value="fines"><DollarSign className="w-4 h-4 mr-1" />Fines</TabsTrigger>
-          <TabsTrigger value="class-sets"><Users className="w-4 h-4 mr-1" />Class Sets</TabsTrigger>
-          <TabsTrigger value="reading-logs"><FileText className="w-4 h-4 mr-1" />Reading Logs</TabsTrigger>
-          <TabsTrigger value="programmes"><Calendar className="w-4 h-4 mr-1" />Programmes</TabsTrigger>
-          <TabsTrigger value="reviews"><Star className="w-4 h-4 mr-1" />Reviews</TabsTrigger>
-          <TabsTrigger value="ill"><Library className="w-4 h-4 mr-1" />ILL</TabsTrigger>
-        </TabsList>
+      {/* secondary navigation buttons (desktop) */}
+      <div className="hidden sm:flex items-center gap-1 overflow-x-auto flex-nowrap scrollbar-thin pb-px">
+        {subNavItems.map((item) => (
+          <button
+            key={item.key}
+            onClick={() => setSubSection(item.key)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+              subSection === item.key
+                ? 'bg-orange-500/10 text-orange-600'
+                : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+            }`}
+          >
+            {item.icon}
+            {item.label}
+          </button>
+        ))}
+      </div>
 
-        <TabsContent value="catalogue" className="space-y-4">
+      {/* mobile secondary nav — fans out from bottom nav bar */}
+      <div className="sm:hidden">
+        <Button
+          variant="outline"
+          className="w-full justify-between"
+          onClick={() => setShowSubNavSheet(true)}
+        >
+          <span className="flex items-center gap-2">
+            {currentSubNav?.icon}
+            {currentSubNav?.label}
+          </span>
+          <ChevronDown className="w-4 h-4 opacity-50" />
+        </Button>
+        <NavSheet
+          isOpen={showSubNavSheet}
+          onClose={() => setShowSubNavSheet(false)}
+          title="Select Section"
+        >
+          {subNavItems.map((item, i) => (
+            <NavSheetItem
+              key={item.key}
+              icon={item.icon}
+              label={item.label}
+              active={subSection === item.key}
+              index={i}
+              onClick={() => { setSubSection(item.key); setShowSubNavSheet(false); }}
+            />
+          ))}
+        </NavSheet>
+      </div>
+
+      {subSection === 'catalogue' && (
+        <div className="space-y-4">
           <div className="flex gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -181,9 +236,11 @@ export default function AdminLibrary() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="holds" className="space-y-4">
+      {subSection === 'holds' && (
+        <div className="space-y-4">
           <div className="flex justify-end">
             <Button><Plus className="w-4 h-4 mr-2" />New Hold</Button>
           </div>
@@ -204,9 +261,11 @@ export default function AdminLibrary() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="fines" className="space-y-4">
+      {subSection === 'fines' && (
+        <div className="space-y-4">
           <div className="flex justify-end">
             <Button><Plus className="w-4 h-4 mr-2" />New Fine</Button>
           </div>
@@ -228,9 +287,11 @@ export default function AdminLibrary() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="class-sets" className="space-y-4">
+      {subSection === 'class-sets' && (
+        <div className="space-y-4">
           <div className="flex justify-end">
             <Button><Plus className="w-4 h-4 mr-2" />New Class Set</Button>
           </div>
@@ -250,9 +311,11 @@ export default function AdminLibrary() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="reading-logs" className="space-y-4">
+      {subSection === 'reading-logs' && (
+        <div className="space-y-4">
           <div className="flex justify-end">
             <Button><Plus className="w-4 h-4 mr-2" />New Log</Button>
           </div>
@@ -272,9 +335,11 @@ export default function AdminLibrary() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="programmes" className="space-y-4">
+      {subSection === 'programmes' && (
+        <div className="space-y-4">
           <div className="flex justify-end">
             <Button><Plus className="w-4 h-4 mr-2" />New Programme</Button>
           </div>
@@ -291,9 +356,11 @@ export default function AdminLibrary() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="reviews" className="space-y-4">
+      {subSection === 'reviews' && (
+        <div className="space-y-4">
           <div className="flex justify-end">
             <Button><Plus className="w-4 h-4 mr-2" />New Review</Button>
           </div>
@@ -312,9 +379,11 @@ export default function AdminLibrary() {
               </Card>
             ))}
           </div>
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="ill" className="space-y-4">
+      {subSection === 'ill' && (
+        <div className="space-y-4">
           <div className="flex justify-end">
             <Button><Plus className="w-4 h-4 mr-2" />New ILL</Button>
           </div>
@@ -331,8 +400,8 @@ export default function AdminLibrary() {
               </Card>
             ))}
           </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+      )}
     </div>
   );
 }
