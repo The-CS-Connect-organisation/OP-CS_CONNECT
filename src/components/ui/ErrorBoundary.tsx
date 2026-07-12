@@ -64,7 +64,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             <h2 className="mb-2 text-xl font-bold">Something went wrong</h2>
             <p className="mb-6 text-sm text-muted-foreground">
               {this.state.isChunkError
-                ? 'A page module failed to load. This can happen due to a network issue or a new deployment.'
+                ? 'A page module failed to load. This can happen due to a network issue or a new deployment. Try a hard refresh (Ctrl+Shift+R) to clear the cached page.'
                 : 'An unexpected error occurred while rendering this page.'}
             </p>
             {this.state.error && (
