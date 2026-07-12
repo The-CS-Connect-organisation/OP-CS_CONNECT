@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Hero from '@/components/awwwards/Hero';
 import AppGuide from '@/components/guide/AppGuide';
 import Footer from '@/components/awwwards/Footer';
 import TermsConditions from '@/components/ui/terms-conditions';
 
 export default function LandingPage() {
-  const [audioStarted, setAudioStarted] = useState(false);
+  const navigate = useNavigate();
   const [showToc, setShowToc] = useState(true);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -13,6 +14,12 @@ export default function LandingPage() {
     document.documentElement.classList.remove('dark');
     document.documentElement.style.backgroundColor = '';
   }, []);
+
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      navigate('/login', { replace: true });
+    }
+  }, [navigate]);
 
   const handleAccept = () => {
     setShowToc(false);
@@ -22,7 +29,6 @@ export default function LandingPage() {
       audioRef.current.volume = 0.3;
     }
     audioRef.current.play().catch(() => {});
-    setAudioStarted(true);
   };
 
   return (
