@@ -31,7 +31,7 @@ const products = [
 
 const aboutItems = [
   { title: "Our Story", href: "/about", description: "Learn about Cornerstone's mission." },
-  { title: "Team", href: "/about", description: "Meet the people behind CS Connect." },
+  { title: "Team", href: "/about", description: "Meet the people behind SchoolSync." },
   { title: "Careers", href: "/careers", description: "Join us in transforming education." },
 ]
 
@@ -72,7 +72,7 @@ const NavigationMenu4 = () => {
               className="w-7 h-7 md:w-9 md:h-9 object-contain shrink-0"
             />
             <span className="font-zentry text-sm md:text-lg font-black uppercase tracking-wider text-gray-900 truncate">
-              CS Connect
+              SchoolSync
             </span>
           </Link>
 

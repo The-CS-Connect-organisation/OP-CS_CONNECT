@@ -89,6 +89,11 @@
   inherits: false;
 }
 
+@keyframes liquid-shine {
+  0% { background-position: 200% 50%; }
+  100% { background-position: -200% 50%; }
+}
+
 @layer base {
   @font-face {
     font-family: 'circular-web';
