@@ -61,7 +61,7 @@ export default function TalentMarket() {
     setLoading(true)
     try {
       const [listingsData] = await Promise.all([
-        api.getTalentMarketListings({ status: 'open' }).catch(() => []),
+        api.getTalentMarketListings().catch(() => []),
       ])
       setListings(Array.isArray(listingsData) ? listingsData : [])
       
