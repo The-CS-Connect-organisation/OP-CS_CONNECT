@@ -4,7 +4,7 @@ import { api } from '../../lib/api';
 import { playSuccessSound } from '../../lib/sound';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
-import { Badge } from '../../components/ui/Badge';
+
 import { Skeleton } from '../../components/ui/Skeleton';
 import {
   Users, Search, Plus, Mail, Phone, Edit, Trash2, X,
@@ -61,6 +61,12 @@ export default function AdminUsers() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
 
+  const [sortColumn, setSortColumn] = useState<string>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [page, setPage] = useState(1);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const itemsPerPage = 10;
+
   useEffect(() => {
     loadUsers();
   }, []);
@@ -93,17 +99,51 @@ export default function AdminUsers() {
     return matchesSearch && matchesRole;
   });
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'student': return 'bg-blue-100 text-blue-700';
-      case 'teacher': return 'bg-orange-100 text-orange-700';
-      case 'admin': return 'bg-red-100 text-red-700';
-      case 'parent': return 'bg-green-100 text-green-700';
-      case 'driver': return 'bg-purple-100 text-purple-700';
-      case 'librarian': return 'bg-yellow-100 text-yellow-700';
-      case 'manager': return 'bg-indigo-100 text-indigo-700';
-      default: return 'bg-gray-100 text-gray-700';
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    const valA = (a[sortColumn as keyof UserRecord] || '').toString().toLowerCase();
+    const valB = (b[sortColumn as keyof UserRecord] || '').toString().toLowerCase();
+    return sortDirection === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+  });
+  const totalPages = Math.ceil(sortedUsers.length / itemsPerPage);
+  const paginatedUsers = sortedUsers.slice((page - 1) * itemsPerPage, page * itemsPerPage);
+
+  const toggleSort = (col: string) => {
+    if (sortColumn === col) {
+      setSortDirection(d => d === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(col);
+      setSortDirection('asc');
     }
+    setPage(1);
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === paginatedUsers.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(paginatedUsers.map(u => u.id)));
+    }
+  };
+
+  const getRoleStyle = (role: string) => {
+    const map: Record<string, string> = {
+      student: 'bg-blue-100/70 text-blue-800',
+      teacher: 'bg-orange-100/70 text-orange-800',
+      admin: 'bg-red-100/70 text-red-800',
+      parent: 'bg-green-100/70 text-green-800',
+      driver: 'bg-purple-100/70 text-purple-800',
+      librarian: 'bg-yellow-100/70 text-yellow-800',
+      manager: 'bg-indigo-100/70 text-indigo-800',
+    };
+    return map[role] || 'bg-gray-100/70 text-gray-700';
   };
 
   const openCreateModal = () => {
@@ -240,12 +280,22 @@ export default function AdminUsers() {
         <Button onClick={openCreateModal}><Plus className="w-4 h-4 mr-2" />Add User</Button>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex gap-2">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input type="text" placeholder="Search users..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2 rounded-lg border bg-background" />
+          <input
+            type="text"
+            placeholder="Search users..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 h-11 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
+          />
         </div>
-        <select value={filterRole} onChange={(e) => setFilterRole(e.target.value)} className="px-4 py-2 rounded-lg border bg-background">
+        <select
+          value={filterRole}
+          onChange={(e) => { setFilterRole(e.target.value); setPage(1); }}
+          className="px-4 h-11 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40"
+        >
           <option value="all">All Roles</option>
           <option value="student">Student</option>
           <option value="teacher">Teacher</option>
@@ -258,41 +308,228 @@ export default function AdminUsers() {
       </div>
 
       {loading ? (
-        <div className="space-y-4">{[1, 2, 3].map(i => <Skeleton key={i} className="h-20" />)}</div>
+        <div className="space-y-2">{[1, 2, 3, 4, 5].map(i => <Skeleton key={i} className="h-14 rounded-xl" />)}</div>
       ) : (
-        <div className="space-y-3">
-          {filteredUsers.map(user => (
-            <Card key={user.id} className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Avatar className="w-10 h-10">
-                    <AvatarImage src={getAvatarUrl(user)} />
-                    <AvatarFallback className="bg-gradient-to-br from-orange-500 to-amber-600 text-white text-sm">
-                      {getInitials(user.name)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h4 className="font-semibold">{user.name}</h4>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1"><Mail className="w-4 h-4" />{user.email}</span>
-                      {user.phone && <span className="flex items-center gap-1"><Phone className="w-4 h-4" />{user.phone}</span>}
-                      {user.class && <span>• Class: {user.class}</span>}
+        <>
+          {/* Desktop: Data Table — lg:block */}
+          <div className="hidden lg:block">
+            <div className="border rounded-xl overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b bg-muted/40">
+                      <th className="p-4 text-left w-10">
+                        <input
+                          type="checkbox"
+                          checked={paginatedUsers.length > 0 && selectedIds.size === paginatedUsers.length}
+                          onChange={toggleSelectAll}
+                          className="rounded border-gray-300"
+                        />
+                      </th>
+                      {[
+                        { key: 'name', label: 'Name' },
+                        { key: 'email', label: 'Email' },
+                        { key: 'phone', label: 'Phone' },
+                      ].map(col => (
+                        <th
+                          key={col.key}
+                          onClick={() => toggleSort(col.key)}
+                          className="p-4 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer select-none hover:text-foreground transition-colors"
+                        >
+                          <span className="inline-flex items-center gap-1">
+                            {col.label}
+                            {sortColumn === col.key && (
+                              <span className="text-primary">{sortDirection === 'asc' ? '▲' : '▼'}</span>
+                            )}
+                          </span>
+                        </th>
+                      ))}
+                      <th className="p-4 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Class / Role</th>
+                      <th className="p-4 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+                      <th className="p-4 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedUsers.map((user, i) => (
+                      <tr
+                        key={user.id}
+                        className={`border-b last:border-0 transition-colors hover:bg-muted/20 ${i % 2 === 0 ? 'bg-white' : 'bg-gray-50/30'}`}
+                      >
+                        <td className="p-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(user.id)}
+                            onChange={() => toggleSelect(user.id)}
+                            className="rounded border-gray-300"
+                          />
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="w-9 h-9 shrink-0">
+                              <AvatarImage src={getAvatarUrl(user)} />
+                              <AvatarFallback className="bg-gradient-to-br from-orange-500 to-amber-600 text-white text-xs">
+                                {getInitials(user.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-medium text-sm">{user.name || '—'}</span>
+                          </div>
+                        </td>
+                        <td className="p-4 text-sm text-muted-foreground">{user.email || '—'}</td>
+                        <td className="p-4 text-sm text-muted-foreground">{user.phone || '—'}</td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            {user.class ? <span className="text-sm text-muted-foreground">{user.class}</span> : <span className="text-sm text-muted-foreground">—</span>}
+                            <span className={`inline-flex items-center justify-center min-w-[72px] px-2.5 py-0.5 rounded-md text-xs font-medium ${getRoleStyle(user.role)}`}>
+                              {user.role}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <button
+                            onClick={() => {
+                              const next = user.status === 'active' ? 'inactive' : 'active';
+                              api.updateUser(user.id, { status: next }).then(() => loadUsers()).catch(() => {});
+                            }}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                              user.status === 'active'
+                                ? 'bg-orange-500 text-white'
+                                : 'border border-gray-300 text-gray-500'
+                            }`}
+                          >
+                            <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'active' ? 'bg-white' : 'bg-gray-400'}`} />
+                            {user.status === 'active' ? 'Active' : 'Inactive'}
+                          </button>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => openEditModal(user)}
+                              className="p-2 rounded-lg text-muted-foreground hover:bg-gray-200 hover:text-foreground transition-colors"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(user.id, user.name)}
+                              className="p-2 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {paginatedUsers.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="p-8 text-center text-sm text-muted-foreground">
+                          No users found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Pagination */}
+            <div className="flex items-center justify-between mt-4">
+              <p className="text-sm text-muted-foreground">
+                Showing {(page - 1) * itemsPerPage + 1}–{Math.min(page * itemsPerPage, sortedUsers.length)} of {sortedUsers.length} user{sortedUsers.length !== 1 ? 's' : ''}
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-3 py-1.5 rounded-lg text-sm font-medium border bg-background hover:bg-accent disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                >
+                  Previous
+                </button>
+                {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                  const start = Math.max(0, Math.min(page - 3, totalPages - 5));
+                  const p = start + i + 1;
+                  if (p > totalPages) return null;
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                        p === page
+                          ? 'bg-primary text-primary-foreground'
+                          : 'hover:bg-accent'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="px-3 py-1.5 rounded-lg text-sm font-medium border bg-background hover:bg-accent disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Mobile: Card Layout — lg:hidden */}
+          <div className="lg:hidden space-y-2 pb-24">
+            {paginatedUsers.map(user => (
+              <Card key={user.id} className="p-4">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <Avatar className="w-10 h-10 shrink-0">
+                      <AvatarImage src={getAvatarUrl(user)} />
+                      <AvatarFallback className="bg-gradient-to-br from-orange-500 to-amber-600 text-white text-sm">
+                        {getInitials(user.name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0">
+                      <h4 className="font-semibold text-sm truncate">{user.name || '—'}</h4>
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground mt-0.5">
+                        <span className="inline-flex items-center gap-1 truncate max-w-full"><Mail className="w-3.5 h-3.5 shrink-0" /><span className="truncate">{user.email || '—'}</span></span>
+                        {user.phone && <span className="inline-flex items-center gap-1 w-full xs:w-auto"><Phone className="w-3.5 h-3.5 shrink-0" />{user.phone}</span>}
+                      </div>
+                      {(user.class) && (
+                        <p className="text-xs text-muted-foreground mt-1">Class: {user.class}</p>
+                      )}
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge className={getRoleColor(user.role)}>{user.role}</Badge>
-                  <Badge variant="secondary">{user.status}</Badge>
-                  <button onClick={() => openEditModal(user)} className="p-2 hover:bg-accent rounded"><Edit className="w-4 h-4" /></button>
-                  <button onClick={() => handleDelete(user.id, user.name)} className="p-2 hover:bg-red-100 rounded text-red-500"><Trash2 className="w-4 h-4" /></button>
+                <div className="flex items-center gap-2 mt-3 flex-wrap">
+                  <span className={`inline-flex items-center justify-center min-w-[72px] px-2.5 py-0.5 rounded-md text-xs font-medium ${getRoleStyle(user.role)}`}>
+                    {user.role}
+                  </span>
+                  <button
+                    onClick={() => {
+                      const next = user.status === 'active' ? 'inactive' : 'active';
+                      api.updateUser(user.id, { status: next }).then(() => loadUsers()).catch(() => {});
+                    }}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium transition-all ${
+                      user.status === 'active'
+                        ? 'bg-orange-500 text-white'
+                        : 'border border-gray-300 text-gray-500'
+                    }`}
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'active' ? 'bg-white' : 'bg-gray-400'}`} />
+                    {user.status === 'active' ? 'Active' : 'Inactive'}
+                  </button>
+                  <div className="flex items-center gap-1 ml-auto">
+                    <button onClick={() => openEditModal(user)} className="p-2 rounded-lg text-muted-foreground hover:bg-gray-200 hover:text-foreground transition-colors">
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => handleDelete(user.id, user.name)} className="p-2 rounded-lg text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors">
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </div>
+        </>
       )}
 
-      {/* Create User Modal */}
+      {/* Create User Modal — unchanged */}
       <AnimatePresence>
         {showCreateModal && (
           <motion.div
