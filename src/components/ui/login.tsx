@@ -101,30 +101,35 @@ export function AuthFormSplitScreen({
   };
 
   return (
-    <div className="relative flex min-h-screen w-full flex-col md:flex-row">
-      <div className="relative flex w-full flex-col items-center justify-center p-8 md:w-1/2 overflow-hidden bg-white">
+    <>
+    <style>{`
+      @media (min-width: 768px) {
+        .vintage-mask {
+          -webkit-mask-image: linear-gradient(to left, transparent 0%, black 120px);
+          mask-image: linear-gradient(to left, transparent 0%, black 120px);
+        }
+      }
+    `}</style>
+    <div className="relative flex min-h-svh w-full flex-col md:min-h-screen md:flex-row">
+      <div className="relative flex w-full flex-col items-center justify-center px-5 py-6 md:p-8 md:w-1/2 overflow-hidden bg-white">
         <img
           src="https://res.cloudinary.com/iextksqn/image/upload/v1783842250/vintage_copy_of_school-campus-picture-01-copy_ghh9l6.jpg"
           alt=""
-          className="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
-          style={{
-            opacity: 0.2,
-            maskImage: 'linear-gradient(to left, transparent 0%, black 120px)',
-            WebkitMaskImage: 'linear-gradient(to left, transparent 0%, black 120px)',
-          }}
+          className="vintage-mask absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
+          style={{ opacity: 0.2 }}
         />
         <div className="w-full max-w-md">
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-col gap-6"
+            className="flex flex-col gap-5 md:gap-6"
           >
-            <motion.div variants={itemVariants} className="mb-4">
+            <motion.div variants={itemVariants}>
               {logo}
             </motion.div>
             <motion.div variants={itemVariants} className="text-left">
-              <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+              <h1 className="text-xl font-semibold tracking-tight md:text-2xl">{title}</h1>
               <p className="text-sm text-muted-foreground">{description}{' '}</p>
             </motion.div>
 
@@ -176,7 +181,7 @@ export function AuthFormSplitScreen({
 
                 <motion.div
                   variants={itemVariants}
-                  className="flex items-center justify-between"
+                  className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-0"
                 >
                   <FormField
                     control={form.control}
@@ -219,7 +224,7 @@ export function AuthFormSplitScreen({
 
             <motion.p
               variants={itemVariants}
-              className="px-8 text-center text-sm text-muted-foreground"
+              className="text-center text-sm text-muted-foreground"
             >
               Don&apos;t have an account?{" "}
               <a
@@ -229,6 +234,13 @@ export function AuthFormSplitScreen({
                 Create one here
               </a>
               .
+            </motion.p>
+
+            <motion.p
+              variants={itemVariants}
+              className="text-center text-[11px] text-gray-300"
+            >
+              SchoolSync — Campus Management Platform
             </motion.p>
           </motion.div>
         </div>
@@ -256,5 +268,6 @@ export function AuthFormSplitScreen({
         </div>
       </div>
     </div>
+    </>
   );
 }
