@@ -103,8 +103,12 @@ export function AuthFormSplitScreen({
   return (
     <div className="relative flex min-h-screen w-full flex-col md:flex-row">
       <div className="relative flex w-full flex-col items-center justify-center p-8 md:w-1/2 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#FDF8F3] to-[#F5EBE0] -z-10" />
-        <div className="absolute -top-32 -right-32 w-80 h-80 rounded-full bg-[#EC8037] opacity-[0.08] blur-3xl pointer-events-none -z-10" />
+        <img
+          src="https://res.cloudinary.com/iextksqn/image/upload/v1783842250/vintage_copy_of_school-campus-picture-01-copy_ghh9l6.jpg"
+          alt=""
+          className="absolute inset-0 h-full w-full object-cover pointer-events-none select-none"
+          style={{ opacity: 0.2 }}
+        />
         <div className="w-full max-w-md">
           <motion.div
             variants={containerVariants}
