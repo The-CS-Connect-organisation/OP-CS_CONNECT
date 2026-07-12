@@ -28,23 +28,20 @@ export const BottomSheet: React.FC<BottomSheetProps> = ({ isOpen, onClose, title
           onClick={onClose}
         >
           <div
-            className={`absolute left-0 right-0 bottom-[88px] bg-background rounded-t-xl shadow-xl transition-transform duration-250 ease-out will-change-transform ${visible ? 'translate-y-0' : 'translate-y-full'}`}
-            style={{ maxHeight: '80vh' }}
+            className={`absolute left-2 right-2 bottom-16 bg-white/95 backdrop-blur-2xl rounded-2xl rounded-b-none shadow-2xl transition-transform duration-250 ease-out will-change-transform origin-bottom ${visible ? 'translate-y-0 scale-y-100' : 'translate-y-full scale-y-95'}`}
+            style={{ maxHeight: '70vh' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-border/50">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-1 rounded-full bg-muted-foreground/30 mx-auto sm:hidden" />
-              </div>
-              <h3 className="text-base font-semibold text-foreground">{title}</h3>
+            <div className="flex items-center justify-between px-4 pt-3 pb-2 border-b border-orange-100">
+              <h3 className="text-base font-semibold text-gray-900">{title}</h3>
               <button
                 onClick={onClose}
-                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-accent transition-colors"
+                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-orange-50 transition-colors"
               >
-                <X size={18} className="text-muted-foreground" />
+                <X size={18} className="text-gray-500" />
               </button>
             </div>
-            <div className="overflow-y-auto px-4 py-3" style={{ maxHeight: 'calc(80vh - 52px)' }}>
+            <div className="overflow-y-auto px-4 py-3" style={{ maxHeight: 'calc(70vh - 52px)' }}>
               {children}
             </div>
           </div>
