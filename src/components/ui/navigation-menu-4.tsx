@@ -64,7 +64,7 @@ const NavigationMenu4 = () => {
   return (
     <header className="fixed inset-x-0 top-0 z-50">
       <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8">
-        <div className="mt-3 flex items-center justify-between rounded-2xl border border-white/30 bg-white/70 px-3 py-2 shadow-xl backdrop-blur-2xl md:px-6">
+        <div className="mt-3 flex items-center justify-between rounded-2xl border border-white/30 bg-white/40 px-3 py-2 shadow-xl backdrop-blur-2xl md:px-6">
           <Link to="/" className="flex items-center gap-1.5 shrink-0 min-w-0">
             <img
               src={`${import.meta.env.BASE_URL}img/csfeviconbgfreeedition.png`}
@@ -77,80 +77,94 @@ const NavigationMenu4 = () => {
           </Link>
 
           <div className="hidden md:contents">
-            <NavigationMenu className="hidden md:flex">
-              <NavigationMenuList>
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className="rounded-lg text-sm font-medium text-gray-700 bg-white/40 backdrop-blur-md border border-white/20 shadow-sm hover:bg-white/60 hover:text-orange-600 data-[state=open]:bg-white/60 data-[state=open]:text-orange-600">
-                    Products
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-1 p-3 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                      {products.map((item) => (
-                        <ListItem
-                          key={item.title}
-                          title={item.title}
-                          href={item.href}
-                        >
-                          {item.description}
-                        </ListItem>
-                      ))}
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
+            <div className="flex items-center rounded-lg bg-white/40 backdrop-blur-md border border-white/20 shadow-sm px-1">
+              <NavigationMenu className="flex">
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="text-sm font-medium text-gray-700 hover:text-orange-600 data-[state=open]:text-orange-600 px-3 py-1.5">
+                      Products
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[400px] gap-1 p-3 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                        {products.map((item) => (
+                          <ListItem
+                            key={item.title}
+                            title={item.title}
+                            href={item.href}
+                          >
+                            {item.description}
+                          </ListItem>
+                        ))}
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
 
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className="rounded-lg text-sm font-medium text-gray-700 bg-white/40 backdrop-blur-md border border-white/20 shadow-sm hover:bg-white/60 hover:text-orange-600 data-[state=open]:bg-white/60 data-[state=open]:text-orange-600">
-                    About
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-1 p-3 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                      {aboutItems.map((item) => (
-                        <ListItem
-                          key={item.title}
-                          title={item.title}
-                          href={item.href}
-                        >
-                          {item.description}
-                        </ListItem>
-                      ))}
-                      <ListItem
-                        title="Blog"
-                        href="/blog"
-                        className="md:col-span-2"
-                      >
-                        Latest updates from Cornerstone Schools.
-                      </ListItem>
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
+              <span className="h-5 w-px bg-white/30 shrink-0" />
 
-                <NavigationMenuItem>
-                  <NavigationMenuTrigger className="rounded-lg text-sm font-medium text-gray-700 bg-white/40 backdrop-blur-md border border-white/20 shadow-sm hover:bg-white/60 hover:text-orange-600 data-[state=open]:bg-white/60 data-[state=open]:text-orange-600">
-                    Resources
-                  </NavigationMenuTrigger>
-                  <NavigationMenuContent>
-                    <ul className="grid w-[400px] gap-1 p-3 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                      {resources.map((item) => (
+              <NavigationMenu className="flex">
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="text-sm font-medium text-gray-700 hover:text-orange-600 data-[state=open]:text-orange-600 px-3 py-1.5">
+                      About
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[400px] gap-1 p-3 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                        {aboutItems.map((item) => (
+                          <ListItem
+                            key={item.title}
+                            title={item.title}
+                            href={item.href}
+                          >
+                            {item.description}
+                          </ListItem>
+                        ))}
                         <ListItem
-                          key={item.title}
-                          title={item.title}
-                          href={item.href}
+                          title="Blog"
+                          href="/blog"
+                          className="md:col-span-2"
                         >
-                          {item.description}
+                          Latest updates from Cornerstone Schools.
                         </ListItem>
-                      ))}
-                    </ul>
-                  </NavigationMenuContent>
-                </NavigationMenuItem>
-              </NavigationMenuList>
-            </NavigationMenu>
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
+
+              <span className="h-5 w-px bg-white/30 shrink-0" />
+
+              <NavigationMenu className="flex">
+                <NavigationMenuList>
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className="text-sm font-medium text-gray-700 hover:text-orange-600 data-[state=open]:text-orange-600 px-3 py-1.5">
+                      Resources
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[400px] gap-1 p-3 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                        {resources.map((item) => (
+                          <ListItem
+                            key={item.title}
+                            title={item.title}
+                            href={item.href}
+                          >
+                            {item.description}
+                          </ListItem>
+                        ))}
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
+            </div>
 
             <div className="hidden md:flex items-center gap-2">
               {isAuthenticated && user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="rounded-lg bg-white/40 backdrop-blur-md border border-white/20 shadow-sm text-sm font-medium text-gray-700 hover:text-orange-600 hover:bg-white/60 transition-all px-4 py-1.5">
-                      {user.name}
+                    <button className="rounded-lg bg-white/40 backdrop-blur-md border border-white/20 shadow-sm text-sm font-medium text-gray-700 hover:text-orange-600 hover:bg-white/60 transition-all px-4 py-1.5 whitespace-nowrap">
+                      {user.name}{user.role ? <span className="text-gray-400 font-normal"> — {user.role.charAt(0).toUpperCase() + user.role.slice(1)}</span> : null}
                     </button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="min-w-56">
