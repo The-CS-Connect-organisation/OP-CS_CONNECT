@@ -238,6 +238,7 @@ export function AuthFormSplitScreen({
           ))}
         </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-black/10 to-transparent" />
+        <div className="absolute left-0 top-0 bottom-0 w-48 bg-gradient-to-r from-background via-background/80 to-transparent pointer-events-none z-10" />
       </div>
     </div>
   );
