@@ -1,6 +1,6 @@
 import React from "react"
 import { useNavigate } from "react-router-dom"
-import { Home, BookOpen, Calendar, MessageSquare, Sparkles, Plus, ClipboardList, Users, BarChart3, Radio, CreditCard, Bus, User, MapPin, Library, Building2, Wallet, LayoutDashboard } from "lucide-react"
+import { Home, BookOpen, Calendar, MessageSquare, Sparkles, Plus, ClipboardList, Users, BarChart3, Radio, CreditCard, Bus, User, MapPin, Library, Building2, Wallet } from "lucide-react"
 
 import { useAuthStore, useSidebarStore, type UserRole } from "@/lib/store"
 import { Button } from "@/components/ui/Button"
@@ -13,53 +13,53 @@ interface NavItem {
 
 const navItems: Record<UserRole, NavItem[]> = {
   student: [
-    { icon: LayoutDashboard, label: "Home", path: "/student" },
+    { icon: Home, label: "Home", path: "/student" },
     { icon: BookOpen, label: "Courses", path: "/student/assignments" },
     { icon: Calendar, label: "Calendar", path: "/student/cs-calendar" },
     { icon: MessageSquare, label: "Messages", path: "/student/messages" },
     { icon: Sparkles, label: "AI", path: "/student/ai" },
   ],
   teacher: [
-    { icon: LayoutDashboard, label: "Home", path: "/teacher" },
+    { icon: Home, label: "Home", path: "/teacher" },
     { icon: ClipboardList, label: "Assignments", path: "/teacher/assignments" },
     { icon: Users, label: "Classes", path: "/teacher/class-analytics" },
     { icon: MessageSquare, label: "Messages", path: "/teacher/messages" },
     { icon: Sparkles, label: "AI", path: "/teacher/ai" },
   ],
   admin: [
-    { icon: LayoutDashboard, label: "Home", path: "/admin" },
+    { icon: Home, label: "Home", path: "/admin" },
     { icon: Users, label: "Users", path: "/admin/users" },
     { icon: BarChart3, label: "Analytics", path: "/admin/analytics" },
     { icon: Radio, label: "Comms", path: "/admin/comms-hub" },
     { icon: Sparkles, label: "AI", path: "/admin/ai" },
   ],
   parent: [
-    { icon: LayoutDashboard, label: "Home", path: "/parent" },
+    { icon: Home, label: "Home", path: "/parent" },
     { icon: User, label: "Children", path: "/parent/attendance" },
     { icon: CreditCard, label: "Fees", path: "/parent/fees" },
     { icon: MessageSquare, label: "Messages", path: "/parent/messages" },
     { icon: Bus, label: "Bus", path: "/parent/bus-tracking" },
   ],
   driver: [
-    { icon: LayoutDashboard, label: "Home", path: "/driver" },
+    { icon: Home, label: "Home", path: "/driver" },
     { icon: MapPin, label: "Route", path: "/driver/profile" },
     { icon: User, label: "Profile", path: "/driver/profile" },
   ],
   librarian: [
-    { icon: LayoutDashboard, label: "Home", path: "/librarian" },
+    { icon: Home, label: "Home", path: "/librarian" },
     { icon: BookOpen, label: "Books", path: "/librarian" },
     { icon: Users, label: "Users", path: "/librarian" },
     { icon: User, label: "Profile", path: "/librarian/profile" },
   ],
   coordinator: [
-    { icon: LayoutDashboard, label: "Home", path: "/coordinator" },
+    { icon: Home, label: "Home", path: "/coordinator" },
     { icon: Building2, label: "Schools", path: "/coordinator/schools" },
     { icon: BarChart3, label: "Analytics", path: "/coordinator/analytics" },
     { icon: Radio, label: "Broadcast", path: "/coordinator/broadcast" },
     { icon: Sparkles, label: "AI", path: "/coordinator/ai" },
   ],
   manager: [
-    { icon: LayoutDashboard, label: "Home", path: "/manager" },
+    { icon: Home, label: "Home", path: "/manager" },
     { icon: Users, label: "People", path: "/manager/users" },
     { icon: Wallet, label: "Finance", path: "/manager/finance" },
     { icon: Radio, label: "Comms", path: "/manager/comms-hub" },

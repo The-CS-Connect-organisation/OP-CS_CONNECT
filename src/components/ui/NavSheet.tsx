@@ -75,7 +75,7 @@ export const NavSheetItem: React.FC<NavSheetItemProps> = ({ icon, label, active,
       className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-black/5 ${
         active
           ? 'text-orange-600 bg-orange-500/10 shadow-sm'
-          : 'text-gray-700'
+          : 'text-gray-900'
       }`}
       style={{
         transitionDelay: `${80 + index * 50}ms`,
