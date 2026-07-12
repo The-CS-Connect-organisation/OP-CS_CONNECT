@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { NavLink, useNavigate, useLocation } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useAuthStore, useSidebarStore, useThemeStore } from '@/lib/store'
 import { navSections } from '@/lib/nav-config'
 import { cn } from '@/lib/utils'
@@ -230,34 +230,18 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile overlay with blur and animation */}
-      <AnimatePresence>
-        {isMobileOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-md lg:hidden"
-            onClick={() => setMobileOpen(false)}
-          />
-        )}
-      </AnimatePresence>
+      {/* Mobile overlay — pure CSS transition, no blur */}
+      <div
+        className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-200 lg:hidden ${isMobileOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        onClick={() => setMobileOpen(false)}
+      />
 
-      {/* Mobile sidebar with slide-in animation */}
-      <AnimatePresence>
-        {isMobileOpen && (
-          <motion.aside
-            initial={{ x: -300 }}
-            animate={{ x: 0 }}
-            exit={{ x: -300 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed left-0 top-0 z-50 h-full w-[280px] lg:hidden shadow-2xl"
-          >
-            {sidebarContent(false)}
-          </motion.aside>
-        )}
-      </AnimatePresence>
+      {/* Mobile sidebar — CSS translateX transition, no spring */}
+      <aside
+        className={`fixed left-0 top-0 z-50 h-full w-[280px] shadow-2xl transition-transform duration-200 ease-out lg:hidden will-change-transform ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
+        {sidebarContent(false)}
+      </aside>
 
       {/* Desktop sidebar - icon-only when collapsed */}
       <aside
