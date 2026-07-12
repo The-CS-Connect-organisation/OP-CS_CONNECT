@@ -27,14 +27,14 @@ export const NavSheet: React.FC<NavSheetProps> = ({ isOpen, onClose, title, chil
           className={`fixed inset-0 z-50 transition-colors duration-300 lg:hidden ${visible ? 'bg-black/30 pointer-events-auto' : 'bg-transparent pointer-events-none'}`}
           onClick={onClose}
         >
-          {/* spacer pushes sheet up above the nav pill */}
-          <div className="absolute inset-x-0 bottom-0 flex flex-col items-center justify-end pb-6">
+          {/* sheet anchored at the top edge of the bottom nav pill (bottom-[76px]) — same centered width (280px) */}
+          <div className="absolute inset-x-0 bottom-[76px] flex justify-center">
             <div
               ref={sheetRef}
-              className={`w-[calc(100%-2rem)] max-w-sm transition-all duration-300 ease-out origin-bottom ${visible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-4'}`}
+              className={`w-[280px] transition-all duration-300 ease-out origin-bottom ${visible ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-0'}`}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="rounded-[1.75rem] rounded-b-none border border-white/30 bg-white/40 shadow-2xl backdrop-blur-2xl overflow-hidden">
+              <div className="rounded-[1.75rem] rounded-b-[1.25rem] border border-white/30 bg-white/40 shadow-2xl backdrop-blur-2xl overflow-hidden">
                 <div className="flex items-center justify-between px-5 pt-4 pb-2">
                   <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
                   <button
@@ -46,12 +46,10 @@ export const NavSheet: React.FC<NavSheetProps> = ({ isOpen, onClose, title, chil
                     </svg>
                   </button>
                 </div>
-                <div className="px-3 pb-3 max-h-[50vh] overflow-y-auto">
+                <div className="px-3 pb-4 max-h-[60vh] overflow-y-auto">
                   {children}
                 </div>
               </div>
-              {/* visual connector - same glass pill style */}
-              <div className="h-[2px] mx-6 bg-white/20 backdrop-blur-2xl" />
             </div>
           </div>
         </div>
@@ -79,8 +77,6 @@ export const NavSheetItem: React.FC<NavSheetItemProps> = ({ icon, label, active,
       }`}
       style={{
         transitionDelay: `${80 + index * 50}ms`,
-        opacity: 1,
-        transform: 'translateY(0)',
       }}
     >
       <span className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
