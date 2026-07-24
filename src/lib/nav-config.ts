@@ -82,7 +82,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
     {
       label: 'Profile',
       items: [
-        { icon: Award, label: 'Achievements', path: '/student/achievements' },
+        { icon: Award, label: 'Accolades', path: '/student/achievements' },
         { icon: User, label: 'Profile', path: '/student/profile' },
       ]
     },
@@ -192,7 +192,7 @@ export const navSections: Record<UserRole, NavSection[]> = {
         { icon: Headphones, label: 'IT Helpdesk', path: '/admin/it-helpdesk' },
         { icon: Users, label: 'Manage Clubs', path: '/admin/clubs' },
         { icon: Gavel, label: 'Talent Market', path: '/admin/talent-market' },
-        { icon: Award, label: 'Manage Achievements', path: '/admin/achievements' },
+        { icon: Award, label: 'Manage Accolades', path: '/admin/achievements' },
       ]
     },
   ],

@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Label } from '../../components/ui/Label'
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/Avatar'
 import { Skeleton } from '../../components/ui/Skeleton'
-import { Award, Star, Trophy, Medal, Heart, MessageCircle, Send, Plus, X } from 'lucide-react'
+import { Award, Star, Trophy, Medal, Heart, MessageCircle, Send, Plus, X, Upload, ImageIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Achievement {
@@ -27,6 +27,7 @@ interface Achievement {
   category: string
   timestamp: string
   status?: string
+  photoUrl?: string
   likes: string[]
   comments: { authorId: string; authorName: string; content: string; timestamp: string }[]
 }
@@ -40,7 +41,7 @@ export default function Achievements() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'academic' | 'sports' | 'science' | 'arts' | 'technology' | 'attendance' | 'extracurricular'>('all')
   const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [createForm, setCreateForm] = useState({ title: '', description: '', targetStudentName: '', category: 'academic' })
+  const [createForm, setCreateForm] = useState({ title: '', description: '', targetStudentName: '', category: 'academic', photoUrl: '' })
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({})
 
   useEffect(() => { loadAchievements() }, [])
@@ -98,7 +99,7 @@ export default function Achievements() {
         ...createForm,
         status: 'pending',
       })
-      setCreateForm({ title: '', description: '', targetStudentName: '', category: 'academic' })
+      setCreateForm({ title: '', description: '', targetStudentName: '', category: 'academic', photoUrl: '' })
       setShowCreateDialog(false)
       loadAchievements()
     } catch { /* error */ }
@@ -131,8 +132,8 @@ export default function Achievements() {
     <motion.div variants={containerVariants} initial="hidden" animate="visible" className="space-y-6">
       <motion.div variants={itemVariants} className="flex flex-wrap items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Achievements</h1>
-          <p className="text-muted-foreground text-sm mt-1">Celebrate milestones - anyone can post achievements!</p>
+          <h1 className="text-2xl font-bold">Accolades</h1>
+          <p className="text-muted-foreground text-sm mt-1">Celebrate milestones - share your achievements with the school!</p>
         </div>
         <Button onClick={() => setShowCreateDialog(true)} className="bg-orange-600 hover:bg-orange-700">
           <Plus className="w-4 h-4 mr-2" /> Post Achievement
@@ -178,6 +179,9 @@ export default function Achievements() {
                       </div>
                       <h3 className="font-semibold">{achievement.title}</h3>
                       <p className="text-sm text-muted-foreground mt-1">{achievement.description}</p>
+                      {achievement.photoUrl && (
+                        <img src={achievement.photoUrl} alt="" className="mt-2 rounded-lg max-h-48 object-cover border" />
+                      )}
                       {achievement.targetStudentName && (
                         <p className="text-xs text-orange-600 mt-1">🎉 {achievement.targetStudentName}</p>
                       )}
@@ -245,6 +249,24 @@ export default function Achievements() {
             <div className="space-y-2">
               <Label>Student Name (optional)</Label>
               <Input value={createForm.targetStudentName} onChange={e => setCreateForm(prev => ({ ...prev, targetStudentName: e.target.value }))} placeholder="Who is this for?" />
+            </div>
+            <div className="space-y-2">
+              <Label>Photo (optional)</Label>
+              <div className="flex gap-2">
+                <Input value={createForm.photoUrl} onChange={e => setCreateForm(prev => ({ ...prev, photoUrl: e.target.value }))} placeholder="Paste image URL..." className="flex-1" />
+                <label className="flex items-center gap-1.5 px-3 py-2 rounded-lg border bg-background hover:bg-accent cursor-pointer text-sm text-muted-foreground">
+                  <Upload className="w-4 h-4" />
+                  <input type="file" accept="image/*" className="hidden" onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (ev) => setCreateForm(prev => ({ ...prev, photoUrl: ev.target?.result as string || '' }));
+                      reader.readAsDataURL(file);
+                    }
+                  }} />
+                </label>
+              </div>
+              {createForm.photoUrl && <img src={createForm.photoUrl} alt="preview" className="mt-2 rounded-lg max-h-32 object-cover border" />}
             </div>
             <div className="space-y-2">
               <Label>Category</Label>

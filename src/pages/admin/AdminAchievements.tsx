@@ -1,12 +1,17 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { api } from '@/lib/api'
+import { useAuthStore } from '@/lib/store'
 import { Card, CardContent } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/Avatar'
 import { Skeleton } from '@/components/ui/Skeleton'
-import { Award, CheckCircle2, XCircle, Trash2, Search, Loader2, Star, Trophy, Medal } from 'lucide-react'
+import { Textarea } from '@/components/ui/Textarea'
+import {
+  Award, CheckCircle2, XCircle, Trash2, Search, Loader2, Star, Trophy, Medal,
+  Megaphone
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Achievement {
@@ -21,6 +26,7 @@ interface Achievement {
   category: string
   timestamp: string
   status?: string
+  significant?: boolean
   likes: string[]
   comments: any[]
 }
@@ -36,11 +42,15 @@ const categoryColors: Record<string, string> = {
 }
 
 export default function AdminAchievements() {
+  const { user } = useAuthStore()
   const [achievements, setAchievements] = useState<Achievement[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [processing, setProcessing] = useState<string | null>(null)
+  const [significantDialog, setSignificantDialog] = useState<Achievement | null>(null)
+  const [significantText, setSignificantText] = useState('')
+  const [publishing, setPublishing] = useState(false)
 
   useEffect(() => { fetchData() }, [])
 
@@ -77,6 +87,30 @@ export default function AdminAchievements() {
     } catch { alert('Failed to delete') } finally { setProcessing(null) }
   }
 
+  const handleMarkSignificant = async () => {
+    if (!significantDialog || !significantText.trim()) return
+    setPublishing(true)
+    try {
+      const tagged = significantDialog.targetStudentName
+        ? `\n\nTagged: ${significantDialog.targetStudentName}`
+        : ''
+      await api.createAnnouncement({
+        title: 'Significant Achievement by Our Student',
+        content: `${significantText.trim()}\n\n— ${significantDialog.authorName}${tagged}`,
+        priority: 'high',
+        type: 'general',
+        audience: 'all',
+        author: user?.name || 'Admin',
+      })
+      await api.updateAchievement(significantDialog.id, { significant: true })
+      setAchievements(prev => prev.map(a =>
+        a.id === significantDialog.id ? { ...a, significant: true } : a
+      ))
+      setSignificantDialog(null)
+      setSignificantText('')
+    } catch { alert('Failed to publish') } finally { setPublishing(false) }
+  }
+
   const getCategoryIcon = (cat: string) => {
     switch (cat) {
       case 'academic': return <Award className="w-4 h-4" />
@@ -102,7 +136,7 @@ export default function AdminAchievements() {
             <Award className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold">Manage Achievements</h1>
+            <h1 className="text-2xl font-bold">Manage Accolades</h1>
             <p className="text-sm text-muted-foreground">{achievements.length} total · {achievements.filter(a => (a.status || 'approved') !== 'approved').length} pending</p>
           </div>
         </div>
@@ -111,7 +145,7 @@ export default function AdminAchievements() {
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input type="text" placeholder="Search achievements..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+          <input type="text" placeholder="Search accolades..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 h-10 rounded-xl border bg-background text-sm focus:outline-none focus:ring-2 focus:ring-primary/20" />
         </div>
         <div className="flex gap-2">
@@ -129,7 +163,7 @@ export default function AdminAchievements() {
       ) : filtered.length === 0 ? (
         <Card><CardContent className="p-12 text-center">
           <Award className="w-16 h-16 mx-auto text-muted-foreground/30 mb-4" />
-          <p className="text-muted-foreground">No achievements found</p>
+          <p className="text-muted-foreground">No accolades found</p>
         </CardContent></Card>
       ) : (
         <div className="space-y-3">
@@ -137,6 +171,7 @@ export default function AdminAchievements() {
             <motion.div key={achievement.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
               <Card className={cn(
                 'border-l-4',
+                achievement.significant ? 'border-l-orange-500' :
                 (achievement.status || 'approved') === 'approved' ? 'border-l-emerald-500' :
                 achievement.status === 'pending' ? 'border-l-amber-500' :
                 'border-l-red-500'
@@ -157,10 +192,14 @@ export default function AdminAchievements() {
                           {getCategoryIcon(achievement.category)} {achievement.category}
                         </Badge>
                         <Badge className={cn(
+                          achievement.significant ? 'bg-orange-100 text-orange-700' :
                           (achievement.status || 'approved') === 'approved' ? 'bg-emerald-100 text-emerald-700' :
                           achievement.status === 'pending' ? 'bg-amber-100 text-amber-700' :
                           'bg-red-100 text-red-700'
-                        )}>{achievement.status || 'approved'}</Badge>
+                        )}>
+                          {achievement.significant ? 'Featured' : (achievement.status || 'approved')}
+                        </Badge>
+                        {achievement.significant && <Megaphone className="w-3.5 h-3.5 text-orange-500" />}
                         <span className="text-xs text-muted-foreground ml-auto">{new Date(achievement.timestamp).toLocaleDateString()}</span>
                       </div>
                       <h3 className="font-semibold">{achievement.title}</h3>
@@ -189,6 +228,12 @@ export default function AdminAchievements() {
                             <XCircle className="w-3.5 h-3.5 mr-1" /> Reject
                           </Button>
                         )}
+                        {(achievement.status || 'approved') === 'approved' && !achievement.significant && (
+                          <Button size="sm" variant="outline" className="text-orange-500 border-orange-200 hover:bg-orange-50 h-8"
+                            onClick={() => { setSignificantDialog(achievement); setSignificantText(achievement.description || '') }}>
+                            <Megaphone className="w-3.5 h-3.5 mr-1" /> Mark Significant
+                          </Button>
+                        )}
                         <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-600 hover:bg-red-50 h-8 ml-auto"
                           onClick={() => handleDelete(achievement.id, achievement.title)}
                           disabled={processing === achievement.id}>
@@ -201,6 +246,55 @@ export default function AdminAchievements() {
               </Card>
             </motion.div>
           ))}
+        </div>
+      )}
+
+      {significantDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+            className="bg-background rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-orange-100">
+                  <Megaphone className="w-5 h-5 text-orange-600" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold">Feature as Significant</h2>
+                  <p className="text-sm text-muted-foreground">This will post an announcement to the whole school</p>
+                </div>
+              </div>
+
+              <div className="p-3 rounded-lg bg-accent/30 mb-4 text-sm space-y-1">
+                <p><span className="font-medium">Student:</span> {significantDialog.authorName}</p>
+                <p><span className="font-medium">Achievement:</span> {significantDialog.title}</p>
+                {significantDialog.targetStudentName && (
+                  <p><span className="font-medium">Tagged:</span> {significantDialog.targetStudentName}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Announcement Description</label>
+                <Textarea
+                  value={significantText}
+                  onChange={e => setSignificantText(e.target.value)}
+                  placeholder="Write a description of this significant achievement..."
+                  rows={4}
+                />
+                <p className="text-xs text-muted-foreground">
+                  The announcement will be titled "Significant Achievement by Our Student" and shared with everyone.
+                  {significantDialog.targetStudentName && ` The tagged student (${significantDialog.targetStudentName}) will be mentioned.`}
+                </p>
+              </div>
+
+              <div className="flex gap-2 justify-end mt-6">
+                <Button variant="outline" onClick={() => { setSignificantDialog(null); setSignificantText('') }}>Cancel</Button>
+                <Button onClick={handleMarkSignificant} disabled={publishing || !significantText.trim()} className="bg-orange-500 hover:bg-orange-600">
+                  {publishing ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Megaphone className="w-4 h-4 mr-1" />}
+                  {publishing ? 'Publishing...' : 'Publish Announcement'}
+                </Button>
+              </div>
+            </div>
+          </motion.div>
         </div>
       )}
     </motion.div>
